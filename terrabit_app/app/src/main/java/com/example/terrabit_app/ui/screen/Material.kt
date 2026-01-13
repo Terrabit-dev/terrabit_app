@@ -1,6 +1,5 @@
 package com.example.terrabit_app.ui.screen
 
-import android.graphics.drawable.Icon
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -8,7 +7,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.Badge
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -27,11 +28,11 @@ import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Nacimiento(navController: NavController) {
+fun Material(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Registrar Nacimiento") },
+                title = { Text("Solicitar Material") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
@@ -54,20 +55,20 @@ fun Nacimiento(navController: NavController) {
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                "Registrar Nacimiento",
+                "Solicitar Material",
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF1565C0)
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                "Sección 5.1",
+                "Sección 5.14",
                 fontSize = 16.sp,
                 color = Color.Gray
             )
             Spacer(modifier = Modifier.height(24.dp))
             Text(
-                "Formulario para registrar nuevos nacimientos aparecerá aquí",
+                "Formulario de solicitud de material aparecerá aquí",
                 fontSize = 14.sp,
                 color = Color.Gray
             )

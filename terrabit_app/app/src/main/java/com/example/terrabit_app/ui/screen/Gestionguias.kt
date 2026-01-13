@@ -27,7 +27,7 @@ import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PantallaGestionarGuias(navController: NavController) {
+fun GestionGuias(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(

@@ -79,7 +79,7 @@ fun Home(navController: NavController) {
                     subtitulo = "Sección 5.1",
                     colorFondo = Color(0xFF1565C0),
                     modifier = Modifier.weight(1f),
-                    onClick = { navController.navigate(Routes.RegistrarNacimiento.ruta) }
+                    onClick = { navController.navigate(Routes.Nacimiento.route) }
                 )
 
                 TarjetaAccion(
@@ -88,7 +88,7 @@ fun Home(navController: NavController) {
                     subtitulo = "Sección 5.3",
                     colorFondo = Color(0xFFD32F2F),
                     modifier = Modifier.weight(1f),
-                    onClick = { navController.navigate(Routes.ReportDeath.route) }
+                    onClick = { navController.navigate(Routes.Fallecimiento.route) }
                 )
             }
 
@@ -105,7 +105,7 @@ fun Home(navController: NavController) {
                     subtitulo = "Sección 5.4",
                     colorFondo = Color(0xFF1565C0),
                     modifier = Modifier.weight(1f),
-                    onClick = { navController.navigate(Routes.ManageGuides.route) }
+                    onClick = { navController.navigate(Routes.GestionGuias.route) }
                 )
 
                 TarjetaAccion(
@@ -115,7 +115,7 @@ fun Home(navController: NavController) {
                     colorFondo = Color(0xFF1565C0),
                     contadorBadge = 2,
                     modifier = Modifier.weight(1f),
-                    onClick = { navController.navigate(Routes.ConfirmarMovimientos.ruta) }
+                    onClick = { navController.navigate(Routes.Movimientos.route) }
                 )
             }
 
@@ -132,7 +132,7 @@ fun Home(navController: NavController) {
                     subtitulo = "Sección 5.14",
                     colorFondo = Color(0xFF1565C0),
                     modifier = Modifier.weight(1f),
-                    onClick = { navController.navigate(Routes.SolicitarMaterial.ruta) }
+                    onClick = { navController.navigate(Routes.Material.route) }
                 )
 
                 // Espacio vacío para mantener el diseño

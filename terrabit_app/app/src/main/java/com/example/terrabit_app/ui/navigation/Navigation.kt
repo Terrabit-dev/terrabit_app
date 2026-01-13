@@ -1,13 +1,16 @@
 package com.example.terrabit_app.navegacion
 
+import Movimientos
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.pantallas.*
-import com.example.terrabit_app.ui.screen.PantallaRegistrarNacimiento
-import com.example.terrabit_app.ui.screen.PantallaReportarMuerte
+import com.example.terrabit_app.ui.screen.Fallecimiento
+import com.example.terrabit_app.ui.screen.GestionGuias
+import com.example.terrabit_app.ui.screen.Material
+import com.example.terrabit_app.ui.screen.Nacimiento
 
 @Composable
 fun Navigation() {
@@ -21,24 +24,24 @@ fun Navigation() {
             Home(navController = navController)
         }
 
-        composable(Routes.RegistrarNacimiento.ruta) {
-            PantallaRegistrarNacimiento(navController = navController)
+        composable(Routes.Nacimiento.route) {
+            Nacimiento(navController = navController)
         }
 
-        composable(Routes.ReportarMuerte.ruta) {
-            PantallaReportarMuerte(navController = navController)
+        composable(Routes.Fallecimiento.route) {
+            Fallecimiento(navController = navController)
         }
 
-        composable(Routes.GestionarGuias.ruta) {
-            PantallaGestionarGuias(navController = navController)
+        composable(Routes.GestionGuias.route) {
+            GestionGuias(navController = navController)
         }
 
-        composable(Routes.ConfirmarMovimientos.ruta) {
-            PantallaConfirmarMovimientos(navController = navController)
+        composable(Routes.Movimientos.route) {
+            Movimientos(navController = navController)
         }
 
-        composable(Rutas.SolicitarMaterial.ruta) {
-            PantallaSolicitarMaterial(navController = navController)
+        composable(Routes.Material.route) {
+            Material(navController = navController)
         }
     }
 }

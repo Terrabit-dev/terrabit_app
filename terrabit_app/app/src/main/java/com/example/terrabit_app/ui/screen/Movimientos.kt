@@ -1,6 +1,3 @@
-package com.example.terrabit_app.ui.screen
-
-import android.graphics.drawable.Icon
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -8,7 +5,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.Badge
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -27,11 +26,11 @@ import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Nacimiento(navController: NavController) {
+fun Movimientos(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Registrar Nacimiento") },
+                title = { Text("Confirmar Movimientos") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
@@ -53,21 +52,25 @@ fun Nacimiento(navController: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+            Badge {
+                Text("2")
+            }
+            Spacer(modifier = Modifier.height(16.dp))
             Text(
-                "Registrar Nacimiento",
+                "Confirmar Movimientos",
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF1565C0)
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                "Sección 5.1",
+                "Sección 5.8",
                 fontSize = 16.sp,
                 color = Color.Gray
             )
             Spacer(modifier = Modifier.height(24.dp))
             Text(
-                "Formulario para registrar nuevos nacimientos aparecerá aquí",
+                "2 movimientos pendientes de confirmar",
                 fontSize = 14.sp,
                 color = Color.Gray
             )
