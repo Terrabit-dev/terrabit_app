@@ -1,13 +1,16 @@
-package com.example.terrabit_app.navigation
+package com.example.terrabit_app.navegacion
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.terrabit_app.ui.screen.*
+import com.example.terrabit_app.ui.navigation.Routes
+import com.example.terrabit_app.ui.pantallas.*
+import com.example.terrabit_app.ui.screen.PantallaRegistrarNacimiento
+import com.example.terrabit_app.ui.screen.PantallaReportarMuerte
 
 @Composable
-fun AppNavigation() {
+fun Navigation() {
     val navController = rememberNavController()
 
     NavHost(
@@ -15,27 +18,27 @@ fun AppNavigation() {
         startDestination = Routes.Home.route
     ) {
         composable(Routes.Home.route) {
-            HomeScreen(navController = navController)
+            Home(navController = navController)
         }
 
-        composable(Routes.RegisterBirth.route) {
-            RegisterBirthScreen(navController = navController)
+        composable(Routes.RegistrarNacimiento.ruta) {
+            PantallaRegistrarNacimiento(navController = navController)
         }
 
-        composable(Routes.ReportDeath.route) {
-            ReportDeathScreen(navController = navController)
+        composable(Routes.ReportarMuerte.ruta) {
+            PantallaReportarMuerte(navController = navController)
         }
 
-        composable(Routes.ManageGuides.route) {
-            ManageGuidesScreen(navController = navController)
+        composable(Routes.GestionarGuias.ruta) {
+            PantallaGestionarGuias(navController = navController)
         }
 
-        composable(Routes.ConfirmMovements.route) {
-            ConfirmMovementsScreen(navController = navController)
+        composable(Routes.ConfirmarMovimientos.ruta) {
+            PantallaConfirmarMovimientos(navController = navController)
         }
 
-        composable(Routes.RequestMaterial.route) {
-            RequestMaterialScreen(navController = navController)
+        composable(Rutas.SolicitarMaterial.ruta) {
+            PantallaSolicitarMaterial(navController = navController)
         }
     }
 }
