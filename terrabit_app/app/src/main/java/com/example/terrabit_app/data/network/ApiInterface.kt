@@ -3,12 +3,17 @@ package com.example.terrabit_app.data.network
 import com.example.terrabit_app.data.network.modelos.Guias
 import com.example.terrabit_app.data.network.modelos.Identificadores
 import com.example.terrabit_app.data.network.modelos.Movimientos
+import com.example.terrabit_app.data.network.modelos.PeticionAltaGuia
+import com.example.terrabit_app.data.network.modelos.RegistroMuerteBovi
+import com.example.terrabit_app.data.network.modelos.RegistroNacimientoBovi
 
 import okhttp3.OkHttpClient
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.PUT
 import retrofit2.http.Query
 
 interface ApiInterface {
@@ -35,6 +40,21 @@ interface ApiInterface {
         @Query("explotacioDestinacio") explotacioDestinacio: String,
         @Query("dataSortida") dataSortida: String
     ): Response<Movimientos>
+
+    @PUT("WSBovi/AppJava/Bovi/WSEnregistramentMort/")
+    suspend fun putRegistrarMuerte(
+        @Body request: RegistroMuerteBovi
+    ): Response<RegistroMuerteBovi>
+
+    @PUT("WSBovi/AppJava/Bovi/WSEnregistramentNaixement/")
+    suspend fun putRegistrarNacimiento(
+        @Body request: RegistroNacimientoBovi
+    ): Response<RegistroNacimientoBovi>
+
+    @PUT("WSBoviGuies/AppJava/guies/WSAltaGuia/")
+    suspend fun putAltaGuia(
+        @Body request: RegistroNacimientoBovi
+    ): Response<PeticionAltaGuia>
 
     companion object {
         val BASE_URL = "https://preproduccio.aplicacions.agricultura.gencat.cat/gtr/"
