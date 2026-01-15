@@ -1,5 +1,6 @@
 package com.example.terrabit_app.ui.screen
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -59,16 +60,22 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
                         }
                     }
                 ) {
-                    Text("Aceptar")
+                    Text("Aceptar", color = Color(0xFF4A7C59))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.ocultarDatePicker() }) {
-                    Text("Cancelar")
+                    Text("Cancelar", color = Color(0xFF64748B))
                 }
             }
         ) {
-            DatePicker(state = datePickerState)
+            DatePicker(
+                state = datePickerState,
+                colors = DatePickerDefaults.colors(
+                    selectedDayContainerColor = Color(0xFF4A7C59),
+                    todayDateBorderColor = Color(0xFF4A7C59)
+                )
+            )
         }
     }
 
@@ -96,13 +103,13 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF1565C0),
+                    containerColor = Color(0xFF4A7C59), // Verde principal
                     titleContentColor = Color.White,
                     navigationIconContentColor = Color.White
                 )
             )
         },
-        containerColor = Color(0xFFF5F7FA) // Fondo más suave
+        containerColor = Color(0xFFF5F7FA)
     ) { padding ->
         Column(
             modifier = Modifier
@@ -110,10 +117,8 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
         ) {
-            // Espaciado superior
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Card contenedor del formulario
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -122,13 +127,13 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
                     containerColor = Color.White
                 ),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                shape = MaterialTheme.shapes.large // Bordes más redondeados
+                shape = MaterialTheme.shapes.large
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(24.dp), // Más padding interno
-                    verticalArrangement = Arrangement.spacedBy(24.dp) // Más espacio entre elementos
+                        .padding(24.dp),
+                    verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
                     // ID Madre
                     Column(modifier = Modifier.fillMaxWidth()) {
@@ -136,7 +141,7 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
                             "ID Madre *",
                             fontSize = 15.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFF1E293B), // Color más oscuro y legible
+                            color = Color(0xFF1E293B),
                             letterSpacing = 0.15.sp
                         )
                         Spacer(modifier = Modifier.height(10.dp))
@@ -147,7 +152,7 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
                             placeholder = {
                                 Text(
                                     "Introducir o escanear ID de la madre",
-                                    color = Color(0xFF94A3B8) // Placeholder más suave
+                                    color = Color(0xFF94A3B8)
                                 )
                             },
                             trailingIcon = {
@@ -155,17 +160,18 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
                                     Icon(
                                         Icons.Outlined.CameraAlt,
                                         contentDescription = "Escanear",
-                                        tint = Color(0xFF1565C0) // Color azul principal
+                                        tint = Color(0xFF4A7C59) // Verde
                                     )
                                 }
                             },
                             singleLine = true,
                             shape = MaterialTheme.shapes.medium,
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Color(0xFF1565C0),
+                                focusedBorderColor = Color(0xFF4A7C59), // Verde
                                 unfocusedBorderColor = Color(0xFFCBD5E1),
                                 focusedTextColor = Color(0xFF1E293B),
-                                unfocusedTextColor = Color(0xFF1E293B)
+                                unfocusedTextColor = Color(0xFF1E293B),
+                                cursorColor = Color(0xFF4A7C59) // Cursor verde
                             )
                         )
                     }
@@ -195,17 +201,18 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
                                     Icon(
                                         Icons.Outlined.CameraAlt,
                                         contentDescription = "Escanear",
-                                        tint = Color(0xFF1565C0)
+                                        tint = Color(0xFF4A7C59)
                                     )
                                 }
                             },
                             singleLine = true,
                             shape = MaterialTheme.shapes.medium,
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Color(0xFF1565C0),
+                                focusedBorderColor = Color(0xFF4A7C59),
                                 unfocusedBorderColor = Color(0xFFCBD5E1),
                                 focusedTextColor = Color(0xFF1E293B),
-                                unfocusedTextColor = Color(0xFF1E293B)
+                                unfocusedTextColor = Color(0xFF1E293B),
+                                cursorColor = Color(0xFF4A7C59)
                             )
                         )
                     }
@@ -236,7 +243,7 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
                                 Icon(
                                     Icons.Default.DateRange,
                                     contentDescription = "Calendario",
-                                    tint = Color(0xFF1565C0)
+                                    tint = Color(0xFF4A7C59)
                                 )
                             },
                             enabled = false,
@@ -244,7 +251,7 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
                             colors = OutlinedTextFieldDefaults.colors(
                                 disabledTextColor = Color(0xFF1E293B),
                                 disabledBorderColor = Color(0xFFCBD5E1),
-                                disabledLeadingIconColor = Color(0xFF1565C0),
+                                disabledLeadingIconColor = Color(0xFF4A7C59),
                                 disabledPlaceholderColor = Color(0xFF94A3B8)
                             ),
                             singleLine = true
@@ -286,7 +293,7 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
                                 singleLine = true,
                                 shape = MaterialTheme.shapes.medium,
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = Color(0xFF1565C0),
+                                    focusedBorderColor = Color(0xFF4A7C59),
                                     unfocusedBorderColor = Color(0xFFCBD5E1),
                                     focusedTextColor = Color(0xFF1E293B),
                                     unfocusedTextColor = Color(0xFF1E293B)
@@ -294,7 +301,9 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
                             )
                             ExposedDropdownMenu(
                                 expanded = sexoExpandido,
-                                onDismissRequest = { viewModel.cerrarSexoMenu() }
+                                onDismissRequest = { viewModel.cerrarSexoMenu() },
+                                modifier = Modifier
+                                    .background(Color.White)
                             ) {
                                 viewModel.listaSexos.forEach { sexo ->
                                     DropdownMenuItem(
@@ -302,15 +311,28 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
                                             Text(
                                                 sexo,
                                                 fontSize = 15.sp,
-                                                color = Color(0xFF1E293B)
+                                                color = Color(0xFF1E293B),
+                                                fontWeight = FontWeight.Normal
                                             )
                                         },
                                         onClick = { viewModel.seleccionarSexo(sexo) },
                                         contentPadding = PaddingValues(
                                             horizontal = 16.dp,
-                                            vertical = 12.dp
+                                            vertical = 14.dp
+                                        ),
+                                        colors = MenuDefaults.itemColors(
+                                            textColor = Color(0xFF1E293B),
+                                            leadingIconColor = Color(0xFF1E293B),
+                                            trailingIconColor = Color(0xFF1E293B),
+                                            disabledTextColor = Color(0xFF94A3B8)
                                         )
                                     )
+                                    if (sexo != viewModel.listaSexos.last()) {
+                                        HorizontalDivider(
+                                            color = Color(0xFFF1F5F9),
+                                            thickness = 1.dp
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -351,7 +373,7 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
                                 singleLine = true,
                                 shape = MaterialTheme.shapes.medium,
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = Color(0xFF1565C0),
+                                    focusedBorderColor = Color(0xFF4A7C59),
                                     unfocusedBorderColor = Color(0xFFCBD5E1),
                                     focusedTextColor = Color(0xFF1E293B),
                                     unfocusedTextColor = Color(0xFF1E293B)
@@ -359,7 +381,9 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
                             )
                             ExposedDropdownMenu(
                                 expanded = razaExpandida,
-                                onDismissRequest = { viewModel.cerrarRazaMenu() }
+                                onDismissRequest = { viewModel.cerrarRazaMenu() },
+                                modifier = Modifier
+                                    .background(Color.White)
                             ) {
                                 viewModel.listaRazas.forEach { raza ->
                                     DropdownMenuItem(
@@ -367,15 +391,28 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
                                             Text(
                                                 raza,
                                                 fontSize = 15.sp,
-                                                color = Color(0xFF1E293B)
+                                                color = Color(0xFF1E293B),
+                                                fontWeight = FontWeight.Normal
                                             )
                                         },
                                         onClick = { viewModel.seleccionarRaza(raza) },
                                         contentPadding = PaddingValues(
                                             horizontal = 16.dp,
-                                            vertical = 12.dp
+                                            vertical = 14.dp
+                                        ),
+                                        colors = MenuDefaults.itemColors(
+                                            textColor = Color(0xFF1E293B),
+                                            leadingIconColor = Color(0xFF1E293B),
+                                            trailingIconColor = Color(0xFF1E293B),
+                                            disabledTextColor = Color(0xFF94A3B8)
                                         )
                                     )
+                                    if (raza != viewModel.listaRazas.last()) {
+                                        HorizontalDivider(
+                                            color = Color(0xFFF1F5F9),
+                                            thickness = 1.dp
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -416,7 +453,7 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
                                 singleLine = true,
                                 shape = MaterialTheme.shapes.medium,
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = Color(0xFF1565C0),
+                                    focusedBorderColor = Color(0xFF4A7C59),
                                     unfocusedBorderColor = Color(0xFFCBD5E1),
                                     focusedTextColor = Color(0xFF1E293B),
                                     unfocusedTextColor = Color(0xFF1E293B)
@@ -424,7 +461,9 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
                             )
                             ExposedDropdownMenu(
                                 expanded = aptitudExpandida,
-                                onDismissRequest = { viewModel.cerrarAptitudMenu() }
+                                onDismissRequest = { viewModel.cerrarAptitudMenu() },
+                                modifier = Modifier
+                                    .background(Color.White)
                             ) {
                                 viewModel.listaAptitudes.forEach { aptitud ->
                                     DropdownMenuItem(
@@ -432,15 +471,28 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
                                             Text(
                                                 aptitud,
                                                 fontSize = 15.sp,
-                                                color = Color(0xFF1E293B)
+                                                color = Color(0xFF1E293B),
+                                                fontWeight = FontWeight.Normal
                                             )
                                         },
                                         onClick = { viewModel.seleccionarAptitud(aptitud) },
                                         contentPadding = PaddingValues(
                                             horizontal = 16.dp,
-                                            vertical = 12.dp
+                                            vertical = 14.dp
+                                        ),
+                                        colors = MenuDefaults.itemColors(
+                                            textColor = Color(0xFF1E293B),
+                                            leadingIconColor = Color(0xFF1E293B),
+                                            trailingIconColor = Color(0xFF1E293B),
+                                            disabledTextColor = Color(0xFF94A3B8)
                                         )
                                     )
+                                    if (aptitud != viewModel.listaAptitudes.last()) {
+                                        HorizontalDivider(
+                                            color = Color(0xFFF1F5F9),
+                                            thickness = 1.dp
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -454,9 +506,9 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp, vertical = 24.dp)
-                    .height(56.dp), // Altura estándar Material Design
+                    .height(56.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF1565C0),
+                    containerColor = Color(0xFF4A7C59), // Verde principal
                     disabledContainerColor = Color(0xFFE2E8F0)
                 ),
                 shape = MaterialTheme.shapes.medium,
@@ -474,7 +526,6 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
                 )
             }
 
-            // Espaciado inferior
             Spacer(modifier = Modifier.height(20.dp))
         }
     }

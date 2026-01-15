@@ -3,7 +3,9 @@ package com.example.terrabit_app.ui.pantallas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -13,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -25,158 +28,211 @@ fun Home(navController: NavController) {
         topBar = {
             TopAppBar(
                 title = {
-                    Column {
+                    Column (
+                        modifier = Modifier
+                        .padding(top = 15.dp)
+                    ){
                         Text(
-                            "GTR Bovino",
-                            fontSize = 20.sp,
+                            "Terrabit",
+                            fontSize = 22.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            color = Color.White,
+                            letterSpacing = 0.5.sp,
+
                         )
+
                         Text(
                             "Gestión de Ganado",
-                            fontSize = 12.sp,
-                            color = Color.White.copy(alpha = 0.9f)
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Normal,
+                            color = Color.White.copy(alpha = 0.92f),
+                            letterSpacing = 0.2.sp
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF1565C0)
+                    containerColor = Color(0xFF4A7C59)
                 ),
                 actions = {
-                    IconButton(onClick = { /* Notificaciones */ }) {
+                    IconButton(
+                        onClick = { /* Notificaciones */ },
+                        modifier = Modifier.padding(end = 8.dp)
+                    ) {
+                        Badge(
+                            containerColor = Color(0xFFFF5252),
+                            modifier = Modifier
+                                .offset(x = (-4).dp, y = 8.dp)
+
+                        ) {
+                            Text(
+                                "3",
+                                color = Color.White,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                         Icon(
                             Icons.Default.Notifications,
                             contentDescription = "Notificaciones",
-                            tint = Color.White
+                            tint = Color.White,
+                            modifier = Modifier.size(26.dp)
                         )
                     }
                 }
             )
-        }
+        },
+        containerColor = Color(0xFFF5F7FA)
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .background(Color(0xFFF5F5F5))
-                .padding(16.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            Text(
-                "Acciones Rápidas",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-
-            // Primera fila de acciones
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                TarjetaAccion(
-                    icono = Icons.Default.Add,
-                    titulo = "Registrar Nacimiento",
-                    subtitulo = "Sección 5.1",
-                    colorFondo = Color(0xFF1565C0),
-                    modifier = Modifier.weight(1f),
-                    onClick = { navController.navigate(Routes.Nacimiento.route) }
-                )
-
-                TarjetaAccion(
-                    icono = Icons.Default.Clear,
-                    titulo = "Reportar Muerte",
-                    subtitulo = "Sección 5.3",
-                    colorFondo = Color(0xFFD32F2F),
-                    modifier = Modifier.weight(1f),
-                    onClick = { navController.navigate(Routes.Fallecimiento.route) }
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Segunda fila de acciones
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                TarjetaAccion(
-                    icono = Icons.Default.Create,
-                    titulo = "Gestionar Guías",
-                    subtitulo = "Sección 5.4",
-                    colorFondo = Color(0xFF1565C0),
-                    modifier = Modifier.weight(1f),
-                    onClick = { navController.navigate(Routes.GestionGuias.route) }
-                )
-
-                TarjetaAccion(
-                    icono = Icons.Default.Send,
-                    titulo = "Confirmar Movimientos",
-                    subtitulo = "Sección 5.8",
-                    colorFondo = Color(0xFF1565C0),
-                    contadorBadge = 2,
-                    modifier = Modifier.weight(1f),
-                    onClick = { navController.navigate(Routes.Movimientos.route) }
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Tercera fila - una sola tarjeta
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                TarjetaAccion(
-                    icono = Icons.Default.ShoppingCart,
-                    titulo = "Solicitar Material",
-                    subtitulo = "Sección 5.14",
-                    colorFondo = Color(0xFF1565C0),
-                    modifier = Modifier.weight(1f),
-                    onClick = { navController.navigate(Routes.Material.route) }
-                )
-
-                // Espacio vacío para mantener el diseño
-                Spacer(modifier = Modifier.weight(1f))
-            }
-
+            // Espaciado superior
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Tarjeta de Información del Sistema
+            // Título de sección
+            Text(
+                "Acciones Rápidas",
+                fontSize = 26.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1E293B),
+                letterSpacing = 0.3.sp,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Grid de tarjetas con más espacio
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Primera fila
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    TarjetaAccion(
+                        icono = Icons.Default.Add,
+                        titulo = "Registrar Nacimiento",
+                        subtitulo = "Sección 5.1",
+                        colorFondo = Color(0xFF4A7C59),
+                        modifier = Modifier.weight(1f),
+                        onClick = { navController.navigate(Routes.Nacimiento.route) }
+                    )
+
+                    TarjetaAccion(
+                        icono = Icons.Default.Clear,
+                        titulo = "Reportar Muerte",
+                        subtitulo = "Sección 5.3",
+                        colorFondo = Color(0xFFD32F2F),
+                        modifier = Modifier.weight(1f),
+                        onClick = { navController.navigate(Routes.Fallecimiento.route) }
+                    )
+                }
+
+                // Segunda fila
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    TarjetaAccion(
+                        icono = Icons.Default.Create,
+                        titulo = "Gestionar Guías",
+                        subtitulo = "Sección 5.4",
+                        colorFondo = Color(0xFF4A7C59),
+                        modifier = Modifier.weight(1f),
+                        onClick = { navController.navigate(Routes.GestionGuias.route) }
+                    )
+
+                    TarjetaAccion(
+                        icono = Icons.Default.Send,
+                        titulo = "Confirmar Movimientos",
+                        subtitulo = "Sección 5.8",
+                        colorFondo = Color(0xFF4A7C59),
+                        contadorBadge = 2,
+                        modifier = Modifier.weight(1f),
+                        onClick = { navController.navigate(Routes.Movimientos.route) }
+                    )
+                }
+
+                // Tercera fila - tarjeta centrada
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    TarjetaAccion(
+                        icono = Icons.Default.ShoppingCart,
+                        titulo = "Solicitar Material",
+                        subtitulo = "Sección 5.14",
+                        colorFondo = Color(0xFF4A7C59),
+                        modifier = Modifier
+                            .fillMaxWidth(0.48f), // Mismo ancho que las otras
+                        onClick = { navController.navigate(Routes.Material.route) }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Card de Información del Sistema (mejorada)
             Card(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFFE3F2FD)
+                    containerColor = Color(0xFFE8F5E9)
                 ),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(20.dp),
                     verticalAlignment = Alignment.Top
                 ) {
-                    Icon(
-                        Icons.Default.Info,
-                        contentDescription = null,
-                        tint = Color(0xFF1565C0),
-                        modifier = Modifier.padding(end = 12.dp)
-                    )
-                    Column {
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = Color(0xFF4A7C59).copy(alpha = 0.15f),
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Info,
+                            contentDescription = null,
+                            tint = Color(0xFF4A7C59),
+                            modifier = Modifier.padding(12.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
                             "Información del Sistema",
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp,
-                            color = Color(0xFF1565C0)
+                            color = Color(0xFF2E5C3E),
+                            letterSpacing = 0.2.sp
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            "Todos los datos se sincronizan con el sistema de registro de la Generalitat de Catalunya.",
+                            "Todos los datos se sincronizan automáticamente con el sistema de registro de la Generalitat de Catalunya.",
                             fontSize = 14.sp,
-                            color = Color(0xFF424242)
+                            color = Color(0xFF475569),
+                            lineHeight = 20.sp,
+                            letterSpacing = 0.1.sp
                         )
                     }
                 }
             }
+
+            // Espaciado inferior
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
@@ -198,54 +254,82 @@ fun TarjetaAccion(
         colors = CardDefaults.cardColors(
             containerColor = Color.White
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        shape = RoundedCornerShape(12.dp)
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 3.dp,
+            pressedElevation = 6.dp
+        ),
+        shape = RoundedCornerShape(20.dp)
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp),
+                    .padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                Box {
+                // Icono con badge
+                Box(contentAlignment = Alignment.TopEnd) {
                     Surface(
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(16.dp),
                         color = colorFondo,
-                        modifier = Modifier.size(64.dp)
+                        modifier = Modifier.size(72.dp),
+                        shadowElevation = 2.dp
                     ) {
                         Icon(
                             icono,
                             contentDescription = titulo,
                             tint = Color.White,
-                            modifier = Modifier.padding(16.dp)
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(18.dp)
                         )
                     }
 
-                    // Badge
+                    // Badge de notificación
                     if (contadorBadge != null) {
                         Badge(
-                            modifier = Modifier.align(Alignment.TopEnd)
+                            containerColor = Color(0xFFFF5252),
+                            modifier = Modifier
+                                .offset(x = 8.dp, y = (-8).dp)
                         ) {
-                            Text(contadorBadge.toString())
+                            Text(
+                                contadorBadge.toString(),
+                                color = Color.White,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
+                // Título
                 Text(
                     titulo,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp,
-                    color = Color(0xFF212121)
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 15.sp,
+                    color = Color(0xFF1E293B),
+                    textAlign = TextAlign.Center,
+                    lineHeight = 20.sp,
+                    letterSpacing = 0.2.sp,
+                    modifier = Modifier.fillMaxWidth()
                 )
 
+                Spacer(modifier = Modifier.height(4.dp))
+
+                // Subtítulo
                 Text(
                     subtitulo,
-                    fontSize = 12.sp,
-                    color = Color(0xFF757575)
+                    fontSize = 13.sp,
+                    color = Color(0xFF64748B),
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Normal,
+                    letterSpacing = 0.1.sp
                 )
             }
         }
