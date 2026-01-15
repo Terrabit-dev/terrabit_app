@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.terrabit_app.data.network.Identificadores
+import com.example.terrabit_app.data.network.modelos.Identificadores
 import com.example.terrabit_app.viewmodel.MainViewmodel
 import androidx.compose.foundation.lazy.items
 
@@ -39,7 +39,7 @@ import androidx.compose.foundation.lazy.items
 fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
     val identificadores : Identificadores by viewModel.identificadores.observeAsState(
         Identificadores(emptyList()))
-    viewModel.getIdentificadores("S0800608B", "L1855m58", "1410AK")
+    viewModel.getIdentificadores("S0800608B", "L1855m508", "1410AK")
     Scaffold(
         topBar = {
             TopAppBar(

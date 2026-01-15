@@ -3,8 +3,8 @@ package com.example.terrabit_app.viewmodel
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.terrabit_app.data.network.Identificador
-import com.example.terrabit_app.data.network.Identificadores
+import com.example.terrabit_app.data.network.modelos.Identificador
+import com.example.terrabit_app.data.network.modelos.Identificadores
 import com.example.terrabit_app.data.network.Repositorio
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

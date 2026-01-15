@@ -1,4 +1,4 @@
-package com.example.terrabit_app.data.network
+package com.example.terrabit_app.data.network.modelos
 
 import kotlinx.serialization.Serializable
 
