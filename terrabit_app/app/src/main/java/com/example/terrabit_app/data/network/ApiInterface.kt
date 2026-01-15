@@ -8,14 +8,14 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface ApiInterface {
-    @GET("identificadores/")
+    @GET("WSIdentificadorsDisponibles/")
     suspend fun getIdentificadoresDisponibles(
         @Query("nif") nif: String,
         @Query("passwordMobilitat") password: String,
         @Query("codiMO") codiMO: String
     ): Response<Identificadores>
     companion object {
-        val BASE_URL = "https://preproduccio.aplicacions.agricultura.gencat.cat/gtr/WSBovi/AppJava/Bovi/WSIdentificadorsDisponibles/"
+        val BASE_URL = "https://preproduccio.aplicacions.agricultura.gencat.cat/gtr/WSBovi/AppJava/Bovi/"
         fun create(): ApiInterface {
             val client = OkHttpClient.Builder().build()
             val retrofit = Retrofit.Builder().baseUrl(BASE_URL).addConverterFactory(
