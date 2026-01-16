@@ -96,7 +96,7 @@ fun Home(
                         TarjetaAccion(
                             icono = Icons.Default.Add,
                             titulo = "Registrar Nacimiento",
-                            subtitulo = "Sección 5.1",
+                            subtitulo = "",
                             colorFondo = Color(0xFF4A7C59),
                             modifier = Modifier.weight(1f),
                             onClick = { navController.navigate(Routes.Nacimiento.route) }
@@ -105,7 +105,7 @@ fun Home(
                         TarjetaAccion(
                             icono = Icons.Default.Clear,
                             titulo = "Reportar Muerte",
-                            subtitulo = "Sección 5.3",
+                            subtitulo = "",
                             colorFondo = Color(0xFFD32F2F),
                             modifier = Modifier.weight(1f),
                             onClick = { navController.navigate(Routes.Fallecimiento.route) }
@@ -120,7 +120,7 @@ fun Home(
                         TarjetaAccion(
                             icono = Icons.Default.Create,
                             titulo = "Gestionar Guías",
-                            subtitulo = "Sección 5.4",
+                            subtitulo = "",
                             colorFondo = Color(0xFF4A7C59),
                             modifier = Modifier.weight(1f),
                             onClick = { navController.navigate(Routes.GestionGuias.route) }
@@ -129,7 +129,7 @@ fun Home(
                         TarjetaAccion(
                             icono = Icons.Default.Send,
                             titulo = "Confirmar Movimientos",
-                            subtitulo = "Sección 5.8",
+                            subtitulo = "",
                             colorFondo = Color(0xFF4A7C59),
                             contadorBadge = 2,
                             modifier = Modifier.weight(1f),
@@ -145,7 +145,7 @@ fun Home(
                         TarjetaAccion(
                             icono = Icons.Default.ShoppingCart,
                             titulo = "Solicitar Material",
-                            subtitulo = "Sección 5.14",
+                            subtitulo = "",
                             colorFondo = Color(0xFF4A7C59),
                             modifier = Modifier
                                 .fillMaxWidth(0.48f),
@@ -299,7 +299,7 @@ fun DrawerContent(
                         color = Color(0xFF64748B)
                     )
                     Text(
-                        "© 2024 Terrabit",
+                        "© 2026 Terrabit",
                         fontSize = 10.sp,
                         color = Color(0xFF94A3B8),
                         modifier = Modifier.padding(top = 4.dp)

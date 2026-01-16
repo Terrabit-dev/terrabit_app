@@ -40,6 +40,8 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
     val razaExpandida by viewModel.razaExpandida.observeAsState(false)
     val aptitudExpandida by viewModel.aptitudExpandida.observeAsState(false)
     val mostrarDatePicker by viewModel.mostrarDatePicker.observeAsState(false)
+    val fechaIdentificacion by viewModel.fechaIdentificacion.observeAsState("")
+    val mostrarDatePickerIdentificadores by viewModel.mostrarDatePickerIdentificacion.observeAsState(false)
 
     // Observar identificadores
     val identificadores: Identificadores by viewModel.identificadores.observeAsState(
@@ -93,6 +95,37 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.ocultarDatePicker() }) {
+                    Text("Cancelar", color = Color(0xFF64748B))
+                }
+            }
+        ) {
+            DatePicker(
+                state = datePickerState,
+                colors = DatePickerDefaults.colors(
+                    selectedDayContainerColor = Color(0xFF4A7C59),
+                    todayDateBorderColor = Color(0xFF4A7C59)
+                )
+            )
+        }
+    }
+
+    if (mostrarDatePickerIdentificadores) {
+        val datePickerState = rememberDatePickerState()
+        DatePickerDialog(
+            onDismissRequest = { viewModel.ocultarDatePickerIdentificacion() },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            viewModel.seleccionarFechaIdentificacion(millis)
+                        }
+                    }
+                ) {
+                    Text("Aceptar", color = Color(0xFF4A7C59))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.ocultarDatePickerIdentificacion() }) {
                     Text("Cancelar", color = Color(0xFF64748B))
                 }
             }
@@ -271,7 +304,7 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
                         )
                     }
 
-                    // Fecha de Nacimiento - CORRECCIÓN 3: Usar Box con clickable
+                    // Fecha de Nacimiento
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
                             "Fecha de Nacimiento *",
@@ -299,6 +332,53 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
                                 leadingIcon = {
                                     Icon(
                                         Icons.Default.DateRange,
+                                        contentDescription = "Calendario",
+                                        tint = Color(0xFF4A7C59)
+                                    )
+                                },
+                                readOnly = true,
+                                enabled = false,
+                                shape = MaterialTheme.shapes.medium,
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    disabledTextColor = Color(0xFF1E293B),
+                                    disabledBorderColor = Color(0xFFCBD5E1),
+                                    disabledLeadingIconColor = Color(0xFF4A7C59),
+                                    disabledPlaceholderColor = Color(0xFF94A3B8)
+                                ),
+                                singleLine = true
+                            )
+                        }
+                    }
+
+                    // Fecha de Identificación
+
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            "Fecha de Identificación *",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF1E293B),
+                            letterSpacing = 0.15.sp
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { viewModel.mostrarDatePickerIdentificacion() }
+                        ) {
+                            OutlinedTextField(
+                                value = fechaIdentificacion,
+                                onValueChange = {},
+                                modifier = Modifier.fillMaxWidth(),
+                                placeholder = {
+                                    Text(
+                                        "Seleccionar fecha",
+                                        color = Color(0xFF94A3B8)
+                                    )
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.DateRange,
                                         contentDescription = "Calendario",
                                         tint = Color(0xFF4A7C59)
                                     )

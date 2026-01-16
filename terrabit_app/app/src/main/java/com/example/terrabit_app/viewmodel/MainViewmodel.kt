@@ -41,6 +41,8 @@ class MainViewmodel : ViewModel() {
     private val _idMadre = MutableLiveData("")
     val idMadre = _idMadre
 
+    private val _fechaIdentificacion = MutableLiveData("")
+    val fechaIdentificacion = _fechaIdentificacion
     private val _idCria = MutableLiveData("")
     val idCria = _idCria
 
@@ -69,6 +71,9 @@ class MainViewmodel : ViewModel() {
     // Estado para mostrar el DatePicker - Nacimiento
     private val _mostrarDatePicker = MutableLiveData(false)
     val mostrarDatePicker = _mostrarDatePicker
+
+    private val _mostrarDatePickerIdentificacion = MutableLiveData(false)
+    val mostrarDatePickerIdentificacion = _mostrarDatePickerIdentificacion
 
     // Estados para feedback del registro - Nacimiento
     private val _registroExitoso = MutableLiveData<Boolean>()
@@ -144,6 +149,16 @@ class MainViewmodel : ViewModel() {
         _mostrarDatePicker.value = false
     }
 
+    // Funciones para controlar el DatePicker - Identificacion
+    fun mostrarDatePickerIdentificacion() {
+        _mostrarDatePickerIdentificacion.value = true
+    }
+
+    fun ocultarDatePickerIdentificacion() {
+        _mostrarDatePickerIdentificacion.value = false
+    }
+
+    // Funcion selecionar fecha - Nacimiento
     fun seleccionarFecha(fechaMillis: Long) {
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = fechaMillis
@@ -153,6 +168,20 @@ class MainViewmodel : ViewModel() {
 
         _fechaNacimiento.value = String.format("%02d/%02d/%04d", dia, mes, anio)
         _mostrarDatePicker.value = false
+    }
+
+
+    // Funcion selecionar fecha - Identificacion
+
+    fun seleccionarFechaIdentificacion(fechaMillis: Long) {
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = fechaMillis
+        val dia = calendar.get(Calendar.DAY_OF_MONTH)
+        val mes = calendar.get(Calendar.MONTH) + 1
+        val anio = calendar.get(Calendar.YEAR)
+
+        _fechaIdentificacion.value = String.format("%02d/%02d/%04d", dia, mes, anio)
+        _mostrarDatePickerIdentificacion.value = false
     }
 
     // Función para registrar un nacimiento
