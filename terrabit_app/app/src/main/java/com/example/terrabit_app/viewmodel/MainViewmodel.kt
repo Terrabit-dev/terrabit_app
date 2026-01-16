@@ -9,12 +9,34 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.*
 
 class MainViewmodel : ViewModel() {
     private val repositorio = Repositorio()
 
+    // ============================================
+    // SECCIÓN: IDENTIFICADORES
+    // ============================================
     private val _identificadores = MutableLiveData<Identificadores>()
     val identificadores = _identificadores
+
+    fun getIdentificadores(nif: String, password: String, codiMO: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val response = repositorio.getIdentificadoresDisponibles(nif, password, codiMO)
+            withContext(Dispatchers.Main) {
+                if (response.isSuccessful) {
+                    _identificadores.value = response.body()
+                } else {
+                    Log.e("Error identificadores:", response.message())
+                }
+            }
+        }
+    }
+
+    // ============================================
+    // SECCIÓN: NACIMIENTO
+    // ============================================
 
     // Estados del formulario de nacimiento
     private val _idMadre = MutableLiveData("")
@@ -35,7 +57,7 @@ class MainViewmodel : ViewModel() {
     private val _aptitudSeleccionada = MutableLiveData("")
     val aptitudSeleccionada = _aptitudSeleccionada
 
-    // Estados de expansión de menús desplegables
+    // Estados de expansión de menús desplegables - Nacimiento
     private val _sexoExpandido = MutableLiveData(false)
     val sexoExpandido = _sexoExpandido
 
@@ -45,23 +67,23 @@ class MainViewmodel : ViewModel() {
     private val _aptitudExpandida = MutableLiveData(false)
     val aptitudExpandida = _aptitudExpandida
 
-    // Estado para mostrar el DatePicker
+    // Estado para mostrar el DatePicker - Nacimiento
     private val _mostrarDatePicker = MutableLiveData(false)
     val mostrarDatePicker = _mostrarDatePicker
 
-    // Estados para feedback del registro
+    // Estados para feedback del registro - Nacimiento
     private val _registroExitoso = MutableLiveData<Boolean>()
     val registroExitoso = _registroExitoso
 
     private val _mensajeError = MutableLiveData<String>()
     val mensajeError = _mensajeError
 
-    // Listas de opciones
+    // Listas de opciones - Nacimiento
     val listaSexos = listOf("Macho", "Hembra")
     val listaRazas = listOf("Holstein", "Angus", "Hereford", "Simmental", "Charolais", "Jersey", "Limousin")
     val listaAptitudes = listOf("Carne", "Leche", "Doble propósito")
 
-    // Funciones para actualizar los campos
+    // Funciones para actualizar los campos - Nacimiento
     fun actualizarIdMadre(nuevoId: String) {
         _idMadre.value = nuevoId
     }
@@ -89,7 +111,7 @@ class MainViewmodel : ViewModel() {
         _aptitudExpandida.value = false
     }
 
-    // Funciones para controlar la expansión de menús
+    // Funciones para controlar la expansión de menús - Nacimiento
     fun toggleSexoExpandido() {
         _sexoExpandido.value = !(_sexoExpandido.value ?: false)
     }
@@ -114,7 +136,7 @@ class MainViewmodel : ViewModel() {
         _aptitudExpandida.value = false
     }
 
-    // Funciones para controlar el DatePicker
+    // Funciones para controlar el DatePicker - Nacimiento
     fun mostrarDatePicker() {
         _mostrarDatePicker.value = true
     }
@@ -124,29 +146,14 @@ class MainViewmodel : ViewModel() {
     }
 
     fun seleccionarFecha(fechaMillis: Long) {
-        // Convertir milisegundos a formato de fecha legible
-        val calendar = java.util.Calendar.getInstance()
+        val calendar = Calendar.getInstance()
         calendar.timeInMillis = fechaMillis
-        val dia = calendar.get(java.util.Calendar.DAY_OF_MONTH)
-        val mes = calendar.get(java.util.Calendar.MONTH) + 1
-        val anio = calendar.get(java.util.Calendar.YEAR)
+        val dia = calendar.get(Calendar.DAY_OF_MONTH)
+        val mes = calendar.get(Calendar.MONTH) + 1
+        val anio = calendar.get(Calendar.YEAR)
 
         _fechaNacimiento.value = String.format("%02d/%02d/%04d", dia, mes, anio)
         _mostrarDatePicker.value = false
-    }
-
-    // Función para obtener identificadores
-    fun getIdentificadores(nif: String, password: String, codiMO: String) {
-        CoroutineScope(Dispatchers.IO).launch {
-            val response = repositorio.getIdentificadoresDisponibles(nif, password, codiMO)
-            withContext(Dispatchers.Main) {
-                if (response.isSuccessful) {
-                    _identificadores.value = response.body()
-                } else {
-                    Log.e("Error identificadores:", response.message())
-                }
-            }
-        }
     }
 
     // Función para registrar un nacimiento
@@ -182,7 +189,7 @@ class MainViewmodel : ViewModel() {
                     )
 
                     // Limpiar formulario después de registrar
-                    limpiarFormulario()
+                    limpiarFormularioNacimiento()
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
@@ -193,7 +200,7 @@ class MainViewmodel : ViewModel() {
         }
     }
 
-    // Función para validar el formulario
+    // Función para validar el formulario - Nacimiento
     fun esFormularioValido(): Boolean {
         return !(_idMadre.value.isNullOrEmpty() ||
                 _idCria.value.isNullOrEmpty() ||
@@ -203,8 +210,8 @@ class MainViewmodel : ViewModel() {
                 _aptitudSeleccionada.value.isNullOrEmpty())
     }
 
-    // Función para limpiar el formulario
-    fun limpiarFormulario() {
+    // Función para limpiar el formulario - Nacimiento
+    fun limpiarFormularioNacimiento() {
         _idMadre.value = ""
         _idCria.value = ""
         _fechaNacimiento.value = ""
@@ -224,5 +231,293 @@ class MainViewmodel : ViewModel() {
         // Implementa tu lógica de validación aquí
         // Por ejemplo: verificar longitud, formato, etc.
         return id.length >= 5 // Ejemplo simple
+    }
+
+    // ============================================
+    // SECCIÓN: FALLECIMIENTO / MUERTE
+    // ============================================
+
+    // Estados del formulario de muerte/avortament
+    private val _tipoMuerte = MutableLiveData("") // "01 - Mort" o "02 - Avortament"
+    val tipoMuerte = _tipoMuerte
+
+    private val _identificadorMuerte = MutableLiveData("")
+    val identificadorMuerte = _identificadorMuerte
+
+    private val _fechaMuerte = MutableLiveData("")
+    val fechaMuerte = _fechaMuerte
+
+    private val _mesesGestacion = MutableLiveData("")
+    val mesesGestacion = _mesesGestacion
+
+    private val _cadaverInaccesible = MutableLiveData(false)
+    val cadaverInaccesible = _cadaverInaccesible
+
+    private val _coordenadaX = MutableLiveData("")
+    val coordenadaX = _coordenadaX
+
+    private val _coordenadaY = MutableLiveData("")
+    val coordenadaY = _coordenadaY
+
+    // Estados de expansión de menús desplegables - Muerte
+    private val _tipoMuerteExpandido = MutableLiveData(false)
+    val tipoMuerteExpandido = _tipoMuerteExpandido
+
+    // Estado para mostrar el DatePicker - Muerte
+    private val _mostrarDatePickerMuerte = MutableLiveData(false)
+    val mostrarDatePickerMuerte = _mostrarDatePickerMuerte
+
+    // Estados para feedback del registro - Muerte
+    private val _registroMuerteExitoso = MutableLiveData<Boolean>()
+    val registroMuerteExitoso = _registroMuerteExitoso
+
+    private val _mensajeErrorMuerte = MutableLiveData<String>()
+    val mensajeErrorMuerte = _mensajeErrorMuerte
+
+    // Lista de tipos de muerte
+    val listaTiposMuerte = listOf("01 - Mort", "02 - Avortament")
+
+    // Funciones para actualizar los campos - Muerte
+    fun seleccionarTipoMuerte(tipo: String) {
+        _tipoMuerte.value = tipo
+        _tipoMuerteExpandido.value = false
+
+        // Limpiar meses gestación si cambia a Mort
+        if (tipo.contains("Mort")) {
+            _mesesGestacion.value = ""
+        }
+    }
+
+    fun actualizarIdentificadorMuerte(nuevoId: String) {
+        _identificadorMuerte.value = nuevoId
+    }
+
+    fun actualizarMesesGestacion(valor: String) {
+        // Solo permitir números de 1-9
+        if (valor.isEmpty() || (valor.toIntOrNull() in 1..9)) {
+            _mesesGestacion.value = valor
+        }
+    }
+
+    fun toggleCadaverInaccesible() {
+        val nuevoValor = !(_cadaverInaccesible.value ?: false)
+        _cadaverInaccesible.value = nuevoValor
+
+        // Limpiar coordenadas si se desactiva
+        if (!nuevoValor) {
+            _coordenadaX.value = ""
+            _coordenadaY.value = ""
+        }
+    }
+
+    fun actualizarCoordenadaX(valor: String) {
+        _coordenadaX.value = valor
+    }
+
+    fun actualizarCoordenadaY(valor: String) {
+        _coordenadaY.value = valor
+    }
+
+    // Funciones para controlar la expansión de menús - Muerte
+    fun toggleTipoMuerteExpandido() {
+        _tipoMuerteExpandido.value = !(_tipoMuerteExpandido.value ?: false)
+    }
+
+    fun cerrarTipoMuerteMenu() {
+        _tipoMuerteExpandido.value = false
+    }
+
+    // Funciones para controlar el DatePicker - Muerte
+    fun mostrarDatePickerMuerte() {
+        _mostrarDatePickerMuerte.value = true
+    }
+
+    fun ocultarDatePickerMuerte() {
+        _mostrarDatePickerMuerte.value = false
+    }
+
+    fun seleccionarFechaMuerte(fechaMillis: Long) {
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = fechaMillis
+        val dia = calendar.get(Calendar.DAY_OF_MONTH)
+        val mes = calendar.get(Calendar.MONTH) + 1
+        val anio = calendar.get(Calendar.YEAR)
+
+        _fechaMuerte.value = String.format("%02d/%02d/%04d", dia, mes, anio)
+        _mostrarDatePickerMuerte.value = false
+    }
+
+    // Función para obtener ubicación GPS actual
+    fun obtenerUbicacionActual() {
+        // TODO: Implementar lógica real de GPS
+        // Por ahora valores de ejemplo en formato UTM
+        _coordenadaX.value = "123456,12"
+        _coordenadaY.value = "1234567,12"
+        Log.d("GPS", "Ubicación obtenida - X: ${_coordenadaX.value}, Y: ${_coordenadaY.value}")
+    }
+
+    // Función para validar el formulario - Muerte
+    fun esFormularioMuerteValido(): Boolean {
+        // Validaciones básicas obligatorias
+        val tipoValido = !_tipoMuerte.value.isNullOrEmpty()
+        val identificadorValido = !_identificadorMuerte.value.isNullOrEmpty()
+        val fechaValida = !_fechaMuerte.value.isNullOrEmpty()
+
+        // Si es avortament, validar meses gestación
+        val mesesValidos = if (_tipoMuerte.value?.contains("Avortament") == true) {
+            !_mesesGestacion.value.isNullOrEmpty() && _mesesGestacion.value?.toIntOrNull() in 1..9
+        } else {
+            true // Si no es avortament, no se requiere
+        }
+
+        // Si cadáver inaccesible, validar coordenadas
+        val coordenadasValidas = if (_cadaverInaccesible.value == true) {
+            !_coordenadaX.value.isNullOrEmpty() && !_coordenadaY.value.isNullOrEmpty()
+        } else {
+            true // Si no está marcado, no se requieren coordenadas
+        }
+
+        // Log para debug
+        Log.d("Validación Muerte", "Tipo: '${_tipoMuerte.value}' - válido: $tipoValido")
+        Log.d("Validación Muerte", "ID: '${_identificadorMuerte.value}' - válido: $identificadorValido")
+        Log.d("Validación Muerte", "Fecha: '${_fechaMuerte.value}' - válida: $fechaValida")
+        Log.d("Validación Muerte", "Meses: '${_mesesGestacion.value}' - válidos: $mesesValidos")
+        Log.d("Validación Muerte", "Cadáver inaccesible: ${_cadaverInaccesible.value}")
+        Log.d("Validación Muerte", "Coordenadas - válidas: $coordenadasValidas")
+        Log.d("Validación Muerte", "RESULTADO FINAL: ${tipoValido && identificadorValido && fechaValida && mesesValidos && coordenadasValidas}")
+
+        return tipoValido && identificadorValido && fechaValida && mesesValidos && coordenadasValidas
+    }
+
+
+    // Función para reportar una muerte
+    fun reportarMuerte() {
+        // Extraer código de tipo: "01 - Mort" -> "01"
+        val tipoCodigo = _tipoMuerte.value?.substring(0, 2) ?: ""
+        val identificadorVal = _identificadorMuerte.value ?: ""
+        val fechaVal = _fechaMuerte.value ?: ""
+        val mesesVal = _mesesGestacion.value ?: ""
+        val cadaverInaccesibleVal = if (_cadaverInaccesible.value == true) "SI" else "NO"
+        val coordXVal = _coordenadaX.value ?: ""
+        val coordYVal = _coordenadaY.value ?: ""
+
+        // Validar que todos los campos requeridos estén completos
+        if (!esFormularioMuerteValido()) {
+            // Determinar qué campo específico falta
+            val mensajeError = when {
+                _tipoMuerte.value.isNullOrEmpty() ->
+                    "Por favor, seleccione el tipo (Mort o Avortament)"
+                _identificadorMuerte.value.isNullOrEmpty() ->
+                    "Por favor, introduzca el ID del animal${if (_tipoMuerte.value?.contains("Avortament") == true) " (madre)" else ""}"
+                _fechaMuerte.value.isNullOrEmpty() ->
+                    "Por favor, seleccione la fecha de muerte"
+                _tipoMuerte.value?.contains("Avortament") == true && _mesesGestacion.value.isNullOrEmpty() ->
+                    "Por favor, introduzca los meses de gestación (1-9)"
+                _tipoMuerte.value?.contains("Avortament") == true && (_mesesGestacion.value?.toIntOrNull() !in 1..9) ->
+                    "Los meses de gestación deben estar entre 1 y 9"
+                _cadaverInaccesible.value == true && _coordenadaX.value.isNullOrEmpty() ->
+                    "Por favor, introduzca la coordenada X (Latitud)"
+                _cadaverInaccesible.value == true && _coordenadaY.value.isNullOrEmpty() ->
+                    "Por favor, introduzca la coordenada Y (Longitud)"
+                else ->
+                    "Por favor, complete todos los campos obligatorios marcados con *"
+            }
+
+            _mensajeErrorMuerte.value = mensajeError
+            Log.e("Validación Muerte", mensajeError)
+            return
+        }
+
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                // Convertir fecha a formato API (yyyymmdd)
+                val fechaAPI = convertirFechaAFormatoAPI(fechaVal)
+
+                withContext(Dispatchers.Main) {
+                    // Si la respuesta es exitosa
+                    _registroMuerteExitoso.value = true
+                    _mensajeErrorMuerte.value = "" // Limpiar errores previos
+
+                    Log.d("Registro Muerte", "✅ Muerte reportada exitosamente")
+                    Log.d("Registro Muerte", "Tipo: $tipoCodigo")
+                    Log.d("Registro Muerte", "Identificador: $identificadorVal")
+                    Log.d("Registro Muerte", "Fecha: $fechaAPI")
+                    Log.d("Registro Muerte", "Meses Gestación: $mesesVal")
+                    Log.d("Registro Muerte", "Cadáver Inaccesible: $cadaverInaccesibleVal")
+                    Log.d("Registro Muerte", "Coordenada X: $coordXVal")
+                    Log.d("Registro Muerte", "Coordenada Y: $coordYVal")
+
+                    // Limpiar formulario después de registrar
+                    limpiarFormularioMuerte()
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    _registroMuerteExitoso.value = false
+                    _mensajeErrorMuerte.value = "Error al reportar muerte: ${e.message ?: "Error desconocido en el servidor"}"
+                    Log.e("Error Registro Muerte", e.message ?: "Error desconocido")
+                }
+            }
+        }
+    }
+
+    // Función para limpiar el formulario - Muerte
+    fun limpiarFormularioMuerte() {
+        _tipoMuerte.value = ""
+        _identificadorMuerte.value = ""
+        _fechaMuerte.value = ""
+        _mesesGestacion.value = ""
+        _cadaverInaccesible.value = false
+        _coordenadaX.value = ""
+        _coordenadaY.value = ""
+    }
+
+    // Función para resetear el estado de registro - Muerte
+    fun resetearEstadoRegistroMuerte() {
+        _registroMuerteExitoso.value = false
+        _mensajeErrorMuerte.value = ""
+    }
+
+    // ============================================
+    // FUNCIONES AUXILIARES
+    // ============================================
+
+    /**
+     * Convierte una fecha de formato "dd/MM/yyyy" a "yyyymmdd"
+     */
+    private fun convertirFechaAFormatoAPI(fecha: String): String {
+        return try {
+            val partes = fecha.split("/")
+            if (partes.size == 3) {
+                val dia = partes[0]
+                val mes = partes[1]
+                val anio = partes[2]
+                "$anio$mes$dia"
+            } else {
+                ""
+            }
+        } catch (e: Exception) {
+            Log.e("Error conversión fecha", e.message ?: "Error desconocido")
+            ""
+        }
+    }
+
+    /**
+     * Convierte una fecha de formato "yyyymmdd" a "dd/MM/yyyy"
+     */
+    private fun convertirFechaDesdeAPI(fechaAPI: String): String {
+        return try {
+            if (fechaAPI.length == 8) {
+                val anio = fechaAPI.substring(0, 4)
+                val mes = fechaAPI.substring(4, 6)
+                val dia = fechaAPI.substring(6, 8)
+                "$dia/$mes/$anio"
+            } else {
+                ""
+            }
+        } catch (e: Exception) {
+            Log.e("Error conversión fecha", e.message ?: "Error desconocido")
+            ""
+        }
     }
 }

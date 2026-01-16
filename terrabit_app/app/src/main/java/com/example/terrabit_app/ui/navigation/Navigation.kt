@@ -30,7 +30,7 @@ fun Navigation(myViewmodel: MainViewmodel) {
         }
 
         composable(Routes.Fallecimiento.route) {
-            Fallecimiento(navController = navController)
+            Fallecimiento(navController = navController, myViewmodel)
         }
 
         composable(Routes.GestionGuias.route) {

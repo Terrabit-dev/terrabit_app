@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -15,6 +17,8 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -41,6 +45,30 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
     val identificadores: Identificadores by viewModel.identificadores.observeAsState(
         Identificadores(emptyList())
     )
+
+    // Observar estado de registro para mostrar mensajes
+    val registroExitoso by viewModel.registroExitoso.observeAsState(false)
+    val mensajeError by viewModel.mensajeError.observeAsState("")
+
+    // Snackbar host state
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Mostrar Snackbar cuando hay mensaje de éxito o error
+    LaunchedEffect(registroExitoso, mensajeError) {
+        if (registroExitoso) {
+            snackbarHostState.showSnackbar(
+                message = "✅ Nacimiento registrado exitosamente",
+                duration = SnackbarDuration.Short
+            )
+            viewModel.resetearEstadoRegistro()
+        } else if (mensajeError.isNotEmpty()) {
+            snackbarHostState.showSnackbar(
+                message = mensajeError,
+                duration = SnackbarDuration.Long
+            )
+            viewModel.resetearEstadoRegistro()
+        }
+    }
 
     // Obtener identificadores al cargar la pantalla
     LaunchedEffect(Unit) {
@@ -103,11 +131,25 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF4A7C59), // Verde principal
+                    containerColor = Color(0xFF4A7C59),
                     titleContentColor = Color.White,
                     navigationIconContentColor = Color.White
                 )
             )
+        },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState) { data ->
+                Snackbar(
+                    snackbarData = data,
+                    containerColor = if (data.visuals.message.contains("✅")) {
+                        Color(0xFF4A7C59) // Verde para éxito
+                    } else {
+                        Color(0xFFD32F2F) // Rojo para error
+                    },
+                    contentColor = Color.White,
+                    shape = RoundedCornerShape(12.dp)
+                )
+            }
         },
         containerColor = Color(0xFFF5F7FA)
     ) { padding ->
@@ -160,18 +202,24 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
                                     Icon(
                                         Icons.Outlined.CameraAlt,
                                         contentDescription = "Escanear",
-                                        tint = Color(0xFF4A7C59) // Verde
+                                        tint = Color(0xFF4A7C59)
                                     )
                                 }
                             },
                             singleLine = true,
                             shape = MaterialTheme.shapes.medium,
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Color(0xFF4A7C59), // Verde
+                                focusedBorderColor = Color(0xFF4A7C59),
                                 unfocusedBorderColor = Color(0xFFCBD5E1),
                                 focusedTextColor = Color(0xFF1E293B),
                                 unfocusedTextColor = Color(0xFF1E293B),
-                                cursorColor = Color(0xFF4A7C59) // Cursor verde
+                                cursorColor = Color(0xFF4A7C59)
+                            ),
+                            // CORRECCIÓN 1: Configurar tipo de teclado y acciones IME
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Text,
+                                imeAction = ImeAction.Next,
+                                autoCorrect = false
                             )
                         )
                     }
@@ -213,11 +261,17 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
                                 focusedTextColor = Color(0xFF1E293B),
                                 unfocusedTextColor = Color(0xFF1E293B),
                                 cursorColor = Color(0xFF4A7C59)
+                            ),
+                            // CORRECCIÓN 2: Configurar tipo de teclado y acciones IME
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Text,
+                                imeAction = ImeAction.Next,
+                                autoCorrect = false
                             )
                         )
                     }
 
-                    // Fecha de Nacimiento
+                    // Fecha de Nacimiento - CORRECCIÓN 3: Usar Box con clickable
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
                             "Fecha de Nacimiento *",
@@ -227,35 +281,40 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
                             letterSpacing = 0.15.sp
                         )
                         Spacer(modifier = Modifier.height(10.dp))
-                        OutlinedTextField(
-                            value = fechaNacimiento,
-                            onValueChange = {},
+                        Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { viewModel.mostrarDatePicker() },
-                            placeholder = {
-                                Text(
-                                    "Seleccionar fecha",
-                                    color = Color(0xFF94A3B8)
-                                )
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    Icons.Default.DateRange,
-                                    contentDescription = "Calendario",
-                                    tint = Color(0xFF4A7C59)
-                                )
-                            },
-                            enabled = false,
-                            shape = MaterialTheme.shapes.medium,
-                            colors = OutlinedTextFieldDefaults.colors(
-                                disabledTextColor = Color(0xFF1E293B),
-                                disabledBorderColor = Color(0xFFCBD5E1),
-                                disabledLeadingIconColor = Color(0xFF4A7C59),
-                                disabledPlaceholderColor = Color(0xFF94A3B8)
-                            ),
-                            singleLine = true
-                        )
+                                .clickable { viewModel.mostrarDatePicker() }
+                        ) {
+                            OutlinedTextField(
+                                value = fechaNacimiento,
+                                onValueChange = {},
+                                modifier = Modifier.fillMaxWidth(),
+                                placeholder = {
+                                    Text(
+                                        "Seleccionar fecha",
+                                        color = Color(0xFF94A3B8)
+                                    )
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Default.DateRange,
+                                        contentDescription = "Calendario",
+                                        tint = Color(0xFF4A7C59)
+                                    )
+                                },
+                                readOnly = true,
+                                enabled = false,
+                                shape = MaterialTheme.shapes.medium,
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    disabledTextColor = Color(0xFF1E293B),
+                                    disabledBorderColor = Color(0xFFCBD5E1),
+                                    disabledLeadingIconColor = Color(0xFF4A7C59),
+                                    disabledPlaceholderColor = Color(0xFF94A3B8)
+                                ),
+                                singleLine = true
+                            )
+                        }
                     }
 
                     // Sexo
@@ -500,7 +559,7 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
                 }
             }
 
-            // Botón Registrar
+            // Botón Registrar - SIEMPRE HABILITADO
             Button(
                 onClick = { viewModel.registrarNacimiento() },
                 modifier = Modifier
@@ -508,15 +567,13 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
                     .padding(horizontal = 20.dp, vertical = 24.dp)
                     .height(56.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF4A7C59), // Verde principal
-                    disabledContainerColor = Color(0xFFE2E8F0)
+                    containerColor = Color(0xFF4A7C59)
                 ),
                 shape = MaterialTheme.shapes.medium,
                 elevation = ButtonDefaults.buttonElevation(
                     defaultElevation = 2.dp,
                     pressedElevation = 6.dp
-                ),
-                enabled = viewModel.esFormularioValido()
+                )
             ) {
                 Text(
                     "Registrar Nacimiento",
