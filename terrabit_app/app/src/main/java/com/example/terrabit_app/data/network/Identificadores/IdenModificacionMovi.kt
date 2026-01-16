@@ -1,4 +1,4 @@
-package com.example.terrabit_app.data.network.modelos
+package com.example.terrabit_app.data.network.Identificadores
 
 data class IdenModificacionMovi(
     val classCanal: String,

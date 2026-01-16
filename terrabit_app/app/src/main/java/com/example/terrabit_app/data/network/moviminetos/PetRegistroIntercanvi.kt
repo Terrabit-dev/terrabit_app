@@ -1,4 +1,6 @@
-package com.example.terrabit_app.data.network.modelos
+package com.example.terrabit_app.data.network.moviminetos.modelos
+
+import com.example.terrabit_app.data.network.Identificadores.IdenIntercanvi
 
 data class PetRegistroIntercanvi(
     val codiAtes: String,

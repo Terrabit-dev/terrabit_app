@@ -22,7 +22,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.terrabit_app.data.network.modelos.Identificadores
+import com.example.terrabit_app.data.network.Identificadores.Identificadores
 import com.example.terrabit_app.viewmodel.MainViewmodel
 import kotlin.collections.emptyList
 

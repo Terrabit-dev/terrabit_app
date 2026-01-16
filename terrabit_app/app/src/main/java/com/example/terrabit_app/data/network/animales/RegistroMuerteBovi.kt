@@ -1,4 +1,4 @@
-package com.example.terrabit_app.data.network.modelos
+package com.example.terrabit_app.data.network.animales
 
 data class RegistroMuerteBovi(
     val cadaverInaccesible: String,

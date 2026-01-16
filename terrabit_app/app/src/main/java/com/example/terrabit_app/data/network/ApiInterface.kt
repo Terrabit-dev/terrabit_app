@@ -1,18 +1,19 @@
 package com.example.terrabit_app.data.network
 
-import com.example.terrabit_app.data.network.modelos.Guias
-import com.example.terrabit_app.data.network.modelos.Identificadores
-import com.example.terrabit_app.data.network.modelos.Movimientos
-import com.example.terrabit_app.data.network.modelos.PetConfirmacionMovi
-import com.example.terrabit_app.data.network.modelos.PetIdentificacion
-import com.example.terrabit_app.data.network.modelos.PetModicarAnimal
-import com.example.terrabit_app.data.network.modelos.PetModificacioMovi
-import com.example.terrabit_app.data.network.modelos.PetRegistroIntercanvi
-import com.example.terrabit_app.data.network.modelos.PetSolicitudDuplicado
-import com.example.terrabit_app.data.network.modelos.PeticionAltaGuia
-import com.example.terrabit_app.data.network.modelos.PeticionModificarGuia
-import com.example.terrabit_app.data.network.modelos.RegistroMuerteBovi
-import com.example.terrabit_app.data.network.modelos.RegistroNacimientoBovi
+import com.example.terrabit_app.data.network.guias.Guias
+import com.example.terrabit_app.data.network.Identificadores.Identificadores
+import com.example.terrabit_app.data.network.moviminetos.modelos.Movimientos
+import com.example.terrabit_app.data.network.moviminetos.modelos.PetConfirmacionMovi
+import com.example.terrabit_app.data.network.animales.PetIdentificacion
+import com.example.terrabit_app.data.network.animales.PetModicarAnimal
+import com.example.terrabit_app.data.network.moviminetos.modelos.PetModificacioMovi
+import com.example.terrabit_app.data.network.moviminetos.modelos.PetRegistroIntercanvi
+import com.example.terrabit_app.data.network.material.PetSolicitudDuplicado
+import com.example.terrabit_app.data.network.material.PetSolicitudMaterial
+import com.example.terrabit_app.data.network.guias.PeticionAltaGuia
+import com.example.terrabit_app.data.network.guias.PeticionModificarGuia
+import com.example.terrabit_app.data.network.animales.RegistroMuerteBovi
+import com.example.terrabit_app.data.network.animales.RegistroNacimientoBovi
 import com.example.terrabit_app.data.network.respuestas.ResAltaGuia
 import com.example.terrabit_app.data.network.respuestas.ResBasica
 import com.example.terrabit_app.data.network.respuestas.ResConfirmacionMovi
@@ -100,6 +101,11 @@ interface ApiInterface {
     @PUT("WSBovi/AppJava/Bovi/WSSolicitudDuplicat/")
     suspend fun putSolicitudDuplicado(
         @Body request: PetSolicitudDuplicado
+    ): Response<ResBasica>
+
+    @PUT("WSEnviamentDuplicatES/AppJava/WSSolicitudMaterial/")
+    suspend fun putSolicitudMaterial(
+        @Body request: PetSolicitudMaterial
     ): Response<ResBasica>
     companion object {
         val BASE_URL = "https://preproduccio.aplicacions.agricultura.gencat.cat/gtr/"

@@ -1,6 +1,6 @@
-package com.example.terrabit_app.data.network.modelos
+package com.example.terrabit_app.data.network.Identificadores
 
-data class IdentificadorBovi(
+data class IdenBovi(
     val dataNaixement: String,
     val explotacioNaixement: String,
     val identificador: String,

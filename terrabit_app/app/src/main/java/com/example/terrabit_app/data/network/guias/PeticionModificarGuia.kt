@@ -1,11 +1,12 @@
-package com.example.terrabit_app.data.network.modelos
+package com.example.terrabit_app.data.network.guias
 
-data class PetModificacioMovi(
+data class PeticionModificarGuia(
     val codiAtes: String,
-    val codiExplotacio: String,
     val codiRemo: String,
+    val dataArribada: String,
+    val dataSortida: String,
     val especie: String,
-    val identificadors: List<IdenModificacionMovi>,
+    val identificadors: List<String>,
     val matricula: String,
     val mitjaTransport: String,
     val nif: String,

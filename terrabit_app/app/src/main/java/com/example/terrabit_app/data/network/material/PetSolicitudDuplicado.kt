@@ -1,4 +1,6 @@
-package com.example.terrabit_app.data.network.modelos
+package com.example.terrabit_app.data.network.material
+
+import com.example.terrabit_app.data.network.Identificadores.IdenSolicitudDupli
 
 data class PetSolicitudDuplicado(
     val adreca: String?,
@@ -6,7 +8,7 @@ data class PetSolicitudDuplicado(
     val cp: String?,
     val empresaSubministradora: String,
     val especie: String,
-    val identificadors: List<IdentificadorSolDupli?>,
+    val identificadors: List<IdenSolicitudDupli?>,
     val municipi: String?,
     val nif: String,
     val oc: String?,
