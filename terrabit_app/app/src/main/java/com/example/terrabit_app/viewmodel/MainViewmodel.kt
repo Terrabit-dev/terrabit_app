@@ -438,9 +438,7 @@ class MainViewmodel : ViewModel() {
     }
 
     // Funcionamiento de la API
-    private val _formularioMuerte = MutableLiveData<RegistroMuerteBovi>()
-
-    fun PutMuerteBovino() {
+    fun putMuerteBovino() {
         // Validar que todos los campos requeridos estén completos
         if (!esFormularioMuerteValido()) {
             val mensajeError = when {
@@ -493,42 +491,98 @@ class MainViewmodel : ViewModel() {
                     dataMort = fechaAPI,
                     identificador = _identificadorMuerte.value,
                     mesosGestacio = mesesGest,
-                    nif =  "S0800608B", // Asume que tienes estos valores en el ViewModel
-                    passwordMobilitat =  "L1855m58", // Asume que tienes estos valores en el ViewModel
+                    nif = "S0800608B",
+                    passwordMobilitat = "L1855m58",
                     tipus = tipoCodigo
                 )
+                Log.d("Registro Muerte", "Request: $request")
 
                 // Llamar a la API
                 val response = repositorio.putRegistrarMuerte(request)
 
                 // Procesar respuesta
                 withContext(Dispatchers.Main) {
-                    if (response.isSuccessful) {
-                        _registroMuerteExitoso.value = true
-                        _mensajeErrorMuerte.value = ""
+                    when {
+                        // Caso 1: HTTP 200 OK
+                        response.isSuccessful && response.body() != null -> {
+                            val body = response.body()!!
 
-                        Log.d("Registro Muerte", "✅ Muerte reportada exitosamente")
-                        Log.d("Registro Muerte", "Tipo: $tipoCodigo")
-                        Log.d("Registro Muerte", "Identificador: ${_identificadorMuerte.value}")
-                        Log.d("Registro Muerte", "Fecha: $fechaAPI")
-                        Log.d("Registro Muerte", "Meses Gestación: $mesesGest")
-                        Log.d("Registro Muerte", "Cadáver Inaccesible: ${if (_cadaverInaccesible.value == true) "SI" else "NO"}")
-                        Log.d("Registro Muerte", "Coordenada X: $coordX")
-                        Log.d("Registro Muerte", "Coordenada Y: $coordY")
+                            // Verificar si hay errores en el body
+                            if (!body.errors.isNullOrEmpty()) {
+                                // La API devolvió errores
+                                val erroresTexto = body.errors.joinToString("\n") { error ->
+                                    "• [${error.codi}] ${error.descripcio}"
+                                }
 
-                        // Limpiar formulario después de registrar
-                        limpiarFormularioMuerte()
-                    } else {
-                        _registroMuerteExitoso.value = false
-                        _mensajeErrorMuerte.value = "Error al reportar muerte: ${response.message()}"
-                        Log.e("Error Registro Muerte", "Código: ${response.code()}, Mensaje: ${response.message()}")
+                                _registroMuerteExitoso.value = false
+                                _mensajeErrorMuerte.value = "Error al registrar muerte:\n$erroresTexto"
+
+                                Log.e("Error Registro Muerte", "Errores de la API:")
+                                body.errors.forEach { error ->
+                                    Log.e("Error Registro Muerte", "  - [${error.codi}] ${error.descripcio}")
+                                }
+                            }
+                            // Verificar si es respuesta exitosa (codi = "0")
+                            else if (body.codi == "0" || body.descripcio == "OK") {
+                                _registroMuerteExitoso.value = true
+                                _mensajeErrorMuerte.value = ""
+
+                                Log.d("Registro Muerte", "Muerte reportada exitosamente")
+                                Log.d("Registro Muerte", "Respuesta: [${body.codi}] ${body.descripcio}")
+
+                                // Limpiar formulario después de registrar exitosamente
+                                limpiarFormularioMuerte()
+                            }
+                            // Caso inesperado: respuesta exitosa pero sin código 0 ni errores
+                            else {
+                                _registroMuerteExitoso.value = false
+                                _mensajeErrorMuerte.value = "Respuesta inesperada del servidor: [${body.codi}] ${body.descripcio}"
+                                Log.w("Registro Muerte", "⚠️ Respuesta inesperada: [${body.codi}] ${body.descripcio}")
+                            }
+                        }
+
+                        // Caso 2: HTTP Error (4xx, 5xx)
+                        !response.isSuccessful -> {
+                            val errorBody = response.errorBody()?.string()
+                            _registroMuerteExitoso.value = false
+                            _mensajeErrorMuerte.value = "Error HTTP ${response.code()}: ${response.message()}"
+
+                            Log.e("Error Registro Muerte", "HTTP ${response.code()}")
+                            Log.e("Error Registro Muerte", "Mensaje: ${response.message()}")
+                            if (errorBody != null) {
+                                Log.e("Error Registro Muerte", "Body: $errorBody")
+                            }
+                        }
+
+                        // Caso 3: Respuesta exitosa pero sin body
+                        else -> {
+                            _registroMuerteExitoso.value = false
+                            _mensajeErrorMuerte.value = "Error: Respuesta vacía del servidor"
+                            Log.e("Error Registro Muerte", "Respuesta vacía del servidor")
+                        }
                     }
                 }
-            } catch (e: Exception) {
+            } catch (e: java.net.SocketTimeoutException) {
+                // Manejo específico de timeout
                 withContext(Dispatchers.Main) {
                     _registroMuerteExitoso.value = false
-                    _mensajeErrorMuerte.value = "Error al reportar muerte: ${e.message ?: "Error desconocido en el servidor"}"
-                    Log.e("Error Registro Muerte", e.message ?: "Error desconocido", e)
+                    _mensajeErrorMuerte.value = "Tiempo de espera agotado. La operación puede haberse completado, por favor verifique."
+                    Log.e("Error Registro Muerte", "Timeout: ${e.message}", e)
+                }
+            } catch (e: java.io.IOException) {
+                // Error de red
+                withContext(Dispatchers.Main) {
+                    _registroMuerteExitoso.value = false
+                    _mensajeErrorMuerte.value = "Error de conexión. Verifique su conexión a internet."
+                    Log.e("Error Registro Muerte", "Error de red: ${e.message}", e)
+                }
+            } catch (e: Exception) {
+                // Otros errores
+                withContext(Dispatchers.Main) {
+                    _registroMuerteExitoso.value = false
+                    _mensajeErrorMuerte.value = "Error inesperado: ${e.message ?: "Error desconocido"}"
+                    Log.e("Error Registro Muerte", "Error general: ${e.message}", e)
+                    e.printStackTrace()
                 }
             }
         }

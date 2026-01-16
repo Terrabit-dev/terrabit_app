@@ -18,6 +18,7 @@ import com.example.terrabit_app.data.network.respuestas.ResAltaGuia
 import com.example.terrabit_app.data.network.respuestas.ResBasica
 import com.example.terrabit_app.data.network.respuestas.ResConfirmacionMovi
 import com.example.terrabit_app.data.network.respuestas.ResModificarGuia
+import com.example.terrabit_app.data.network.respuestas.RespuestaUnificada
 
 import okhttp3.OkHttpClient
 import retrofit2.Response
@@ -27,6 +28,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.PUT
 import retrofit2.http.Query
+import java.util.concurrent.TimeUnit
 
 interface ApiInterface {
     @GET("WSBovi/AppJava/Bovi/WSIdentificadorsDisponibles/")
@@ -56,7 +58,7 @@ interface ApiInterface {
     @PUT("WSBovi/AppJava/Bovi/WSEnregistramentMort/")
     suspend fun putRegistrarMuerte(
         @Body request: RegistroMuerteBovi
-    ): Response<ResBasica>
+    ): Response<RespuestaUnificada>
 
     @PUT("WSBovi/AppJava/Bovi/WSEnregistramentNaixement/")
     suspend fun putRegistrarNacimiento(
@@ -109,11 +111,21 @@ interface ApiInterface {
     ): Response<ResBasica>
     companion object {
         val BASE_URL = "https://preproduccio.aplicacions.agricultura.gencat.cat/gtr/"
+
         fun create(): ApiInterface {
-            val client = OkHttpClient.Builder().build()
-            val retrofit = Retrofit.Builder().baseUrl(BASE_URL).addConverterFactory(
-                GsonConverterFactory.create()
-            ).client(client).build()
+            // Configurar timeouts más largos
+            val client = OkHttpClient.Builder()
+                .connectTimeout(60, TimeUnit.SECONDS)  // Timeout de conexión: 60 segundos
+                .readTimeout(60, TimeUnit.SECONDS)     // Timeout de lectura: 60 segundos
+                .writeTimeout(60, TimeUnit.SECONDS)    // Timeout de escritura: 60 segundos
+                .build()
+
+            val retrofit = Retrofit.Builder()
+                .baseUrl(BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(client)
+                .build()
+
             return retrofit.create(ApiInterface::class.java)
         }
     }
