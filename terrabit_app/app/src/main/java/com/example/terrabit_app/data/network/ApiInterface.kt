@@ -3,9 +3,20 @@ package com.example.terrabit_app.data.network
 import com.example.terrabit_app.data.network.modelos.Guias
 import com.example.terrabit_app.data.network.modelos.Identificadores
 import com.example.terrabit_app.data.network.modelos.Movimientos
+import com.example.terrabit_app.data.network.modelos.PetConfirmacionMovi
+import com.example.terrabit_app.data.network.modelos.PetIdentificacion
+import com.example.terrabit_app.data.network.modelos.PetModicarAnimal
+import com.example.terrabit_app.data.network.modelos.PetModificacioMovi
+import com.example.terrabit_app.data.network.modelos.PetRegistroIntercanvi
+import com.example.terrabit_app.data.network.modelos.PetSolicitudDuplicado
 import com.example.terrabit_app.data.network.modelos.PeticionAltaGuia
+import com.example.terrabit_app.data.network.modelos.PeticionModificarGuia
 import com.example.terrabit_app.data.network.modelos.RegistroMuerteBovi
 import com.example.terrabit_app.data.network.modelos.RegistroNacimientoBovi
+import com.example.terrabit_app.data.network.respuestas.ResAltaGuia
+import com.example.terrabit_app.data.network.respuestas.ResBasica
+import com.example.terrabit_app.data.network.respuestas.ResConfirmacionMovi
+import com.example.terrabit_app.data.network.respuestas.ResModificarGuia
 
 import okhttp3.OkHttpClient
 import retrofit2.Response
@@ -44,18 +55,52 @@ interface ApiInterface {
     @PUT("WSBovi/AppJava/Bovi/WSEnregistramentMort/")
     suspend fun putRegistrarMuerte(
         @Body request: RegistroMuerteBovi
-    ): Response<RegistroMuerteBovi>
+    ): Response<ResBasica>
 
     @PUT("WSBovi/AppJava/Bovi/WSEnregistramentNaixement/")
     suspend fun putRegistrarNacimiento(
         @Body request: RegistroNacimientoBovi
-    ): Response<RegistroNacimientoBovi>
+    ): Response<ResBasica>
 
     @PUT("WSBoviGuies/AppJava/guies/WSAltaGuia/")
     suspend fun putAltaGuia(
-        @Body request: RegistroNacimientoBovi
-    ): Response<PeticionAltaGuia>
+        @Body request: PeticionAltaGuia
+    ): Response<ResAltaGuia>
 
+    @PUT("WSBoviGuies/AppJava/guies/WSAltaGuia/")
+    suspend fun putModificarGuia(
+        @Body request: PeticionModificarGuia
+    ): Response<ResModificarGuia>
+
+    @PUT("WSBoviGuies/AppJava/movs/WSConfirmacioMoviment/")
+    suspend fun putConfirmarMovi(
+        @Body request: PetConfirmacionMovi
+    ): Response<ResConfirmacionMovi>
+
+    @PUT("WSBoviGuies/AppJava/movs/WSAltaIntercanviEntradaImportacio/")
+    suspend fun putRegistroIntercanvio(
+        @Body request: PetRegistroIntercanvi
+    ): Response<ResConfirmacionMovi>
+
+    @PUT("WSBoviGuies/AppJava/movs/WSModificacioIntercanviEntradaImportacio/")
+    suspend fun putMoficarMovi(
+        @Body request: PetModificacioMovi
+    ): Response<ResConfirmacionMovi>
+
+    @PUT("WSBovi/AppJava/Bovi/WSModificacioAnimal/")
+    suspend fun putMoficarAnimal(
+        @Body request: PetModicarAnimal
+    ): Response<ResBasica>
+
+    @PUT("WSBovi/AppJava/Bovi/WSModificacioDataIdentificacioAnimal/")
+    suspend fun putIdentificacionPendiente(
+        @Body request: PetIdentificacion
+    ): Response<ResBasica>
+
+    @PUT("WSBovi/AppJava/Bovi/WSSolicitudDuplicat/")
+    suspend fun putSolicitudDuplicado(
+        @Body request: PetSolicitudDuplicado
+    ): Response<ResBasica>
     companion object {
         val BASE_URL = "https://preproduccio.aplicacions.agricultura.gencat.cat/gtr/"
         fun create(): ApiInterface {
