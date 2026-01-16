@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.terrabit_app.navegacion.Navigation
 import com.example.terrabit_app.ui.theme.Terrabit_appTheme
+import com.example.terrabit_app.viewmodel.DrawerViewModel  // ← NUEVO IMPORT
 import com.example.terrabit_app.viewmodel.MainViewmodel
 
 class MainActivity : ComponentActivity() {
@@ -23,8 +24,9 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    val myViewModel : MainViewmodel = viewModel()
-                    Navigation(myViewModel)
+                    val myViewModel: MainViewmodel = viewModel()
+                    val drawerViewModel: DrawerViewModel = viewModel()
+                    Navigation(myViewModel, drawerViewModel)
                 }
             }
         }

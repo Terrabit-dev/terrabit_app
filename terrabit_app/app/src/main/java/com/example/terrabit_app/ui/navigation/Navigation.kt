@@ -11,10 +11,11 @@ import com.example.terrabit_app.ui.screen.Fallecimiento
 import com.example.terrabit_app.ui.screen.GestionGuias
 import com.example.terrabit_app.ui.screen.Material
 import com.example.terrabit_app.ui.screen.Nacimiento
+import com.example.terrabit_app.viewmodel.DrawerViewModel
 import com.example.terrabit_app.viewmodel.MainViewmodel
 
 @Composable
-fun Navigation(myViewmodel: MainViewmodel) {
+fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel) {
     val navController = rememberNavController()
 
     NavHost(
@@ -22,7 +23,7 @@ fun Navigation(myViewmodel: MainViewmodel) {
         startDestination = Routes.Home.route
     ) {
         composable(Routes.Home.route) {
-            Home(navController = navController)
+            Home(navController = navController, drawerViewModel)
         }
 
         composable(Routes.Nacimiento.route) {
