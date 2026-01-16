@@ -3,8 +3,10 @@ package com.example.terrabit_app.viewmodel
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.Identificadores.Identificadores
+import com.example.terrabit_app.data.network.animales.RegistroMuerteBovi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -418,20 +420,29 @@ class MainViewmodel : ViewModel() {
     }
 
 
-    // Función para reportar una muerte
-    fun reportarMuerte() {
-        // Extraer código de tipo: "01 - Mort" -> "01"
-        val tipoCodigo = _tipoMuerte.value?.substring(0, 2) ?: ""
-        val identificadorVal = _identificadorMuerte.value ?: ""
-        val fechaVal = _fechaMuerte.value ?: ""
-        val mesesVal = _mesesGestacion.value ?: ""
-        val cadaverInaccesibleVal = if (_cadaverInaccesible.value == true) "SI" else "NO"
-        val coordXVal = _coordenadaX.value ?: ""
-        val coordYVal = _coordenadaY.value ?: ""
+    // Función para limpiar el formulario - Muerte
+    fun limpiarFormularioMuerte() {
+        _tipoMuerte.value = ""
+        _identificadorMuerte.value = ""
+        _fechaMuerte.value = ""
+        _mesesGestacion.value = ""
+        _cadaverInaccesible.value = false
+        _coordenadaX.value = ""
+        _coordenadaY.value = ""
+    }
 
+    // Función para resetear el estado de registro - Muerte
+    fun resetearEstadoRegistroMuerte() {
+        _registroMuerteExitoso.value = false
+        _mensajeErrorMuerte.value = ""
+    }
+
+    // Funcionamiento de la API
+    private val _formularioMuerte = MutableLiveData<RegistroMuerteBovi>()
+
+    fun PutMuerteBovino() {
         // Validar que todos los campos requeridos estén completos
         if (!esFormularioMuerteValido()) {
-            // Determinar qué campo específico falta
             val mensajeError = when {
                 _tipoMuerte.value.isNullOrEmpty() ->
                     "Por favor, seleccione el tipo (Mort o Avortament)"
@@ -450,60 +461,77 @@ class MainViewmodel : ViewModel() {
                 else ->
                     "Por favor, complete todos los campos obligatorios marcados con *"
             }
-
             _mensajeErrorMuerte.value = mensajeError
             Log.e("Validación Muerte", mensajeError)
             return
         }
 
-
-        CoroutineScope(Dispatchers.IO).launch {
+        viewModelScope.launch {
             try {
+                // Extraer código de tipo: "01 - Mort" -> "01"
+                val tipoCodigo = _tipoMuerte.value?.substring(0, 2) ?: ""
+
                 // Convertir fecha a formato API (yyyymmdd)
-                val fechaAPI = convertirFechaAFormatoAPI(fechaVal)
+                val fechaAPI = convertirFechaAFormatoAPI(_fechaMuerte.value ?: "")
 
+                // Preparar coordenadas (null si cadáver no es inaccesible)
+                val coordX = if (_cadaverInaccesible.value == true) _coordenadaX.value else null
+                val coordY = if (_cadaverInaccesible.value == true) _coordenadaY.value else null
+
+                // Preparar meses gestación (null si no es avortament)
+                val mesesGest = if (_tipoMuerte.value?.contains("Avortament") == true) {
+                    _mesesGestacion.value
+                } else {
+                    null
+                }
+
+                // Crear objeto de petición
+                val request = RegistroMuerteBovi(
+                    cadaverInaccesible = if (_cadaverInaccesible.value == true) "SI" else "NO",
+                    coordenadaX = coordX,
+                    coordenadaY = coordY,
+                    dataMort = fechaAPI,
+                    identificador = _identificadorMuerte.value,
+                    mesosGestacio = mesesGest,
+                    nif =  "S0800608B", // Asume que tienes estos valores en el ViewModel
+                    passwordMobilitat =  "L1855m58", // Asume que tienes estos valores en el ViewModel
+                    tipus = tipoCodigo
+                )
+
+                // Llamar a la API
+                val response = repositorio.putRegistrarMuerte(request)
+
+                // Procesar respuesta
                 withContext(Dispatchers.Main) {
-                    // Si la respuesta es exitosa
-                    _registroMuerteExitoso.value = true
-                    _mensajeErrorMuerte.value = "" // Limpiar errores previos
+                    if (response.isSuccessful) {
+                        _registroMuerteExitoso.value = true
+                        _mensajeErrorMuerte.value = ""
 
-                    Log.d("Registro Muerte", "✅ Muerte reportada exitosamente")
-                    Log.d("Registro Muerte", "Tipo: $tipoCodigo")
-                    Log.d("Registro Muerte", "Identificador: $identificadorVal")
-                    Log.d("Registro Muerte", "Fecha: $fechaAPI")
-                    Log.d("Registro Muerte", "Meses Gestación: $mesesVal")
-                    Log.d("Registro Muerte", "Cadáver Inaccesible: $cadaverInaccesibleVal")
-                    Log.d("Registro Muerte", "Coordenada X: $coordXVal")
-                    Log.d("Registro Muerte", "Coordenada Y: $coordYVal")
+                        Log.d("Registro Muerte", "✅ Muerte reportada exitosamente")
+                        Log.d("Registro Muerte", "Tipo: $tipoCodigo")
+                        Log.d("Registro Muerte", "Identificador: ${_identificadorMuerte.value}")
+                        Log.d("Registro Muerte", "Fecha: $fechaAPI")
+                        Log.d("Registro Muerte", "Meses Gestación: $mesesGest")
+                        Log.d("Registro Muerte", "Cadáver Inaccesible: ${if (_cadaverInaccesible.value == true) "SI" else "NO"}")
+                        Log.d("Registro Muerte", "Coordenada X: $coordX")
+                        Log.d("Registro Muerte", "Coordenada Y: $coordY")
 
-                    // Limpiar formulario después de registrar
-                    limpiarFormularioMuerte()
+                        // Limpiar formulario después de registrar
+                        limpiarFormularioMuerte()
+                    } else {
+                        _registroMuerteExitoso.value = false
+                        _mensajeErrorMuerte.value = "Error al reportar muerte: ${response.message()}"
+                        Log.e("Error Registro Muerte", "Código: ${response.code()}, Mensaje: ${response.message()}")
+                    }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     _registroMuerteExitoso.value = false
                     _mensajeErrorMuerte.value = "Error al reportar muerte: ${e.message ?: "Error desconocido en el servidor"}"
-                    Log.e("Error Registro Muerte", e.message ?: "Error desconocido")
+                    Log.e("Error Registro Muerte", e.message ?: "Error desconocido", e)
                 }
             }
         }
-    }
-
-    // Función para limpiar el formulario - Muerte
-    fun limpiarFormularioMuerte() {
-        _tipoMuerte.value = ""
-        _identificadorMuerte.value = ""
-        _fechaMuerte.value = ""
-        _mesesGestacion.value = ""
-        _cadaverInaccesible.value = false
-        _coordenadaX.value = ""
-        _coordenadaY.value = ""
-    }
-
-    // Función para resetear el estado de registro - Muerte
-    fun resetearEstadoRegistroMuerte() {
-        _registroMuerteExitoso.value = false
-        _mensajeErrorMuerte.value = ""
     }
 
     // ============================================

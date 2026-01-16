@@ -585,7 +585,7 @@ fun Fallecimiento(navController: NavController, viewModel: MainViewmodel) {
 
             // Botón Reportar Muerte - SIEMPRE HABILITADO
             Button(
-                onClick = { viewModel.reportarMuerte() },
+                onClick = { viewModel.PutMuerteBovino() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp, vertical = 24.dp)
