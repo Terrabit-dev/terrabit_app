@@ -7,6 +7,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.Identificadores.Identificadores
 import com.example.terrabit_app.data.network.animales.RegistroMuerteBovi
+import com.example.terrabit_app.data.network.animales.RegistroNacimientoBovi
+import com.example.terrabit_app.data.network.respuestas.RespuestaUnificada
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -43,8 +45,10 @@ class MainViewmodel : ViewModel() {
     private val _idMadre = MutableLiveData("")
     val idMadre = _idMadre
 
+    private val _codigoRaza = MutableLiveData("")
     private val _fechaIdentificacion = MutableLiveData("")
     val fechaIdentificacion = _fechaIdentificacion
+
     private val _idCria = MutableLiveData("")
     val idCria = _idCria
 
@@ -86,7 +90,17 @@ class MainViewmodel : ViewModel() {
 
     // Listas de opciones - Nacimiento
     val listaSexos = listOf("Macho", "Hembra")
-    val listaRazas = listOf("Holstein", "Angus", "Hereford", "Simmental", "Charolais", "Jersey", "Limousin")
+    val razasBovinas = listOf(
+        Razas("1111", "Holstein (Frisona)"),
+        Razas("1116", "Angus"),
+        Razas("1114", "Hereford"),
+        Razas("9907", "Simmental"),
+        Razas("1113", "Charolais (Xarolesa)"),
+        Razas("1115", "Jersey"),
+        Razas("1117", "Limousin (Limusina)"),
+        Razas("0000", "Mestizo")
+
+    )
     val listaAptitudes = listOf("Carne", "Leche", "Doble propósito")
 
     // Funciones para actualizar los campos - Nacimiento
@@ -107,8 +121,9 @@ class MainViewmodel : ViewModel() {
         _sexoExpandido.value = false
     }
 
-    fun seleccionarRaza(raza: String) {
+    fun seleccionarRaza(raza: String, codigo: String) {
         _razaSeleccionada.value = raza
+        _codigoRaza.value = codigo
         _razaExpandida.value = false
     }
 
@@ -172,9 +187,7 @@ class MainViewmodel : ViewModel() {
         _mostrarDatePicker.value = false
     }
 
-
     // Funcion selecionar fecha - Identificacion
-
     fun seleccionarFechaIdentificacion(fechaMillis: Long) {
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = fechaMillis
@@ -186,58 +199,168 @@ class MainViewmodel : ViewModel() {
         _mostrarDatePickerIdentificacion.value = false
     }
 
-    // Función para registrar un nacimiento
-    fun registrarNacimiento() {
-        val idMadreVal = _idMadre.value ?: ""
-        val idCriaVal = _idCria.value ?: ""
-        val fechaVal = _fechaNacimiento.value ?: ""
-        val sexoVal = _sexoSeleccionado.value ?: ""
-        val razaVal = _razaSeleccionada.value ?: ""
-        val aptitudVal = _aptitudSeleccionada.value ?: ""
+    // Función para validar el formulario - Nacimiento
+    fun esFormularioNacimientoValido(): Boolean {
+        val idMadreValido = !_idMadre.value.isNullOrEmpty()
+        val idCriaValido = !_idCria.value.isNullOrEmpty()
+        val fechaNacimientoValida = !_fechaNacimiento.value.isNullOrEmpty()
+        val fechaIdentificacionValida = !_fechaIdentificacion.value.isNullOrEmpty()
+        val sexoValido = !_sexoSeleccionado.value.isNullOrEmpty()
+        val razaValida = !_razaSeleccionada.value.isNullOrEmpty()
+        val aptitudValida = !_aptitudSeleccionada.value.isNullOrEmpty()
 
-        // Validar que todos los campos estén completos
-        if (idMadreVal.isEmpty() || idCriaVal.isEmpty() || fechaVal.isEmpty() ||
-            sexoVal.isEmpty() || razaVal.isEmpty() || aptitudVal.isEmpty()
-        ) {
-            _mensajeError.value = "Por favor, complete todos los campos obligatorios"
+        return idMadreValido && idCriaValido && fechaNacimientoValida &&
+                fechaIdentificacionValida && sexoValido && razaValida && aptitudValida
+    }
+
+    // Función para registrar un nacimiento con gestión mejorada de errores
+    fun registrarNacimiento() {
+        // Validar que todos los campos requeridos estén completos
+        if (!esFormularioNacimientoValido()) {
+            val mensajeError = when {
+                _idMadre.value.isNullOrEmpty() ->
+                    "Por favor, introduzca el ID de la madre"
+                _idCria.value.isNullOrEmpty() ->
+                    "Por favor, introduzca el ID de la cría"
+                _fechaNacimiento.value.isNullOrEmpty() ->
+                    "Por favor, seleccione la fecha de nacimiento"
+                _fechaIdentificacion.value.isNullOrEmpty() ->
+                    "Por favor, seleccione la fecha de identificación"
+                _sexoSeleccionado.value.isNullOrEmpty() ->
+                    "Por favor, seleccione el sexo del animal"
+                _razaSeleccionada.value.isNullOrEmpty() ->
+                    "Por favor, seleccione la raza"
+                _aptitudSeleccionada.value.isNullOrEmpty() ->
+                    "Por favor, seleccione la aptitud"
+                else ->
+                    "Por favor, complete todos los campos obligatorios marcados con *"
+            }
+            _mensajeError.value = mensajeError
+            Log.e("Validación Nacimiento", mensajeError)
             return
         }
 
-        // Aquí iría la llamada a la API para registrar el nacimiento
-        CoroutineScope(Dispatchers.IO).launch {
+        viewModelScope.launch {
             try {
-                // Simulación de registro (reemplaza con tu llamada real a la API)
-                // val response = repositorio.registrarNacimiento(...)
+                // Convertir fechas a formato API (yyyymmdd)
+                val fechaNacimientoAPI = convertirFechaAFormatoAPI(_fechaNacimiento.value ?: "")
+                val fechaIdentificacionAPI = convertirFechaAFormatoAPI(_fechaIdentificacion.value ?: "")
 
+                // Convertir sexo al formato de la API
+                val sexoAPI = when (_sexoSeleccionado.value) {
+                    "Macho" -> "02"
+                    "Hembra" -> "01"
+                    else -> ""
+                }
+
+                // Convertir aptitud al formato de la API
+                val aptitudAPI = when (_aptitudSeleccionada.value) {
+                    "Carne" -> "02"
+                    "Leche" -> "01"
+                    "Doble propósito" -> "03"
+                    else -> ""
+                }
+
+                // Crear objeto de petición
+                val request = RegistroNacimientoBovi(
+                    nif = "S0800608B",
+                    passwordMobilitat = "L1855m58",
+                    identificador = _idCria.value ?: "",
+                    identificadorMare = _idMadre.value ?: "",
+                    dataNaixement = fechaNacimientoAPI,
+                    dataIdentificacio = fechaIdentificacionAPI,
+                    sexe = sexoAPI,
+                    raca = _codigoRaza.value ?: "",
+                    aptitud = aptitudAPI
+                )
+                Log.d("Registro Nacimiento", "Request: $request")
+
+                // Llamar a la API
+                val response = repositorio.putRegistrarNacimiento(request)
+
+                // Procesar respuesta
                 withContext(Dispatchers.Main) {
-                    // Si la respuesta es exitosa
-                    _registroExitoso.value = true
-                    Log.d(
-                        "Registro Nacimiento",
-                        "Madre: $idMadreVal, Cría: $idCriaVal, Fecha: $fechaVal, " +
-                                "Sexo: $sexoVal, Raza: $razaVal, Aptitud: $aptitudVal"
-                    )
+                    when {
+                        // Caso 1: HTTP 200 OK
+                        response.isSuccessful && response.body() != null -> {
+                            val body = response.body()!!
 
-                    // Limpiar formulario después de registrar
-                    limpiarFormularioNacimiento()
+                            // Verificar si hay errores en el body
+                            if (body.errors != null && body.errors.isNotEmpty()) {
+                                // La API devolvió errores
+                                val erroresTexto = body.errors.joinToString("\n") { error ->
+                                    "• [${error.codi}] ${error.descripcio}"
+                                }
+                                _registroExitoso.value = false
+                                _mensajeError.value = "Error al registrar nacimiento:\n$erroresTexto"
+                                body.errors.forEach { error ->
+                                    Log.e("Error Registro Nacimiento", "  - [${error.codi}] ${error.descripcio}")
+                                }
+                            }
+                            // Verificar si es respuesta exitosa (codi = "0")
+                            else if (body.codi == "0" || body.descripcio == "OK") {
+                                _registroExitoso.value = true
+                                _mensajeError.value = ""
+
+                                Log.d("Registro Nacimiento", "Nacimiento reportado exitosamente")
+                                Log.d("Registro Nacimiento", "Respuesta: [${body.codi}] ${body.descripcio}")
+
+                                // Limpiar formulario después de registrar exitosamente
+                                limpiarFormularioNacimiento()
+                            }
+                            // Caso inesperado: respuesta exitosa pero sin código 0 ni errores
+                            else {
+                                _registroExitoso.value = false
+                                _mensajeError.value = "Respuesta inesperada del servidor: [${body.codi}] ${body.descripcio}"
+                                Log.w("Registro Nacimiento", "Respuesta inesperada: [${body.codi}] ${body.descripcio}")
+                            }
+                        }
+
+                        // Caso 2: HTTP Error (4xx, 5xx)
+                        !response.isSuccessful -> {
+                            val errorBody = response.errorBody()?.string()
+                            _registroExitoso.value = false
+                            _mensajeError.value = "Error HTTP ${response.code()}: ${response.message()}"
+
+                            Log.e("Error Registro Nacimiento", "HTTP ${response.code()}")
+                            Log.e("Error Registro Nacimiento", "Mensaje: ${response.message()}")
+                            if (errorBody != null) {
+                                Log.e("Error Registro Nacimiento", "Body: $errorBody")
+                            }
+                        }
+
+                        // Caso 3: Respuesta exitosa pero sin body
+                        else -> {
+                            _registroExitoso.value = false
+                            _mensajeError.value = "Error: Respuesta vacía del servidor"
+                            Log.e("Error Registro Nacimiento", "Respuesta vacía del servidor")
+                        }
+                    }
+                }
+            } catch (e: java.net.SocketTimeoutException) {
+                // Manejo específico de timeout
+                withContext(Dispatchers.Main) {
+                    _registroExitoso.value = false
+                    _mensajeError.value = "Tiempo de espera agotado. La operación puede haberse completado, por favor verifique."
+                    Log.e("Error Registro Nacimiento", "Timeout: ${e.message}", e)
+                }
+            } catch (e: java.io.IOException) {
+                // Error de red
+                withContext(Dispatchers.Main) {
+                    _registroExitoso.value = false
+                    _mensajeError.value = "📡 Error de conexión. Verifique su conexión a internet."
+                    Log.e("Error Registro Nacimiento", " Error de red: ${e.message}", e)
                 }
             } catch (e: Exception) {
+                // Otros errores
                 withContext(Dispatchers.Main) {
-                    _mensajeError.value = "Error al registrar: ${e.message}"
-                    Log.e("Error Registro", e.message ?: "Error desconocido")
+                    _registroExitoso.value = false
+                    _mensajeError.value = "Error inesperado: ${e.message ?: "Error desconocido"}"
+                    Log.e("Error Registro Nacimiento", " Error general: ${e.message}", e)
+                    e.printStackTrace()
                 }
             }
         }
-    }
-
-    // Función para validar el formulario - Nacimiento
-    fun esFormularioValido(): Boolean {
-        return !(_idMadre.value.isNullOrEmpty() ||
-                _idCria.value.isNullOrEmpty() ||
-                _fechaNacimiento.value.isNullOrEmpty() ||
-                _sexoSeleccionado.value.isNullOrEmpty() ||
-                _razaSeleccionada.value.isNullOrEmpty() ||
-                _aptitudSeleccionada.value.isNullOrEmpty())
     }
 
     // Función para limpiar el formulario - Nacimiento
@@ -245,8 +368,10 @@ class MainViewmodel : ViewModel() {
         _idMadre.value = ""
         _idCria.value = ""
         _fechaNacimiento.value = ""
+        _fechaIdentificacion.value = ""
         _sexoSeleccionado.value = ""
         _razaSeleccionada.value = ""
+        _codigoRaza.value = ""
         _aptitudSeleccionada.value = ""
     }
 
@@ -262,6 +387,8 @@ class MainViewmodel : ViewModel() {
         // Por ejemplo: verificar longitud, formato, etc.
         return id.length >= 5 // Ejemplo simple
     }
+
+
 
     // ============================================
     // SECCIÓN: FALLECIMIENTO / MUERTE
@@ -379,7 +506,6 @@ class MainViewmodel : ViewModel() {
 
     // Función para obtener ubicación GPS actual
     fun obtenerUbicacionActual() {
-        // TODO: Implementar lógica real de GPS
         // Por ahora valores de ejemplo en formato UTM
         _coordenadaX.value = "123456,12"
         _coordenadaY.value = "1234567,12"
@@ -508,7 +634,7 @@ class MainViewmodel : ViewModel() {
                             val body = response.body()!!
 
                             // Verificar si hay errores en el body
-                            if (!body.errors.isNullOrEmpty()) {
+                            if (body.errors != null && body.errors.isNotEmpty()){
                                 // La API devolvió errores
                                 val erroresTexto = body.errors.joinToString("\n") { error ->
                                     "• [${error.codi}] ${error.descripcio}"
@@ -537,7 +663,7 @@ class MainViewmodel : ViewModel() {
                             else {
                                 _registroMuerteExitoso.value = false
                                 _mensajeErrorMuerte.value = "Respuesta inesperada del servidor: [${body.codi}] ${body.descripcio}"
-                                Log.w("Registro Muerte", "⚠️ Respuesta inesperada: [${body.codi}] ${body.descripcio}")
+                                Log.w("Registro Muerte", "Respuesta inesperada: [${body.codi}] ${body.descripcio}")
                             }
                         }
 

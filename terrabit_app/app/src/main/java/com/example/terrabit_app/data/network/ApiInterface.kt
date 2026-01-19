@@ -63,7 +63,7 @@ interface ApiInterface {
     @PUT("WSBovi/AppJava/Bovi/WSEnregistramentNaixement/")
     suspend fun putRegistrarNacimiento(
         @Body request: RegistroNacimientoBovi
-    ): Response<ResBasica>
+    ): Response<RespuestaUnificada>
 
     @PUT("WSBoviGuies/AppJava/guies/WSAltaGuia/")
     suspend fun putAltaGuia(

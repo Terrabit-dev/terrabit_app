@@ -51,7 +51,7 @@ fun Fallecimiento(navController: NavController, viewModel: MainViewmodel) {
     LaunchedEffect(registroExitoso, mensajeError) {
         if (registroExitoso) {
             snackbarHostState.showSnackbar(
-                message = "✅ Muerte reportada exitosamente",
+                message = "Muerte reportada exitosamente",
                 duration = SnackbarDuration.Short
             )
             viewModel.resetearEstadoRegistroMuerte()
@@ -130,7 +130,7 @@ fun Fallecimiento(navController: NavController, viewModel: MainViewmodel) {
             SnackbarHost(hostState = snackbarHostState) { data ->
                 Snackbar(
                     snackbarData = data,
-                    containerColor = if (data.visuals.message.contains("✅")) {
+                    containerColor = if (data.visuals.message.contains("exitosamente")) {
                         Color(0xFF4A7C59) // Verde para éxito
                     } else {
                         Color(0xFFD32F2F) // Rojo para error

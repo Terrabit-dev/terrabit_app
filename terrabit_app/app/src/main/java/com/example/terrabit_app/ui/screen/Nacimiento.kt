@@ -59,7 +59,7 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
     LaunchedEffect(registroExitoso, mensajeError) {
         if (registroExitoso) {
             snackbarHostState.showSnackbar(
-                message = "✅ Nacimiento registrado exitosamente",
+                message = "Nacimiento registrado exitosamente",
                 duration = SnackbarDuration.Short
             )
             viewModel.resetearEstadoRegistro()
@@ -174,7 +174,7 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
             SnackbarHost(hostState = snackbarHostState) { data ->
                 Snackbar(
                     snackbarData = data,
-                    containerColor = if (data.visuals.message.contains("✅")) {
+                    containerColor = if (data.visuals.message.contains("exitosamente")) {
                         Color(0xFF4A7C59) // Verde para éxito
                     } else {
                         Color(0xFFD32F2F) // Rojo para error
@@ -524,17 +524,18 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
                                 modifier = Modifier
                                     .background(Color.White)
                             ) {
-                                viewModel.listaRazas.forEach { raza ->
+                                viewModel.razasBovinas.forEach { raza ->
                                     DropdownMenuItem(
                                         text = {
                                             Text(
-                                                raza,
+                                                raza.nombre,
                                                 fontSize = 15.sp,
                                                 color = Color(0xFF1E293B),
                                                 fontWeight = FontWeight.Normal
                                             )
                                         },
-                                        onClick = { viewModel.seleccionarRaza(raza) },
+                                        onClick = {
+                                            viewModel.seleccionarRaza(raza.nombre, raza.codigo) },
                                         contentPadding = PaddingValues(
                                             horizontal = 16.dp,
                                             vertical = 14.dp
@@ -546,7 +547,7 @@ fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
                                             disabledTextColor = Color(0xFF94A3B8)
                                         )
                                     )
-                                    if (raza != viewModel.listaRazas.last()) {
+                                    if (raza != viewModel.razasBovinas.last()) {
                                         HorizontalDivider(
                                             color = Color(0xFFF1F5F9),
                                             thickness = 1.dp
