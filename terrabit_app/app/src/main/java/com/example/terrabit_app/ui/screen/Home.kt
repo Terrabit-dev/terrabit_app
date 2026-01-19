@@ -93,7 +93,7 @@ fun Home(
                         icono = Icons.Default.Agriculture,
                         titulo = "Gestión de Bovinos",
                         descripcion = "Registrar nacimientos y reportar muertes",
-                        colorFondo = Color(0xFF4A7C59),
+                        colorFondo = Color(0xFF3F8F6B),
                         onClick = { navController.navigate(Routes.GestionBovinos.route) }
                     )
 
@@ -102,7 +102,7 @@ fun Home(
                         icono = Icons.Default.LocalShipping,
                         titulo = "Guías y Movimientos",
                         descripcion = "Gestionar guías y confirmar movimientos",
-                        colorFondo = Color(0xFF2196F3),
+                        colorFondo = Color(0xFFE28F41),
                         contadorBadge = 2,
                         onClick = { navController.navigate(Routes.GuiasMovimientos.route) }
                     )
@@ -112,7 +112,7 @@ fun Home(
                         icono = Icons.Default.ShoppingCart,
                         titulo = "Material",
                         descripcion = "Solicitar material y crotaleras",
-                        colorFondo = Color(0xFF9C27B0),
+                        colorFondo = Color(0xFF3F8F6B),
                         onClick = { navController.navigate(Routes.MaterialCategoria.route) }
                     )
                 }
@@ -429,11 +429,12 @@ fun HeaderBienvenida(
         modifier = Modifier
             .fillMaxWidth()
             .height(200.dp)
+            .clip(RoundedCornerShape(bottomStart = 30.dp, bottomEnd = 30.dp))
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        Color(0xFF4A7C59),
-                        Color(0xFF5D9470)
+                        Color(0xFF2F6F4E),
+                        Color(0xFF3F8F6B)
                     )
                 )
             )
@@ -506,7 +507,7 @@ fun HeaderBienvenida(
 
             // Texto de bienvenida
             Text(
-                "¡Bienvenido!",
+                "¡Bienvenido/a!",
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White

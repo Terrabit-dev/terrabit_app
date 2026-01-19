@@ -39,7 +39,7 @@ fun MaterialCategoria(navController: NavController) {
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF9C27B0)
+                    containerColor = Color(0xFF3F8F6B)
                 )
             )
         },
@@ -80,7 +80,7 @@ fun MaterialCategoria(navController: NavController) {
                         icono = Icons.Default.ShoppingCart,
                         titulo = "Solicitar Material",
                         subtitulo = "",
-                        colorFondo = Color(0xFF9C27B0),
+                        colorFondo = Color(0xFF3F8F6B),
                         modifier = Modifier.fillMaxWidth(0.48f),
                         onClick = { navController.navigate(Routes.Material.route) }
                     )
