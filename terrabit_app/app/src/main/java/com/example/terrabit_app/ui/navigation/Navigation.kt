@@ -22,10 +22,25 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel) {
         navController = navController,
         startDestination = Routes.Home.route
     ) {
+        // Pantalla principal
         composable(Routes.Home.route) {
             Home(navController = navController, drawerViewModel)
         }
 
+        // Pantallas de categorías (intermedias)
+        composable(Routes.GestionBovinos.route) {
+            GestionBovinos(navController = navController)
+        }
+
+        composable(Routes.GuiasMovimientos.route) {
+            GuiasMovimientos(navController = navController)
+        }
+
+        composable(Routes.MaterialCategoria.route) {
+            MaterialCategoria(navController = navController)
+        }
+
+        // Pantallas de acciones específicas (las que ya tenías)
         composable(Routes.Nacimiento.route) {
             Nacimiento(navController = navController, myViewmodel)
         }
