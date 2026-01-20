@@ -204,13 +204,12 @@ class MainViewmodel : ViewModel() {
         val idMadreValido = !_idMadre.value.isNullOrEmpty()
         val idCriaValido = !_idCria.value.isNullOrEmpty()
         val fechaNacimientoValida = !_fechaNacimiento.value.isNullOrEmpty()
-        val fechaIdentificacionValida = !_fechaIdentificacion.value.isNullOrEmpty()
         val sexoValido = !_sexoSeleccionado.value.isNullOrEmpty()
         val razaValida = !_razaSeleccionada.value.isNullOrEmpty()
         val aptitudValida = !_aptitudSeleccionada.value.isNullOrEmpty()
 
         return idMadreValido && idCriaValido && fechaNacimientoValida &&
-                fechaIdentificacionValida && sexoValido && razaValida && aptitudValida
+                sexoValido && razaValida && aptitudValida
     }
 
     // Función para registrar un nacimiento con gestión mejorada de errores
@@ -224,8 +223,6 @@ class MainViewmodel : ViewModel() {
                     "Por favor, introduzca el ID de la cría"
                 _fechaNacimiento.value.isNullOrEmpty() ->
                     "Por favor, seleccione la fecha de nacimiento"
-                _fechaIdentificacion.value.isNullOrEmpty() ->
-                    "Por favor, seleccione la fecha de identificación"
                 _sexoSeleccionado.value.isNullOrEmpty() ->
                     "Por favor, seleccione el sexo del animal"
                 _razaSeleccionada.value.isNullOrEmpty() ->
