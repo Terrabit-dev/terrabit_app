@@ -61,7 +61,7 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel) {
         }
 
         composable(Routes.Material.route) {
-            Material(navController = navController)
+            Material(navController = navController, myViewmodel)
         }
         composable(Routes.CorregirBovino.route) {
             CorregirSexoBovi(navController, myViewmodel)
