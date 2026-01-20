@@ -278,7 +278,7 @@ class MainViewmodel : ViewModel() {
                 // Procesar respuesta
                 withContext(Dispatchers.Main) {
                     when {
-                        // Caso 1: HTTP 200 OK
+                        // Caso: HTTP 200 OK
                         response.isSuccessful && response.body() != null -> {
                             val body = response.body()!!
 
@@ -626,7 +626,7 @@ class MainViewmodel : ViewModel() {
                 // Procesar respuesta
                 withContext(Dispatchers.Main) {
                     when {
-                        // Caso 1: HTTP 200 OK
+                        // Caso: HTTP 200 OK
                         response.isSuccessful && response.body() != null -> {
                             val body = response.body()!!
 
