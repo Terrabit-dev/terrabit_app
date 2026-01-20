@@ -104,7 +104,7 @@ fun GestionBovinos(navController: NavController) {
                         subtitulo = "",
                         colorFondo = Color(0xFF4A7C59),
                         modifier = Modifier.weight(1f),
-                        onClick = { navController.navigate(Routes.Nacimiento.route) }
+                        onClick = { navController.navigate(Routes.CorregirBovino.route) }
                     )
 
                     TarjetaAccion(

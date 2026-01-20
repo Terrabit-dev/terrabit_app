@@ -93,7 +93,7 @@ interface ApiInterface {
     @PUT("WSBovi/AppJava/Bovi/WSModificacioAnimal/")
     suspend fun putMoficarAnimal(
         @Body request: PetModicarAnimal
-    ): Response<ResBasica>
+    ): Response<RespuestaUnificada>
 
     @PUT("WSBovi/AppJava/Bovi/WSModificacioDataIdentificacioAnimal/")
     suspend fun putIdentificacionPendiente(

@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.Identificadores.Identificadores
+import com.example.terrabit_app.data.network.animales.PetModicarAnimal
 import com.example.terrabit_app.data.network.animales.RegistroMuerteBovi
 import com.example.terrabit_app.data.network.animales.RegistroNacimientoBovi
 import com.example.terrabit_app.data.network.respuestas.RespuestaUnificada
@@ -752,5 +753,189 @@ class MainViewmodel : ViewModel() {
             Log.e("Error conversión fecha", e.message ?: "Error desconocido")
             ""
         }
+    }
+
+    // ============================================
+    // SECCIÓN: CORRECCIÓN DE SEXO
+    // ============================================
+
+    // Estados del formulario de corrección de sexo
+    private val _identificadorCorreccionSexo = MutableLiveData("")
+    val identificadorCorreccionSexo = _identificadorCorreccionSexo
+
+    private val _sexoCorreccionSeleccionado = MutableLiveData("")
+    val sexoCorreccionSeleccionado = _sexoCorreccionSeleccionado
+
+    // Estados de expansión de menús desplegables
+    private val _sexoCorreccionExpandido = MutableLiveData(false)
+    val sexoCorreccionExpandido = _sexoCorreccionExpandido
+
+    // Estados para feedback del registro
+    private val _correccionSexoExitosa = MutableLiveData<Boolean>()
+    val correccionSexoExitosa = _correccionSexoExitosa
+
+    private val _mensajeErrorCorreccionSexo = MutableLiveData<String>()
+    val mensajeErrorCorreccionSexo = _mensajeErrorCorreccionSexo
+
+    // Funciones para actualizar los campos
+    fun actualizarIdentificadorCorreccionSexo(nuevoId: String) {
+        _identificadorCorreccionSexo.value = nuevoId
+    }
+
+    fun seleccionarSexoCorreccion(sexo: String) {
+        _sexoCorreccionSeleccionado.value = sexo
+        _sexoCorreccionExpandido.value = false
+    }
+
+    // Funciones para controlar la expansión de menús
+    fun toggleSexoCorreccionExpandido() {
+        _sexoCorreccionExpandido.value = !(_sexoCorreccionExpandido.value ?: false)
+    }
+
+    fun cerrarSexoCorreccionMenu() {
+        _sexoCorreccionExpandido.value = false
+    }
+
+    // Función para validar el formulario
+    fun esFormularioCorreccionSexoValido(): Boolean {
+        val identificadorValido = !_identificadorCorreccionSexo.value.isNullOrEmpty()
+        val sexoValido = !_sexoCorreccionSeleccionado.value.isNullOrEmpty()
+        return identificadorValido && sexoValido
+    }
+
+    // Función para corregir el sexo del animal
+    fun corregirSexoAnimal() {
+        // Validar que todos los campos requeridos estén completos
+        if (!esFormularioCorreccionSexoValido()) {
+            val mensajeError = when {
+                _identificadorCorreccionSexo.value.isNullOrEmpty() ->
+                    "Por favor, introduzca el identificador del animal"
+                _sexoCorreccionSeleccionado.value.isNullOrEmpty() ->
+                    "Por favor, seleccione el sexo correcto"
+                else ->
+                    "Por favor, complete todos los campos obligatorios marcados con *"
+            }
+            _mensajeErrorCorreccionSexo.value = mensajeError
+            Log.e("Validación Corrección Sexo", mensajeError)
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                // Convertir sexo al formato de la API
+                val sexoAPI = when (_sexoCorreccionSeleccionado.value) {
+                    "Macho" -> "02"
+                    "Hembra" -> "01"
+                    else -> ""
+                }
+
+                // Crear objeto de petición
+                val request = PetModicarAnimal(
+                    identificador = _identificadorCorreccionSexo.value ?: "",
+                    nif = "S0800608B",
+                    passwordMobilitat = "L1855m58",
+                    sexe = sexoAPI
+                )
+
+                Log.d("Corrección Sexo", "📤 Enviando petición a la API...")
+                Log.d("Corrección Sexo", "Request: $request")
+
+                // Llamar a la API
+                val response = repositorio.putMoficarAnimal(request)
+
+                // Procesar respuesta
+                withContext(Dispatchers.Main) {
+                    when {
+                        // Caso 1: HTTP 200 OK
+                        response.isSuccessful && response.body() != null -> {
+                            val body = response.body()!!
+
+                            // Verificar si hay errores en el body
+                            if (body.errors != null && body.errors.isNotEmpty()) {
+                                // La API devolvió errores
+                                val erroresTexto = body.errors.joinToString("\n") { error ->
+                                    "• [${error.codi}] ${error.descripcio}"
+                                }
+
+                                _correccionSexoExitosa.value = false
+                                _mensajeErrorCorreccionSexo.value = "Error al corregir sexo:\n$erroresTexto"
+
+                                body.errors.forEach { error ->
+                                    Log.e("Error Corrección Sexo", "  - [${error.codi}] ${error.descripcio}")
+                                }
+                            }
+                            // Verificar si es respuesta exitosa (codi = "0")
+                            else if (body.codi == "0" || body.descripcio == "OK") {
+                                _correccionSexoExitosa.value = true
+                                _mensajeErrorCorreccionSexo.value = ""
+
+                                Log.d("Corrección Sexo", "Sexo corregido exitosamente")
+                                Log.d("Corrección Sexo", "Respuesta: [${body.codi}] ${body.descripcio}")
+                                Log.d("Corrección Sexo", "Identificador: ${_identificadorCorreccionSexo.value}")
+                                Log.d("Corrección Sexo", "Sexo: $sexoAPI (${_sexoCorreccionSeleccionado.value})")
+
+                                // Limpiar formulario después de corregir exitosamente
+                                limpiarFormularioCorreccionSexo()
+                            }
+                            // Caso inesperado
+                            else {
+                                _correccionSexoExitosa.value = false
+                                _mensajeErrorCorreccionSexo.value = "Respuesta inesperada del servidor: [${body.codi}] ${body.descripcio}"
+                                Log.w("Corrección Sexo", "Respuesta inesperada: [${body.codi}] ${body.descripcio}")
+                            }
+                        }
+
+                        // Caso 2: HTTP Error (4xx, 5xx)
+                        !response.isSuccessful -> {
+                            val errorBody = response.errorBody()?.string()
+                            _correccionSexoExitosa.value = false
+                            _mensajeErrorCorreccionSexo.value = "Error HTTP ${response.code()}: ${response.message()}"
+
+                            if (errorBody != null) {
+                                Log.e("Error Corrección Sexo", "Body: $errorBody")
+                            }
+                        }
+
+                        // Caso 3: Respuesta exitosa pero sin body
+                        else -> {
+                            _correccionSexoExitosa.value = false
+                            _mensajeErrorCorreccionSexo.value = "Error: Respuesta vacía del servidor"
+                            Log.e("Error Corrección Sexo", "Respuesta vacía del servidor")
+                        }
+                    }
+                }
+            } catch (e: java.net.SocketTimeoutException) {
+                withContext(Dispatchers.Main) {
+                    _correccionSexoExitosa.value = false
+                    _mensajeErrorCorreccionSexo.value = "Tiempo de espera agotado. La operación puede haberse completado, por favor verifique."
+                    Log.e("Error Corrección Sexo", "Timeout: ${e.message}", e)
+                }
+            } catch (e: java.io.IOException) {
+                withContext(Dispatchers.Main) {
+                    _correccionSexoExitosa.value = false
+                    _mensajeErrorCorreccionSexo.value = "Error de conexión. Verifique su conexión a internet."
+                    Log.e("Error Corrección Sexo", "Error de red: ${e.message}", e)
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    _correccionSexoExitosa.value = false
+                    _mensajeErrorCorreccionSexo.value = "Error inesperado: ${e.message ?: "Error desconocido"}"
+                    Log.e("Error Corrección Sexo", "Error general: ${e.message}", e)
+                    e.printStackTrace()
+                }
+            }
+        }
+    }
+
+    // Función para limpiar el formulario
+    fun limpiarFormularioCorreccionSexo() {
+        _identificadorCorreccionSexo.value = ""
+        _sexoCorreccionSeleccionado.value = ""
+    }
+
+    // Función para resetear el estado de registro
+    fun resetearEstadoCorreccionSexo() {
+        _correccionSexoExitosa.value = false
+        _mensajeErrorCorreccionSexo.value = ""
     }
 }

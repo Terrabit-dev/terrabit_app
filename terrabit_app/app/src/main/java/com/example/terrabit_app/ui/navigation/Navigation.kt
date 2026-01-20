@@ -2,17 +2,20 @@ package com.example.terrabit_app.navegacion
 
 import Movimientos
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.pantallas.*
+import com.example.terrabit_app.ui.screen.CorregirSexoBovi
 import com.example.terrabit_app.ui.screen.Fallecimiento
 import com.example.terrabit_app.ui.screen.GestionGuias
 import com.example.terrabit_app.ui.screen.Material
 import com.example.terrabit_app.ui.screen.Nacimiento
 import com.example.terrabit_app.viewmodel.DrawerViewModel
 import com.example.terrabit_app.viewmodel.MainViewmodel
+import okhttp3.Route
 
 @Composable
 fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel) {
@@ -59,6 +62,9 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel) {
 
         composable(Routes.Material.route) {
             Material(navController = navController)
+        }
+        composable(Routes.CorregirBovino.route) {
+            CorregirSexoBovi(navController, myViewmodel)
         }
     }
 }
