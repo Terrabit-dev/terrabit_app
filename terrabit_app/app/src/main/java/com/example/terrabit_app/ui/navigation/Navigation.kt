@@ -66,5 +66,6 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel) {
         composable(Routes.CorregirBovino.route) {
             CorregirSexoBovi(navController, myViewmodel)
         }
+
     }
 }

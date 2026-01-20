@@ -1362,4 +1362,5 @@ class MainViewmodel : ViewModel() {
         _correccionSexoExitosa.value = false
         _mensajeErrorCorreccionSexo.value = ""
     }
+
 }
