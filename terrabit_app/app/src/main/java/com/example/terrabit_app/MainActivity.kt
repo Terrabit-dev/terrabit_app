@@ -27,8 +27,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     val myViewModel: MainViewmodel = viewModel()
                     val drawerViewModel: DrawerViewModel = viewModel()
-                    val ViewModelnacimiento: NacimientoViewmodel = viewModel()
-                    Navigation(myViewModel, drawerViewModel, ViewModelnacimiento)
+                    Navigation(myViewModel, drawerViewModel)
                 }
             }
         }

@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.Identificadores.Identificadores
 import com.example.terrabit_app.data.network.animales.RegistroNacimientoBovi
+import com.example.terrabit_app.utils.DateUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -243,8 +244,8 @@ class NacimientoViewmodel : ViewModel() {
         viewModelScope.launch {
             try {
                 // Convertir fechas a formato API (yyyymmdd)
-                val fechaNacimientoAPI = convertirFechaAFormatoAPI(_fechaNacimiento.value ?: "")
-                val fechaIdentificacionAPI = convertirFechaAFormatoAPI(_fechaIdentificacion.value ?: "")
+                val fechaNacimientoAPI = DateUtils.convertirFechaAFormatoAPI(_fechaNacimiento.value ?: "")
+                val fechaIdentificacionAPI = DateUtils.convertirFechaAFormatoAPI(_fechaIdentificacion.value ?: "")
 
                 // Convertir sexo al formato de la API
                 val sexoAPI = when (_sexoSeleccionado.value) {
@@ -395,22 +396,7 @@ class NacimientoViewmodel : ViewModel() {
     /**
      * Convierte una fecha de formato "dd/MM/yyyy" a "yyyymmdd"
      */
-    private fun convertirFechaAFormatoAPI(fecha: String): String {
-        return try {
-            val partes = fecha.split("/")
-            if (partes.size == 3) {
-                val dia = partes[0]
-                val mes = partes[1]
-                val anio = partes[2]
-                "$anio$mes$dia"
-            } else {
-                ""
-            }
-        } catch (e: Exception) {
-            Log.e("Error conversión fecha", e.message ?: "Error desconocido")
-            ""
-        }
-    }
+
 
     /**
      * Convierte una fecha de formato "yyyymmdd" a "dd/MM/yyyy"
