@@ -15,10 +15,11 @@ import com.example.terrabit_app.ui.screen.Material
 import com.example.terrabit_app.ui.screen.Nacimiento
 import com.example.terrabit_app.viewmodel.DrawerViewModel
 import com.example.terrabit_app.viewmodel.MainViewmodel
+import com.example.terrabit_app.viewmodel.NacimientoViewmodel
 import okhttp3.Route
 
 @Composable
-fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel) {
+fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel, ViewmodelNacimiento: NacimientoViewmodel ) {
     val navController = rememberNavController()
 
     NavHost(
@@ -45,7 +46,7 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel) {
 
         // Pantallas de acciones específicas (las que ya tenías)
         composable(Routes.Nacimiento.route) {
-            Nacimiento(navController = navController, myViewmodel)
+            Nacimiento(navController = navController, ViewmodelNacimiento)
         }
 
         composable(Routes.Fallecimiento.route) {
