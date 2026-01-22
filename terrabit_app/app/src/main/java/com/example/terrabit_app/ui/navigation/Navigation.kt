@@ -47,7 +47,7 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel ) {
 
         // Pantallas de acciones específicas (las que ya tenías)
         composable(Routes.Nacimiento.route) {
-            val nacimientos: NacimientoViewmodel = viewModel()
+            val nacimientos : NacimientoViewmodel = viewModel()
             Nacimiento(navController = navController, nacimientos)
         }
 

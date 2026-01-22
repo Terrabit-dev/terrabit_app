@@ -389,6 +389,14 @@ class NacimientoViewmodel : ViewModel() {
         return id.length >= 5 // Ejemplo simple
     }
 
+    // ============================================
+    // FUNCIONES AUXILIARES (FALTABAN)
+    // ============================================
+
+    /**
+     * Convierte una fecha de formato "dd/MM/yyyy" a "yyyymmdd"
+     */
+
 
     /**
      * Convierte una fecha de formato "yyyymmdd" a "dd/MM/yyyy"
