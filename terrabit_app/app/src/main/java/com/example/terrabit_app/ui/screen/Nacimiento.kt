@@ -24,11 +24,12 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.terrabit_app.data.network.Identificadores.Identificadores
 import com.example.terrabit_app.viewmodel.MainViewmodel
+import com.example.terrabit_app.viewmodel.NacimientoViewmodel
 import kotlin.collections.emptyList
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Nacimiento(navController: NavController, viewModel: MainViewmodel) {
+fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
     // Observar todas las variables del ViewModel
     val idMadre by viewModel.idMadre.observeAsState("")
     val idCria by viewModel.idCria.observeAsState("")
