@@ -2,20 +2,27 @@ package com.example.terrabit_app.navegacion
 
 import Movimientos
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.pantallas.*
+import com.example.terrabit_app.ui.screen.CorregirSexoBovi
 import com.example.terrabit_app.ui.screen.Fallecimiento
 import com.example.terrabit_app.ui.screen.GestionGuias
 import com.example.terrabit_app.ui.screen.Material
 import com.example.terrabit_app.ui.screen.Nacimiento
+import com.example.terrabit_app.viewmodel.CorrecionSexoViewModel
 import com.example.terrabit_app.viewmodel.DrawerViewModel
 import com.example.terrabit_app.viewmodel.MainViewmodel
+import com.example.terrabit_app.viewmodel.MaterialViewModel
+import com.example.terrabit_app.viewmodel.NacimientoViewmodel
+import com.example.terrabit_app.viewmodel.ViewModelMuerteBovi
+import okhttp3.Route
 
 @Composable
-fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel) {
+fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel ) {
     val navController = rememberNavController()
 
     NavHost(
@@ -42,11 +49,13 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel) {
 
         // Pantallas de acciones específicas (las que ya tenías)
         composable(Routes.Nacimiento.route) {
-            Nacimiento(navController = navController, myViewmodel)
+            val nacimientos : NacimientoViewmodel = viewModel()
+            Nacimiento(navController = navController, nacimientos)
         }
 
         composable(Routes.Fallecimiento.route) {
-            Fallecimiento(navController = navController, myViewmodel)
+            val muertes : ViewModelMuerteBovi = viewModel()
+            Fallecimiento(navController = navController, muertes)
         }
 
         composable(Routes.GestionGuias.route) {
@@ -58,7 +67,13 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel) {
         }
 
         composable(Routes.Material.route) {
-            Material(navController = navController)
+            val MaterialV : MaterialViewModel = viewModel()
+            Material(navController = navController, MaterialV)
         }
+        composable(Routes.CorregirBovino.route) {
+            val corregirSexo : CorrecionSexoViewModel = viewModel()
+            CorregirSexoBovi(navController, corregirSexo)
+        }
+
     }
 }

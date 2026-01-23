@@ -94,6 +94,28 @@ fun GestionBovinos(navController: NavController) {
                         onClick = { navController.navigate(Routes.Fallecimiento.route) }
                     )
                 }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    TarjetaAccion(
+                        icono = Icons.Default.Edit,
+                        titulo = "Corregir sexo",
+                        subtitulo = "",
+                        colorFondo = Color(0xFF4A7C59),
+                        modifier = Modifier.weight(1f),
+                        onClick = { navController.navigate(Routes.CorregirBovino.route) }
+                    )
+
+                    TarjetaAccion(
+                        icono = Icons.Default.AddCircle,
+                        titulo = "Identificar animal",
+                        subtitulo = "",
+                        colorFondo = Color(0xFF4A7C59),
+                        modifier = Modifier.weight(1f),
+                        onClick = { navController.navigate(Routes.Fallecimiento.route) }
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))

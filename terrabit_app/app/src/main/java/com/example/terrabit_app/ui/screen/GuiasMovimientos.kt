@@ -78,9 +78,9 @@ fun GuiasMovimientos(navController: NavController) {
                 ) {
                     TarjetaAccion(
                         icono = Icons.Default.Create,
-                        titulo = "Gestionar Guías",
+                        titulo = "Altas Guías",
                         subtitulo = "",
-                        colorFondo = Color(0xFF4A7C59),
+                        colorFondo = Color(0xFFE28F41),
                         modifier = Modifier.weight(1f),
                         onClick = { navController.navigate(Routes.GestionGuias.route) }
                     )
@@ -89,7 +89,7 @@ fun GuiasMovimientos(navController: NavController) {
                         icono = Icons.Default.Send,
                         titulo = "Confirmar Movimientos",
                         subtitulo = "",
-                        colorFondo = Color(0xFF4A7C59),
+                        colorFondo = Color(0xFFE28F41),
                         contadorBadge = 2,
                         modifier = Modifier.weight(1f),
                         onClick = { navController.navigate(Routes.Movimientos.route) }

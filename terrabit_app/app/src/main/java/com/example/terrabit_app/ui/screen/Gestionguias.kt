@@ -38,7 +38,7 @@ fun GestionGuias(navController: NavController) {
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF1565C0),
+                    containerColor = Color(0xFFE28F41),
                     titleContentColor = Color.White,
                     navigationIconContentColor = Color.White
                 )
