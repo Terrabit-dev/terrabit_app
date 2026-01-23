@@ -16,6 +16,7 @@ import com.example.terrabit_app.ui.screen.Nacimiento
 import com.example.terrabit_app.viewmodel.CorrecionSexoViewModel
 import com.example.terrabit_app.viewmodel.DrawerViewModel
 import com.example.terrabit_app.viewmodel.MainViewmodel
+import com.example.terrabit_app.viewmodel.MaterialViewModel
 import com.example.terrabit_app.viewmodel.NacimientoViewmodel
 import com.example.terrabit_app.viewmodel.ViewModelMuerteBovi
 import okhttp3.Route
@@ -66,7 +67,8 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel ) {
         }
 
         composable(Routes.Material.route) {
-            Material(navController = navController, myViewmodel)
+            val MaterialV : MaterialViewModel = viewModel()
+            Material(navController = navController, MaterialV)
         }
         composable(Routes.CorregirBovino.route) {
             val corregirSexo : CorrecionSexoViewModel = viewModel()
