@@ -7,7 +7,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.Identificadores.Identificadores
 import com.example.terrabit_app.data.network.animales.RegistroNacimientoBovi
+import com.example.terrabit_app.data.network.respuestas.RespuestaUnificada
 import com.example.terrabit_app.utils.DateUtils
+import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -90,7 +92,11 @@ class NacimientoViewmodel : ViewModel() {
     private val _mensajeError = MutableLiveData<String>()
     val mensajeError = _mensajeError
 
-    // Data class para Razas (FALTABA)
+    // Estado de carga - NUEVO
+    private val _cargandoNacimiento = MutableLiveData(false)
+    val cargandoNacimiento = _cargandoNacimiento
+
+    // Data class para Razas
     data class Razas(val codigo: String, val nombre: String)
 
     // Listas de opciones - Nacimiento
@@ -242,6 +248,9 @@ class NacimientoViewmodel : ViewModel() {
         }
 
         viewModelScope.launch {
+            // Activar indicador de carga
+            _cargandoNacimiento.postValue(true)
+
             try {
                 // Convertir fechas a formato API (yyyymmdd)
                 val fechaNacimientoAPI = DateUtils.convertirFechaAFormatoAPI(_fechaNacimiento.value ?: "")
@@ -281,25 +290,16 @@ class NacimientoViewmodel : ViewModel() {
 
                 // Procesar respuesta
                 withContext(Dispatchers.Main) {
+                    // Desactivar indicador de carga
+                    _cargandoNacimiento.value = false
+
                     when {
                         // Caso: HTTP 200 OK
                         response.isSuccessful && response.body() != null -> {
                             val body = response.body()!!
 
-                            // Verificar si hay errores en el body
-                            if (body.errors != null && body.errors.isNotEmpty()) {
-                                // La API devolvió errores
-                                val erroresTexto = body.errors.joinToString("\n") { error ->
-                                    "• [${error.codi}] ${error.descripcio}"
-                                }
-                                _registroExitoso.value = false
-                                _mensajeError.value = "Error al registrar nacimiento:\n$erroresTexto"
-                                body.errors.forEach { error ->
-                                    Log.e("Error Registro Nacimiento", "  - [${error.codi}] ${error.descripcio}")
-                                }
-                            }
                             // Verificar si es respuesta exitosa (codi = "0")
-                            else if (body.codi == "0" || body.descripcio == "OK") {
+                            if (body.codi == "0" || body.descripcio == "OK") {
                                 _registroExitoso.value = true
                                 _mensajeError.value = ""
 
@@ -312,7 +312,7 @@ class NacimientoViewmodel : ViewModel() {
                             // Caso inesperado: respuesta exitosa pero sin código 0 ni errores
                             else {
                                 _registroExitoso.value = false
-                                _mensajeError.value = "Respuesta inesperada del servidor: [${body.codi}] ${body.descripcio}"
+                                _mensajeError.value = "Respuesta inesperada del servidor: ${body.descripcio ?: "Sin descripción"}"
                                 Log.w("Registro Nacimiento", "Respuesta inesperada: [${body.codi}] ${body.descripcio}")
                             }
                         }
@@ -320,9 +320,17 @@ class NacimientoViewmodel : ViewModel() {
                         // Caso 2: HTTP Error (4xx, 5xx)
                         !response.isSuccessful -> {
                             val errorBody = response.errorBody()?.string()
+                            if (errorBody != null) {
+                                try {
+                                    val errorObj = Gson().fromJson(errorBody, RespuestaUnificada::class.java)
+                                    // Cogemos la descripción del primer error, o un mensaje por defecto si está vacía
+                                    _mensajeError.value = errorObj.errors?.firstOrNull()?.descripcio
+                                        ?: "Error desconocido del servidor"
+                                } catch (e: Exception) {
+                                    _mensajeError.value = "Error al procesar respuesta"
+                                }
+                            }
                             _registroExitoso.value = false
-                            _mensajeError.value = "Error HTTP ${response.code()}: ${response.message()}"
-
                             Log.e("Error Registro Nacimiento", "HTTP ${response.code()}")
                             Log.e("Error Registro Nacimiento", "Mensaje: ${response.message()}")
                             if (errorBody != null) {
@@ -341,6 +349,7 @@ class NacimientoViewmodel : ViewModel() {
             } catch (e: java.net.SocketTimeoutException) {
                 // Manejo específico de timeout
                 withContext(Dispatchers.Main) {
+                    _cargandoNacimiento.value = false
                     _registroExitoso.value = false
                     _mensajeError.value = "Tiempo de espera agotado. La operación puede haberse completado, por favor verifique."
                     Log.e("Error Registro Nacimiento", "Timeout: ${e.message}", e)
@@ -348,6 +357,7 @@ class NacimientoViewmodel : ViewModel() {
             } catch (e: java.io.IOException) {
                 // Error de red
                 withContext(Dispatchers.Main) {
+                    _cargandoNacimiento.value = false
                     _registroExitoso.value = false
                     _mensajeError.value = "Error de conexión. Verifique su conexión a internet."
                     Log.e("Error Registro Nacimiento", "Error de red: ${e.message}", e)
@@ -355,6 +365,7 @@ class NacimientoViewmodel : ViewModel() {
             } catch (e: Exception) {
                 // Otros errores
                 withContext(Dispatchers.Main) {
+                    _cargandoNacimiento.value = false
                     _registroExitoso.value = false
                     _mensajeError.value = "Error inesperado: ${e.message ?: "Error desconocido"}"
                     Log.e("Error Registro Nacimiento", "Error general: ${e.message}", e)
@@ -384,23 +395,13 @@ class NacimientoViewmodel : ViewModel() {
 
     // Función para validar formato de identificador
     fun validarIdentificador(id: String): Boolean {
-        // Implementa tu lógica de validación aquí
-        // Por ejemplo: verificar longitud, formato, etc.
-        return id.length >= 5 // Ejemplo simple
+        return id.length >= 5
     }
 
-    // ============================================
-    // FUNCIONES AUXILIARES (FALTABAN)
-    // ============================================
-
-    /**
-     * Convierte una fecha de formato "dd/MM/yyyy" a "yyyymmdd"
-     */
 
 
-    /**
-     * Convierte una fecha de formato "yyyymmdd" a "dd/MM/yyyy"
-     */
+
+    // Convierte una fecha de formato "yyyymmdd" a "dd/MM/yyyy"
     private fun convertirFechaDesdeAPI(fechaAPI: String): String {
         return try {
             if (fechaAPI.length == 8) {
