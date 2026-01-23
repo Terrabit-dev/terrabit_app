@@ -380,6 +380,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                             tint = Color(0xFF4A7C59)
                                         )
                                     }
+
                                 },
                                 singleLine = true,
                                 shape = MaterialTheme.shapes.medium,

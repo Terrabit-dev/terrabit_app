@@ -96,7 +96,7 @@ class NacimientoViewmodel : ViewModel() {
     private val _cargandoNacimiento = MutableLiveData(false)
     val cargandoNacimiento = _cargandoNacimiento
 
-    // Data class para Razas (FALTABA)
+    // Data class para Razas
     data class Razas(val codigo: String, val nombre: String)
 
     // Listas de opciones - Nacimiento
@@ -395,16 +395,13 @@ class NacimientoViewmodel : ViewModel() {
 
     // Función para validar formato de identificador
     fun validarIdentificador(id: String): Boolean {
-        // Implementa tu lógica de validación aquí
-        // Por ejemplo: verificar longitud, formato, etc.
-        return id.length >= 5 // Ejemplo simple
+        return id.length >= 5
     }
 
 
 
 
     // Convierte una fecha de formato "yyyymmdd" a "dd/MM/yyyy"
-
     private fun convertirFechaDesdeAPI(fechaAPI: String): String {
         return try {
             if (fechaAPI.length == 8) {
