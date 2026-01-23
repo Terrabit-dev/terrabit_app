@@ -1,28 +1,34 @@
 package com.example.terrabit_app.ui.screen
 
-import android.graphics.fonts.Font
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -41,7 +47,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -72,9 +77,15 @@ fun LoginScreen() {
             )
             Text(
                 text = "Gestión Ganadera Inteligente",
-                fontSize = 20.sp
+                fontSize = 18.sp,
+                color = Color.Gray
             )
             LoginCard()
+            Text(
+                text = "© 2026 Terrabit. Gestión ganadera moderna y eficiente",
+                fontSize = 12.sp,
+                color = Color.Gray
+            )
         }
     }
 }
@@ -93,34 +104,90 @@ fun LoginCard() {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+                .padding(vertical = 20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "Iniciar sesión",
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp
-            )
-            Text(
-                text = "Usuario",
-                fontWeight = FontWeight.Bold
-            )
-            CustomOutlinedTextField(
-                placeholder = "Tu usuario",
-                icon = Icons.Outlined.AccountCircle
-            )
-            Text(
-                text = "Contraseña",
-                fontWeight = FontWeight.Bold
-            )
-            CustomOutlinedTextField(
-                placeholder = "Tu contraseña",
-                icon = Icons.Outlined.Lock,
-                isPassword = true
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Text(
+                    text = "Iniciar sesión",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                )
+                Text(
+                    text = "Usuario",
+                    fontWeight = FontWeight.Bold
+                )
+                CustomOutlinedTextField(
+                    placeholder = "Tu usuario",
+                    icon = Icons.Outlined.AccountCircle
+                )
+                Text(
+                    text = "Contraseña",
+                    fontWeight = FontWeight.Bold
+                )
+                CustomOutlinedTextField(
+                    placeholder = "Tu contraseña",
+                    icon = Icons.Outlined.Lock,
+                    isPassword = true
+                )
+            }
             Row(
-                modifier = Modifier.fillMaxWidth()
-            ) {  }
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                CheckboxWithText()
+                Text(
+                    text = "¿Olvidaste tu contraseña?",
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF5C7654),
+                    modifier = Modifier.clickable { /*TODO*/ }
+                )
+            }
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { /*TODO*/ },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF5C7654)
+                    ),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text(text = "Acceder")
+                }
+                /*
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 16.dp),
+                    thickness = 1.dp,
+                    color = Color.LightGray
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
+                ) {
+                    Text(
+                        text = "¿Primera vez?",
+                        color = Color.LightGray
+                    )
+                    Text(
+                        text = "Registrate aquí",
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF5C7654),
+                        modifier = Modifier.clickable { /*TODO*/ }
+                    )
+                }
+                */
+            }
         }
     }
 }
@@ -135,7 +202,7 @@ fun CustomOutlinedTextField(
 
     OutlinedTextField(
         value = "",
-        onValueChange = {  },
+        onValueChange = { /*TODO*/ },
         modifier = Modifier.fillMaxWidth(),
         placeholder = { Text(text = placeholder) },
         leadingIcon = {
@@ -168,6 +235,28 @@ fun CustomOutlinedTextField(
             unfocusedTrailingIconColor = Color.Gray
         )
     )
+}
+
+@Composable
+fun CheckboxWithText() {
+    Row(
+        modifier = Modifier.clickable { /*TODO*/ },
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Checkbox(
+            checked = true,
+            onCheckedChange = { /*TODO*/ },
+            colors = CheckboxDefaults.colors(
+                checkedColor = Color.Gray,
+                uncheckedColor = Color.Gray
+            )
+        )
+        Text(
+            text = "Recordarme",
+            fontWeight = FontWeight.Bold,
+            color = Color.Gray
+        )
+    }
 }
 
 @Preview(showBackground = true)
