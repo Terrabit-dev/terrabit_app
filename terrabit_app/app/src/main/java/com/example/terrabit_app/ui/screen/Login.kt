@@ -243,13 +243,15 @@ fun CustomOutlinedTextField(
 
 @Composable
 fun CheckboxWithText() {
+    var isChecked by remember { mutableStateOf(false) }
+
     Row(
         modifier = Modifier.clickable { /*TODO*/ },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Checkbox(
-            checked = true,
-            onCheckedChange = { /*TODO*/ },
+            checked = isChecked,
+            onCheckedChange = { isChecked = it },
             colors = CheckboxDefaults.colors(
                 checkedColor = Color.Gray,
                 uncheckedColor = Color.Gray
