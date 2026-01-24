@@ -76,7 +76,8 @@ fun Login(navController: NavController) {
             Text(
                 text = "Terrabit",
                 fontWeight = FontWeight.Bold,
-                fontSize = 32.sp
+                fontSize = 32.sp,
+                color = Color.Black
             )
             Text(
                 text = "Gestión Ganadera Inteligente",
@@ -145,7 +146,9 @@ fun LoginCard(
                 )
             }
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
