@@ -50,10 +50,12 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.terrabit_app.R
+import com.example.terrabit_app.ui.navigation.Routes
 
 @Composable
-fun LoginScreen() {
+fun Login(navController: NavController) {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color(0xFFF5F3EF)
@@ -80,7 +82,7 @@ fun LoginScreen() {
                 fontSize = 18.sp,
                 color = Color.Gray
             )
-            LoginCard()
+            LoginCard(navController)
             Text(
                 text = "© 2026 Terrabit. Gestión ganadera moderna y eficiente",
                 fontSize = 12.sp,
@@ -91,7 +93,9 @@ fun LoginScreen() {
 }
 
 @Composable
-fun LoginCard() {
+fun LoginCard(
+    navController: NavController
+) {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -157,7 +161,7 @@ fun LoginCard() {
             ) {
                 Button(
                     modifier = Modifier.fillMaxWidth(),
-                    onClick = { /*TODO*/ },
+                    onClick = { navController.navigate(Routes.Home.route) },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF5C7654)
                     ),
@@ -259,8 +263,10 @@ fun CheckboxWithText() {
     }
 }
 
+/*
 @Preview(showBackground = true)
 @Composable
 fun PreviewLoginScreen() {
     LoginScreen()
 }
+*/
