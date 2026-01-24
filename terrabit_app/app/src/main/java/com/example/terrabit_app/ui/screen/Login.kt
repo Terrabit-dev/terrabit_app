@@ -171,11 +171,15 @@ fun LoginCard(
                     modifier = Modifier.fillMaxWidth(),
                     onClick = { navController.navigate(Routes.Home.route) },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF5C7654)
+                        containerColor = Color(0xFF5C7654),
+                        contentColor = Color.White
                     ),
                     shape = RoundedCornerShape(10.dp)
                 ) {
-                    Text(text = "Acceder")
+                    Text(
+                        text = "Acceder",
+                        fontWeight = FontWeight.Bold,
+                    )
                 }
                 /*
                 HorizontalDivider(
@@ -246,7 +250,8 @@ fun CustomOutlinedTextField(
             unfocusedPlaceholderColor = Color.LightGray,
             unfocusedLeadingIconColor = Color.Gray,
             focusedContainerColor = Color.White,
-            unfocusedTrailingIconColor = Color.Gray
+            unfocusedTrailingIconColor = Color.Gray,
+            focusedTextColor = Color.Black,
         )
     )
 }
