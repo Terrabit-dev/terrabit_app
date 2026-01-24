@@ -203,10 +203,12 @@ fun CustomOutlinedTextField(
     isPassword: Boolean = false
 ) {
     var passwordVisible by remember { mutableStateOf(false) }
+    var text by remember { mutableStateOf("") }
+
 
     OutlinedTextField(
-        value = "",
-        onValueChange = { /*TODO*/ },
+        value = text,
+        onValueChange = { text = it },
         modifier = Modifier.fillMaxWidth(),
         placeholder = { Text(text = placeholder) },
         leadingIcon = {
