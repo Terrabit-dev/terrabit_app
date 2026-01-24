@@ -47,6 +47,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -120,11 +121,13 @@ fun LoginCard(
                 Text(
                     text = "Iniciar sesión",
                     fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
+                    fontSize = 18.sp,
+                    color = Color.Black
                 )
                 Text(
                     text = "Usuario",
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
                 )
                 CustomOutlinedTextField(
                     placeholder = "Tu usuario",
@@ -132,7 +135,8 @@ fun LoginCard(
                 )
                 Text(
                     text = "Contraseña",
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
                 )
                 CustomOutlinedTextField(
                     placeholder = "Tu contraseña",
@@ -150,6 +154,7 @@ fun LoginCard(
                     text = "¿Olvidaste tu contraseña?",
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF5C7654),
+                    textAlign = TextAlign.End,
                     modifier = Modifier.clickable { /*TODO*/ }
                 )
             }
