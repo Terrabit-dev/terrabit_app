@@ -16,5 +16,6 @@ sealed class Routes(val route: String) {
     object GestionGuias : Routes("manage_guides")
     object Movimientos : Routes("confirm_movements")
     object Material : Routes("request_material")
+    object Login : Routes("login")
     object CorregirBovino :Routes("modificar_animal")
 }
