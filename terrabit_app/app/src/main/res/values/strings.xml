@@ -38,7 +38,7 @@
     <string name="form_aptitude">Aptitud *</string>
     <string name="option_aptitude_meat">Carne</string>
     <string name="option_aptitude_milk">Leche</string>
-    <string name="option_aptitude_meat">Carne</string>
+    <string name="option_aptitude_double">Doble proposito</string>
     <string name="buttom_form_born">Registrar Nacimiento</string>
     <string name="error_message_born">Error al Registrar Nacimiento</string>
 
