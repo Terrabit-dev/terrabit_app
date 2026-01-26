@@ -2,7 +2,7 @@
 
 **Digitalización aplicada a la ganadería**
 
-Proyecto de innovación desarrollado por el **ITB** (centro de excelencia del sector de Tecnologías de la Información) en colaboración con el **IES Álvaro Falomir** de Almassora, Castelló, y la **Asociación de Mujeres del Mundo Rural (DMR)**.
+Proyecto de innovación desarrollado por el **ITB** en colaboración con el **IES Álvaro Falomir** de Almassora, Castelló, y la **Asociación de Mujeres del Mundo Rural (DMR)**.
 
 ## 📋 Descripción del Proyecto
 
@@ -54,6 +54,7 @@ Sistema de visión por computador para detectar automáticamente cerdos que alca
 - **Carlos Vargas** 
 - **Yujiang Xia**
 
+### IES ALVARO FALOMIR
 
 ## 🤝 Colaboración
 
@@ -61,5 +62,3 @@ Este proyecto se realiza en colaboración con la **Asociación de Mujeres del Mu
 
 ---
 
-**Proyecto de Innovación de Centro de Excelencia**  
-ITB - Ins Tecnologic de Barcelona
