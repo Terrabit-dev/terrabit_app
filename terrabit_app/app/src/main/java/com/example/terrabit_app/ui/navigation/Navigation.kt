@@ -11,11 +11,13 @@ import com.example.terrabit_app.ui.pantallas.*
 import com.example.terrabit_app.ui.screen.CorregirSexoBovi
 import com.example.terrabit_app.ui.screen.Fallecimiento
 import com.example.terrabit_app.ui.screen.GestionGuias
+import com.example.terrabit_app.ui.screen.IdentificacionApalzada
 import com.example.terrabit_app.ui.screen.Material
 import com.example.terrabit_app.ui.screen.Nacimiento
 import com.example.terrabit_app.ui.screen.Login
 import com.example.terrabit_app.viewmodel.CorrecionSexoViewModel
 import com.example.terrabit_app.viewmodel.DrawerViewModel
+import com.example.terrabit_app.viewmodel.IdentificacionAplazaViewModel
 import com.example.terrabit_app.viewmodel.MainViewmodel
 import com.example.terrabit_app.viewmodel.MaterialViewModel
 import com.example.terrabit_app.viewmodel.NacimientoViewmodel
@@ -79,6 +81,10 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel ) {
         composable(Routes.CorregirBovino.route) {
             val corregirSexo : CorrecionSexoViewModel = viewModel()
             CorregirSexoBovi(navController, corregirSexo)
+        }
+        composable(Routes.IdentificacionAplazada.route) {
+            val identificacion: IdentificacionAplazaViewModel = viewModel()
+            IdentificacionApalzada(navController, identificacion)
         }
 
     }
