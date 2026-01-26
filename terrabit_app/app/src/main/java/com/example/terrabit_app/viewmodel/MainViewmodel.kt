@@ -6,9 +6,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.Identificadores.Identificadores
+import com.example.terrabit_app.data.network.animales.PetModicarAnimal
 import com.example.terrabit_app.data.network.animales.RegistroMuerteBovi
 import com.example.terrabit_app.data.network.animales.RegistroNacimientoBovi
 import com.example.terrabit_app.data.network.respuestas.RespuestaUnificada
+import com.example.terrabit_app.data.network.material.PetSolicitudMaterial
+import com.example.terrabit_app.data.network.material.Unitat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -37,356 +40,7 @@ class MainViewmodel : ViewModel() {
         }
     }
 
-    // ============================================
-    // SECCIÓN: NACIMIENTO
-    // ============================================
 
-    // Estados del formulario de nacimiento
-    private val _idMadre = MutableLiveData("")
-    val idMadre = _idMadre
-
-    private val _codigoRaza = MutableLiveData("")
-    private val _fechaIdentificacion = MutableLiveData("")
-    val fechaIdentificacion = _fechaIdentificacion
-
-    private val _idCria = MutableLiveData("")
-    val idCria = _idCria
-
-    private val _fechaNacimiento = MutableLiveData("")
-    val fechaNacimiento = _fechaNacimiento
-
-    private val _sexoSeleccionado = MutableLiveData("")
-    val sexoSeleccionado = _sexoSeleccionado
-
-    private val _razaSeleccionada = MutableLiveData("")
-    val razaSeleccionada = _razaSeleccionada
-
-    private val _aptitudSeleccionada = MutableLiveData("")
-    val aptitudSeleccionada = _aptitudSeleccionada
-
-    // Estados de expansión de menús desplegables - Nacimiento
-    private val _sexoExpandido = MutableLiveData(false)
-    val sexoExpandido = _sexoExpandido
-
-    private val _razaExpandida = MutableLiveData(false)
-    val razaExpandida = _razaExpandida
-
-    private val _aptitudExpandida = MutableLiveData(false)
-    val aptitudExpandida = _aptitudExpandida
-
-    // Estado para mostrar el DatePicker - Nacimiento
-    private val _mostrarDatePicker = MutableLiveData(false)
-    val mostrarDatePicker = _mostrarDatePicker
-
-    private val _mostrarDatePickerIdentificacion = MutableLiveData(false)
-    val mostrarDatePickerIdentificacion = _mostrarDatePickerIdentificacion
-
-    // Estados para feedback del registro - Nacimiento
-    private val _registroExitoso = MutableLiveData<Boolean>()
-    val registroExitoso = _registroExitoso
-
-    private val _mensajeError = MutableLiveData<String>()
-    val mensajeError = _mensajeError
-
-    // Listas de opciones - Nacimiento
-    val listaSexos = listOf("Macho", "Hembra")
-    val razasBovinas = listOf(
-        Razas("1111", "Holstein (Frisona)"),
-        Razas("1116", "Angus"),
-        Razas("1114", "Hereford"),
-        Razas("9907", "Simmental"),
-        Razas("1113", "Charolais (Xarolesa)"),
-        Razas("1115", "Jersey"),
-        Razas("1117", "Limousin (Limusina)"),
-        Razas("0000", "Mestizo")
-
-    )
-    val listaAptitudes = listOf("Carne", "Leche", "Doble propósito")
-
-    // Funciones para actualizar los campos - Nacimiento
-    fun actualizarIdMadre(nuevoId: String) {
-        _idMadre.value = nuevoId
-    }
-
-    fun actualizarIdCria(nuevoId: String) {
-        _idCria.value = nuevoId
-    }
-
-    fun actualizarFechaNacimiento(nuevaFecha: String) {
-        _fechaNacimiento.value = nuevaFecha
-    }
-
-    fun seleccionarSexo(sexo: String) {
-        _sexoSeleccionado.value = sexo
-        _sexoExpandido.value = false
-    }
-
-    fun seleccionarRaza(raza: String, codigo: String) {
-        _razaSeleccionada.value = raza
-        _codigoRaza.value = codigo
-        _razaExpandida.value = false
-    }
-
-    fun seleccionarAptitud(aptitud: String) {
-        _aptitudSeleccionada.value = aptitud
-        _aptitudExpandida.value = false
-    }
-
-    // Funciones para controlar la expansión de menús - Nacimiento
-    fun toggleSexoExpandido() {
-        _sexoExpandido.value = !(_sexoExpandido.value ?: false)
-    }
-
-    fun toggleRazaExpandida() {
-        _razaExpandida.value = !(_razaExpandida.value ?: false)
-    }
-
-    fun toggleAptitudExpandida() {
-        _aptitudExpandida.value = !(_aptitudExpandida.value ?: false)
-    }
-
-    fun cerrarSexoMenu() {
-        _sexoExpandido.value = false
-    }
-
-    fun cerrarRazaMenu() {
-        _razaExpandida.value = false
-    }
-
-    fun cerrarAptitudMenu() {
-        _aptitudExpandida.value = false
-    }
-
-    // Funciones para controlar el DatePicker - Nacimiento
-    fun mostrarDatePicker() {
-        _mostrarDatePicker.value = true
-    }
-
-    fun ocultarDatePicker() {
-        _mostrarDatePicker.value = false
-    }
-
-    // Funciones para controlar el DatePicker - Identificacion
-    fun mostrarDatePickerIdentificacion() {
-        _mostrarDatePickerIdentificacion.value = true
-    }
-
-    fun ocultarDatePickerIdentificacion() {
-        _mostrarDatePickerIdentificacion.value = false
-    }
-
-    // Funcion selecionar fecha - Nacimiento
-    fun seleccionarFecha(fechaMillis: Long) {
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = fechaMillis
-        val dia = calendar.get(Calendar.DAY_OF_MONTH)
-        val mes = calendar.get(Calendar.MONTH) + 1
-        val anio = calendar.get(Calendar.YEAR)
-
-        _fechaNacimiento.value = String.format("%02d/%02d/%04d", dia, mes, anio)
-        _mostrarDatePicker.value = false
-    }
-
-    // Funcion selecionar fecha - Identificacion
-    fun seleccionarFechaIdentificacion(fechaMillis: Long) {
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = fechaMillis
-        val dia = calendar.get(Calendar.DAY_OF_MONTH)
-        val mes = calendar.get(Calendar.MONTH) + 1
-        val anio = calendar.get(Calendar.YEAR)
-
-        _fechaIdentificacion.value = String.format("%02d/%02d/%04d", dia, mes, anio)
-        _mostrarDatePickerIdentificacion.value = false
-    }
-
-    // Función para validar el formulario - Nacimiento
-    fun esFormularioNacimientoValido(): Boolean {
-        val idMadreValido = !_idMadre.value.isNullOrEmpty()
-        val idCriaValido = !_idCria.value.isNullOrEmpty()
-        val fechaNacimientoValida = !_fechaNacimiento.value.isNullOrEmpty()
-        val fechaIdentificacionValida = !_fechaIdentificacion.value.isNullOrEmpty()
-        val sexoValido = !_sexoSeleccionado.value.isNullOrEmpty()
-        val razaValida = !_razaSeleccionada.value.isNullOrEmpty()
-        val aptitudValida = !_aptitudSeleccionada.value.isNullOrEmpty()
-
-        return idMadreValido && idCriaValido && fechaNacimientoValida &&
-                fechaIdentificacionValida && sexoValido && razaValida && aptitudValida
-    }
-
-    // Función para registrar un nacimiento con gestión mejorada de errores
-    fun registrarNacimiento() {
-        // Validar que todos los campos requeridos estén completos
-        if (!esFormularioNacimientoValido()) {
-            val mensajeError = when {
-                _idMadre.value.isNullOrEmpty() ->
-                    "Por favor, introduzca el ID de la madre"
-                _idCria.value.isNullOrEmpty() ->
-                    "Por favor, introduzca el ID de la cría"
-                _fechaNacimiento.value.isNullOrEmpty() ->
-                    "Por favor, seleccione la fecha de nacimiento"
-                _fechaIdentificacion.value.isNullOrEmpty() ->
-                    "Por favor, seleccione la fecha de identificación"
-                _sexoSeleccionado.value.isNullOrEmpty() ->
-                    "Por favor, seleccione el sexo del animal"
-                _razaSeleccionada.value.isNullOrEmpty() ->
-                    "Por favor, seleccione la raza"
-                _aptitudSeleccionada.value.isNullOrEmpty() ->
-                    "Por favor, seleccione la aptitud"
-                else ->
-                    "Por favor, complete todos los campos obligatorios marcados con *"
-            }
-            _mensajeError.value = mensajeError
-            Log.e("Validación Nacimiento", mensajeError)
-            return
-        }
-
-        viewModelScope.launch {
-            try {
-                // Convertir fechas a formato API (yyyymmdd)
-                val fechaNacimientoAPI = convertirFechaAFormatoAPI(_fechaNacimiento.value ?: "")
-                val fechaIdentificacionAPI = convertirFechaAFormatoAPI(_fechaIdentificacion.value ?: "")
-
-                // Convertir sexo al formato de la API
-                val sexoAPI = when (_sexoSeleccionado.value) {
-                    "Macho" -> "02"
-                    "Hembra" -> "01"
-                    else -> ""
-                }
-
-                // Convertir aptitud al formato de la API
-                val aptitudAPI = when (_aptitudSeleccionada.value) {
-                    "Carne" -> "02"
-                    "Leche" -> "01"
-                    "Doble propósito" -> "03"
-                    else -> ""
-                }
-
-                // Crear objeto de petición
-                val request = RegistroNacimientoBovi(
-                    nif = "S0800608B",
-                    passwordMobilitat = "L1855m58",
-                    identificador = _idCria.value ?: "",
-                    identificadorMare = _idMadre.value ?: "",
-                    dataNaixement = fechaNacimientoAPI,
-                    dataIdentificacio = fechaIdentificacionAPI,
-                    sexe = sexoAPI,
-                    raca = _codigoRaza.value ?: "",
-                    aptitud = aptitudAPI
-                )
-                Log.d("Registro Nacimiento", "Request: $request")
-
-                // Llamar a la API
-                val response = repositorio.putRegistrarNacimiento(request)
-
-                // Procesar respuesta
-                withContext(Dispatchers.Main) {
-                    when {
-                        // Caso 1: HTTP 200 OK
-                        response.isSuccessful && response.body() != null -> {
-                            val body = response.body()!!
-
-                            // Verificar si hay errores en el body
-                            if (body.errors != null && body.errors.isNotEmpty()) {
-                                // La API devolvió errores
-                                val erroresTexto = body.errors.joinToString("\n") { error ->
-                                    "• [${error.codi}] ${error.descripcio}"
-                                }
-                                _registroExitoso.value = false
-                                _mensajeError.value = "Error al registrar nacimiento:\n$erroresTexto"
-                                body.errors.forEach { error ->
-                                    Log.e("Error Registro Nacimiento", "  - [${error.codi}] ${error.descripcio}")
-                                }
-                            }
-                            // Verificar si es respuesta exitosa (codi = "0")
-                            else if (body.codi == "0" || body.descripcio == "OK") {
-                                _registroExitoso.value = true
-                                _mensajeError.value = ""
-
-                                Log.d("Registro Nacimiento", "Nacimiento reportado exitosamente")
-                                Log.d("Registro Nacimiento", "Respuesta: [${body.codi}] ${body.descripcio}")
-
-                                // Limpiar formulario después de registrar exitosamente
-                                limpiarFormularioNacimiento()
-                            }
-                            // Caso inesperado: respuesta exitosa pero sin código 0 ni errores
-                            else {
-                                _registroExitoso.value = false
-                                _mensajeError.value = "Respuesta inesperada del servidor: [${body.codi}] ${body.descripcio}"
-                                Log.w("Registro Nacimiento", "Respuesta inesperada: [${body.codi}] ${body.descripcio}")
-                            }
-                        }
-
-                        // Caso 2: HTTP Error (4xx, 5xx)
-                        !response.isSuccessful -> {
-                            val errorBody = response.errorBody()?.string()
-                            _registroExitoso.value = false
-                            _mensajeError.value = "Error HTTP ${response.code()}: ${response.message()}"
-
-                            Log.e("Error Registro Nacimiento", "HTTP ${response.code()}")
-                            Log.e("Error Registro Nacimiento", "Mensaje: ${response.message()}")
-                            if (errorBody != null) {
-                                Log.e("Error Registro Nacimiento", "Body: $errorBody")
-                            }
-                        }
-
-                        // Caso 3: Respuesta exitosa pero sin body
-                        else -> {
-                            _registroExitoso.value = false
-                            _mensajeError.value = "Error: Respuesta vacía del servidor"
-                            Log.e("Error Registro Nacimiento", "Respuesta vacía del servidor")
-                        }
-                    }
-                }
-            } catch (e: java.net.SocketTimeoutException) {
-                // Manejo específico de timeout
-                withContext(Dispatchers.Main) {
-                    _registroExitoso.value = false
-                    _mensajeError.value = "Tiempo de espera agotado. La operación puede haberse completado, por favor verifique."
-                    Log.e("Error Registro Nacimiento", "Timeout: ${e.message}", e)
-                }
-            } catch (e: java.io.IOException) {
-                // Error de red
-                withContext(Dispatchers.Main) {
-                    _registroExitoso.value = false
-                    _mensajeError.value = "📡 Error de conexión. Verifique su conexión a internet."
-                    Log.e("Error Registro Nacimiento", " Error de red: ${e.message}", e)
-                }
-            } catch (e: Exception) {
-                // Otros errores
-                withContext(Dispatchers.Main) {
-                    _registroExitoso.value = false
-                    _mensajeError.value = "Error inesperado: ${e.message ?: "Error desconocido"}"
-                    Log.e("Error Registro Nacimiento", " Error general: ${e.message}", e)
-                    e.printStackTrace()
-                }
-            }
-        }
-    }
-
-    // Función para limpiar el formulario - Nacimiento
-    fun limpiarFormularioNacimiento() {
-        _idMadre.value = ""
-        _idCria.value = ""
-        _fechaNacimiento.value = ""
-        _fechaIdentificacion.value = ""
-        _sexoSeleccionado.value = ""
-        _razaSeleccionada.value = ""
-        _codigoRaza.value = ""
-        _aptitudSeleccionada.value = ""
-    }
-
-    // Función para resetear el estado de registro
-    fun resetearEstadoRegistro() {
-        _registroExitoso.value = false
-        _mensajeError.value = ""
-    }
-
-    // Función para validar formato de identificador
-    fun validarIdentificador(id: String): Boolean {
-        // Implementa tu lógica de validación aquí
-        // Por ejemplo: verificar longitud, formato, etc.
-        return id.length >= 5 // Ejemplo simple
-    }
 
 
 
@@ -629,7 +283,7 @@ class MainViewmodel : ViewModel() {
                 // Procesar respuesta
                 withContext(Dispatchers.Main) {
                     when {
-                        // Caso 1: HTTP 200 OK
+                        // Caso: HTTP 200 OK
                         response.isSuccessful && response.body() != null -> {
                             val body = response.body()!!
 
@@ -715,6 +369,428 @@ class MainViewmodel : ViewModel() {
     }
 
     // ============================================
+// SECCIÓN: SOLICITUD DE MATERIAL
+// ============================================
+
+    // Estados del formulario de material
+    private val _empresaSubministradora = MutableLiveData("")
+    val empresaSubministradora = _empresaSubministradora
+
+    private val _codigoEmpresa = MutableLiveData("")
+
+    private val _tipoEnviamiento = MutableLiveData("")
+    val tipoEnviamiento = _tipoEnviamiento
+
+    private val _destinoLliurament = MutableLiveData("")
+    val destinoLliurament = _destinoLliurament
+
+    private val _oficinaComarcal = MutableLiveData("")
+    val oficinaComarcal = _oficinaComarcal
+
+    private val _codigoOC = MutableLiveData("")
+
+    private val _direccion = MutableLiveData("")
+    val direccion = _direccion
+
+    private val _poblacion = MutableLiveData("")
+    val poblacion = _poblacion
+
+    private val _codigoPostal = MutableLiveData("")
+    val codigoPostal = _codigoPostal
+
+    private val _municipio = MutableLiveData("")
+    val municipio = _municipio
+
+    private val _telefonoContacto = MutableLiveData("")
+    val telefonoContacto = _telefonoContacto
+
+    private val _identificadorMaterial = MutableLiveData("")
+    val identificadorMaterial = _identificadorMaterial
+
+    private val _tipoMaterial = MutableLiveData("")
+    val tipoMaterial = _tipoMaterial
+
+    private val _codigoTipoMaterial = MutableLiveData("")
+
+    private val _numeroUnidades = MutableLiveData("1")
+    val numeroUnidades = _numeroUnidades
+
+    private val _codigoExplotacion = MutableLiveData("")
+    val codigoExplotacion = _codigoExplotacion
+
+    // Estados de expansión de menús desplegables - Material
+    private val _empresaExpandida = MutableLiveData(false)
+    val empresaExpandida = _empresaExpandida
+
+    private val _tipoEnviamientoExpandido = MutableLiveData(false)
+    val tipoEnviamientoExpandido = _tipoEnviamientoExpandido
+
+    private val _destinoExpandido = MutableLiveData(false)
+    val destinoExpandido = _destinoExpandido
+
+    private val _oficinaComarcalExpandida = MutableLiveData(false)
+    val oficinaComarcalExpandida = _oficinaComarcalExpandida
+
+    private val _tipoMaterialExpandido = MutableLiveData(false)
+    val tipoMaterialExpandido = _tipoMaterialExpandido
+
+    // Estados para feedback del registro - Material
+    private val _registroMaterialExitoso = MutableLiveData<Boolean>()
+    val registroMaterialExitoso = _registroMaterialExitoso
+
+    private val _mensajeErrorMaterial = MutableLiveData<String>()
+    val mensajeErrorMaterial = _mensajeErrorMaterial
+
+    // Data classes para opciones UI
+    data class EmpresaSubministradora(val nif: String, val nombre: String)
+    data class OficinaComarcal(val codigo: String, val nombre: String)
+    data class TipoMaterial(val codigo: String, val nombre: String)
+
+    // Listas de opciones - Material
+    val listaEmpresas = listOf(
+        EmpresaSubministradora("A60229508", "Tecnología Agrícola S.L."),
+        EmpresaSubministradora("B65432109", "Ganadera del Norte S.A."),
+        EmpresaSubministradora("C78945612", "Suministros Ganaderos Catalunya")
+    )
+
+    val listaTiposEnviamiento = listOf(
+        "01 - Correo ordinario",
+        "04 - Correo certificado"
+    )
+
+    val listaDestinos = listOf(
+        "01 - Oficina Comarcal (OC)",
+        "02 - Ramader/ER",
+        "03 - Dirección alternativa"
+    )
+
+    val listaOficinasComarcales = listOf(
+        OficinaComarcal("OC001", "Barcelona"),
+        OficinaComarcal("OC002", "Girona"),
+        OficinaComarcal("OC003", "Lleida"),
+        OficinaComarcal("OC004", "Tarragona")
+    )
+
+    val listaTiposMaterial = listOf(
+        TipoMaterial("07", "Crotal"),
+        TipoMaterial("20", "Crotal electrónico"),
+        TipoMaterial("21", "Injectable electrónico"),
+        TipoMaterial("22", "Bol ruminal")
+    )
+
+    // Funciones para actualizar los campos - Material
+    fun seleccionarEmpresa(nombre: String, nif: String) {
+        _empresaSubministradora.value = nombre
+        _codigoEmpresa.value = nif
+        _empresaExpandida.value = false
+    }
+
+    fun seleccionarTipoEnviamiento(tipo: String) {
+        _tipoEnviamiento.value = tipo
+        _tipoEnviamientoExpandido.value = false
+    }
+
+    fun seleccionarDestino(destino: String) {
+        _destinoLliurament.value = destino
+        _destinoExpandido.value = false
+
+        when {
+            destino.startsWith("01") -> {
+                _direccion.value = ""
+                _poblacion.value = ""
+                _codigoPostal.value = ""
+                _municipio.value = ""
+                _telefonoContacto.value = ""
+            }
+            destino.startsWith("02") -> {
+                _oficinaComarcal.value = ""
+                _codigoOC.value = ""
+            }
+            destino.startsWith("03") -> {
+                _oficinaComarcal.value = ""
+                _codigoOC.value = ""
+            }
+        }
+    }
+
+    fun seleccionarOficinaComarcal(nombre: String, codigo: String) {
+        _oficinaComarcal.value = nombre
+        _codigoOC.value = codigo
+        _oficinaComarcalExpandida.value = false
+    }
+
+    fun seleccionarTipoMaterial(nombre: String, codigo: String) {
+        _tipoMaterial.value = nombre
+        _codigoTipoMaterial.value = codigo
+        _tipoMaterialExpandido.value = false
+    }
+
+    fun actualizarDireccion(valor: String) {
+        _direccion.value = valor
+    }
+
+    fun actualizarPoblacion(valor: String) {
+        _poblacion.value = valor
+    }
+
+    fun actualizarCodigoPostal(valor: String) {
+        if (valor.length <= 5 && (valor.isEmpty() || valor.all { it.isDigit() })) {
+            _codigoPostal.value = valor
+        }
+    }
+
+    fun actualizarMunicipio(valor: String) {
+        _municipio.value = valor
+    }
+
+    fun actualizarTelefonoContacto(valor: String) {
+        if (valor.all { it.isDigit() || it.isWhitespace() }) {
+            _telefonoContacto.value = valor
+        }
+    }
+
+    fun actualizarIdentificadorMaterial(valor: String) {
+        _identificadorMaterial.value = valor
+    }
+
+    fun actualizarNumeroUnidades(valor: String) {
+        if (valor.isEmpty() || valor.all { it.isDigit() }) {
+            _numeroUnidades.value = valor
+        }
+    }
+
+    fun actualizarCodigoExplotacion(valor: String) {
+        _codigoExplotacion.value = valor
+    }
+
+    // Funciones para controlar la expansión de menús - Material
+    fun toggleEmpresaExpandida() {
+        _empresaExpandida.value = !(_empresaExpandida.value ?: false)
+    }
+
+    fun toggleTipoEnviamientoExpandido() {
+        _tipoEnviamientoExpandido.value = !(_tipoEnviamientoExpandido.value ?: false)
+    }
+
+    fun toggleDestinoExpandido() {
+        _destinoExpandido.value = !(_destinoExpandido.value ?: false)
+    }
+
+    fun toggleOficinaComarcalExpandida() {
+        _oficinaComarcalExpandida.value = !(_oficinaComarcalExpandida.value ?: false)
+    }
+
+    fun toggleTipoMaterialExpandido() {
+        _tipoMaterialExpandido.value = !(_tipoMaterialExpandido.value ?: false)
+    }
+
+    fun cerrarEmpresaMenu() {
+        _empresaExpandida.value = false
+    }
+
+    fun cerrarTipoEnviamientoMenu() {
+        _tipoEnviamientoExpandido.value = false
+    }
+
+    fun cerrarDestinoMenu() {
+        _destinoExpandido.value = false
+    }
+
+    fun cerrarOficinaComarcalMenu() {
+        _oficinaComarcalExpandida.value = false
+    }
+
+    fun cerrarTipoMaterialMenu() {
+        _tipoMaterialExpandido.value = false
+    }
+
+    // Función para validar el formulario - Material
+    fun esFormularioMaterialValido(): Boolean {
+        val empresaValida = !_empresaSubministradora.value.isNullOrEmpty()
+        val tipoEnviamientoValido = !_tipoEnviamiento.value.isNullOrEmpty()
+        val destinoValido = !_destinoLliurament.value.isNullOrEmpty()
+        val identificadorValido = !_identificadorMaterial.value.isNullOrEmpty()
+        val tipoMaterialValido = !_tipoMaterial.value.isNullOrEmpty()
+
+        val camposDestinoValidos = when {
+            _destinoLliurament.value?.startsWith("01") == true -> {
+                !_oficinaComarcal.value.isNullOrEmpty()
+            }
+            _destinoLliurament.value?.startsWith("03") == true -> {
+                !_direccion.value.isNullOrEmpty() &&
+                        !_poblacion.value.isNullOrEmpty() &&
+                        !_codigoPostal.value.isNullOrEmpty() &&
+                        !_municipio.value.isNullOrEmpty() &&
+                        !_telefonoContacto.value.isNullOrEmpty()
+            }
+            else -> true
+        }
+
+        return empresaValida && tipoEnviamientoValido && destinoValido &&
+                camposDestinoValidos && identificadorValido && tipoMaterialValido
+    }
+
+    // Función para solicitar material
+// Función para solicitar material
+    fun solicitarMaterial() {
+        if (!esFormularioMaterialValido()) {
+            val mensajeError = when {
+                _empresaSubministradora.value.isNullOrEmpty() ->
+                    "Por favor, seleccione la empresa subministradora"
+                _tipoEnviamiento.value.isNullOrEmpty() ->
+                    "Por favor, seleccione el tipo de envío"
+                _destinoLliurament.value.isNullOrEmpty() ->
+                    "Por favor, seleccione el destino de entrega"
+                _destinoLliurament.value?.startsWith("01") == true && _oficinaComarcal.value.isNullOrEmpty() ->
+                    "Por favor, seleccione la oficina comarcal"
+                _destinoLliurament.value?.startsWith("03") == true && _direccion.value.isNullOrEmpty() ->
+                    "Por favor, introduzca la dirección"
+                _destinoLliurament.value?.startsWith("03") == true && _poblacion.value.isNullOrEmpty() ->
+                    "Por favor, introduzca la población"
+                _destinoLliurament.value?.startsWith("03") == true && _codigoPostal.value.isNullOrEmpty() ->
+                    "Por favor, introduzca el código postal"
+                _destinoLliurament.value?.startsWith("03") == true && _municipio.value.isNullOrEmpty() ->
+                    "Por favor, introduzca el municipio"
+                _destinoLliurament.value?.startsWith("03") == true && _telefonoContacto.value.isNullOrEmpty() ->
+                    "Por favor, introduzca el teléfono de contacto"
+                _identificadorMaterial.value.isNullOrEmpty() ->
+                    "Por favor, introduzca el identificador"
+                _tipoMaterial.value.isNullOrEmpty() ->
+                    "Por favor, seleccione el tipo de material"
+                else ->
+                    "Por favor, complete todos los campos obligatorios"
+            }
+            _mensajeErrorMaterial.value = mensajeError
+            Log.e("Validación Material", mensajeError)
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                val codigoTipoEnvio = _tipoEnviamiento.value?.substring(0, 2) ?: ""
+                val codigoDestino = _destinoLliurament.value?.substring(0, 2) ?: ""
+
+                val adrecaFinal = if (codigoDestino == "03") _direccion.value else null
+                val poblacionFinal = if (codigoDestino == "03") _poblacion.value else null
+                val cpFinal = if (codigoDestino == "03") _codigoPostal.value else null
+                val municipioFinal = if (codigoDestino == "03") _municipio.value else null
+                val telefonoFinal = if (codigoDestino == "03") _telefonoContacto.value else null
+                val ocFinal = if (codigoDestino == "01") _codigoOC.value else null
+
+                val unidades = listOf(
+                    Unitat(
+                        codiExplotacio = _codigoExplotacion.value?.takeIf { it.isNotEmpty() },
+                        nombreUnitats = _numeroUnidades.value ?: "1"
+                    )
+                )
+
+                val request = PetSolicitudMaterial(
+                    nif = "S0800608B",
+                    passwordMobilitat = "L1855m58",
+                    especie = "01",
+                    empresaSubministradora = _codigoEmpresa.value ?: "",
+                    tipusEnviament = codigoTipoEnvio,
+                    adrecaLliurament = codigoDestino,
+                    oc = ocFinal,
+                    adreca = adrecaFinal,
+                    poblacio = poblacionFinal,
+                    cp = cpFinal,
+                    municipi = municipioFinal,
+                    telefonContacte = telefonoFinal,
+                    tipusMaterial = _codigoTipoMaterial.value ?: "",
+                    unitats = unidades
+                )
+
+                Log.d("Solicitud Material", "Request: $request")
+
+                val response = repositorio.putSolicitudMaterial(request)
+
+                withContext(Dispatchers.Main) {
+                    when {
+                        response.isSuccessful && response.body() != null -> {
+                            val body = response.body()!!
+
+                            // ResBasica probablemente tiene: codi, descripcio (sin errors)
+                            if (body.codi == "0" || body.descripcio == "OK") {
+                                _registroMaterialExitoso.value = true
+                                _mensajeErrorMaterial.value = ""
+
+                                Log.d("Solicitud Material", "Material solicitado exitosamente")
+                                Log.d("Solicitud Material", "Respuesta: [${body.codi}] ${body.descripcio}")
+
+                                limpiarFormularioMaterial()
+                            } else {
+                                _registroMaterialExitoso.value = false
+                                _mensajeErrorMaterial.value = "Error: [${body.codi}] ${body.descripcio}"
+                                Log.e("Error Solicitud Material", "[${body.codi}] ${body.descripcio}")
+                            }
+                        }
+                        !response.isSuccessful -> {
+                            val errorBody = response.errorBody()?.string()
+                            _registroMaterialExitoso.value = false
+                            _mensajeErrorMaterial.value = "Error HTTP ${response.code()}: ${response.message()}"
+
+                            Log.e("Error Solicitud Material", "HTTP ${response.code()}")
+                            Log.e("Error Solicitud Material", "Mensaje: ${response.message()}")
+                            if (errorBody != null) {
+                                Log.e("Error Solicitud Material", "Body: $errorBody")
+                            }
+                        }
+                        else -> {
+                            _registroMaterialExitoso.value = false
+                            _mensajeErrorMaterial.value = "Error: Respuesta vacía del servidor"
+                            Log.e("Error Solicitud Material", "Respuesta vacía del servidor")
+                        }
+                    }
+                }
+            } catch (e: java.net.SocketTimeoutException) {
+                withContext(Dispatchers.Main) {
+                    _registroMaterialExitoso.value = false
+                    _mensajeErrorMaterial.value = "Tiempo de espera agotado"
+                    Log.e("Error Solicitud Material", "Timeout: ${e.message}", e)
+                }
+            } catch (e: java.io.IOException) {
+                withContext(Dispatchers.Main) {
+                    _registroMaterialExitoso.value = false
+                    _mensajeErrorMaterial.value = "Error de conexión"
+                    Log.e("Error Solicitud Material", "Error de red: ${e.message}", e)
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    _registroMaterialExitoso.value = false
+                    _mensajeErrorMaterial.value = "Error inesperado: ${e.message}"
+                    Log.e("Error Solicitud Material", "Error general: ${e.message}", e)
+                    e.printStackTrace()
+                }
+            }
+        }
+    }
+
+    fun limpiarFormularioMaterial() {
+        _empresaSubministradora.value = ""
+        _codigoEmpresa.value = ""
+        _tipoEnviamiento.value = ""
+        _destinoLliurament.value = ""
+        _oficinaComarcal.value = ""
+        _codigoOC.value = ""
+        _direccion.value = ""
+        _poblacion.value = ""
+        _codigoPostal.value = ""
+        _municipio.value = ""
+        _telefonoContacto.value = ""
+        _identificadorMaterial.value = ""
+        _tipoMaterial.value = ""
+        _codigoTipoMaterial.value = ""
+        _numeroUnidades.value = "1"
+        _codigoExplotacion.value = ""
+    }
+
+    fun resetearEstadoRegistroMaterial() {
+        _registroMaterialExitoso.value = false
+        _mensajeErrorMaterial.value = ""
+    }
+
+    // ============================================
     // FUNCIONES AUXILIARES
     // ============================================
 
@@ -756,4 +832,6 @@ class MainViewmodel : ViewModel() {
             ""
         }
     }
+
+
 }
