@@ -13,6 +13,7 @@ import com.example.terrabit_app.ui.screen.Fallecimiento
 import com.example.terrabit_app.ui.screen.GestionGuias
 import com.example.terrabit_app.ui.screen.Material
 import com.example.terrabit_app.ui.screen.Nacimiento
+import com.example.terrabit_app.ui.screen.Login
 import com.example.terrabit_app.viewmodel.CorrecionSexoViewModel
 import com.example.terrabit_app.viewmodel.DrawerViewModel
 import com.example.terrabit_app.viewmodel.MainViewmodel
@@ -27,7 +28,7 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel ) {
 
     NavHost(
         navController = navController,
-        startDestination = Routes.Home.route
+        startDestination = Routes.Login.route
     ) {
         // Pantalla principal
         composable(Routes.Home.route) {
@@ -69,6 +70,11 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel ) {
         composable(Routes.Material.route) {
             val MaterialV : MaterialViewModel = viewModel()
             Material(navController = navController, MaterialV)
+        }
+
+        // Pantalla de login
+        composable(Routes.Login.route) {
+            Login(navController = navController)
         }
         composable(Routes.CorregirBovino.route) {
             val corregirSexo : CorrecionSexoViewModel = viewModel()
