@@ -18,4 +18,5 @@ sealed class Routes(val route: String) {
     object Material : Routes("request_material")
     object Login : Routes("login")
     object CorregirBovino :Routes("modificar_animal")
+    object IdentificacionAplazada : Routes("IdentificacioAplaz")
 }

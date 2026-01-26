@@ -1,6 +1,6 @@
 package com.example.terrabit_app.navegacion
 
-import Movimientos
+
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -11,13 +11,17 @@ import com.example.terrabit_app.ui.pantallas.*
 import com.example.terrabit_app.ui.screen.CorregirSexoBovi
 import com.example.terrabit_app.ui.screen.Fallecimiento
 import com.example.terrabit_app.ui.screen.GestionGuias
+import com.example.terrabit_app.ui.screen.IdentificacionApalzada
 import com.example.terrabit_app.ui.screen.Material
 import com.example.terrabit_app.ui.screen.Nacimiento
 import com.example.terrabit_app.ui.screen.Login
+import com.example.terrabit_app.ui.screen.Movimientos
 import com.example.terrabit_app.viewmodel.CorrecionSexoViewModel
 import com.example.terrabit_app.viewmodel.DrawerViewModel
+import com.example.terrabit_app.viewmodel.IdentificacionAplazaViewModel
 import com.example.terrabit_app.viewmodel.MainViewmodel
 import com.example.terrabit_app.viewmodel.MaterialViewModel
+import com.example.terrabit_app.viewmodel.MovimientosViewModel
 import com.example.terrabit_app.viewmodel.NacimientoViewmodel
 import com.example.terrabit_app.viewmodel.ViewModelMuerteBovi
 import okhttp3.Route
@@ -64,7 +68,8 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel ) {
         }
 
         composable(Routes.Movimientos.route) {
-            Movimientos(navController = navController)
+            val MoviViewModel : MovimientosViewModel = viewModel()
+            Movimientos(navController = navController, MoviViewModel)
         }
 
         composable(Routes.Material.route) {
@@ -79,6 +84,10 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel ) {
         composable(Routes.CorregirBovino.route) {
             val corregirSexo : CorrecionSexoViewModel = viewModel()
             CorregirSexoBovi(navController, corregirSexo)
+        }
+        composable(Routes.IdentificacionAplazada.route) {
+            val identificacion: IdentificacionAplazaViewModel = viewModel()
+            IdentificacionApalzada(navController, identificacion)
         }
 
     }

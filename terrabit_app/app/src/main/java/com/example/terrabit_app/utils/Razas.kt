@@ -1,4 +1,4 @@
-package com.example.terrabit_app.viewmodel
+package com.example.terrabit_app.utils
 
 data class Razas(
     val codigo : String,
