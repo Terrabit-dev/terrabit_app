@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="971051de-c635-4a4f-8ba0-0893f3f5fa4e" name="Changes" comment="" />
+    <list default="true" id="84edf0cb-62bb-425e-ba1f-8c8b0fd7983f" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -19,26 +19,25 @@
   <component name="GitHubPullRequestSearchHistory"><![CDATA[{
   "lastFilter": {
     "state": "OPEN",
-    "assignee": "yujiang31"
+    "assignee": "ITB-Carlos-Vargas"
   }
 }]]></component>
   <component name="GithubPullRequestsUISettings"><![CDATA[{
   "selectedUrlAndAccountId": {
     "url": "https://github.com/Terrabit-dev/terrabit_app.git",
-    "accountId": "ad2e2ae6-43db-414e-a873-eede635c64b1"
+    "accountId": "7383e31c-af10-4b57-856f-8377d520b51d"
   }
 }]]></component>
   <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 5
+  "associatedIndex": 0
 }]]></component>
-  <component name="ProjectId" id="38TX21w1wmy4zMlwLDktsgp2pXg" />
+  <component name="ProjectId" id="38msODEohyWExpzarRdH9P1dDHS" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.cidr.known.project.marker": "true",
     "RunOnceActivity.git.unshallow": "true",
@@ -51,11 +50,11 @@
 }]]></component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="971051de-c635-4a4f-8ba0-0893f3f5fa4e" name="Changes" comment="" />
-      <created>1768824326056</created>
+      <changelist id="84edf0cb-62bb-425e-ba1f-8c8b0fd7983f" name="Changes" comment="" />
+      <created>1769416046293</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1768824326056</updated>
+      <updated>1769416046293</updated>
     </task>
     <servers />
   </component>

@@ -1,3 +1,71 @@
 <resources>
-    <string name="app_name">Terrabit_app</string>
+    <string name="app_name">Terrabit</string>
+
+    <string name="drawer_subtitle">Gestión Ganadera</string>
+    <string name="drawer_explained">Tipo de Animal</string>
+    <string name="bovinos_name">Bovinos</string>
+    <string name="porcionos_name">Porcinos</string>
+
+    <string name="title_home">¡Bienvenido/a!</string>
+    <string name="subtitle_home">Menú Principal</string>
+    <string name="card_name_animals">Gestión de Bovinos</string>
+    <string name="card_description_animals">Registrar nacimientos y reportar muertes</string>
+    <string name="card_name_guias">Guías y Movimientos</string>
+    <string name="card_description_guias">Gestionar guías y confirmar movimientos</string>
+    <string name="card_name_material">Material</string>
+    <string name="card_description_material">Solicitar material y crotaleras</string>
+    <string name="information_title_home">Información del Sistema</string>
+    <string name="information_description_home">Todos los datos se sincronizan automáticamente con el sistema de registro de la Generalitat de Catalunya.</string>
+
+    <string name="gestion_name_bovinos">Gestión de Bovinos</string>
+    <string name="gestion_subtitle">Selecciona una acción</string>
+    <string name="action_register_born">Registrar Nacimiento</string>
+    <string name="action_report_dead">Reportar Muerte</string>
+    <string name="action_correct_sex">Corregir sexo</string>
+    <string name="action_identify_animal">Identificar animal</string>
+
+    <string name="born_register_name">Registrar Nacimiento</string>
+    <string name="form_id_mother">ID Madre *</string>
+    <string name="form_mother_description">Introducir o escanear ID de la madre</string>
+    <string name="form_id_breeding">ID Cría *</string>
+    <string name="form_id_breeding_description">Introducir o escanear ID de la cría</string>
+    <string name="form_birthdate">Fecha de Nacimiento *</string>
+    <string name="form_date_identification">Fecha de Identificación *</string>
+    <string name="form_sex">Sexo *</string>
+    <string name="form_sex_description">Seleccionar sexo</string>
+    <string name="form_raze">Raza *</string>
+    <string name="form_raze_description">Seleccionar raza</string>
+    <string name="form_aptitude">Aptitud *</string>
+    <string name="option_aptitude_meat">Carne</string>
+    <string name="option_aptitude_milk">Leche</string>
+    <string name="option_aptitude_double">Doble proposito</string>
+    <string name="buttom_form_born">Registrar Nacimiento</string>
+    <string name="error_message_born">Error al Registrar Nacimiento</string>
+
+    <string name="name_report_dead">Registrar Nacimiento</string>
+    <string name="form_type_dead">Tipo *</string>
+    <string name="form_id_animal">ID Animal *</string>
+    <string name="form_id_animal_description">Introducir o escanear ID del animal</string>
+    <string name="form_dead_date">Fecha de muerte *</string>
+    <string name="title_cadaver">Cadáver Inaccesible</string>
+    <string name="description_cadaver">Activar si la ubicación no puede ser accedida</string>
+    <string name="title_gps">Coordenadas GPS</string>
+    <string name="buttom_gps">Obtener Ubicación Actual</string>
+    <string name="gps_laltitud">Latitud (X)</string>
+    <string name="gps_laltitud_description">X coordinate</string>
+    <string name="gps_longitud">Longitud (Y)</string>
+    <string name="gps_longitud_description">Y coordinate</string>
+    <string name="form_pregnancy_months">Meses de Gestación *</string>
+    <string name="form_pregnancy_months_description">Número de meses (1-9)</string>
+    <string name="buttom_form_dead">Reportar muerte</string>
+
+    <string name="male">Macho</string>
+    <string name="female">Hembra</string>
+    <string name="error_buttom">Entendido</string>
+    <string name="form_date_description">Seleccionar fecha</string>
+
+
+
+
+
 </resources>
