@@ -20,7 +20,6 @@ sealed class Routes(val route: String) {
     // Organización General
     object MaterialCategoria : Routes("material_menu")
 
-
     // Screens
     object Nacimiento : Routes("register_birth")
     object Fallecimiento : Routes("report_death")

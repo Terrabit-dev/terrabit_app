@@ -119,7 +119,6 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel ) {
         composable(Routes.IdentificacionAplazada.route) {
             val identificacion: IdentificacionAplazaViewModel = viewModel()
             IdentificacionApalzada(navController, identificacion)
-
         }
 
         // Pantallas porcinos
