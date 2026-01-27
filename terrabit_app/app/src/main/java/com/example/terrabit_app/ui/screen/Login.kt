@@ -3,6 +3,7 @@ package com.example.terrabit_app.ui.screen
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,8 +14,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -45,10 +49,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -70,6 +79,7 @@ fun Login(
     val loginState by viewModel.loginState.collectAsState()
     var mostrarDialogoError by remember { mutableStateOf(false) }
     var mensajeError by remember { mutableStateOf("") }
+    val focusManager = LocalFocusManager.current
 
     LaunchedEffect(loginState) {
         when (loginState) {
@@ -179,16 +189,25 @@ fun Login(
         }
     } else {
         Surface(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .pointerInput(Unit) {
+                    detectTapGestures(onTap = {
+                        focusManager.clearFocus()
+                    })
+                },
             color = Color(0xFFF5F3EF)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
                     .padding(32.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Spacer(modifier = Modifier.height(40.dp))
+
                 Image(
                     painter = painterResource(R.drawable.app_logo),
                     contentDescription = "App logo",
@@ -211,6 +230,8 @@ fun Login(
                     fontSize = 12.sp,
                     color = Color.Gray
                 )
+
+                Spacer(modifier = Modifier.height(115.dp))
             }
         }
     }
@@ -221,14 +242,38 @@ fun LoginCard(
     viewModel: LoginViewModel,
     loginState: LoginState
 ) {
+    val savedNif by viewModel.savedNif.collectAsState()
+    val savedPassword by viewModel.savedPassword.collectAsState()
+    val savedCodiMO by viewModel.savedCodiMO.collectAsState()
+    val savedRememberMe by viewModel.savedRememberMe.collectAsState()
+
+    // Variables locales que mantienen el estado incluso con errores
     var nif by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var codiMO by remember { mutableStateOf("") }
     var rememberMe by remember { mutableStateOf(false) }
 
+    // Variable para controlar si ya se cargaron las credenciales guardadas
+    var credencialesCargadas by remember { mutableStateOf(false) }
+
     val nifError by viewModel.nifError.collectAsState()
     val passwordError by viewModel.passwordError.collectAsState()
     val codiMOError by viewModel.codiMOError.collectAsState()
+
+    val focusManager = LocalFocusManager.current
+    val passwordFocusRequester = remember { FocusRequester() }
+    val codiMOFocusRequester = remember { FocusRequester() }
+
+    // Cargar credenciales guardadas SOLO una vez al iniciar
+    LaunchedEffect(Unit) {
+        if (!credencialesCargadas) {
+            savedNif?.let { nif = it }
+            savedPassword?.let { password = it }
+            savedCodiMO?.let { codiMO = it }
+            rememberMe = savedRememberMe
+            credencialesCargadas = true
+        }
+    }
 
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
@@ -267,7 +312,15 @@ fun LoginCard(
                     },
                     placeholder = "Tu NIF",
                     icon = Icons.Outlined.AccountCircle,
-                    isError = nifError != null
+                    isError = nifError != null,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Next,
+                        autoCorrect = false
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onNext = { passwordFocusRequester.requestFocus() }
+                    )
                 )
                 if (nifError != null) {
                     Text(
@@ -292,7 +345,16 @@ fun LoginCard(
                     placeholder = "Tu contraseña",
                     icon = Icons.Outlined.Lock,
                     isPassword = true,
-                    isError = passwordError != null
+                    isError = passwordError != null,
+                    focusRequester = passwordFocusRequester,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Password,
+                        imeAction = ImeAction.Next,
+                        autoCorrect = false
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onNext = { codiMOFocusRequester.requestFocus() }
+                    )
                 )
                 if (passwordError != null) {
                     Text(
@@ -316,7 +378,19 @@ fun LoginCard(
                     },
                     placeholder = "Tu código MO",
                     icon = Icons.Outlined.Badge,
-                    isError = codiMOError != null
+                    isError = codiMOError != null,
+                    focusRequester = codiMOFocusRequester,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Done,
+                        autoCorrect = false
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onDone = {
+                            focusManager.clearFocus()
+                            viewModel.login(nif, password, codiMO, rememberMe)
+                        }
+                    )
                 )
                 if (codiMOError != null) {
                     Text(
@@ -357,7 +431,7 @@ fun LoginCard(
                 Button(
                     modifier = Modifier.fillMaxWidth(),
                     onClick = {
-                        viewModel.login(nif, password, codiMO)
+                        viewModel.login(nif, password, codiMO, rememberMe)
                     },
                     enabled = loginState !is LoginState.Loading,
                     colors = ButtonDefaults.buttonColors(
@@ -384,14 +458,22 @@ fun CustomOutlinedTextField(
     placeholder: String,
     icon: ImageVector,
     isPassword: Boolean = false,
-    isError: Boolean = false
+    isError: Boolean = false,
+    focusRequester: FocusRequester? = null,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default
 ) {
     var passwordVisible by remember { mutableStateOf(false) }
 
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(
+                if (focusRequester != null) Modifier.focusRequester(focusRequester)
+                else Modifier
+            ),
         placeholder = { Text(text = placeholder) },
         leadingIcon = {
             Icon(
@@ -400,9 +482,8 @@ fun CustomOutlinedTextField(
             )
         },
         visualTransformation = if (isPassword && !passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
-        keyboardOptions = KeyboardOptions(
-            keyboardType = if (isPassword) KeyboardType.Password else KeyboardType.Text
-        ),
+        keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions,
         trailingIcon = {
             if (isPassword) {
                 IconButton(onClick = { passwordVisible = !passwordVisible }) {
@@ -414,6 +495,7 @@ fun CustomOutlinedTextField(
             }
         },
         isError = isError,
+        singleLine = true,
         shape = RoundedCornerShape(16.dp),
         colors = TextFieldDefaults.colors(
             unfocusedIndicatorColor = Color.LightGray,
