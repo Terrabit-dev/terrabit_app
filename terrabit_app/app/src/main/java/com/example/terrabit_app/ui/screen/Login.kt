@@ -55,6 +55,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -80,6 +81,7 @@ fun Login(
     var mostrarDialogoError by remember { mutableStateOf(false) }
     var mensajeError by remember { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
+    val uriHandler = LocalUriHandler.current
 
     LaunchedEffect(loginState) {
         when (loginState) {
@@ -224,7 +226,7 @@ fun Login(
                     fontSize = 18.sp,
                     color = Color.Gray
                 )
-                LoginCard(viewModel, loginState)
+                LoginCard(viewModel, loginState, uriHandler)
                 Text(
                     text = "© 2026 Terrabit. Gestión ganadera moderna y eficiente",
                     fontSize = 12.sp,
@@ -240,7 +242,8 @@ fun Login(
 @Composable
 fun LoginCard(
     viewModel: LoginViewModel,
-    loginState: LoginState
+    loginState: LoginState,
+    uriHandler: androidx.compose.ui.platform.UriHandler
 ) {
     val savedNif by viewModel.savedNif.collectAsState()
     val savedPassword by viewModel.savedPassword.collectAsState()
@@ -418,7 +421,9 @@ fun LoginCard(
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF5C7654),
                     textAlign = TextAlign.End,
-                    modifier = Modifier.clickable { /* TODO */ }
+                    modifier = Modifier.clickable {
+                        uriHandler.openUri("https://aplicacions.agricultura.gencat.cat/gtr/porci/AppJava/views/recuperarContrasenya.xhtml")
+                    }
                 )
             }
 
