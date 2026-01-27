@@ -1,8 +1,10 @@
 package com.example.terrabit_app.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.network.Repositorio
+import com.example.terrabit_app.utils.UserPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,8 +17,9 @@ sealed class LoginState {
     data class Error(val message: String) : LoginState()
 }
 
-class LoginViewModel : ViewModel() {
+class LoginViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = Repositorio()
+    private val userPreferences = UserPreferences(application)
 
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
     val loginState: StateFlow<LoginState> = _loginState.asStateFlow()
@@ -29,6 +32,29 @@ class LoginViewModel : ViewModel() {
 
     private val _codiMOError = MutableStateFlow<String?>(null)
     val codiMOError: StateFlow<String?> = _codiMOError.asStateFlow()
+
+    private val _savedNif = MutableStateFlow<String?>(null)
+    val savedNif: StateFlow<String?> = _savedNif.asStateFlow()
+
+    private val _savedPassword = MutableStateFlow<String?>(null)
+    val savedPassword: StateFlow<String?> = _savedPassword.asStateFlow()
+
+    private val _savedCodiMO = MutableStateFlow<String?>(null)
+    val savedCodiMO: StateFlow<String?> = _savedCodiMO.asStateFlow()
+
+    private val _savedRememberMe = MutableStateFlow(false)
+    val savedRememberMe: StateFlow<Boolean> = _savedRememberMe.asStateFlow()
+
+    init {
+        loadSavedCredentials()
+    }
+
+    private fun loadSavedCredentials() {
+        _savedNif.value = userPreferences.getNif()
+        _savedPassword.value = userPreferences.getPassword()
+        _savedCodiMO.value = userPreferences.getCodiMO()
+        _savedRememberMe.value = userPreferences.getRememberMe()
+    }
 
     fun clearFieldError(field: String) {
         when (field) {
@@ -65,7 +91,7 @@ class LoginViewModel : ViewModel() {
         return isValid
     }
 
-    fun login(nif: String, password: String, codiMO: String) {
+    fun login(nif: String, password: String, codiMO: String, rememberMe: Boolean) {
         if (!validateFields(nif, password, codiMO)) {
             return
         }
@@ -83,6 +109,13 @@ class LoginViewModel : ViewModel() {
                 if (response.isSuccessful) {
                     val identificadores = response.body()
                     if (identificadores != null && identificadores.identificadors.isNotEmpty()) {
+                        // Guardar o limpiar credenciales según checkbox
+                        if (rememberMe) {
+                            userPreferences.saveCredentials(nif, password, codiMO)
+                        } else {
+                            userPreferences.clearCredentials()
+                        }
+
                         _loginState.value = LoginState.Success(nif, password, codiMO)
                     } else {
                         _loginState.value = LoginState.Error("Credenciales incorrectas")
