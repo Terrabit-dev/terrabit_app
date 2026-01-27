@@ -41,10 +41,10 @@
     <string name="option_aptitude_double">Doble proposito</string>
     <string name="buttom_form_born">Registrar Nacimiento</string>
     <string name="error_message_born">Error al Registrar Nacimiento</string>
+    <string name="successful_message_born">Nacimiento registrado exitosamente</string>
 
     <string name="name_report_dead">Registrar Nacimiento</string>
     <string name="form_type_dead">Tipo *</string>
-    <string name="form_id_animal">ID Animal *</string>
     <string name="form_id_animal_description">Introducir o escanear ID del animal</string>
     <string name="form_dead_date">Fecha de muerte *</string>
     <string name="title_cadaver">Cadáver Inaccesible</string>
@@ -58,7 +58,18 @@
     <string name="form_pregnancy_months">Meses de Gestación *</string>
     <string name="form_pregnancy_months_description">Número de meses (1-9)</string>
     <string name="buttom_form_dead">Reportar muerte</string>
+    <string name="error_message_dead">Error al Reportar Muerte</string>
+    <string name="successful_message_dead">Muerte reportada exitosamente</string>
 
+    <string name="name_sex_correct">Corregir Sexo</string>
+    <string name="buttom_form_correct_sex">Corregir Sexo</string>
+    <string name="error_message_correct_sex">Error al corregir el sexo</string>
+    <string name="successful_message_correct_sex">Sexo corregido exitosamente</string>
+
+
+
+
+    <string name="form_id_animal">ID Animal *</string>
     <string name="male">Macho</string>
     <string name="female">Hembra</string>
     <string name="error_buttom">Entendido</string>
