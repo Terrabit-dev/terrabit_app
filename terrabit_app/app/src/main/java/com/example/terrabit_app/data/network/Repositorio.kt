@@ -77,6 +77,4 @@ class Repositorio {
         apiInterface.putSolicitudMaterial(request)
 
 
-
-
 }

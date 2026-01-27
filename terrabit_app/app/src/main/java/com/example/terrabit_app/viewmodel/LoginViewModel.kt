@@ -21,6 +21,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = Repositorio()
     private val userPreferences = UserPreferences(application)
 
+
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
     val loginState: StateFlow<LoginState> = _loginState.asStateFlow()
 
