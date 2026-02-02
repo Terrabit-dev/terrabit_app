@@ -18,7 +18,7 @@
     <string name="information_description_home">Todos los datos se sincronizan automáticamente con el sistema de registro de la Generalitat de Catalunya.</string>
 
     <string name="gestion_name_bovinos">Gestión de Bovinos</string>
-    <string name="gestion_subtitle">Selecciona una acción</string>
+    <string name="gestion_subtitle_bovinos">Selecciona una acción</string>
     <string name="action_register_born">Registrar Nacimiento</string>
     <string name="action_report_dead">Reportar Muerte</string>
     <string name="action_correct_sex">Corregir sexo</string>
@@ -35,6 +35,7 @@
     <string name="form_raze">Raza *</string>
     <string name="form_raze_description">Seleccionar raza</string>
     <string name="form_aptitude">Aptitud *</string>
+    <string name="form_aptitude_description">Seleccionar aptitud</string>
     <string name="option_aptitude_meat">Carne</string>
     <string name="option_aptitude_milk">Leche</string>
     <string name="option_aptitude_double">Doble proposito</string>
@@ -73,6 +74,8 @@
     <string name="male">Macho</string>
     <string name="female">Hembra</string>
     <string name="error_buttom">Entendido</string>
+    <string name="accept_buttom">Aceptar</string>
+    <string name="cancel_buttom">Cancelar</string>
     <string name="form_date_description">Seleccionar fecha</string>
 
 

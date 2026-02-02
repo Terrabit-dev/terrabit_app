@@ -17,6 +17,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -27,6 +28,7 @@ import com.example.terrabit_app.data.network.Identificadores.Identificadores
 import com.example.terrabit_app.viewmodel.MainViewmodel
 import com.example.terrabit_app.viewmodel.NacimientoViewmodel
 import kotlin.collections.emptyList
+import com.example.terrabit_app.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,11 +61,16 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
 
+    // mensajes de respuesta
+    val mensajeRegistroExitoso = stringResource(R.string.successful_message_born)
+    val mensajeRegistroError = stringResource(R.string.error_message_born)
+
+
     // Mostrar Snackbar cuando hay éxito
     LaunchedEffect(registroExitoso) {
         if (registroExitoso) {
             snackbarHostState.showSnackbar(
-                message = "Nacimiento registrado exitosamente",
+                message = mensajeRegistroExitoso,
                 duration = SnackbarDuration.Short
             )
             viewModel.resetearEstadoRegistro()
@@ -88,13 +95,13 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                 Icon(
                     imageVector = Icons.Default.ArrowBack, // Usa un icono de error apropiado
                     contentDescription = null,
-                    tint = Color(0xFFD32F2F),
+                    tint = Color(0xFF4A7C59),
                     modifier = Modifier.size(48.dp)
                 )
             },
             title = {
                 Text(
-                    text = "Error al Registrar Nacimiento",
+                    text = mensajeRegistroError,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
                     color = Color(0xFF1E293B)
@@ -115,11 +122,11 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                         viewModel.resetearEstadoRegistro()
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFD32F2F)
+                        containerColor = Color(0xFF4A7C59)
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text("Entendido", fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.error_buttom), fontWeight = FontWeight.SemiBold)
                 }
             },
             containerColor = Color.White,
@@ -145,12 +152,12 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                         }
                     }
                 ) {
-                    Text("Aceptar", color = Color(0xFF4A7C59))
+                    Text(stringResource(R.string.accept_buttom), color = Color(0xFF4A7C59))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.ocultarDatePicker() }) {
-                    Text("Cancelar", color = Color(0xFF64748B))
+                    Text(stringResource(R.string.cancel_buttom), color = Color(0xFF64748B))
                 }
             }
         ) {
@@ -177,12 +184,12 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                         }
                     }
                 ) {
-                    Text("Aceptar", color = Color(0xFF4A7C59))
+                    Text(stringResource(R.string.accept_buttom), color = Color(0xFF4A7C59))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.ocultarDatePickerIdentificacion() }) {
-                    Text("Cancelar", color = Color(0xFF64748B))
+                    Text(stringResource(R.string.cancel_buttom), color = Color(0xFF64748B))
                 }
             }
         ) {
@@ -246,15 +253,9 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                     title = {
                         Column {
                             Text(
-                                "Registrar Nacimiento",
+                                stringResource(R.string.born_register_name),
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.SemiBold
-                            )
-                            Text(
-                                "Sección 5.1",
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Normal,
-                                color = Color.White.copy(alpha = 0.9f)
                             )
                         }
                     },
@@ -309,7 +310,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                         // ID Madre
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "ID Madre *",
+                                stringResource(R.string.form_id_mother),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color(0xFF1E293B),
@@ -322,7 +323,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                 modifier = Modifier.fillMaxWidth(),
                                 placeholder = {
                                     Text(
-                                        "Introducir o escanear ID de la madre",
+                                        stringResource(R.string.form_mother_description),
                                         color = Color(0xFF94A3B8)
                                     )
                                 },
@@ -355,7 +356,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                         // ID Cría
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "ID Cría *",
+                                stringResource(R.string.form_id_breeding),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color(0xFF1E293B),
@@ -368,7 +369,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                 modifier = Modifier.fillMaxWidth(),
                                 placeholder = {
                                     Text(
-                                        "Introducir o escanear ID de la cría",
+                                        stringResource(R.string.form_id_breeding_description),
                                         color = Color(0xFF94A3B8)
                                     )
                                 },
@@ -402,7 +403,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                         // Fecha de Nacimiento
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "Fecha de Nacimiento *",
+                                stringResource(R.string.form_birthdate),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color(0xFF1E293B),
@@ -420,7 +421,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                     modifier = Modifier.fillMaxWidth(),
                                     placeholder = {
                                         Text(
-                                            "Seleccionar fecha",
+                                            stringResource(R.string.form_date_description),
                                             color = Color(0xFF94A3B8)
                                         )
                                     },
@@ -448,7 +449,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                         // Fecha de Identificación
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "Fecha de Identificación *",
+                                stringResource(R.string.form_date_identification),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color(0xFF1E293B),
@@ -466,7 +467,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                     modifier = Modifier.fillMaxWidth(),
                                     placeholder = {
                                         Text(
-                                            "Seleccionar fecha",
+                                            stringResource(R.string.form_date_description),
                                             color = Color(0xFF94A3B8)
                                         )
                                     },
@@ -494,7 +495,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                         // Sexo
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "Sexo *",
+                                stringResource(R.string.form_sex),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color(0xFF1E293B),
@@ -514,7 +515,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                     readOnly = true,
                                     placeholder = {
                                         Text(
-                                            "Seleccionar sexo",
+                                            stringResource(R.string.form_sex_description),
                                             color = Color(0xFF94A3B8)
                                         )
                                     },
@@ -538,35 +539,51 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                     modifier = Modifier
                                         .background(Color.White)
                                 ) {
-                                    viewModel.listaSexos.forEach { sexo ->
-                                        DropdownMenuItem(
-                                            text = {
-                                                Text(
-                                                    sexo,
-                                                    fontSize = 15.sp,
-                                                    color = Color(0xFF1E293B),
-                                                    fontWeight = FontWeight.Normal
-                                                )
-                                            },
-                                            onClick = { viewModel.seleccionarSexo(sexo) },
-                                            contentPadding = PaddingValues(
-                                                horizontal = 16.dp,
-                                                vertical = 14.dp
-                                            ),
-                                            colors = MenuDefaults.itemColors(
-                                                textColor = Color(0xFF1E293B),
-                                                leadingIconColor = Color(0xFF1E293B),
-                                                trailingIconColor = Color(0xFF1E293B),
-                                                disabledTextColor = Color(0xFF94A3B8)
-                                            )
+                                    val male = stringResource(R.string.male)
+                                    val female = stringResource(R.string.female)
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(
+                                                male,
+                                                fontSize = 15.sp,
+                                                color = Color(0xFF1E293B),
+                                                fontWeight = FontWeight.Normal
+                                            ) },
+                                        onClick = { viewModel.seleccionarSexo(male, "0") },
+                                        contentPadding = PaddingValues(
+                                            horizontal = 16.dp,
+                                            vertical = 14.dp
+                                        ),
+                                        colors = MenuDefaults.itemColors(
+                                            textColor = Color(0xFF1E293B),
+                                            leadingIconColor = Color(0xFF1E293B),
+                                            trailingIconColor = Color(0xFF1E293B),
+                                            disabledTextColor = Color(0xFF94A3B8)
                                         )
-                                        if (sexo != viewModel.listaSexos.last()) {
-                                            HorizontalDivider(
-                                                color = Color(0xFFF1F5F9),
-                                                thickness = 1.dp
+                                    )
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(
+                                                female,
+                                                fontSize = 15.sp,
+                                                color = Color(0xFF1E293B),
+                                                fontWeight = FontWeight.Normal
                                             )
-                                        }
-                                    }
+                                        },
+                                        onClick = { viewModel.seleccionarSexo(female, "1") },
+                                        contentPadding = PaddingValues(
+                                            horizontal = 16.dp,
+                                            vertical = 14.dp
+                                        ),
+                                        colors = MenuDefaults.itemColors(
+                                            textColor = Color(0xFF1E293B),
+                                            leadingIconColor = Color(0xFF1E293B),
+                                            trailingIconColor = Color(0xFF1E293B),
+                                            disabledTextColor = Color(0xFF94A3B8)
+                                        )
+                                    )
+
+
                                 }
                             }
                         }
@@ -574,7 +591,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                         // Raza
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "Raza *",
+                                stringResource(R.string.form_raze),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color(0xFF1E293B),
@@ -594,7 +611,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                     readOnly = true,
                                     placeholder = {
                                         Text(
-                                            "Seleccionar raza",
+                                            stringResource(R.string.form_raze_description),
                                             color = Color(0xFF94A3B8)
                                         )
                                     },
@@ -655,7 +672,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                         // Aptitud
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "Aptitud *",
+                                stringResource(R.string.form_aptitude),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color(0xFF1E293B),
@@ -675,7 +692,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                     readOnly = true,
                                     placeholder = {
                                         Text(
-                                            "Seleccionar aptitud",
+                                            stringResource(R.string.form_aptitude_description),
                                             color = Color(0xFF94A3B8)
                                         )
                                     },
@@ -693,13 +710,18 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                         unfocusedTextColor = Color(0xFF1E293B)
                                     )
                                 )
+                                val aptitudes = mapOf<String, String>(
+                                    stringResource(R.string.option_aptitude_meat) to "0",
+                                    stringResource(R.string.option_aptitude_milk) to "1",
+                                    stringResource(R.string.option_aptitude_double) to "2"
+                                )
                                 ExposedDropdownMenu(
                                     expanded = aptitudExpandida,
                                     onDismissRequest = { viewModel.cerrarAptitudMenu() },
                                     modifier = Modifier
                                         .background(Color.White)
                                 ) {
-                                    viewModel.listaAptitudes.forEach { aptitud ->
+                                    aptitudes.forEach { (aptitud, codigo) ->
                                         DropdownMenuItem(
                                             text = {
                                                 Text(
@@ -709,7 +731,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                                     fontWeight = FontWeight.Normal
                                                 )
                                             },
-                                            onClick = { viewModel.seleccionarAptitud(aptitud) },
+                                            onClick = { viewModel.seleccionarAptitud(aptitud, codigo) },
                                             contentPadding = PaddingValues(
                                                 horizontal = 16.dp,
                                                 vertical = 14.dp
@@ -753,7 +775,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                     )
                 ) {
                     Text(
-                        "Registrar Nacimiento",
+                        stringResource(R.string.buttom_form_born),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         letterSpacing = 0.5.sp

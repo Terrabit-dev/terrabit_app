@@ -9,12 +9,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.terrabit_app.ui.components.TarjetaAccion
 import com.example.terrabit_app.ui.navigation.Routes
+import com.example.terrabit_app.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -24,7 +26,7 @@ fun GestionBovinos(navController: NavController) {
             TopAppBar(
                 title = {
                     Text(
-                        "Gestión de Bovinos",
+                        stringResource(R.string.gestion_name_bovinos),
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
@@ -55,7 +57,7 @@ fun GestionBovinos(navController: NavController) {
 
             // Descripción
             Text(
-                "Selecciona una acción",
+                stringResource(R.string.gestion_subtitle_bovinos),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color(0xFF64748B),
@@ -78,7 +80,7 @@ fun GestionBovinos(navController: NavController) {
                 ) {
                     TarjetaAccion(
                         icono = Icons.Default.Add,
-                        titulo = "Registrar Nacimiento",
+                        titulo = stringResource(R.string.action_register_born),
                         subtitulo = "",
                         colorFondo = Color(0xFF4A7C59),
                         modifier = Modifier.weight(1f),
@@ -87,7 +89,7 @@ fun GestionBovinos(navController: NavController) {
 
                     TarjetaAccion(
                         icono = Icons.Default.Clear,
-                        titulo = "Reportar Muerte",
+                        titulo = stringResource(R.string.action_report_dead),
                         subtitulo = "",
                         colorFondo = Color(0xFFD32F2F),
                         modifier = Modifier.weight(1f),
@@ -100,7 +102,7 @@ fun GestionBovinos(navController: NavController) {
                 ) {
                     TarjetaAccion(
                         icono = Icons.Default.Edit,
-                        titulo = "Corregir sexo",
+                        titulo = stringResource(R.string.action_correct_sex),
                         subtitulo = "",
                         colorFondo = Color(0xFF4A7C59),
                         modifier = Modifier.weight(1f),
@@ -109,7 +111,7 @@ fun GestionBovinos(navController: NavController) {
 
                     TarjetaAccion(
                         icono = Icons.Default.AddCircle,
-                        titulo = "Identificar animal",
+                        titulo = stringResource(R.string.action_identify_animal),
                         subtitulo = "",
                         colorFondo = Color(0xFF4A7C59),
                         modifier = Modifier.weight(1f),

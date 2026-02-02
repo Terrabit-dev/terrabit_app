@@ -19,7 +19,7 @@
     <string name="information_description_home">Totes les dades se sincronitzen automàticament amb el sistema de registre de la Generalitat de Catalunya.</string>
 
     <string name="gestion_name_bovinos">Gestió de Bovins</string>
-    <string name="gestion_subtitle">Selecciona una acció</string>
+    <string name="gestion_subtitle_bovinos">Selecciona una acció</string>
     <string name="action_register_born">Registrar Naixement</string>
     <string name="action_report_dead">Reportar Mort</string>
     <string name="action_correct_sex">Corregir sexe</string>
@@ -36,11 +36,19 @@
     <string name="form_raze">Raça *</string>
     <string name="form_raze_description">Seleccionar raça</string>
     <string name="form_aptitude">Aptitud *</string>
+    <string name="form_aptitude_description">Seleccionar aptitud</string>
     <string name="option_aptitude_meat">Carn</string>
     <string name="option_aptitude_milk">Llet</string>
     <string name="option_aptitude_double">Doble propòsit</string>
     <string name="buttom_form_born">Registrar Naixement</string>
     <string name="error_message_born">Error en registrar el Naixement</string>
+
+    <string name="error_message_mother_id">Error en registrar el Naixement</string>
+    <string name="error_message_breeding_id">Error en registrar el Naixement</string>
+    <string name="error_message_born_date">Error en registrar el Naixement</string>
+    <string name="error_message_sex">Error en registrar el Naixement</string>
+    <string name="error_message_aptitude">Error en registrar el Naixement</string>
+
     <string name="successful_message_born">Naixement registrat correctament</string>
 
     <string name="name_report_dead">Reportar Mort</string>
@@ -74,5 +82,7 @@
     <string name="male">Mascle</string>
     <string name="female">Femella</string>
     <string name="error_buttom">Entès</string>
+    <string name="accept_buttom">Acceptar</string>
+    <string name="cancel_buttom">Cancel·lar</string>
     <string name="form_date_description">Seleccionar data</string>
 </resources>

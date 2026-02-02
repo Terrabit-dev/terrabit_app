@@ -1,9 +1,11 @@
 package com.example.terrabit_app.viewmodel
 
 import android.util.Log
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.terrabit_app.R
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.Identificadores.Identificadores
 import com.example.terrabit_app.data.network.animales.RegistroNacimientoBovi
@@ -62,6 +64,9 @@ class NacimientoViewmodel : ViewModel() {
     private val _sexoSeleccionado = MutableLiveData("")
     val sexoSeleccionado = _sexoSeleccionado
 
+    private var sexoApiSeleccionado = "0"
+
+    private var codigoAptitud = "0"
     private val _razaSeleccionada = MutableLiveData("")
     val razaSeleccionada = _razaSeleccionada
 
@@ -100,7 +105,7 @@ class NacimientoViewmodel : ViewModel() {
     data class Razas(val codigo: String, val nombre: String)
 
     // Listas de opciones - Nacimiento
-    val listaSexos = listOf("Macho", "Hembra")
+
     val razasBovinas = listOf(
         Razas("1111", "Holstein (Frisona)"),
         Razas("1116", "Angus"),
@@ -126,8 +131,9 @@ class NacimientoViewmodel : ViewModel() {
         _fechaNacimiento.value = nuevaFecha
     }
 
-    fun seleccionarSexo(sexo: String) {
+    fun seleccionarSexo(sexo: String, codigo: String) {
         _sexoSeleccionado.value = sexo
+        sexoApiSeleccionado = codigo
         _sexoExpandido.value = false
     }
 
@@ -137,8 +143,9 @@ class NacimientoViewmodel : ViewModel() {
         _razaExpandida.value = false
     }
 
-    fun seleccionarAptitud(aptitud: String) {
+    fun seleccionarAptitud(aptitud: String, codigo: String) {
         _aptitudSeleccionada.value = aptitud
+        codigoAptitud = codigo
         _aptitudExpandida.value = false
     }
 
@@ -256,20 +263,7 @@ class NacimientoViewmodel : ViewModel() {
                 val fechaNacimientoAPI = DateUtils.convertirFechaAFormatoAPI(_fechaNacimiento.value ?: "")
                 val fechaIdentificacionAPI = DateUtils.convertirFechaAFormatoAPI(_fechaIdentificacion.value ?: "")
 
-                // Convertir sexo al formato de la API
-                val sexoAPI = when (_sexoSeleccionado.value) {
-                    "Macho" -> "02"
-                    "Hembra" -> "01"
-                    else -> ""
-                }
 
-                // Convertir aptitud al formato de la API
-                val aptitudAPI = when (_aptitudSeleccionada.value) {
-                    "Carne" -> "02"
-                    "Leche" -> "01"
-                    "Doble propósito" -> "03"
-                    else -> ""
-                }
 
                 // Crear objeto de petición
                 val request = RegistroNacimientoBovi(
@@ -279,9 +273,9 @@ class NacimientoViewmodel : ViewModel() {
                     identificadorMare = _idMadre.value ?: "",
                     dataNaixement = fechaNacimientoAPI,
                     dataIdentificacio = fechaIdentificacionAPI,
-                    sexe = sexoAPI,
+                    sexe = sexoApiSeleccionado,
                     raca = _codigoRaza.value ?: "",
-                    aptitud = aptitudAPI
+                    aptitud = codigoAptitud
                 )
                 Log.d("Registro Nacimiento", "Request: $request")
 
@@ -305,18 +299,10 @@ class NacimientoViewmodel : ViewModel() {
 
                                 Log.d("Registro Nacimiento", "Nacimiento reportado exitosamente")
                                 Log.d("Registro Nacimiento", "Respuesta: [${body.codi}] ${body.descripcio}")
-
                                 // Limpiar formulario después de registrar exitosamente
                                 limpiarFormularioNacimiento()
                             }
-                            // Caso inesperado: respuesta exitosa pero sin código 0 ni errores
-                            else {
-                                _registroExitoso.value = false
-                                _mensajeError.value = "Respuesta inesperada del servidor: ${body.descripcio ?: "Sin descripción"}"
-                                Log.w("Registro Nacimiento", "Respuesta inesperada: [${body.codi}] ${body.descripcio}")
-                            }
                         }
-
                         // Caso 2: HTTP Error (4xx, 5xx)
                         !response.isSuccessful -> {
                             val errorBody = response.errorBody()?.string()
