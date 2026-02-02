@@ -375,8 +375,8 @@ class GuiasViewModel : ViewModel() {
                 )
 
                 // Convertir temporal y mobilitat a formato API
-                val temporalAPI = if (_temporal.value?.startsWith("True") == true) "True" else "False"
-                val mobilitatAPI = if (_mobilitat.value?.startsWith("True") == true) "True" else "False"
+                val temporalAPI = _temporal.value ?: ""
+                val mobilitatAPI = _mobilitat.value ?: ""
 
                 // Extraer código del medio de transporte (primeros 2 dígitos)
                 val codigoMedio = _mitjaTransport.value?.take(2) ?: ""
