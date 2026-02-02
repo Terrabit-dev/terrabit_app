@@ -3,14 +3,14 @@ package com.example.terrabit_app.viewmodel
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.guias.PeticionAltaGuia
 import com.example.terrabit_app.data.network.respuestas.ResAltaGuia
 import com.google.gson.Gson
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
 import java.util.Calendar
 
 class GuiasViewModel : ViewModel() {
@@ -132,7 +132,6 @@ class GuiasViewModel : ViewModel() {
     )
 
     val listaMitjaTransport = listOf(
-        "01 - Camió",
         "04 - Camió",
         "05 - Vaixell",
         "06 - Avió",
@@ -357,10 +356,9 @@ class GuiasViewModel : ViewModel() {
             return
         }
 
-        CoroutineScope(Dispatchers.IO).launch {
-            withContext(Dispatchers.Main) {
-                _cargandoGuia.value = true
-            }
+        viewModelScope.launch {
+            // Activar indicador de carga
+            _cargandoGuia.postValue(true)
 
             try {
                 // Convertir fechas al formato API (yyyyMMddHHmm)
@@ -374,7 +372,7 @@ class GuiasViewModel : ViewModel() {
                     _horaArribada.value ?: ""
                 )
 
-                // Convertir temporal y mobilitat a formato API
+                // La API espera "SI" o "NO"
                 val temporalAPI = _temporal.value ?: ""
                 val mobilitatAPI = _mobilitat.value ?: ""
 
@@ -419,39 +417,46 @@ class GuiasViewModel : ViewModel() {
                 val response = repositorio.putAltaGuia(request)
 
                 withContext(Dispatchers.Main) {
+                    // Desactivar indicador de carga
                     _cargandoGuia.value = false
 
                     when {
+                        // Caso: HTTP 200 OK
                         response.isSuccessful && response.body() != null -> {
                             val body = response.body()!!
 
-                            // CORREGIDO: usar codiRemo en lugar de codi
                             if (body.codiRemo == "0" || body.descripcio?.contains("correcte", ignoreCase = true) == true) {
                                 _registroExitoso.value = true
                                 _mensajeError.value = ""
 
                                 Log.d("Alta Guía", "Guía creada exitosamente")
-                                // CORREGIDO: usar codiRemo
                                 Log.d("Alta Guía", "Respuesta: [${body.codiRemo}] ${body.descripcio}")
 
                                 limpiarFormulario()
                             } else {
+                                // Si no es exitoso pero viene en el body
                                 _registroExitoso.value = false
                                 _mensajeError.value = body.descripcio ?: "Error desconocido"
-                                // CORREGIDO: usar codiRemo
                                 Log.w("Alta Guía", "Respuesta inesperada: [${body.codiRemo}] ${body.descripcio}")
                             }
                         }
 
+                        // Caso: HTTP Error (4xx, 5xx)
                         !response.isSuccessful -> {
                             val errorBody = response.errorBody()?.string()
                             if (errorBody != null) {
                                 try {
                                     val errorObj = Gson().fromJson(errorBody, ResAltaGuia::class.java)
-                                    _mensajeError.value = errorObj.descripcio ?: "Error desconocido del servidor"
+                                    // MEJORADO: Extraer del array de errores si existe
+                                    _mensajeError.value = errorObj.errors?.firstOrNull()?.descripcio
+                                        ?: errorObj.descripcio
+                                                ?: "Error desconocido del servidor"
                                 } catch (e: Exception) {
                                     _mensajeError.value = "Error al procesar respuesta"
+                                    Log.e("Error parsing", "Error: ${e.message}", e)
                                 }
+                            } else {
+                                _mensajeError.value = "Error del servidor sin detalles"
                             }
                             _registroExitoso.value = false
                             Log.e("Error Guía", "HTTP ${response.code()}: ${response.message()}")
@@ -460,6 +465,7 @@ class GuiasViewModel : ViewModel() {
                             }
                         }
 
+                        // Caso: Respuesta exitosa pero sin body
                         else -> {
                             _registroExitoso.value = false
                             _mensajeError.value = "Error: Respuesta vacía del servidor"
