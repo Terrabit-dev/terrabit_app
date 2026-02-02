@@ -11,6 +11,8 @@ import com.example.terrabit_app.ui.pantallas.*
 import com.example.terrabit_app.ui.screen.CorregirSexoBovi
 import com.example.terrabit_app.ui.screen.Fallecimiento
 import com.example.terrabit_app.ui.screen.GestionGuias
+import com.example.terrabit_app.ui.screen.HomeBovinos
+import com.example.terrabit_app.ui.screen.HomePorcinos
 import com.example.terrabit_app.ui.screen.IdentificacionApalzada
 import com.example.terrabit_app.ui.screen.Material
 import com.example.terrabit_app.ui.screen.Nacimiento
@@ -24,7 +26,6 @@ import com.example.terrabit_app.viewmodel.MaterialViewModel
 import com.example.terrabit_app.viewmodel.MovimientosViewModel
 import com.example.terrabit_app.viewmodel.NacimientoViewmodel
 import com.example.terrabit_app.viewmodel.ViewModelMuerteBovi
-import okhttp3.Route
 
 @Composable
 fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel ) {
@@ -35,8 +36,12 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel ) {
         startDestination = Routes.Login.route
     ) {
         // Pantalla principal
-        composable(Routes.Home.route) {
-            Home(navController = navController, drawerViewModel)
+        composable(Routes.HomeBovinos.route) {
+            HomeBovinos(navController = navController, drawerViewModel)
+        }
+
+        composable(Routes.HomePorcinos.route) {
+            HomePorcinos(navController = navController, drawerViewModel)
         }
 
         // Pantallas de categorías (intermedias)

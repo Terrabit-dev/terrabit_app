@@ -2,7 +2,8 @@ package com.example.terrabit_app.ui.navigation
 
 sealed class Routes(val route: String) {
 
-    object Home : Routes("home")
+    object HomeBovinos : Routes("home_bovinos")
+    object HomePorcinos : Routes("home_porcinos")
 
     // Organizacion
     object GestionBovinos : Routes("gestion_bovinos")
