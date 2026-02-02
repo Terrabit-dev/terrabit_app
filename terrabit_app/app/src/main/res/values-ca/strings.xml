@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Terrabit</string>
+
+    <string name="drawer_subtitle">Gestió Ramadera</string>
+    <string name="drawer_explained">Tipus d\'Animal</string>
+    <string name="bovinos_name">Bovins</string>
+    <string name="porcionos_name">Porcins</string>
+
+    <string name="title_home">Benvingut/da!</string>
+    <string name="subtitle_home">Menú Principal</string>
+    <string name="card_name_animals">Gestió de Bovins</string>
+    <string name="card_description_animals">Registrar naixements i reportar morts</string>
+    <string name="card_name_guias">Guies i Moviments</string>
+    <string name="card_description_guias">Gestionar guies i confirmar moviments</string>
+    <string name="card_name_material">Material</string>
+    <string name="card_description_material">Sol·licitar material i crotals</string>
+    <string name="information_title_home">Informació del Sistema</string>
+    <string name="information_description_home">Totes les dades se sincronitzen automàticament amb el sistema de registre de la Generalitat de Catalunya.</string>
+
+    <string name="gestion_name_bovinos">Gestió de Bovins</string>
+    <string name="gestion_subtitle">Selecciona una acció</string>
+    <string name="action_register_born">Registrar Naixement</string>
+    <string name="action_report_dead">Reportar Mort</string>
+    <string name="action_correct_sex">Corregir sexe</string>
+    <string name="action_identify_animal">Identificar animal</string>
+
+    <string name="born_register_name">Registrar Naixement</string>
+    <string name="form_id_mother">ID Mare *</string>
+    <string name="form_mother_description">Introduir o escanejar ID de la mare</string>
+    <string name="form_id_breeding">ID Cria *</string>
+    <string name="form_id_breeding_description">Introduir o escanejar ID de la cria</string>
+    <string name="form_birthdate">Data de Naixement *</string>
+    <string name="form_sex">Sexe *</string>
+    <string name="form_sex_description">Seleccionar sexe</string>
+    <string name="form_raze">Raça *</string>
+    <string name="form_raze_description">Seleccionar raça</string>
+    <string name="form_aptitude">Aptitud *</string>
+    <string name="option_aptitude_meat">Carn</string>
+    <string name="option_aptitude_milk">Llet</string>
+    <string name="option_aptitude_double">Doble propòsit</string>
+    <string name="buttom_form_born">Registrar Naixement</string>
+    <string name="error_message_born">Error en registrar el Naixement</string>
+    <string name="successful_message_born">Naixement registrat correctament</string>
+
+    <string name="name_report_dead">Reportar Mort</string>
+    <string name="form_type_dead">Tipus *</string>
+    <string name="form_id_animal_description">Introduir o escanejar ID de l\'animal</string>
+    <string name="form_dead_date">Data de la mort *</string>
+    <string name="title_cadaver">Cadàver Inaccessible</string>
+    <string name="description_cadaver">Activar si no es pot accedir a la ubicació</string>
+    <string name="title_gps">Coordenades GPS</string>
+    <string name="buttom_gps">Obtenir Ubicació Actual</string>
+    <string name="gps_laltitud">Latitud (X)</string>
+    <string name="gps_laltitud_description">Coordenada X</string>
+    <string name="gps_longitud">Longitud (Y)</string>
+    <string name="gps_longitud_description">Coordenada Y</string>
+    <string name="form_pregnancy_months">Mesos de Gestació *</string>
+    <string name="form_pregnancy_months_description">Nombre de mesos (1-9)</string>
+    <string name="buttom_form_dead">Reportar mort</string>
+    <string name="error_message_dead">Error en reportar la Mort</string>
+    <string name="successful_message_dead">Mort reportada correctament</string>
+
+    <string name="name_sex_correct">Corregir Sexe</string>
+    <string name="buttom_form_correct_sex">Corregir Sexe</string>
+    <string name="error_message_correct_sex">Error en corregir el sexe</string>
+    <string name="successful_message_correct_sex">Sexe corregit correctament</string>
+
+    <string name="name_identification_postpone">Identificació ajornada</string>
+    <string name="subtitle_identification_postpone">Només explotació amb ajornament de crotalació</string>
+
+    <string name="form_date_identification">Data d\'Identificació *</string>
+    <string name="form_id_animal">ID Animal *</string>
+    <string name="male">Mascle</string>
+    <string name="female">Femella</string>
+    <string name="error_buttom">Entès</string>
+    <string name="form_date_description">Seleccionar data</string>
+</resources>

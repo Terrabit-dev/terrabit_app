@@ -1,5 +1,6 @@
 package com.example.terrabit_app.ui.pantallas
 
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -18,14 +19,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.os.LocaleListCompat
 import androidx.navigation.NavController
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.viewmodel.DrawerViewModel
 import kotlinx.coroutines.launch
+import com.example.terrabit_app.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,7 +74,7 @@ fun Home(
 
                 // Título de sección
                 Text(
-                    "Menú Principal",
+                    stringResource(R.string.subtitle_home),
                     fontSize = 26.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF1E293B),
@@ -91,8 +94,8 @@ fun Home(
                     // Tarjeta Gestión de Bovinos
                     TarjetaMenu(
                         icono = Icons.Default.Agriculture,
-                        titulo = "Gestión de Bovinos",
-                        descripcion = "Registrar nacimientos y reportar muertes",
+                        titulo = stringResource(R.string.card_name_animals),
+                        descripcion = stringResource(R.string.card_description_animals),
                         colorFondo = Color(0xFF3F8F6B),
                         onClick = { navController.navigate(Routes.GestionBovinos.route) }
                     )
@@ -100,8 +103,8 @@ fun Home(
                     // Tarjeta Guías/Movimientos
                     TarjetaMenu(
                         icono = Icons.Default.LocalShipping,
-                        titulo = "Guías y Movimientos",
-                        descripcion = "Gestionar guías y confirmar movimientos",
+                        titulo = stringResource(R.string.card_name_guias),
+                        descripcion = stringResource(R.string.card_description_guias),
                         colorFondo = Color(0xFFE28F41),
                         contadorBadge = 2,
                         onClick = { navController.navigate(Routes.GuiasMovimientos.route) }
@@ -110,8 +113,8 @@ fun Home(
                     // Tarjeta Material
                     TarjetaMenu(
                         icono = Icons.Default.ShoppingCart,
-                        titulo = "Material",
-                        descripcion = "Solicitar material y crotaleras",
+                        titulo = stringResource(R.string.card_name_material),
+                        descripcion = stringResource(R.string.card_description_material),
                         colorFondo = Color(0xFF3F8F6B),
                         onClick = { navController.navigate(Routes.MaterialCategoria.route) }
                     )
@@ -153,7 +156,7 @@ fun Home(
 
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                "Información del Sistema",
+                                stringResource(R.string.information_title_home),
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp,
                                 color = Color(0xFF2E5C3E),
@@ -161,7 +164,7 @@ fun Home(
                             )
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                "Todos los datos se sincronizan automáticamente con el sistema de registro de la Generalitat de Catalunya.",
+                                stringResource(R.string.information_description_home),
                                 fontSize = 14.sp,
                                 color = Color(0xFF475569),
                                 lineHeight = 20.sp,
@@ -274,7 +277,28 @@ fun TarjetaMenu(
         }
     }
 }
-
+// Función mágica que cambia el idioma
+fun cambiarIdioma(codigoIdioma: String) {
+    val appLocale = LocaleListCompat.forLanguageTags(codigoIdioma)
+    AppCompatDelegate.setApplicationLocales(appLocale)
+}
+@Composable
+fun SelectorIdioma() {
+    Column {
+        // Botón para Español
+        Button(
+            onClick = { cambiarIdioma("es") }
+        ) {
+            Text("Castellano")
+        }
+        // Botón para Catalán
+        Button(
+            onClick = { cambiarIdioma("ca") }
+        ) {
+            Text("Català")
+        }
+    }
+}
 @Composable
 fun DrawerContent(
     tipoSeleccionado: String,
@@ -302,7 +326,7 @@ fun DrawerContent(
                     color = Color(0xFF4A7C59)
                 )
                 Text(
-                    "Gestión Ganadera",
+                    stringResource(R.string.drawer_subtitle),
                     fontSize = 14.sp,
                     color = Color(0xFF64748B),
                     modifier = Modifier.padding(top = 4.dp)
@@ -315,7 +339,7 @@ fun DrawerContent(
 
             // Título de sección
             Text(
-                "Tipo de Animal",
+                stringResource(R.string.drawer_explained),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color(0xFF64748B),
@@ -325,8 +349,8 @@ fun DrawerContent(
             // Opción Bovinos
             OpcionTipoAnimal(
                 icono = Icons.Default.Agriculture,
-                titulo = "Bovinos",
-                seleccionado = tipoSeleccionado == "Bovinos",
+                titulo = stringResource(R.string.bovinos_name),
+                seleccionado = tipoSeleccionado == stringResource(R.string.bovinos_name),
                 onClick = { onTipoSeleccionado("Bovinos") }
             )
 
@@ -335,8 +359,8 @@ fun DrawerContent(
             // Opción Porcinos
             OpcionTipoAnimal(
                 icono = Icons.Default.EmojiNature,
-                titulo = "Porcinos",
-                seleccionado = tipoSeleccionado == "Porcinos",
+                titulo = stringResource(R.string.porcionos_name),
+                seleccionado = tipoSeleccionado == stringResource(R.string.porcionos_name),
                 onClick = { onTipoSeleccionado("Porcinos") }
             )
 
@@ -425,6 +449,7 @@ fun HeaderBienvenida(
     tipoAnimal: String,
     onMenuClick: () -> Unit
 ) {
+    var expanded by remember { mutableStateOf(false) }
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -467,12 +492,12 @@ fun HeaderBienvenida(
                     )
                 }
 
-                // Notificaciones
                 Box(
                     contentAlignment = Alignment.Center
                 ) {
+                    // 2. Tu Botón Original
                     IconButton(
-                        onClick = { /* Notificaciones */ },
+                        onClick = { expanded = true },
                         modifier = Modifier
                             .size(40.dp)
                             .background(
@@ -481,23 +506,33 @@ fun HeaderBienvenida(
                             )
                     ) {
                         Icon(
-                            Icons.Default.Notifications,
-                            contentDescription = "Notificaciones",
+                            Icons.Default.Settings,
+                            contentDescription = "Configuración",
                             tint = Color.White
                         )
                     }
 
-                    Badge(
-                        containerColor = Color(0xFFFF5252),
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .offset(x = (-4).dp, y = 4.dp)
+                    // 3. El Menú Desplegable (Se ancla automáticamente al Box)
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false } // Se cierra si tocas fuera
                     ) {
-                        Text(
-                            "3",
-                            color = Color.White,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold
+                        // Opción: Castellano
+                        DropdownMenuItem(
+                            text = { Text("Castellano") },
+                            onClick = {
+                                expanded = false // Cerramos el menú
+                                cambiarIdioma("es") // Cambiamos el idioma
+                            }
+                        )
+
+                        // Opción: Català
+                        DropdownMenuItem(
+                            text = { Text("Català") },
+                            onClick = {
+                                expanded = false
+                                cambiarIdioma("ca")
+                            }
                         )
                     }
                 }
@@ -507,7 +542,7 @@ fun HeaderBienvenida(
 
             // Texto de bienvenida
             Text(
-                "¡Bienvenido/a!",
+                stringResource(R.string.title_home),
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White

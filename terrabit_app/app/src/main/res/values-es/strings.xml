@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Terrabit</string>
 
@@ -74,9 +75,4 @@
     <string name="female">Hembra</string>
     <string name="error_buttom">Entendido</string>
     <string name="form_date_description">Seleccionar fecha</string>
-
-
-
-
-
 </resources>
