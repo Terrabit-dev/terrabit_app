@@ -1,30 +1,40 @@
-package com.example.terrabit_app.ui.screen
+package com.example.terrabit_app.ui.screen.porcinos
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Agriculture
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.EmojiNature
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocalShipping
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
@@ -37,12 +47,16 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.terrabit_app.ui.navigation.Routes
+import com.example.terrabit_app.ui.screen.TarjetaMenu
 import com.example.terrabit_app.viewmodel.DrawerViewModel
 import kotlinx.coroutines.launch
 
@@ -80,7 +94,7 @@ fun HomePorcinos(
                     .verticalScroll(rememberScrollState())
             ) {
                 // Header con gradiente y bienvenida
-                HeaderBienvenida(
+                HeaderBienvenidaPorcinos(
                     tipoAnimal = tipoAnimalSeleccionado,
                     onMenuClick = {
                         scope.launch { drawerState.open() }
@@ -113,7 +127,7 @@ fun HomePorcinos(
                         icono = Icons.Default.Agriculture,
                         titulo = "Crear Guias",
                         descripcion = "Registrar salidas de porcinos",
-                        colorFondo = Color(0xFF3F8F6B),
+                        colorFondo = Color(0xFFE28F41),
                         onClick = { navController.navigate(Routes.GestionPorcinos.route) }
                     )
 
@@ -122,7 +136,7 @@ fun HomePorcinos(
                         icono = Icons.Default.LocalShipping,
                         titulo = "Guías y Movimientos",
                         descripcion = "Gestionar guías y confirmar movimientos",
-                        colorFondo = Color(0xFFE28F41),
+                        colorFondo = Color(0xFF3F8F6B),
                         contadorBadge = 2,
                         onClick = { navController.navigate(Routes.GuiasMovimientosPorcinos.route) }
                     )
@@ -132,7 +146,7 @@ fun HomePorcinos(
                         icono = Icons.Default.ShoppingCart,
                         titulo = "Material",
                         descripcion = "Solicitar material y crotaleras",
-                        colorFondo = Color(0xFF3F8F6B),
+                        colorFondo = Color(0xFFE28F41),
                         onClick = { navController.navigate(Routes.MaterialCategoria.route) }
                     )
                 }
@@ -164,7 +178,7 @@ fun HomePorcinos(
                             Icon(
                                 Icons.Default.Info,
                                 contentDescription = null,
-                                tint = Color(0xFF4A7C59),
+                                tint = Color(0xFFE28F41),
                                 modifier = Modifier.padding(12.dp)
                             )
                         }
@@ -176,7 +190,7 @@ fun HomePorcinos(
                                 "Información del Sistema",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp,
-                                color = Color(0xFF2E5C3E),
+                                color = Color(0xFFBA7A3D),
                                 letterSpacing = 0.2.sp
                             )
                             Spacer(modifier = Modifier.height(6.dp))
@@ -197,104 +211,7 @@ fun HomePorcinos(
         }
     }
 }
-/*
-@Composable
-fun TarjetaMenu(
-    icono: ImageVector,
-    titulo: String,
-    descripcion: String,
-    colorFondo: Color,
-    contadorBadge: Int? = null,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(120.dp)
-            .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 3.dp,
-            pressedElevation = 6.dp
-        ),
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(20.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Icono con badge
-            Box(contentAlignment = Alignment.TopEnd) {
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = colorFondo,
-                    modifier = Modifier.size(70.dp),
-                    shadowElevation = 2.dp
-                ) {
-                    Icon(
-                        icono,
-                        contentDescription = titulo,
-                        tint = Color.White,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp)
-                    )
-                }
 
-                // Badge de notificación
-                if (contadorBadge != null) {
-                    Badge(
-                        containerColor = Color(0xFFFF5252),
-                        modifier = Modifier
-                            .offset(x = 4.dp, y = (-4).dp)
-                    ) {
-                        Text(
-                            contadorBadge.toString(),
-                            color = Color.White,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.width(20.dp))
-
-            // Textos
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    titulo,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 17.sp,
-                    color = Color(0xFF1E293B),
-                    letterSpacing = 0.2.sp
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    descripcion,
-                    fontSize = 14.sp,
-                    color = Color(0xFF64748B),
-                    lineHeight = 18.sp
-                )
-            }
-
-            // Icono flecha
-            Icon(
-                Icons.Default.ChevronRight,
-                contentDescription = "Ver más",
-                tint = Color(0xFF94A3B8),
-                modifier = Modifier.size(28.dp)
-            )
-        }
-    }
-}
-*/
 @Composable
 fun DrawerContentPorcinos(
     navController: NavController,
@@ -320,7 +237,7 @@ fun DrawerContentPorcinos(
                     "Terrabit",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF4A7C59)
+                    color = Color(0xFFE28F41)
                 )
                 Text(
                     "Gestión Ganadera",
@@ -344,7 +261,7 @@ fun DrawerContentPorcinos(
             )
 
             // Opción Bovinos
-            OpcionTipoAnimal(
+            OpcionTipoAnimalPorcinos(
                 icono = Icons.Default.Agriculture,
                 titulo = "Bovinos",
                 seleccionado = tipoSeleccionado == "Bovinos",
@@ -357,7 +274,7 @@ fun DrawerContentPorcinos(
             Spacer(modifier = Modifier.height(8.dp))
 
             // Opción Porcinos
-            OpcionTipoAnimal(
+            OpcionTipoAnimalPorcinos(
                 icono = Icons.Default.EmojiNature,
                 titulo = "Porcinos",
                 seleccionado = tipoSeleccionado == "Porcinos",
@@ -393,17 +310,17 @@ fun DrawerContentPorcinos(
         }
     }
 }
-/*
+
 @Composable
-fun OpcionTipoAnimal(
+fun OpcionTipoAnimalPorcinos(
     icono: ImageVector,
     titulo: String,
     seleccionado: Boolean,
     onClick: () -> Unit
 ) {
-    val backgroundColor = if (seleccionado) Color(0xFF4A7C59).copy(alpha = 0.1f) else Color.Transparent
-    val textColor = if (seleccionado) Color(0xFF4A7C59) else Color(0xFF64748B)
-    val iconColor = if (seleccionado) Color(0xFF4A7C59) else Color(0xFF94A3B8)
+    val backgroundColor = if (seleccionado) Color(0xFFE28F41).copy(alpha = 0.1f) else Color.Transparent
+    val textColor = if (seleccionado) Color(0xFFE28F41) else Color(0xFF64748B)
+    val iconColor = if (seleccionado) Color(0xFFE28F41) else Color(0xFF94A3B8)
 
     Surface(
         modifier = Modifier
@@ -445,7 +362,7 @@ fun OpcionTipoAnimal(
 }
 
 @Composable
-fun HeaderBienvenida(
+fun HeaderBienvenidaPorcinos(
     tipoAnimal: String,
     onMenuClick: () -> Unit
 ) {
@@ -457,8 +374,8 @@ fun HeaderBienvenida(
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        Color(0xFF2F6F4E),
-                        Color(0xFF3F8F6B)
+                        Color(0xFFBA7A3D),
+                        Color(0xFFE28F41)
                     )
                 )
             )
@@ -566,4 +483,3 @@ fun HeaderBienvenida(
         }
     }
 }
-*/

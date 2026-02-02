@@ -13,8 +13,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.terrabit_app.ui.components.TarjetaAccion
-import com.example.terrabit_app.ui.navigation.Routes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,7 +37,7 @@ fun GestionPorcinos(navController: NavController) {
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF4A7C59)
+                    containerColor = Color(0xFFE28F41)
                 )
             )
         },
@@ -51,7 +49,18 @@ fun GestionPorcinos(navController: NavController) {
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
         ) {
-            /*TODO*/
+            Text(
+                "Gestion Porcinos",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1565C0)
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                "Interfaz de gestión de porcinos aparecerá aquí",
+                fontSize = 14.sp,
+                color = Color.Gray
+            )
         }
     }
 }

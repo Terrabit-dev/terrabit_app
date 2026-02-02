@@ -11,13 +11,15 @@ import com.example.terrabit_app.ui.pantallas.*
 import com.example.terrabit_app.ui.screen.CorregirSexoBovi
 import com.example.terrabit_app.ui.screen.Fallecimiento
 import com.example.terrabit_app.ui.screen.GestionGuias
+import com.example.terrabit_app.ui.screen.porcinos.GestionGuiasPorcinos
 import com.example.terrabit_app.ui.screen.HomeBovinos
-import com.example.terrabit_app.ui.screen.HomePorcinos
+import com.example.terrabit_app.ui.screen.porcinos.HomePorcinos
 import com.example.terrabit_app.ui.screen.IdentificacionApalzada
 import com.example.terrabit_app.ui.screen.Material
 import com.example.terrabit_app.ui.screen.Nacimiento
 import com.example.terrabit_app.ui.screen.Login
 import com.example.terrabit_app.ui.screen.Movimientos
+import com.example.terrabit_app.ui.screen.porcinos.EntradasPorcinos
 import com.example.terrabit_app.viewmodel.CorrecionSexoViewModel
 import com.example.terrabit_app.viewmodel.DrawerViewModel
 import com.example.terrabit_app.viewmodel.IdentificacionAplazaViewModel
@@ -105,5 +107,13 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel ) {
             IdentificacionApalzada(navController, identificacion)
         }
 
+        // Pantallas Porcinos
+        composable(Routes.GestionGuiasPorcinos.route) {
+            GestionGuiasPorcinos(navController = navController)
+        }
+
+        composable(Routes.EntradasPorcinos.route) {
+            EntradasPorcinos(navController = navController)
+        }
     }
 }

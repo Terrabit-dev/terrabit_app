@@ -39,7 +39,7 @@ fun GuiasMovimientosPorcinos(navController: NavController) {
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFFE28F41)
+                    containerColor = Color(0xFF4A7C59)
                 )
             )
         },
@@ -80,19 +80,19 @@ fun GuiasMovimientosPorcinos(navController: NavController) {
                         icono = Icons.Default.Create,
                         titulo = "Confirmar y editar guias",
                         subtitulo = "",
-                        colorFondo = Color(0xFFE28F41),
+                        colorFondo = Color(0xFF4A7C59),
                         modifier = Modifier.weight(1f),
-                        onClick = { /*TODO*/ }
+                        onClick = { navController.navigate(Routes.GestionGuiasPorcinos.route) }
                     )
 
                     TarjetaAccion(
                         icono = Icons.Default.Send,
                         titulo = "Confirmar Entradas",
                         subtitulo = "",
-                        colorFondo = Color(0xFFE28F41),
+                        colorFondo = Color(0xFF4A7C59),
                         contadorBadge = 2,
                         modifier = Modifier.weight(1f),
-                        onClick = { /*TODO*/ }
+                        onClick = { navController.navigate(Routes.EntradasPorcinos.route) }
                     )
                 }
             }
