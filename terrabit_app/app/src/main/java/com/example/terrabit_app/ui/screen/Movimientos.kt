@@ -522,7 +522,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                 modifier = Modifier.fillMaxWidth(),
                                 placeholder = {
                                     Text(
-                                        "Código de explotación",
+                                        "Código de explotación REGA",
                                         color = Color(0xFF94A3B8)
                                     )
                                 },
