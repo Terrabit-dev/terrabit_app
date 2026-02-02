@@ -9,13 +9,13 @@ data class Moviment(
     val dataSortida: String,
     val especie: String,
     val identificadors: List<IdenBovi>,
-    val matricula: Any,
+    val matricula: String?,
     val mitjaTransport: String,
     val moDestinacio: String,
-    val moOrigen: Any,
-    val nifConductor: Any,
-    val nomConductor: Any,
-    val nomTransportista: Any,
+    val moOrigen: String?,
+    val nifConductor: String?,
+    val nomConductor: String?,
+    val nomTransportista: String?,
     val regaDestinacio: String,
     val regaOrigen: String
 )
