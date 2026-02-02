@@ -114,7 +114,7 @@ fun HomePorcinos(
                         titulo = "Crear Guias",
                         descripcion = "Registrar salidas de porcinos",
                         colorFondo = Color(0xFF3F8F6B),
-                        onClick = { navController.navigate(Routes.GestionBovinos.route) }
+                        onClick = { navController.navigate(Routes.GestionPorcinos.route) }
                     )
 
                     // Tarjeta Guías/Movimientos
@@ -124,7 +124,7 @@ fun HomePorcinos(
                         descripcion = "Gestionar guías y confirmar movimientos",
                         colorFondo = Color(0xFFE28F41),
                         contadorBadge = 2,
-                        onClick = { navController.navigate(Routes.GuiasMovimientos.route) }
+                        onClick = { navController.navigate(Routes.GuiasMovimientosPorcinos.route) }
                     )
 
                     // Tarjeta Material

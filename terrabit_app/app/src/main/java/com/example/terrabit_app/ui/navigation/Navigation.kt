@@ -44,7 +44,7 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel ) {
             HomePorcinos(navController = navController, drawerViewModel)
         }
 
-        // Pantallas de categorías (intermedias)
+        // Pantallas de categorías Bovinas (intermedias)
         composable(Routes.GestionBovinos.route) {
             GestionBovinos(navController = navController)
         }
@@ -53,6 +53,16 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel ) {
             GuiasMovimientos(navController = navController)
         }
 
+        // Pantallas de categorías Porcinas (intermedias)
+        composable(Routes.GestionPorcinos.route) {
+            GestionPorcinos(navController = navController)
+        }
+
+        composable(Routes.GuiasMovimientosPorcinos.route) {
+            GuiasMovimientosPorcinos(navController = navController)
+        }
+
+        // Pantallas de categorías Generales (intermedias)
         composable(Routes.MaterialCategoria.route) {
             MaterialCategoria(navController = navController)
         }
