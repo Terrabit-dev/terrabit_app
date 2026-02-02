@@ -59,12 +59,16 @@ class ViewModelMuerteBovi : ViewModel() {
     private val _cargandoMuerte = MutableLiveData(false)
     val cargandoMuerte = _cargandoMuerte
 
-    // Lista de tipos de muerte
-    val listaTiposMuerte = listOf("01 - Mort", "02 - Avortament")
+    // codigo de tipo de muerte
+
+    val _codigoTipoMuerte = MutableLiveData<String>()
+    val codigoTipoMuerte = _codigoTipoMuerte
+
 
     // Funciones para actualizar los campos - Muerte
-    fun seleccionarTipoMuerte(tipo: String) {
+    fun seleccionarTipoMuerte(tipo: String, codigo: String) {
         _tipoMuerte.value = tipo
+        _codigoTipoMuerte.value = codigo
         _tipoMuerteExpandido.value = false
 
         // Limpiar meses gestación si cambia a Mort

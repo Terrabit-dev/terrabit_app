@@ -43,9 +43,11 @@
     <string name="error_message_born">Error al Registrar Nacimiento</string>
     <string name="successful_message_born">Nacimiento registrado exitosamente</string>
 
-    <string name="name_report_dead">Registrar Nacimiento</string>
+    <string name="name_report_dead">Registrar Fallecimiento</string>
     <string name="form_type_dead">Tipo *</string>
-    <string name="form_id_animal_description">Introducir o escanear ID del animal</string>
+    <string name="form_type_dead_description">Seleccionar tipo</string>
+    <string name="form_type_dead_abort">Aborto</string>
+    <string name="form_type_dead_dead">Muerte</string>
     <string name="form_dead_date">Fecha de muerte *</string>
     <string name="title_cadaver">Cadáver Inaccesible</string>
     <string name="description_cadaver">Activar si la ubicación no puede ser accedida</string>
@@ -70,6 +72,7 @@
     <string name="subtitle_identification_postpone">Solo explotación con aplazamiento de crotalación</string>
 
     <string name="form_date_identification">Fecha de Identificación *</string>
+    <string name="form_id_animal_description">Introducir o escanear ID del animal</string>
     <string name="form_id_animal">ID Animal *</string>
     <string name="male">Macho</string>
     <string name="female">Hembra</string>

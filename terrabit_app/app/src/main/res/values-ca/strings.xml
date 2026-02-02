@@ -42,18 +42,13 @@
     <string name="option_aptitude_double">Doble propòsit</string>
     <string name="buttom_form_born">Registrar Naixement</string>
     <string name="error_message_born">Error en registrar el Naixement</string>
-
-    <string name="error_message_mother_id">Error en registrar el Naixement</string>
-    <string name="error_message_breeding_id">Error en registrar el Naixement</string>
-    <string name="error_message_born_date">Error en registrar el Naixement</string>
-    <string name="error_message_sex">Error en registrar el Naixement</string>
-    <string name="error_message_aptitude">Error en registrar el Naixement</string>
-
     <string name="successful_message_born">Naixement registrat correctament</string>
 
     <string name="name_report_dead">Reportar Mort</string>
     <string name="form_type_dead">Tipus *</string>
-    <string name="form_id_animal_description">Introduir o escanejar ID de l\'animal</string>
+    <string name="form_type_dead_description">Seleccionar tipus</string>
+    <string name="form_type_dead_abort">Avortament</string>
+    <string name="form_type_dead_dead">Mort</string>
     <string name="form_dead_date">Data de la mort *</string>
     <string name="title_cadaver">Cadàver Inaccessible</string>
     <string name="description_cadaver">Activar si no es pot accedir a la ubicació</string>
@@ -78,6 +73,7 @@
     <string name="subtitle_identification_postpone">Només explotació amb ajornament de crotalació</string>
 
     <string name="form_date_identification">Data d\'Identificació *</string>
+    <string name="form_id_animal_description">Introduir o escanejar ID de l\'animal</string>
     <string name="form_id_animal">ID Animal *</string>
     <string name="male">Mascle</string>
     <string name="female">Femella</string>

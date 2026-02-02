@@ -18,14 +18,15 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.terrabit_app.viewmodel.MainViewmodel
 import com.example.terrabit_app.viewmodel.ViewModelMuerteBovi
+import com.example.terrabit_app.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,6 +41,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
     val coordenadaY by viewModel.coordenadaY.observeAsState("")
     val tipoExpandido by viewModel.tipoMuerteExpandido.observeAsState(false)
     val mostrarDatePickerMuerte by viewModel.mostrarDatePickerMuerte.observeAsState(false)
+    val tipoMuerte by viewModel.codigoTipoMuerte.observeAsState("")
 
     // Observar estado de registro para mostrar mensajes
     val registroExitoso by viewModel.registroMuerteExitoso.observeAsState(false)
@@ -50,10 +52,14 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
 
+    //mensajes de respuestas
+    val mensajeRegistroExitoso = stringResource(R.string.successful_message_dead)
+    val mensajeRegistroError = stringResource(R.string.error_message_dead)
+
     LaunchedEffect(registroExitoso) {
         if (registroExitoso) {
             snackbarHostState.showSnackbar(
-                message = "Muerte reportada exitosamente",
+                message = mensajeRegistroExitoso,
                 duration = SnackbarDuration.Short
             )
             viewModel.resetearEstadoRegistroMuerte()
@@ -84,7 +90,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
             },
             title = {
                 Text(
-                    text = "Error al Reportar Muerte",
+                    text = mensajeRegistroError,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
                     color = Color(0xFF1E293B)
@@ -109,7 +115,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text("Entendido", fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.error_buttom), fontWeight = FontWeight.SemiBold)
                 }
             },
             containerColor = Color.White,
@@ -130,12 +136,12 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                         }
                     }
                 ) {
-                    Text("Aceptar", color = Color(0xFFD32F2F))
+                    Text(stringResource(R.string.accept_buttom), color = Color(0xFFD32F2F))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.ocultarDatePickerMuerte() }) {
-                    Text("Cancelar", color = Color(0xFF64748B))
+                    Text(stringResource(R.string.cancel_buttom), color = Color(0xFF64748B))
                 }
             }
         ) {
@@ -199,15 +205,9 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                     title = {
                         Column {
                             Text(
-                                "Reportar Muerte",
+                                stringResource(R.string.name_report_dead),
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.SemiBold
-                            )
-                            Text(
-                                "Sección 5.3",
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Normal,
-                                color = Color.White.copy(alpha = 0.9f)
                             )
                         }
                     },
@@ -263,7 +263,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                         // Tipo (Mort / Avortament)
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "Tipo *",
+                                stringResource(R.string.form_type_dead),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color(0xFF1E293B),
@@ -283,7 +283,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                     readOnly = true,
                                     placeholder = {
                                         Text(
-                                            "Seleccionar tipo",
+                                            stringResource(R.string.form_type_dead_description),
                                             color = Color(0xFF94A3B8)
                                         )
                                     },
@@ -301,12 +301,17 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                         unfocusedTextColor = Color(0xFF1E293B)
                                     )
                                 )
+                                val listaTiposMuerte = mapOf<String, String>(
+                                    stringResource(R.string.form_type_dead_dead) to "01",
+                                    stringResource(R.string.form_type_dead_abort) to "02"
+
+                                )
                                 ExposedDropdownMenu(
                                     expanded = tipoExpandido,
                                     onDismissRequest = { viewModel.cerrarTipoMuerteMenu() },
                                     modifier = Modifier.background(Color.White)
                                 ) {
-                                    viewModel.listaTiposMuerte.forEach { tipo ->
+                                    listaTiposMuerte.forEach { (tipo, codigo) ->
                                         DropdownMenuItem(
                                             text = {
                                                 Text(
@@ -316,18 +321,12 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                                     fontWeight = FontWeight.Normal
                                                 )
                                             },
-                                            onClick = { viewModel.seleccionarTipoMuerte(tipo) },
+                                            onClick = { viewModel.seleccionarTipoMuerte(tipo,codigo) },
                                             contentPadding = PaddingValues(
                                                 horizontal = 16.dp,
                                                 vertical = 14.dp
                                             )
                                         )
-                                        if (tipo != viewModel.listaTiposMuerte.last()) {
-                                            HorizontalDivider(
-                                                color = Color(0xFFF1F5F9),
-                                                thickness = 1.dp
-                                            )
-                                        }
                                     }
                                 }
                             }
@@ -336,7 +335,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                         // ID Animal / ID Madre (según tipo)
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                if (tipoSeleccionado.contains("Avortament")) "ID Madre *" else "ID Animal *",
+                                if (tipoMuerte.contains("01")) stringResource(R.string.form_id_animal) else stringResource(R.string.form_id_mother),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color(0xFF1E293B),
@@ -349,10 +348,10 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                 modifier = Modifier.fillMaxWidth(),
                                 placeholder = {
                                     Text(
-                                        if (tipoSeleccionado.contains("Avortament"))
-                                            "Introducir o escanear ID de la madre"
+                                        if (tipoMuerte.contains("01"))
+                                            stringResource(R.string.form_id_animal_description)
                                         else
-                                            "Introducir o escanear ID del animal",
+                                            stringResource(R.string.form_mother_description),
                                         color = Color(0xFF94A3B8)
                                     )
                                 },
@@ -374,7 +373,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                     unfocusedTextColor = Color(0xFF1E293B),
                                     cursorColor = Color(0xFFD32F2F)
                                 ),
-                                // CORRECCIÓN 1: Configurar tipo de teclado y acciones IME
+                                //Configurar tipo de teclado y acciones IME
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Text,
                                     imeAction = ImeAction.Next,
@@ -382,11 +381,10 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                 )
                             )
                         }
-
-                        // Fecha de Muerte - CORRECCIÓN 2: Usar Box con clickable
+                        // Fecha de Muerte
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "Fecha de Muerte *",
+                                stringResource(R.string.form_dead_date),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color(0xFF1E293B),
@@ -404,7 +402,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                     modifier = Modifier.fillMaxWidth(),
                                     placeholder = {
                                         Text(
-                                            "Seleccionar fecha",
+                                            stringResource(R.string.form_date_description),
                                             color = Color(0xFF94A3B8)
                                         )
                                     },
@@ -430,10 +428,10 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                         }
 
                         // Meses de Gestación (solo si es Avortament)
-                        if (tipoSeleccionado.contains("Avortament")) {
+                        if (tipoMuerte.contains("02")) {
                             Column(modifier = Modifier.fillMaxWidth()) {
                                 Text(
-                                    "Meses de Gestación *",
+                                    stringResource(R.string.form_pregnancy_months),
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = Color(0xFF1E293B),
@@ -446,7 +444,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                     modifier = Modifier.fillMaxWidth(),
                                     placeholder = {
                                         Text(
-                                            "Número de meses (1-9)",
+                                            stringResource(R.string.form_pregnancy_months_description),
                                             color = Color(0xFF94A3B8)
                                         )
                                     },
@@ -496,14 +494,14 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    "Cadáver Inaccesible",
+                                    stringResource(R.string.title_cadaver),
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = Color(0xFF1E293B)
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    "Activar si la ubicación no puede ser accedida",
+                                    stringResource(R.string.description_cadaver),
                                     fontSize = 13.sp,
                                     color = Color(0xFF64748B),
                                     lineHeight = 18.sp
@@ -550,7 +548,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
                                         Text(
-                                            "Coordenadas GPS",
+                                            stringResource(R.string.title_gps),
                                             fontSize = 16.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = Color(0xFF92400E)
@@ -579,7 +577,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
                                         Text(
-                                            "Obtener Ubicación Actual",
+                                            stringResource(R.string.buttom_gps),
                                             color = Color(0xFF92400E),
                                             fontWeight = FontWeight.SemiBold
                                         )
@@ -595,7 +593,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                         // Coordenada X
                                         Column(modifier = Modifier.weight(1f)) {
                                             Text(
-                                                "Latitud (X)",
+                                                stringResource(R.string.gps_laltitud),
                                                 fontSize = 13.sp,
                                                 fontWeight = FontWeight.SemiBold,
                                                 color = Color(0xFF92400E)
@@ -606,7 +604,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                                 onValueChange = { viewModel.actualizarCoordenadaX(it) },
                                                 placeholder = {
                                                     Text(
-                                                        "X coordinate",
+                                                        stringResource(R.string.gps_laltitud_description),
                                                         fontSize = 13.sp,
                                                         color = Color(0xFFA16207)
                                                     )
@@ -634,7 +632,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                         // Coordenada Y
                                         Column(modifier = Modifier.weight(1f)) {
                                             Text(
-                                                "Longitud (Y)",
+                                                stringResource(R.string.gps_longitud),
                                                 fontSize = 13.sp,
                                                 fontWeight = FontWeight.SemiBold,
                                                 color = Color(0xFF92400E)
@@ -645,7 +643,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                                 onValueChange = { viewModel.actualizarCoordenadaY(it) },
                                                 placeholder = {
                                                     Text(
-                                                        "Y coordinate",
+                                                        stringResource(R.string.gps_longitud_description),
                                                         fontSize = 13.sp,
                                                         color = Color(0xFFA16207)
                                                     )
@@ -695,7 +693,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                     )
                 ) {
                     Text(
-                        "Reportar Muerte",
+                        stringResource(R.string.buttom_form_dead),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         letterSpacing = 0.5.sp
