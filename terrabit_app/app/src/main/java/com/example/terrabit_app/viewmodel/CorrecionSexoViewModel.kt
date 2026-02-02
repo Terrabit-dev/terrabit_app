@@ -41,14 +41,16 @@ class CorrecionSexoViewModel: ViewModel() {
 
     // Lista de opciones de sexo (AGREGADO)
     val listaSexos = listOf("Macho", "Hembra")
+    private var codigoSexo = ""
 
     // Funciones para actualizar los campos
     fun actualizarIdentificadorCorreccionSexo(nuevoId: String) {
         _identificadorCorreccionSexo.value = nuevoId
     }
 
-    fun seleccionarSexoCorreccion(sexo: String) {
+    fun seleccionarSexoCorreccion(sexo: String, codigo: String) {
         _sexoCorreccionSeleccionado.value = sexo
+        codigoSexo = codigo
         _sexoCorreccionExpandido.value = false
     }
 
@@ -88,19 +90,14 @@ class CorrecionSexoViewModel: ViewModel() {
         viewModelScope.launch {
             _estadoCarga.value = true
             try {
-                // Convertir sexo al formato de la API
-                val sexoAPI = when (_sexoCorreccionSeleccionado.value) {
-                    "Macho" -> "02"
-                    "Hembra" -> "01"
-                    else -> ""
-                }
+
 
                 // Crear objeto de petición
                 val request = PetModicarAnimal(
                     identificador = _identificadorCorreccionSexo.value ?: "",
                     nif = "S0800608B",
                     passwordMobilitat = "L1855m58",
-                    sexe = sexoAPI
+                    sexe = codigoSexo
                 )
 
                 Log.d("Corrección Sexo", "Enviando petición a la API...")

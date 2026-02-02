@@ -46,6 +46,7 @@
 
     <string name="name_report_dead">Registrar Fallecimiento</string>
     <string name="form_type_dead">Tipo *</string>
+    <string name="form_type_dead_description">Seleccionar tipo</string>
     <string name="form_type_dead_abort">Aborto</string>
     <string name="form_type_dead_dead">Muerte</string>
     <string name="form_dead_date">Fecha de muerte *</string>

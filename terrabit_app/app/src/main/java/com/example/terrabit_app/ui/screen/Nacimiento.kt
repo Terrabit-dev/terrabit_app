@@ -533,55 +533,39 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                         unfocusedTextColor = Color(0xFF1E293B)
                                     )
                                 )
+                                val sexos = mapOf<String, String>(
+                                    stringResource(R.string.male) to "02",
+                                    stringResource(R.string.female) to "01"
+                                )
                                 ExposedDropdownMenu(
                                     expanded = sexoExpandido,
                                     onDismissRequest = { viewModel.cerrarSexoMenu() },
                                     modifier = Modifier
                                         .background(Color.White)
                                 ) {
-                                    val male = stringResource(R.string.male)
-                                    val female = stringResource(R.string.female)
-                                    DropdownMenuItem(
-                                        text = {
-                                            Text(
-                                                male,
-                                                fontSize = 15.sp,
-                                                color = Color(0xFF1E293B),
-                                                fontWeight = FontWeight.Normal
-                                            ) },
-                                        onClick = { viewModel.seleccionarSexo(male, "0") },
-                                        contentPadding = PaddingValues(
-                                            horizontal = 16.dp,
-                                            vertical = 14.dp
-                                        ),
-                                        colors = MenuDefaults.itemColors(
-                                            textColor = Color(0xFF1E293B),
-                                            leadingIconColor = Color(0xFF1E293B),
-                                            trailingIconColor = Color(0xFF1E293B),
-                                            disabledTextColor = Color(0xFF94A3B8)
-                                        )
-                                    )
-                                    DropdownMenuItem(
-                                        text = {
-                                            Text(
-                                                female,
-                                                fontSize = 15.sp,
-                                                color = Color(0xFF1E293B),
-                                                fontWeight = FontWeight.Normal
+                                    sexos.forEach { (sexo, codigo) ->
+                                        DropdownMenuItem(
+                                            text = {
+                                                Text(
+                                                    sexo,
+                                                    fontSize = 15.sp,
+                                                    color = Color(0xFF1E293B),
+                                                    fontWeight = FontWeight.Normal
+                                                )
+                                            },
+                                            onClick = { viewModel.seleccionarSexo(sexo, codigo) },
+                                            contentPadding = PaddingValues(
+                                                horizontal = 16.dp,
+                                                vertical = 14.dp
+                                            ),
+                                            colors = MenuDefaults.itemColors(
+                                                textColor = Color(0xFF1E293B),
+                                                leadingIconColor = Color(0xFF1E293B),
+                                                trailingIconColor = Color(0xFF1E293B),
+                                                disabledTextColor = Color(0xFF94A3B8)
                                             )
-                                        },
-                                        onClick = { viewModel.seleccionarSexo(female, "1") },
-                                        contentPadding = PaddingValues(
-                                            horizontal = 16.dp,
-                                            vertical = 14.dp
-                                        ),
-                                        colors = MenuDefaults.itemColors(
-                                            textColor = Color(0xFF1E293B),
-                                            leadingIconColor = Color(0xFF1E293B),
-                                            trailingIconColor = Color(0xFF1E293B),
-                                            disabledTextColor = Color(0xFF94A3B8)
                                         )
-                                    )
+                                    }
 
 
                                 }

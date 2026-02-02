@@ -54,6 +54,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -61,6 +62,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.terrabit_app.viewmodel.CorrecionSexoViewModel
+import com.example.terrabit_app.R
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -80,11 +83,16 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
 
+    // Mensajes de respuestas
+    val mensajeCorreccionSexoExitosa = stringResource(R.string.successful_message_correct_sex)
+    val mensajeErrorCorreccionSexo = stringResource(R.string.error_message_correct_sex)
+
+
     // Mostrar Snackbar cuando hay mensaje de éxito o error
     LaunchedEffect(correccionSexoExitosa, mensajeError) {
         if (correccionSexoExitosa) {
             snackbarHostState.showSnackbar(
-                message = "Sexo corregido exitosamente",
+                message = mensajeCorreccionSexoExitosa,
                 duration = SnackbarDuration.Short
             )
             viewModel.resetearEstadoCorreccionSexo()
@@ -113,7 +121,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
             },
             title = {
                 Text(
-                    text = "Error al corregir el sexo",
+                    text = mensajeErrorCorreccionSexo,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
                     color = Color(0xFF1E293B)
@@ -138,7 +146,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text("Entendido", fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.error_buttom), fontWeight = FontWeight.SemiBold)
                 }
             },
             containerColor = Color.White,
@@ -196,15 +204,9 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                     title = {
                         Column {
                             Text(
-                                "Corregir Sexo",
+                                stringResource(R.string.name_sex_correct),
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.SemiBold
-                            )
-                            Text(
-                                "Modificación de Animal",
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Normal,
-                                color = Color.White.copy(alpha = 0.9f)
                             )
                         }
                     },
@@ -263,7 +265,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                         // Identificador del Animal
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "Identificador del Animal *",
+                                stringResource(R.string.form_id_animal),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color(0xFF1E293B),
@@ -276,7 +278,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                                 modifier = Modifier.fillMaxWidth(),
                                 placeholder = {
                                     Text(
-                                        "Introducir o escanear identificador",
+                                        stringResource(R.string.form_id_animal_description),
                                         color = Color(0xFF94A3B8)
                                     )
                                 },
@@ -309,7 +311,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                         // Sexo Correcto
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "Sexo Correcto *",
+                                stringResource(R.string.form_sex),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color(0xFF1E293B),
@@ -329,7 +331,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                                     readOnly = true,
                                     placeholder = {
                                         Text(
-                                            "Seleccionar sexo",
+                                            stringResource(R.string.form_sex_description),
                                             color = Color(0xFF94A3B8)
                                         )
                                     },
@@ -347,12 +349,16 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                                         unfocusedTextColor = Color(0xFF1E293B)
                                     )
                                 )
+                                val sexos = mapOf<String, String>(
+                                    stringResource(R.string.male) to "02",
+                                    stringResource(R.string.female) to "01"
+                                )
                                 ExposedDropdownMenu(
                                     expanded = sexoCorreccionExpandido,
                                     onDismissRequest = { viewModel.cerrarSexoCorreccionMenu() },
                                     modifier = Modifier.background(Color.White)
                                 ) {
-                                    viewModel.listaSexos.forEach { sexo ->
+                                    sexos.forEach { (sexo, codigo) ->
                                         DropdownMenuItem(
                                             text = {
                                                 Text(
@@ -362,7 +368,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                                                     fontWeight = FontWeight.Normal
                                                 )
                                             },
-                                            onClick = { viewModel.seleccionarSexoCorreccion(sexo) },
+                                            onClick = { viewModel.seleccionarSexoCorreccion(sexo, codigo) },
                                             contentPadding = PaddingValues(
                                                 horizontal = 16.dp,
                                                 vertical = 14.dp
@@ -404,7 +410,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                     )
                 ) {
                     Text(
-                        "Corregir Sexo",
+                        stringResource(R.string.buttom_form_correct_sex),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         letterSpacing = 0.5.sp
