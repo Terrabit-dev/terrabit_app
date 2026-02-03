@@ -51,10 +51,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.screen.TarjetaMenu
 import com.example.terrabit_app.viewmodel.DrawerViewModel
@@ -68,7 +70,9 @@ fun HomePorcinos(
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    val tipoAnimalSeleccionado by drawerViewModel.tipoAnimalSeleccionado.observeAsState("Porcinos")
+    val tipoAnimalSeleccionado by drawerViewModel.tipoAnimalSeleccionado.observeAsState(
+        stringResource(R.string.bovinos_name)
+    )
 
     // Drawer con menú lateral
     ModalNavigationDrawer(
@@ -105,7 +109,7 @@ fun HomePorcinos(
 
                 // Título de sección
                 Text(
-                    "Menú Principal",
+                    text = stringResource(R.string.subtitle_home),
                     fontSize = 26.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF1E293B),
@@ -125,8 +129,8 @@ fun HomePorcinos(
                     // Tarjeta Crear Guias
                     TarjetaMenu(
                         icono = Icons.Default.Agriculture,
-                        titulo = "Crear Guias",
-                        descripcion = "Registrar salidas de porcinos",
+                        titulo = stringResource(R.string.card_crear_guias),
+                        descripcion = stringResource(R.string.card_description_crear_guias_porcinos),
                         colorFondo = Color(0xFFE28F41),
                         onClick = { navController.navigate(Routes.GestionPorcinos.route) }
                     )
@@ -134,8 +138,8 @@ fun HomePorcinos(
                     // Tarjeta Guías/Movimientos
                     TarjetaMenu(
                         icono = Icons.Default.LocalShipping,
-                        titulo = "Guías y Movimientos",
-                        descripcion = "Gestionar guías y confirmar movimientos",
+                        titulo = stringResource(R.string.card_name_guias),
+                        descripcion = stringResource(R.string.card_description_guias),
                         colorFondo = Color(0xFF3F8F6B),
                         contadorBadge = 2,
                         onClick = { navController.navigate(Routes.GuiasMovimientosPorcinos.route) }
@@ -144,8 +148,8 @@ fun HomePorcinos(
                     // Tarjeta Material
                     TarjetaMenu(
                         icono = Icons.Default.ShoppingCart,
-                        titulo = "Material",
-                        descripcion = "Solicitar material y crotaleras",
+                        titulo = stringResource(R.string.card_name_material),
+                        descripcion = stringResource(R.string.card_description_material),
                         colorFondo = Color(0xFFE28F41),
                         onClick = { navController.navigate(Routes.MaterialCategoria.route) }
                     )
@@ -187,7 +191,7 @@ fun HomePorcinos(
 
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                "Información del Sistema",
+                                text = stringResource(R.string.information_title_home),
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp,
                                 color = Color(0xFFBA7A3D),
@@ -195,7 +199,7 @@ fun HomePorcinos(
                             )
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                "Todos los datos se sincronizan automáticamente con el sistema de registro de la Generalitat de Catalunya.",
+                                text = stringResource(R.string.information_description_home),
                                 fontSize = 14.sp,
                                 color = Color(0xFF475569),
                                 lineHeight = 20.sp,
@@ -234,13 +238,13 @@ fun DrawerContentPorcinos(
                     .padding(vertical = 24.dp)
             ) {
                 Text(
-                    "Terrabit",
+                    text = stringResource(R.string.app_name),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFFE28F41)
                 )
                 Text(
-                    "Gestión Ganadera",
+                    stringResource(R.string.drawer_subtitle),
                     fontSize = 14.sp,
                     color = Color(0xFF64748B),
                     modifier = Modifier.padding(top = 4.dp)
@@ -263,8 +267,8 @@ fun DrawerContentPorcinos(
             // Opción Bovinos
             OpcionTipoAnimalPorcinos(
                 icono = Icons.Default.Agriculture,
-                titulo = "Bovinos",
-                seleccionado = tipoSeleccionado == "Bovinos",
+                titulo = stringResource(R.string.bovinos_name),
+                seleccionado = tipoSeleccionado == stringResource(R.string.bovinos_name),
                 onClick = {
                     onTipoSeleccionado("Bovinos")
                     navController.navigate(Routes.HomeBovinos.route)
@@ -276,8 +280,8 @@ fun DrawerContentPorcinos(
             // Opción Porcinos
             OpcionTipoAnimalPorcinos(
                 icono = Icons.Default.EmojiNature,
-                titulo = "Porcinos",
-                seleccionado = tipoSeleccionado == "Porcinos",
+                titulo = stringResource(R.string.porcionos_name),
+                seleccionado = tipoSeleccionado == stringResource(R.string.porcionos_name),
                 onClick = { onTipoSeleccionado("Porcinos") }
             )
 
@@ -295,12 +299,12 @@ fun DrawerContentPorcinos(
                     modifier = Modifier.padding(16.dp)
                 ) {
                     Text(
-                        "Versión 1.0.0",
+                        text = stringResource(R.string.app_version),
                         fontSize = 12.sp,
                         color = Color(0xFF64748B)
                     )
                     Text(
-                        "© 2026 Terrabit",
+                        text = stringResource(R.string.app_copyright),
                         fontSize = 10.sp,
                         color = Color(0xFF94A3B8),
                         modifier = Modifier.padding(top = 4.dp)
@@ -352,7 +356,7 @@ fun OpcionTipoAnimalPorcinos(
             if (seleccionado) {
                 Icon(
                     Icons.Default.Check,
-                    contentDescription = "Seleccionado",
+                    contentDescription = stringResource(R.string.content_description_selecionado),
                     tint = Color(0xFF4A7C59),
                     modifier = Modifier.size(20.dp)
                 )
@@ -403,7 +407,7 @@ fun HeaderBienvenidaPorcinos(
                 ) {
                     Icon(
                         Icons.Default.Menu,
-                        contentDescription = "Menú",
+                        contentDescription = stringResource(R.string.content_description_menu),
                         tint = Color.White
                     )
                 }
@@ -423,7 +427,7 @@ fun HeaderBienvenidaPorcinos(
                     ) {
                         Icon(
                             Icons.Default.Notifications,
-                            contentDescription = "Notificaciones",
+                            contentDescription = stringResource(R.string.content_description_notificaciones),
                             tint = Color.White
                         )
                     }
@@ -448,7 +452,7 @@ fun HeaderBienvenidaPorcinos(
 
             // Texto de bienvenida
             Text(
-                "¡Bienvenido/a!",
+                text = stringResource(R.string.title_home),
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
