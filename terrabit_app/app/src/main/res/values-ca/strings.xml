@@ -71,6 +71,17 @@
 
     <string name="name_identification_postpone">Identificació ajornada</string>
     <string name="subtitle_identification_postpone">Només explotació amb ajornament de crotalació</string>
+    <string name="error_message_identification_postpone">Error en registrar identificacio</string>
+    <string name="successful_message_identification_postpone">Identificació realitzada amb èxit</string>
+    <string name="buttom_form_identification_postpone">Registrar data</string>
+
+    <string name="form_error_mother_id">Si us plau, introduïu l\'ID de la mare</string>
+    <string name="form_error_breeding_id">Si us plau, introduïu l\'ID de la cria</string>
+    <string name="form_error_birthdate_id">Si us plau, seleccioneu la data de naixement</string>
+    <string name="form_error_selected_sex">Si us plau, seleccioneu el sexe de l\'animal</string>
+    <string name="form_error_selected_raze">Si us plau, seleccioneu la raça</string>
+    <string name="form_error_selected_aptitude">Si us plau, seleccioneu l\'aptitud</string>
+    <string name="form_error_universal">Si us plau, completeu tots els camps obligatoris marcats amb *</string>
 
     <string name="form_date_identification">Data d\'Identificació *</string>
     <string name="form_id_animal_description">Introduir o escanejar ID de l\'animal</string>

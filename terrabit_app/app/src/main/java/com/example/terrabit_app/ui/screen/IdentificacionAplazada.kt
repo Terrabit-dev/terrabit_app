@@ -54,6 +54,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -61,6 +62,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.terrabit_app.viewmodel.IdentificacionAplazaViewModel
+import com.example.terrabit_app.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,11 +81,17 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
 
+    // Mensajes de respuestas
+    val tituloExito = stringResource(id = R.string.successful_message_identification_postpone)
+    val titulloError = stringResource(id = R.string.error_message_identification_postpone)
+
+
+
     // Mostrar Snackbar cuando hay mensaje de éxito o error
     LaunchedEffect(identifiacionExitosa, mensajeError) {
         if (identifiacionExitosa) {
             snackbarHostState.showSnackbar(
-                message = "Identificacion realizada exitosamente",
+                message = tituloExito,
                 duration = SnackbarDuration.Short
             )
             viewModel.resetearEstadoIdentificacion()
@@ -112,7 +120,7 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
             },
             title = {
                 Text(
-                    text = "Error al corregir al identificar",
+                    text = titulloError,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
                     color = Color(0xFF1E293B)
@@ -137,7 +145,7 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text("Entendido", fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.error_buttom), fontWeight = FontWeight.SemiBold)
                 }
             },
             containerColor = Color.White,
@@ -156,12 +164,12 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                         }
                     }
                 ) {
-                    Text("Aceptar", color = Color(0xFF4A7C59))
+                    Text(stringResource(R.string.accept_buttom), color = Color(0xFF4A7C59))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.ocultarDatePickerIdentificacion() }) {
-                    Text("Cancelar", color = Color(0xFF64748B))
+                    Text(stringResource(R.string.cancel_buttom), color = Color(0xFF64748B))
                 }
             }
         ) {
@@ -225,12 +233,12 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                     title = {
                         Column {
                             Text(
-                                "Identificacion aplazada",
+                                stringResource(R.string.name_identification_postpone),
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.SemiBold
                             )
                             Text(
-                                "Solo explotación con aplazamiento de crotalación",
+                                stringResource(R.string.subtitle_identification_postpone),
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Normal,
                                 color = Color.White.copy(alpha = 0.9f)
@@ -253,11 +261,7 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                 SnackbarHost(hostState = snackbarHostState) { data ->
                     Snackbar(
                         snackbarData = data,
-                        containerColor = if (data.visuals.message.contains("exitosamente")) {
-                            Color(0xFF4A7C59) // Verde para éxito
-                        } else {
-                            Color(0xFFD32F2F) // Rojo para error
-                        },
+                        containerColor = Color(0xFF4A7C59), // Verde para éxito
                         contentColor = Color.White,
                         shape = RoundedCornerShape(12.dp)
                     )
@@ -292,7 +296,7 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                         // Identificador del Animal
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "Identificador del Animal *",
+                                stringResource(R.string.form_id_animal),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color(0xFF1E293B),
@@ -305,7 +309,7 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                                 modifier = Modifier.fillMaxWidth(),
                                 placeholder = {
                                     Text(
-                                        "Introducir o escanear identificador",
+                                        stringResource(R.string.form_id_animal_description),
                                         color = Color(0xFF94A3B8)
                                     )
                                 },
@@ -337,7 +341,7 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                         // Fecha de Identificación
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "Fecha de Identificación *",
+                                stringResource(R.string.form_date_identification),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color(0xFF1E293B),
@@ -355,7 +359,7 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                                     modifier = Modifier.fillMaxWidth(),
                                     placeholder = {
                                         Text(
-                                            "Seleccionar fecha",
+                                            stringResource(R.string.form_date_description),
                                             color = Color(0xFF94A3B8)
                                         )
                                     },
@@ -399,7 +403,7 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                     )
                 ) {
                     Text(
-                        "Identificar animal",
+                        stringResource(R.string.buttom_form_identification_postpone),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         letterSpacing = 0.5.sp

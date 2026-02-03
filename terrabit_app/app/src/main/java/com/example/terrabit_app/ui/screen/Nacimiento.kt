@@ -1,5 +1,6 @@
 package com.example.terrabit_app.ui.screen
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -29,6 +30,7 @@ import com.example.terrabit_app.viewmodel.MainViewmodel
 import com.example.terrabit_app.viewmodel.NacimientoViewmodel
 import kotlin.collections.emptyList
 import com.example.terrabit_app.R
+import com.example.terrabit_app.utils.alertsErrosScreens
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,6 +57,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
     // Observar estado de registro para mostrar mensajes
     val registroExitoso by viewModel.registroExitoso.observeAsState(false)
     val mensajeError by viewModel.mensajeError.observeAsState("")
+    val codiError by viewModel.codiError.observeAsState()
     val estadoCarga by viewModel.cargandoNacimiento.observeAsState(false)
 
     // Snackbar host state
@@ -64,7 +67,6 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
     // mensajes de respuesta
     val mensajeRegistroExitoso = stringResource(R.string.successful_message_born)
     val mensajeRegistroError = stringResource(R.string.error_message_born)
-
 
     // Mostrar Snackbar cuando hay éxito
     LaunchedEffect(registroExitoso) {
@@ -78,14 +80,15 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
     }
 
     // Mostrar diálogo cuando hay error
-    LaunchedEffect(mensajeError) {
-        if (mensajeError.isNotEmpty()) {
+    LaunchedEffect(mensajeError, codiError) {
+        if (mensajeError.isNotEmpty() || codiError != null) {
             mostrarDialogoError = true
+            Log.e("Error", "$codiError - $mensajeError")
         }
     }
 
     // Diálogo de Error
-    if (mostrarDialogoError && mensajeError.isNotEmpty()) {
+    if (mostrarDialogoError) {
         AlertDialog(
             onDismissRequest = {
                 mostrarDialogoError = false
@@ -109,7 +112,9 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
             },
             text = {
                 Text(
-                    text = mensajeError,
+                    text = if (codiError != null) {
+                        alertsErrosScreens(codiError!!)
+                    } else mensajeError,
                     fontSize = 16.sp,
                     color = Color(0xFF475569),
                     lineHeight = 24.sp

@@ -97,6 +97,9 @@ class NacimientoViewmodel : ViewModel() {
     private val _mensajeError = MutableLiveData<String>()
     val mensajeError = _mensajeError
 
+    private val _codiError = MutableLiveData<Int>()
+    val codiError = _codiError
+
     // Estado de carga - NUEVO
     private val _cargandoNacimiento = MutableLiveData(false)
     val cargandoNacimiento = _cargandoNacimiento
@@ -235,22 +238,22 @@ class NacimientoViewmodel : ViewModel() {
         if (!esFormularioNacimientoValido()) {
             val mensajeError = when {
                 _idMadre.value.isNullOrEmpty() ->
-                    "Por favor, introduzca el ID de la madre"
+                    1
                 _idCria.value.isNullOrEmpty() ->
-                    "Por favor, introduzca el ID de la cría"
+                    2
                 _fechaNacimiento.value.isNullOrEmpty() ->
-                    "Por favor, seleccione la fecha de nacimiento"
+                    3
                 _sexoSeleccionado.value.isNullOrEmpty() ->
-                    "Por favor, seleccione el sexo del animal"
+                   4
                 _razaSeleccionada.value.isNullOrEmpty() ->
-                    "Por favor, seleccione la raza"
+                    5
                 _aptitudSeleccionada.value.isNullOrEmpty() ->
-                    "Por favor, seleccione la aptitud"
+                   6
                 else ->
-                    "Por favor, complete todos los campos obligatorios marcados con *"
+                    0
             }
-            _mensajeError.value = mensajeError
-            Log.e("Validación Nacimiento", mensajeError)
+           _codiError.value = mensajeError
+            Log.e("Validación Nacimiento", "Error: $mensajeError")
             return
         }
 

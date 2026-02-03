@@ -226,11 +226,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                 SnackbarHost(hostState = snackbarHostState) { data ->
                     Snackbar(
                         snackbarData = data,
-                        containerColor = if (data.visuals.message.contains("exitosamente")) {
-                            Color(0xFF4A7C59) // Verde para éxito
-                        } else {
-                            Color(0xFFD32F2F) // Rojo para error
-                        },
+                        containerColor = Color(0xFF4A7C59), // Verde para éxito
                         contentColor = Color.White,
                         shape = RoundedCornerShape(12.dp)
                     )

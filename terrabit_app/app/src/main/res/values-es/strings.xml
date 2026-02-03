@@ -71,6 +71,17 @@
 
     <string name="name_identification_postpone">Identificacion aplazada</string>
     <string name="subtitle_identification_postpone">Solo explotación con aplazamiento de crotalación</string>
+    <string name="error_message_identification_postpone">Error al registrar identificacion</string>
+    <string name="successful_message_identification_postpone">Identificacion realizada exitosamente</string>
+    <string name="buttom_form_identification_postpone">Registrar fecha</string>
+
+    <string name="form_error_mother_id">Por favor, introduzca el ID de la madre</string>
+    <string name="form_error_breeding_id">Por favor, introduzca el ID de la cría</string>
+    <string name="form_error_birthdate_id">Por favor, seleccione la fecha de nacimiento</string>
+    <string name="form_error_selected_sex">Por favor, seleccione el sexo del animal</string>
+    <string name="form_error_selected_raze">Por favor, seleccione la raza</string>
+    <string name="form_error_selected_aptitude">Por favor, seleccione la aptitud</string>
+    <string name="form_error_universal">Por favor, complete todos los campos obligatorios marcados con *</string>w
 
     <string name="form_date_identification">Fecha de Identificación *</string>
     <string name="form_id_animal">ID Animal *</string>
