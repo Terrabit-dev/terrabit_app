@@ -68,6 +68,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
 import com.example.terrabit_app.viewmodel.IdentificacionAplazaViewModel
 import com.example.terrabit_app.R
+import com.example.terrabit_app.utils.alertsErrosScreens
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,6 +80,7 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
     val identificadorAnimal by viewModel.identificadorAnimal.observeAsState("")
     val identifiacionExitosa by viewModel.identificacionExitosa.observeAsState(false)
     val mensajeError by viewModel.mensajeErrorIdentificacion.observeAsState("")
+    val codiError by viewModel.codiError.observeAsState()
     val estadoCarga by viewModel.estadoCarga.observeAsState(false)
     val fechaIdentificacion by viewModel.fechaIdentificacion.observeAsState("")
     val mostrarDatePickerIdentificadores by viewModel.mostrarDatePickerIdentificacion.observeAsState(false)
@@ -208,14 +210,14 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
     }
 
     // Mostrar diálogo cuando hay error
-    LaunchedEffect(mensajeError) {
-        if (mensajeError.isNotEmpty()) {
+    LaunchedEffect(mensajeError, codiError) {
+        if (mensajeError.isNotEmpty() || codiError != null) {
             mostrarDialogoError = true
         }
     }
 
     // Diálogo de Error
-    if (mostrarDialogoError && mensajeError.isNotEmpty()) {
+    if (mostrarDialogoError) {
         AlertDialog(
             onDismissRequest = {
                 mostrarDialogoError = false
@@ -239,7 +241,9 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
             },
             text = {
                 Text(
-                    text = mensajeError,
+                    text = if (codiError != null) {
+                        alertsErrosScreens(codiError!!)
+                    } else mensajeError,
                     fontSize = 16.sp,
                     color = Color(0xFF475569),
                     lineHeight = 24.sp

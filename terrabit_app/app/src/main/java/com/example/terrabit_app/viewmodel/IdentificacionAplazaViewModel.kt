@@ -140,6 +140,9 @@ class IdentificacionAplazaViewModel : ViewModel() {
     private val _mensajeErrorIdentificacion = MutableLiveData<String>()
     val mensajeErrorIdentificacion = _mensajeErrorIdentificacion
 
+    private val _codiError = MutableLiveData<Int>()
+    val codiError = _codiError
+
     private val _estadoCarga = MutableLiveData(false)
     val estadoCarga = _estadoCarga
 
@@ -173,17 +176,20 @@ class IdentificacionAplazaViewModel : ViewModel() {
     }
 
     fun corregirIdentificacion() {
+        // Mostrar mensaje de error
+        _codiError.value = null
         if (!esFormularioIdentificacionValido()) {
+
             val mensajeError = when {
                 _identificadorAnimal.value.isNullOrEmpty() ->
-                    "Por favor, introduzca el identificador del animal"
+                    12
                 _fechaIdentificacion.value.isNullOrEmpty() ->
-                    "Por favor, introduzca la fecha de identificación del animal"
+                    13
                 else ->
-                    "Por favor, complete todos los campos obligatorios marcados con *"
+                   0
             }
-            _mensajeErrorIdentificacion.value = mensajeError
-            Log.e("Validación de identificacion", mensajeError)
+            _codiError.value = mensajeError
+            Log.e("Validación de identificacion", "Error: $mensajeError")
             return
         }
 
