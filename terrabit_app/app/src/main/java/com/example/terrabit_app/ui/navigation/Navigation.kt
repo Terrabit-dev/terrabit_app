@@ -37,7 +37,8 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel ) {
     ) {
         // Pantalla principal
         composable(Routes.Home.route) {
-            Home(navController = navController, drawerViewModel)
+
+            Home(navController = navController, drawerViewModel, myViewmodel)
         }
 
         // Pantallas de categorías (intermedias)
