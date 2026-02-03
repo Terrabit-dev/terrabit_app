@@ -2,9 +2,11 @@ package com.example.terrabit_app.ui.pantallas
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -18,6 +20,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.terrabit_app.data.Borrador
@@ -37,6 +40,9 @@ fun BorradoresScreen(
         borradoresFiltered = when (filtroSeleccionado) {
             "Muerte" -> borradores.filter { it.tipo == "MUERTE" }
             "Material" -> borradores.filter { it.tipo == "MATERIAL" }
+            "Nacimiento" -> borradores.filter { it.tipo == "NACIMIENTO" }
+            "Corrección Sexo" -> borradores.filter { it.tipo == "CORRECCION_SEXO" }
+            "ID Aplazada" -> borradores.filter { it.tipo == "IDENTIFICACION_APLAZADA" }
             else -> borradores
         }
     }
@@ -46,7 +52,6 @@ fun BorradoresScreen(
             .fillMaxSize()
             .background(Color(0xFFF5F7FA))
     ) {
-        // Header con el mismo estilo que Home
         HeaderBorradores(
             totalBorradores = borradores.size,
             onMenuClick = onMenuClick
@@ -58,7 +63,8 @@ fun BorradoresScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp),
+                .padding(horizontal = 20.dp)
+                .horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             ChipFiltro(
@@ -85,6 +91,24 @@ fun BorradoresScreen(
                 onClick = {
                     filtroSeleccionado = "Material"
                     borradoresFiltered = borradores.filter { it.tipo == "MATERIAL" }
+                }
+            )
+
+            ChipFiltro(
+                texto = "Nacimiento (${borradores.count { it.tipo == "NACIMIENTO" }})",
+                seleccionado = filtroSeleccionado == "Nacimiento",
+                onClick = {
+                    filtroSeleccionado = "Nacimiento"
+                    borradoresFiltered = borradores.filter { it.tipo == "NACIMIENTO" }
+                }
+            )
+
+            ChipFiltro(
+                texto = "ID Aplazada (${borradores.count { it.tipo == "IDENTIFICACION_APLAZADA" }})",
+                seleccionado = filtroSeleccionado == "ID Aplazada",
+                onClick = {
+                    filtroSeleccionado = "ID Aplazada"
+                    borradoresFiltered = borradores.filter { it.tipo == "IDENTIFICACION_APLAZADA" }
                 }
             )
         }
@@ -304,8 +328,33 @@ fun TarjetaBorrador(
 ) {
     var mostrarMenu by remember { mutableStateOf(false) }
 
+    // Función para obtener el nombre legible del tipo
+    fun obtenerNombreTipo(tipo: String): String {
+        return when (tipo) {
+            "MUERTE" -> "Muerte"
+            "MATERIAL" -> "Material"
+            "NACIMIENTO" -> "Nacimiento"
+            "CORRECCION_SEXO" -> "Corrección Sexo"
+            "IDENTIFICACION_APLAZADA" -> "ID Aplazada"
+            else -> tipo
+        }
+    }
+
+    // Función para obtener el estado legible
+    fun obtenerEstadoLegible(estado: String): String {
+        return when (estado) {
+            "BORRADOR_AUTO" -> "Guardado"
+            "PENDIENTE" -> "Pendiente"
+            "ENVIANDO" -> "Enviando"
+            "ERROR" -> "Error"
+            else -> estado
+        }
+    }
+
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(96.dp), // ⚠️ ALTURA FIJA PARA TODAS LAS TARJETAS
         colors = CardDefaults.cardColors(
             containerColor = Color.White
         ),
@@ -314,16 +363,19 @@ fun TarjetaBorrador(
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
+                .fillMaxSize()
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Avatar con inicial del tipo
+            // Avatar con icono del tipo
             Surface(
                 shape = RoundedCornerShape(12.dp),
                 color = when (borrador.tipo) {
                     "MUERTE" -> Color(0xFFFF5252).copy(alpha = 0.15f)
                     "MATERIAL" -> Color(0xFF3F8F6B).copy(alpha = 0.15f)
+                    "NACIMIENTO" -> Color(0xFF4A7C59).copy(alpha = 0.15f)
+                    "CORRECCION_SEXO" -> Color(0xFF2563EB).copy(alpha = 0.15f)
+                    "IDENTIFICACION_APLAZADA" -> Color(0xFF4A7C59).copy(alpha = 0.15f)
                     else -> Color(0xFF94A3B8).copy(alpha = 0.15f)
                 },
                 modifier = Modifier.size(56.dp)
@@ -336,12 +388,18 @@ fun TarjetaBorrador(
                         imageVector = when (borrador.tipo) {
                             "MUERTE" -> Icons.Default.Warning
                             "MATERIAL" -> Icons.Default.ShoppingCart
+                            "NACIMIENTO" -> Icons.Default.ChildCare
+                            "CORRECCION_SEXO" -> Icons.Default.Edit
+                            "IDENTIFICACION_APLAZADA" -> Icons.Default.Badge
                             else -> Icons.Default.Description
                         },
                         contentDescription = null,
                         tint = when (borrador.tipo) {
                             "MUERTE" -> Color(0xFFFF5252)
                             "MATERIAL" -> Color(0xFF3F8F6B)
+                            "NACIMIENTO" -> Color(0xFF4A7C59)
+                            "CORRECCION_SEXO" -> Color(0xFF2563EB)
+                            "IDENTIFICACION_APLAZADA" -> Color(0xFF4A7C59)
                             else -> Color(0xFF94A3B8)
                         },
                         modifier = Modifier.size(28.dp)
@@ -351,40 +409,54 @@ fun TarjetaBorrador(
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // Información
+            // Información (usar weight para ocupar el espacio disponible)
             Column(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight(), // Llenar la altura disponible
+                verticalArrangement = Arrangement.Center // Centrar contenido verticalmente
             ) {
+                // Título y estado en la misma línea
                 Row(
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        borrador.tipo,
+                        obtenerNombreTipo(borrador.tipo),
                         fontSize = 17.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color(0xFF1E293B),
-                        letterSpacing = 0.2.sp
+                        letterSpacing = 0.2.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
                     )
 
                     Spacer(modifier = Modifier.width(8.dp))
 
-                    // Badge de estado
+                    // Badge de estado con ancho fijo
                     Surface(
                         color = when (borrador.estado) {
                             "ENVIANDO" -> Color(0xFFFFA726).copy(alpha = 0.15f)
                             "ERROR" -> Color(0xFFFF5252).copy(alpha = 0.15f)
+                            "BORRADOR_AUTO" -> Color(0xFF3F8F6B).copy(alpha = 0.15f)
+                            "PENDIENTE" -> Color(0xFF94A3B8).copy(alpha = 0.15f)
                             else -> Color(0xFF94A3B8).copy(alpha = 0.15f)
                         },
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
-                            borrador.estado,
+                            obtenerEstadoLegible(borrador.estado),
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Medium,
+                            maxLines = 1,
                             color = when (borrador.estado) {
                                 "ENVIANDO" -> Color(0xFFFFA726)
                                 "ERROR" -> Color(0xFFFF5252)
+                                "BORRADOR_AUTO" -> Color(0xFF3F8F6B)
+                                "PENDIENTE" -> Color(0xFF64748B)
                                 else -> Color(0xFF64748B)
                             }
                         )
@@ -393,6 +465,7 @@ fun TarjetaBorrador(
 
                 Spacer(modifier = Modifier.height(6.dp))
 
+                // Fecha
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -406,7 +479,9 @@ fun TarjetaBorrador(
                     Text(
                         borrador.fecha,
                         fontSize = 14.sp,
-                        color = Color(0xFF64748B)
+                        color = Color(0xFF64748B),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }

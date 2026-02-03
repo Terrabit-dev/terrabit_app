@@ -45,6 +45,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -54,12 +55,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
 import com.example.terrabit_app.viewmodel.IdentificacionAplazaViewModel
 import com.example.terrabit_app.R
@@ -67,28 +72,132 @@ import com.example.terrabit_app.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun IdentificacionApalzada(navController: NavController, viewModel: IdentificacionAplazaViewModel){
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+
     // Observar variables del ViewModel
     val identificadorAnimal by viewModel.identificadorAnimal.observeAsState("")
-    // Observar estado de registro para mostrar mensajes
     val identifiacionExitosa by viewModel.identificacionExitosa.observeAsState(false)
     val mensajeError by viewModel.mensajeErrorIdentificacion.observeAsState("")
     val estadoCarga by viewModel.estadoCarga.observeAsState(false)
-
     val fechaIdentificacion by viewModel.fechaIdentificacion.observeAsState("")
     val mostrarDatePickerIdentificadores by viewModel.mostrarDatePickerIdentificacion.observeAsState(false)
 
-    // Snackbar host state
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
+    var mostrarDialogoRecuperacion by remember { mutableStateOf(false) }
 
-    // Mensajes de respuestas
     val tituloExito = stringResource(id = R.string.successful_message_identification_postpone)
     val titulloError = stringResource(id = R.string.error_message_identification_postpone)
 
+    // ============================================
+    // INICIALIZACIÓN Y CARGA DE BORRADOR
+    // ============================================
+    LaunchedEffect(Unit) {
+        viewModel.inicializarSharedPreferences(context)
 
+        // Verificar si hay borrador guardado
+        if (viewModel.tieneContenido()) {
+            // Ya hay datos cargados, no hacer nada
+        } else {
+            // Intentar cargar borrador existente
+            viewModel.cargarBorradorExistente()
 
-    // Mostrar Snackbar cuando hay mensaje de éxito o error
-    LaunchedEffect(identifiacionExitosa, mensajeError) {
+            // Si después de cargar hay contenido, mostrar diálogo
+            if (viewModel.tieneContenido()) {
+                mostrarDialogoRecuperacion = true
+            }
+        }
+    }
+
+    // ============================================
+    // DETECCIÓN DE CICLO DE VIDA (AUTOGUARDADO)
+    // ============================================
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_PAUSE -> {
+                    // Usuario sale de la pantalla - GUARDAR AUTOMÁTICAMENTE
+                    if (viewModel.tieneContenido()) {
+                        viewModel.guardarBorradorAutomatico()
+                    }
+                }
+                Lifecycle.Event.ON_STOP -> {
+                    // Pantalla ya no visible
+                }
+                else -> {}
+            }
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    // ============================================
+    // DIÁLOGO DE RECUPERACIÓN DE BORRADOR
+    // ============================================
+    if (mostrarDialogoRecuperacion) {
+        AlertDialog(
+            onDismissRequest = { },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = null,
+                    tint = Color(0xFF4A7C59),
+                    modifier = Modifier.size(48.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = "Borrador encontrado",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    color = Color(0xFF1E293B)
+                )
+            },
+            text = {
+                Text(
+                    text = "Se encontró un formulario sin completar. ¿Deseas recuperarlo?",
+                    fontSize = 16.sp,
+                    color = Color(0xFF475569),
+                    lineHeight = 24.sp
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        mostrarDialogoRecuperacion = false
+                        // Los datos ya están cargados
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF4A7C59)
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text("Recuperar", fontWeight = FontWeight.SemiBold)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        mostrarDialogoRecuperacion = false
+                        viewModel.eliminarBorradorAutomatico()
+                        viewModel.limpiarFormulario()
+                    }
+                ) {
+                    Text("Descartar", color = Color(0xFF64748B))
+                }
+            },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(16.dp)
+        )
+    }
+
+    // Mostrar Snackbar cuando hay mensaje de éxito
+    LaunchedEffect(identifiacionExitosa) {
         if (identifiacionExitosa) {
             snackbarHostState.showSnackbar(
                 message = tituloExito,
@@ -97,12 +206,14 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
             viewModel.resetearEstadoIdentificacion()
         }
     }
+
     // Mostrar diálogo cuando hay error
     LaunchedEffect(mensajeError) {
         if (mensajeError.isNotEmpty()) {
             mostrarDialogoError = true
         }
     }
+
     // Diálogo de Error
     if (mostrarDialogoError && mensajeError.isNotEmpty()) {
         AlertDialog(
@@ -112,7 +223,7 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
             },
             icon = {
                 Icon(
-                    imageVector = Icons.Default.ArrowBack, // Usa un icono de error apropiado
+                    imageVector = Icons.Default.ArrowBack,
                     contentDescription = null,
                     tint = Color(0xFF4A7C59),
                     modifier = Modifier.size(48.dp)
@@ -152,6 +263,7 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
             shape = RoundedCornerShape(16.dp)
         )
     }
+
     if (mostrarDatePickerIdentificadores) {
         val datePickerState = rememberDatePickerState()
         DatePickerDialog(
@@ -182,13 +294,14 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
             )
         }
     }
+
     // Indicador de carga en pantalla completa
     if (estadoCarga) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Black.copy(alpha = 0.5f))
-                .clickable(enabled = false) { }, // Bloquear interacción
+                .clickable(enabled = false) { },
             contentAlignment = Alignment.Center
         ) {
             Card(
@@ -226,7 +339,6 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
         }
     }
     else {
-
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -261,7 +373,7 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                 SnackbarHost(hostState = snackbarHostState) { data ->
                     Snackbar(
                         snackbarData = data,
-                        containerColor = Color(0xFF4A7C59), // Verde para éxito
+                        containerColor = Color(0xFF4A7C59),
                         contentColor = Color.White,
                         shape = RoundedCornerShape(12.dp)
                     )
@@ -338,6 +450,7 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                                 )
                             )
                         }
+
                         // Fecha de Identificación
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
@@ -393,8 +506,10 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp, vertical = 24.dp)
                         .height(56.dp),
+                    enabled = !estadoCarga,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF4A7C59)
+                        containerColor = Color(0xFF4A7C59),
+                        disabledContainerColor = Color(0xFFCBD5E1)
                     ),
                     shape = MaterialTheme.shapes.medium,
                     elevation = ButtonDefaults.buttonElevation(
