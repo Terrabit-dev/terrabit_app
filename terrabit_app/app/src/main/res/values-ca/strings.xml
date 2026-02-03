@@ -82,6 +82,11 @@
     <string name="form_error_selected_raze">Si us plau, seleccioneu la raça</string>
     <string name="form_error_selected_aptitude">Si us plau, seleccioneu l\'aptitud</string>
     <string name="form_error_universal">Si us plau, completeu tots els camps obligatoris marcats amb *</string>
+    <string name="form_error_type_dead">Si us plau, seleccioneu el tipus (Mort o Avortament)</string>
+    <string name="form_error_dead_date">Si us plau, seleccioneu la data de la mort</string>
+    <string name="form_error_months_pregnacy">Si us plau, introduïu els mesos de gestació (1-9)</string>
+    <string name="form_error_laltitud">Si us plau, introduïu la coordenada X (Latitud)</string>
+    <string name="form_error_longitud">Si us plau, introduïu la coordenada Y (Longitud)</string>
 
     <string name="form_date_identification">Data d\'Identificació *</string>
     <string name="form_id_animal_description">Introduir o escanejar ID de l\'animal</string>

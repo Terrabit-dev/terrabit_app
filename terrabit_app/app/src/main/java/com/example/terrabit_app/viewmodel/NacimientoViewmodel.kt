@@ -234,6 +234,8 @@ class NacimientoViewmodel : ViewModel() {
 
     // Función para registrar un nacimiento con gestión mejorada de errores
     fun registrarNacimiento() {
+        // Resetear mensaje de error
+        _codiError.value = null
         // Validar que todos los campos requeridos estén completos
         if (!esFormularioNacimientoValido()) {
             val mensajeError = when {

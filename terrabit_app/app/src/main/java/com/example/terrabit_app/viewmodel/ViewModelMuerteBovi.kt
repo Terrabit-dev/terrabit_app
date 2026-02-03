@@ -55,6 +55,9 @@ class ViewModelMuerteBovi : ViewModel() {
     private val _mensajeErrorMuerte = MutableLiveData<String>()
     val mensajeErrorMuerte = _mensajeErrorMuerte
 
+    private val _codiError = MutableLiveData<Int>()
+    val codiError = _codiError
+
     // Estado de carga
     private val _cargandoMuerte = MutableLiveData(false)
     val cargandoMuerte = _cargandoMuerte
@@ -199,28 +202,29 @@ class ViewModelMuerteBovi : ViewModel() {
     // Funcionamiento de la API
     // Funcionamiento de la API
     fun putMuerteBovino() {
+        // Resetear mensaje de error
+        _codiError.value = null
+
         // Validar que todos los campos requeridos estén completos
         if (!esFormularioMuerteValido()) {
             val mensajeError = when {
                 _tipoMuerte.value.isNullOrEmpty() ->
-                    "Por favor, seleccione el tipo (Mort o Avortament)"
+                    7
                 _identificadorMuerte.value.isNullOrEmpty() ->
-                    "Por favor, introduzca el ID del animal${if (_tipoMuerte.value?.contains("Avortament") == true) " (madre)" else ""}"
+                    0
                 _fechaMuerte.value.isNullOrEmpty() ->
-                    "Por favor, seleccione la fecha de muerte"
+                    8
                 _tipoMuerte.value?.contains("Avortament") == true && _mesesGestacion.value.isNullOrEmpty() ->
-                    "Por favor, introduzca los meses de gestación (1-9)"
-                _tipoMuerte.value?.contains("Avortament") == true && (_mesesGestacion.value?.toIntOrNull() !in 1..9) ->
-                    "Los meses de gestación deben estar entre 1 y 9"
+                   9
                 _cadaverInaccesible.value == true && _coordenadaX.value.isNullOrEmpty() ->
-                    "Por favor, introduzca la coordenada X (Latitud)"
+                    10
                 _cadaverInaccesible.value == true && _coordenadaY.value.isNullOrEmpty() ->
-                    "Por favor, introduzca la coordenada Y (Longitud)"
+                    11
                 else ->
-                    "Por favor, complete todos los campos obligatorios marcados con *"
+                    0
             }
-            _mensajeErrorMuerte.value = mensajeError
-            Log.e("Validación Muerte", mensajeError)
+            _codiError.value = mensajeError
+            Log.e("Validación Muerte", "Error: $mensajeError")
             return
         }
 
@@ -230,7 +234,7 @@ class ViewModelMuerteBovi : ViewModel() {
 
             try {
                 // Extraer código de tipo: "01 - Mort" -> "01"
-                val tipoCodigo = _tipoMuerte.value?.substring(0, 2) ?: ""
+                val tipoCodigo = _codigoTipoMuerte.value?.substring(0, 2) ?: ""
 
                 // Convertir fecha a formato API (yyyymmdd)
                 val fechaAPI = DateUtils.convertirFechaAFormatoAPI(_fechaMuerte.value ?: "")

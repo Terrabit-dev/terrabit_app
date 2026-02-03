@@ -82,6 +82,11 @@
     <string name="form_error_selected_raze">Por favor, seleccione la raza</string>
     <string name="form_error_selected_aptitude">Por favor, seleccione la aptitud</string>
     <string name="form_error_universal">Por favor, complete todos los campos obligatorios marcados con *</string>w
+    <string name="form_error_type_dead">Por favor, seleccione el tipo (Fallecimiento o Aborto)</string>
+    <string name="form_error_dead_date">Por favor, seleccione la fecha de muerte</string>
+    <string name="form_error_months_pregnacy">Por favor, introduzca los meses de gestación (1-9)</string>
+    <string name="form_error_laltitud">Por favor, introduzca la coordenada X (Latitud)</string>
+    <string name="form_error_longitud">Por favor, introduzca la coordenada Y (Longitud)</string>
 
     <string name="form_date_identification">Fecha de Identificación *</string>
     <string name="form_id_animal">ID Animal *</string>

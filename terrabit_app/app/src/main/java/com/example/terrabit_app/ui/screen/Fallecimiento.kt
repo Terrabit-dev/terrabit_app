@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.terrabit_app.viewmodel.ViewModelMuerteBovi
 import com.example.terrabit_app.R
+import com.example.terrabit_app.utils.alertsErrosScreens
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,6 +47,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
     // Observar estado de registro para mostrar mensajes
     val registroExitoso by viewModel.registroMuerteExitoso.observeAsState(false)
     val mensajeError by viewModel.mensajeErrorMuerte.observeAsState("")
+    val codiError by viewModel.codiError.observeAsState()
     val estadoCarga by viewModel.cargandoMuerte.observeAsState(false)
 
     // Snackbar host state
@@ -67,14 +69,14 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
     }
 
     // Mostrar diálogo cuando hay error
-    LaunchedEffect(mensajeError) {
-        if (mensajeError.isNotEmpty()) {
+    LaunchedEffect(mensajeError, codiError) {
+        if (mensajeError.isNotEmpty() || codiError != null) {
             mostrarDialogoError = true
         }
     }
 
     // Diálogo de Error
-    if (mostrarDialogoError && mensajeError.isNotEmpty()) {
+    if (mostrarDialogoError) {
         AlertDialog(
             onDismissRequest = {
                 mostrarDialogoError = false
@@ -98,7 +100,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
             },
             text = {
                 Text(
-                    text = mensajeError,
+                    text = mensajeError.ifEmpty { alertsErrosScreens(codiError!!) },
                     fontSize = 16.sp,
                     color = Color(0xFF475569),
                     lineHeight = 24.sp

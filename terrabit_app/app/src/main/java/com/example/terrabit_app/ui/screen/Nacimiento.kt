@@ -83,7 +83,6 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
     LaunchedEffect(mensajeError, codiError) {
         if (mensajeError.isNotEmpty() || codiError != null) {
             mostrarDialogoError = true
-            Log.e("Error", "$codiError - $mensajeError")
         }
     }
 
@@ -700,9 +699,9 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                     )
                                 )
                                 val aptitudes = mapOf<String, String>(
-                                    stringResource(R.string.option_aptitude_meat) to "0",
-                                    stringResource(R.string.option_aptitude_milk) to "1",
-                                    stringResource(R.string.option_aptitude_double) to "2"
+                                    stringResource(R.string.option_aptitude_meat) to "02",
+                                    stringResource(R.string.option_aptitude_milk) to "01",
+                                    stringResource(R.string.option_aptitude_double) to "03"
                                 )
                                 ExposedDropdownMenu(
                                     expanded = aptitudExpandida,
