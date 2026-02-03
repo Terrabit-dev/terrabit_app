@@ -18,9 +18,11 @@ fun alertsErrosScreens(codigo: Int): String {
         8 to stringResource(R.string.form_error_dead_date),
         9 to stringResource(R.string.form_error_months_pregnacy),
         10 to stringResource(R.string.form_error_laltitud),
-        11 to stringResource(R.string.form_error_longitud)
+        11 to stringResource(R.string.form_error_longitud),
+        12 to stringResource(R.string.form_error_animal_id)
     )
 
     // Si el código existe en el mapa, lo devuelve.
     return listasErrorsApp[codigo] ?: stringResource(R.string.form_error_universal)
 }
+

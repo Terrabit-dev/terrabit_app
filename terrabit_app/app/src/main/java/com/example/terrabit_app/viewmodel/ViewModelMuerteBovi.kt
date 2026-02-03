@@ -8,6 +8,7 @@ import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.animales.RegistroMuerteBovi
 import com.example.terrabit_app.data.network.respuestas.RespuestaUnificada
 import com.example.terrabit_app.utils.DateUtils
+import com.example.terrabit_app.utils.alertsErrosScreens
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -43,7 +44,6 @@ class ViewModelMuerteBovi : ViewModel() {
     // Estados de expansión de menús desplegables - Muerte
     private val _tipoMuerteExpandido = MutableLiveData(false)
     val tipoMuerteExpandido = _tipoMuerteExpandido
-
     // Estado para mostrar el DatePicker - Muerte
     private val _mostrarDatePickerMuerte = MutableLiveData(false)
     val mostrarDatePickerMuerte = _mostrarDatePickerMuerte

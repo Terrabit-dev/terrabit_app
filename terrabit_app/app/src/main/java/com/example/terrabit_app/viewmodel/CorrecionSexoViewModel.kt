@@ -36,6 +36,10 @@ class CorrecionSexoViewModel: ViewModel() {
     private val _mensajeErrorCorreccionSexo = MutableLiveData<String>()
     val mensajeErrorCorreccionSexo = _mensajeErrorCorreccionSexo
 
+    private val _codiError = MutableLiveData<Int>()
+    val codiError = _codiError
+
+
     private val _estadoCarga = MutableLiveData(false)
     val estadoCarga = _estadoCarga
 
@@ -72,18 +76,21 @@ class CorrecionSexoViewModel: ViewModel() {
 
     // Función para corregir el sexo del animal
     fun corregirSexoAnimal() {
+        // Resetear mensaje de error
+        _codiError.value = null
+
         // Validar que todos los campos requeridos estén completos
         if (!esFormularioCorreccionSexoValido()) {
             val mensajeError = when {
                 _identificadorCorreccionSexo.value.isNullOrEmpty() ->
-                    "Por favor, introduzca el identificador del animal"
+                    12
                 _sexoCorreccionSeleccionado.value.isNullOrEmpty() ->
-                    "Por favor, seleccione el sexo correcto"
+                   4
                 else ->
-                    "Por favor, complete todos los campos obligatorios marcados con *"
+                   0
             }
-            _mensajeErrorCorreccionSexo.value = mensajeError
-            Log.e("Validación Corrección Sexo", mensajeError)
+            _codiError.value = mensajeError
+            Log.e("Validación Corrección Sexo", "Formulario no válido: $mensajeError")
             return
         }
 

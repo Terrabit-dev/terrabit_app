@@ -63,7 +63,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.terrabit_app.viewmodel.CorrecionSexoViewModel
 import com.example.terrabit_app.R
-
+import com.example.terrabit_app.utils.alertsErrosScreens
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -77,6 +77,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
     // Observar estado de registro para mostrar mensajes
     val correccionSexoExitosa by viewModel.correccionSexoExitosa.observeAsState(false)
     val mensajeError by viewModel.mensajeErrorCorreccionSexo.observeAsState("")
+    val codiError by viewModel.codiError.observeAsState()
     val estadoCarga by viewModel.estadoCarga.observeAsState(false)
 
     // Snackbar host state
@@ -99,13 +100,13 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
         }
     }
     // Mostrar diálogo cuando hay error
-    LaunchedEffect(mensajeError) {
-        if (mensajeError.isNotEmpty()) {
+    LaunchedEffect(mensajeError, codiError) {
+        if (mensajeError.isNotEmpty() || codiError != null) {
             mostrarDialogoError = true
         }
     }
     // Diálogo de Error
-    if (mostrarDialogoError && mensajeError.isNotEmpty()) {
+    if (mostrarDialogoError) {
         AlertDialog(
             onDismissRequest = {
                 mostrarDialogoError = false
@@ -121,7 +122,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
             },
             title = {
                 Text(
-                    text = mensajeErrorCorreccionSexo,
+                    text =mensajeErrorCorreccionSexo,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
                     color = Color(0xFF1E293B)
@@ -129,7 +130,9 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
             },
             text = {
                 Text(
-                    text = mensajeError,
+                    text = if (codiError != null) {
+                        alertsErrosScreens(codiError!!)
+                    } else mensajeError,
                     fontSize = 16.sp,
                     color = Color(0xFF475569),
                     lineHeight = 24.sp

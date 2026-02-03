@@ -86,6 +86,7 @@
     <string name="form_error_months_pregnacy">Por favor, introduzca los meses de gestación (1-9)</string>
     <string name="form_error_laltitud">Por favor, introduzca la coordenada X (Latitud)</string>
     <string name="form_error_longitud">Por favor, introduzca la coordenada Y (Longitud)</string>
+    <string name="form_error_animal_id">Por favor, introduzca el identificador del animal</string>
 
     <string name="form_date_identification">Fecha de Identificación *</string>
     <string name="form_id_animal_description">Introducir o escanear ID del animal</string>
