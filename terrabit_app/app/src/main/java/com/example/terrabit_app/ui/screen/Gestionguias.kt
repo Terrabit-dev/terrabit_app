@@ -319,12 +319,6 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.SemiBold
                             )
-                            Text(
-                                "Sección 5.4",
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Normal,
-                                color = Color.White.copy(alpha = 0.9f)
-                            )
                         }
                     },
                     navigationIcon = {

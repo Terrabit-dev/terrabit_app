@@ -25,6 +25,12 @@
     <string name="action_correct_sex">Corregir sexo</string>
     <string name="action_identify_animal">Identificar animal</string>
 
+    <string name="name_guias_movimientos">Guías y Movimientos</string>
+    <string name="subtitle_guias_movimientos">Selecciona una acción</string>
+    <string name="content_description_back">Volver</string>
+    <string name="action_create_guide">Altas Guías</string>
+    <string name="action_confirm_movement">Confirmar Movimientos</string>
+
     <string name="born_register_name">Registrar Nacimiento</string>
     <string name="form_id_mother">ID Madre *</string>
     <string name="form_mother_description">Introducir o escanear ID de la madre</string>
@@ -74,6 +80,25 @@
     <string name="error_message_identification_postpone">Error al registrar identificacion</string>
     <string name="successful_message_identification_postpone">Identificacion realizada exitosamente</string>
     <string name="buttom_form_identification_postpone">Registrar fecha</string>
+
+    <string name="title_auth_error">Error de Autenticación</string>
+    <string name="loading_processing">Procesando...</string>
+    <string name="subtitle_login">Gestión Ganadera Inteligente</string>
+    <string name="footer_copyright">© 2026 Terrabit. Gestión ganadera moderna y eficiente</string>
+
+    <string name="title_login">Iniciar sesión</string>
+    <string name="label_nif">NIF</string>
+    <string name="hint_nif">Tu NIF</string>
+    <string name="label_password">Contraseña</string>
+    <string name="hint_password">Tu contraseña</string>
+    <string name="label_codimo">Código MO</string>
+    <string name="hint_codimo">Tu código MO</string>
+    <string name="label_remember_me">Recordarme</string>
+    <string name="action_forgot_password">¿Olvidaste tu contraseña?</string>
+    <string name="btn_login">Acceder</string>
+
+    <string name="content_description_hide">Ocultar</string>
+    <string name="content_description_show">Mostrar</string>
 
     <string name="form_error_mother_id">Por favor, introduzca el ID de la madre</string>
     <string name="form_error_breeding_id">Por favor, introduzca el ID de la cría</string>
