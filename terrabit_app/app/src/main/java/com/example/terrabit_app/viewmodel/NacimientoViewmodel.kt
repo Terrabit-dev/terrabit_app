@@ -97,7 +97,7 @@ class NacimientoViewmodel : ViewModel() {
     private val _mensajeError = MutableLiveData<String>()
     val mensajeError = _mensajeError
 
-    private val _codiError = MutableLiveData<Int>()
+    private val _codiError = MutableLiveData<Int?>()
     val codiError = _codiError
 
     // Estado de carga - NUEVO

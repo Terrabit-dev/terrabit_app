@@ -175,7 +175,7 @@ class ViewModelMuerteBovi : ViewModel() {
     private val _mensajeErrorMuerte = MutableLiveData<String>()
     val mensajeErrorMuerte = _mensajeErrorMuerte
 
-    private val _codiError = MutableLiveData<Int>()
+    private val _codiError = MutableLiveData<Int?>()
     val codiError = _codiError
 
     private val _cargandoMuerte = MutableLiveData(false)

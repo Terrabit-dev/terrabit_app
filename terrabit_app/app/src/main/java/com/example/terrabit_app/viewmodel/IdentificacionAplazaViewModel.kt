@@ -137,10 +137,11 @@ class IdentificacionAplazaViewModel : ViewModel() {
     private val _identificacionExitosa = MutableLiveData<Boolean>()
     val identificacionExitosa = _identificacionExitosa
 
+
     private val _mensajeErrorIdentificacion = MutableLiveData<String>()
     val mensajeErrorIdentificacion = _mensajeErrorIdentificacion
 
-    private val _codiError = MutableLiveData<Int>()
+    private val _codiError = MutableLiveData<Int?>()
     val codiError = _codiError
 
     private val _estadoCarga = MutableLiveData(false)

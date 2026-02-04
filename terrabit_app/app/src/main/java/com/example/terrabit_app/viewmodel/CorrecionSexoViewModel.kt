@@ -36,7 +36,7 @@ class CorrecionSexoViewModel: ViewModel() {
     private val _mensajeErrorCorreccionSexo = MutableLiveData<String>()
     val mensajeErrorCorreccionSexo = _mensajeErrorCorreccionSexo
 
-    private val _codiError = MutableLiveData<Int>()
+    private val _codiError = MutableLiveData<Int?>()
     val codiError = _codiError
 
 
