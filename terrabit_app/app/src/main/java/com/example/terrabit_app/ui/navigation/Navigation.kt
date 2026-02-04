@@ -16,6 +16,9 @@ import com.example.terrabit_app.ui.screen.Material
 import com.example.terrabit_app.ui.screen.Nacimiento
 import com.example.terrabit_app.ui.screen.Login
 import com.example.terrabit_app.ui.screen.Movimientos
+import com.example.terrabit_app.ui.screen.porcinos.EntradasPorcinos
+import com.example.terrabit_app.ui.screen.porcinos.GestionGuiasPorcinos
+import com.example.terrabit_app.ui.screen.porcinos.HomePorcinos
 import com.example.terrabit_app.viewmodel.CorrecionSexoViewModel
 import com.example.terrabit_app.viewmodel.DrawerViewModel
 import com.example.terrabit_app.viewmodel.GuiasViewModel
@@ -36,9 +39,16 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel ) {
         startDestination = Routes.Login.route
     ) {
         // Pantalla principal
-        composable(Routes.Home.route) {
-
+        composable(Routes.HomeBovinos.route) {
             Home(navController = navController, drawerViewModel, myViewmodel)
+        }
+
+        // Pantalla principal porcinos
+        composable(Routes.HomePorcinos.route) {
+            HomePorcinos(
+                navController = navController,
+                drawerViewModel = drawerViewModel
+            )
         }
 
         // Pantallas de categorías (intermedias)
@@ -52,6 +62,15 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel ) {
 
         composable(Routes.MaterialCategoria.route) {
             MaterialCategoria(navController = navController)
+        }
+
+        // Pantallas de categorías porcinos (intermedias)
+        composable(Routes.GestionPorcinos.route) {
+            GestionPorcinos(navController = navController)
+        }
+
+        composable(Routes.GuiasMovimientosPorcinos.route) {
+            GuiasMovimientosPorcinos(navController = navController)
         }
 
         // Pantallas de acciones específicas (las que ya tenías)
@@ -93,5 +112,14 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel ) {
             IdentificacionApalzada(navController, identificacion)
         }
 
+        // Pantallas porcinos
+        // Pantallas Porcinos
+        composable(Routes.GestionGuiasPorcinos.route) {
+            GestionGuiasPorcinos(navController = navController)
+        }
+
+        composable(Routes.EntradasPorcinos.route) {
+            EntradasPorcinos(navController = navController)
+        }
     }
 }

@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">Terrabit</string>
+    <string name="app_version">Versión 1.0.0</string>
+    <string name="app_copyright">© 2026 Terrabit</string>
 
     <string name="drawer_subtitle">Gestión Ganadera</string>
     <string name="drawer_explained">Tipo de Animal</string>
@@ -14,8 +16,10 @@
     <string name="card_description_guias">Gestionar guías y confirmar movimientos</string>
     <string name="card_name_material">Material</string>
     <string name="card_description_material">Solicitar material y crotaleras</string>
+    <string name="card_description_crear_guias_porcinos">Registrar salidas de porcinos</string>
     <string name="information_title_home">Información del Sistema</string>
     <string name="information_description_home">Todos los datos se sincronizan automáticamente con el sistema de registro de la Generalitat de Catalunya.</string>
+    <string name="card_crear_guias">Crear guías</string>
 
     <string name="gestion_name_bovinos">Gestión de Bovinos</string>
     <string name="gestion_subtitle_bovinos">Selecciona una acción</string>
@@ -123,6 +127,10 @@
     <string name="accept_buttom">Aceptar</string>
     <string name="cancel_buttom">Cancelar</string>
     <string name="form_date_description">Seleccionar fecha</string>
+
+    <string name="content_description_selecionado">Seleccionado</string>
+    <string name="content_description_menu">Menú</string>
+    <string name="content_description_notificaciones">Notificaciones</string>
 
 
 
