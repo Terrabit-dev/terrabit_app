@@ -18,6 +18,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource // Importante para usar los recursos
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -25,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.terrabit_app.viewmodel.MovimientosViewModel
+import com.example.terrabit_app.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,11 +63,14 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
 
+    // Textos recurrentes
+    val successMessage = stringResource(R.string.successful_message_confirm_movs)
+
     // Efectos
     LaunchedEffect(registroExitoso) {
         if (registroExitoso) {
             snackbarHostState.showSnackbar(
-                message = "Movimiento confirmado exitosamente",
+                message = successMessage,
                 duration = SnackbarDuration.Short
             )
             viewModel.resetearEstadoRegistro()
@@ -95,7 +100,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
             },
             title = {
                 Text(
-                    text = "Error al Confirmar Movimiento",
+                    text = stringResource(R.string.error_message_confirm_movs),
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
                     color = Color(0xFF1E293B)
@@ -120,7 +125,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text("Entendido", fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.error_buttom), fontWeight = FontWeight.SemiBold)
                 }
             },
             containerColor = Color.White,
@@ -141,12 +146,12 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                         }
                     }
                 ) {
-                    Text("Aceptar", color = Color(0xFFE28F41))
+                    Text(stringResource(R.string.accept_buttom), color = Color(0xFFE28F41))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.ocultarDatePickerArribada() }) {
-                    Text("Cancelar", color = Color(0xFF64748B))
+                    Text(stringResource(R.string.cancel_buttom), color = Color(0xFF64748B))
                 }
             }
         ) {
@@ -175,12 +180,12 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                         viewModel.ocultarTimePickerArribada()
                     }
                 ) {
-                    Text("Aceptar", color = Color(0xFFE28F41))
+                    Text(stringResource(R.string.accept_buttom), color = Color(0xFFE28F41))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.ocultarTimePickerArribada() }) {
-                    Text("Cancelar", color = Color(0xFF64748B))
+                    Text(stringResource(R.string.cancel_buttom), color = Color(0xFF64748B))
                 }
             },
             text = {
@@ -225,7 +230,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         Text(
-                            "Procesando...",
+                            stringResource(R.string.loading_processing),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
                             color = Color(0xFF64748B)
@@ -241,21 +246,15 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                     title = {
                         Column {
                             Text(
-                                "Confirmar Movimientos",
+                                stringResource(R.string.name_confirm_movs),
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.SemiBold
-                            )
-                            Text(
-                                "Sección 5.8",
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Normal,
-                                color = Color.White.copy(alpha = 0.9f)
                             )
                         }
                     },
                     navigationIcon = {
                         IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                            Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -301,7 +300,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
                         Text(
-                            "Datos Obligatorios",
+                            stringResource(R.string.form_movs_title_necessary),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF1E293B)
@@ -310,7 +309,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                         // Código REMO
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "Código REMO de la Guía *",
+                                stringResource(R.string.form_codi_remo),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color(0xFF1E293B),
@@ -323,7 +322,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                 modifier = Modifier.fillMaxWidth(),
                                 placeholder = {
                                     Text(
-                                        "Introducir código REMO",
+                                        stringResource(R.string.form_codi_remo_description),
                                         color = Color(0xFF94A3B8)
                                     )
                                 },
@@ -350,7 +349,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    "Fecha Arribada *",
+                                    stringResource(R.string.form_date_arrival),
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = Color(0xFF1E293B),
@@ -368,14 +367,14 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                         modifier = Modifier.fillMaxWidth(),
                                         placeholder = {
                                             Text(
-                                                "Fecha",
+                                                stringResource(R.string.form_date_arrival_description),
                                                 color = Color(0xFF94A3B8)
                                             )
                                         },
                                         leadingIcon = {
                                             Icon(
                                                 Icons.Default.DateRange,
-                                                contentDescription = "Calendario",
+                                                contentDescription = stringResource(R.string.form_date_description),
                                                 tint = Color(0xFFE28F41)
                                             )
                                         },
@@ -395,7 +394,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
 
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    "Hora *",
+                                    stringResource(R.string.form_hour_arrival),
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = Color(0xFF1E293B),
@@ -413,14 +412,14 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                         modifier = Modifier.fillMaxWidth(),
                                         placeholder = {
                                             Text(
-                                                "Hora",
+                                                stringResource(R.string.form_hour_arrival_description),
                                                 color = Color(0xFF94A3B8)
                                             )
                                         },
                                         leadingIcon = {
                                             Icon(
                                                 Icons.Default.Schedule,
-                                                contentDescription = "Reloj",
+                                                contentDescription = stringResource(R.string.form_hour_arrival_description),
                                                 tint = Color(0xFFE28F41)
                                             )
                                         },
@@ -442,7 +441,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                         // Código ATES
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "Código ATES Transportista *",
+                                stringResource(R.string.form_codi_ates),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color(0xFF1E293B),
@@ -462,7 +461,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                     readOnly = true,
                                     placeholder = {
                                         Text(
-                                            "Seleccionar código",
+                                            stringResource(R.string.form_codi_ates_description),
                                             color = Color(0xFF94A3B8)
                                         )
                                     },
@@ -509,7 +508,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                         // Explotación Destino
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "Explotación Destino *",
+                                stringResource(R.string.form_exploitation_destination),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color(0xFF1E293B),
@@ -522,7 +521,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                 modifier = Modifier.fillMaxWidth(),
                                 placeholder = {
                                     Text(
-                                        "Código de explotación REGA",
+                                        stringResource(R.string.form_exploitation_destination_description),
                                         color = Color(0xFF94A3B8)
                                     )
                                 },
@@ -545,7 +544,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                         // Identificador del Animal
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "Identificador del Animal *",
+                                stringResource(R.string.form_id_animal),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color(0xFF1E293B),
@@ -558,7 +557,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                 modifier = Modifier.fillMaxWidth(),
                                 placeholder = {
                                     Text(
-                                        "Introducir o escanear ID",
+                                        stringResource(R.string.form_id_animal_description),
                                         color = Color(0xFF94A3B8)
                                     )
                                 },
@@ -566,7 +565,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                     IconButton(onClick = { /* Acción de cámara */ }) {
                                         Icon(
                                             Icons.Outlined.CameraAlt,
-                                            contentDescription = "Escanear",
+                                            contentDescription = stringResource(R.string.form_id_animal_description),
                                             tint = Color(0xFFE28F41)
                                         )
                                     }
@@ -590,7 +589,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                         // Estado de Arribada
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "Estado de Arribada *",
+                                stringResource(R.string.form_state_arrival),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color(0xFF1E293B),
@@ -610,7 +609,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                     readOnly = true,
                                     placeholder = {
                                         Text(
-                                            "Seleccionar estado",
+                                            stringResource(R.string.form_state_arrival_description),
                                             color = Color(0xFF94A3B8)
                                         )
                                     },
@@ -680,7 +679,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
                         Text(
-                            "Datos Opcionales del Transporte",
+                            stringResource(R.string.form_movs_title_optionals),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF1E293B)
@@ -689,7 +688,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                         // Medio de Transporte
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "Medio de Transporte",
+                                stringResource(R.string.form_ways_transports),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color(0xFF1E293B),
@@ -709,7 +708,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                     readOnly = true,
                                     placeholder = {
                                         Text(
-                                            "Seleccionar medio",
+                                            stringResource(R.string.form_ways_transports_description),
                                             color = Color(0xFF94A3B8)
                                         )
                                     },
@@ -762,7 +761,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                         // Matrícula
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "Matrícula del Vehículo",
+                                stringResource(R.string.form_matricule_transport),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color(0xFF1E293B),
@@ -775,7 +774,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                 modifier = Modifier.fillMaxWidth(),
                                 placeholder = {
                                     Text(
-                                        "Ejemplo: 1234ABC",
+                                        stringResource(R.string.form_matricule_transports_description),
                                         color = Color(0xFF94A3B8)
                                     )
                                 },
@@ -798,7 +797,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                         // Nombre Transportista
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "Nombre del Transportista",
+                                stringResource(R.string.form_name_transportits),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color(0xFF1E293B),
@@ -811,7 +810,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                 modifier = Modifier.fillMaxWidth(),
                                 placeholder = {
                                     Text(
-                                        "Nombre completo",
+                                        stringResource(R.string.form_name_transportits_description),
                                         color = Color(0xFF94A3B8)
                                     )
                                 },
@@ -834,7 +833,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                         // NIF Conductor
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "NIF del Conductor",
+                                stringResource(R.string.form_nif_driver),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color(0xFF1E293B),
@@ -847,7 +846,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                 modifier = Modifier.fillMaxWidth(),
                                 placeholder = {
                                     Text(
-                                        "Ejemplo: 12345678A",
+                                        stringResource(R.string.form_nif_driver_description),
                                         color = Color(0xFF94A3B8)
                                     )
                                 },
@@ -870,7 +869,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                         // Nombre Conductor
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "Nombre del Conductor",
+                                stringResource(R.string.form_name_driver),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color(0xFF1E293B),
@@ -883,7 +882,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                 modifier = Modifier.fillMaxWidth(),
                                 placeholder = {
                                     Text(
-                                        "Nombre completo",
+                                        stringResource(R.string.form_name_driver_description),
                                         color = Color(0xFF94A3B8)
                                     )
                                 },
@@ -924,7 +923,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                     )
                 ) {
                     Text(
-                        "Confirmar Movimiento",
+                        stringResource(R.string.buttom_form_confirm_movs),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         letterSpacing = 0.5.sp
