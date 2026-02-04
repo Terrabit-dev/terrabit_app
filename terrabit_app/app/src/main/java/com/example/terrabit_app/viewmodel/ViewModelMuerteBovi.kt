@@ -1,9 +1,12 @@
 package com.example.terrabit_app.viewmodel
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.terrabit_app.data.Borrador
+import com.example.terrabit_app.data.SharedPreferencesManager
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.animales.RegistroMuerteBovi
 import com.example.terrabit_app.data.network.respuestas.RespuestaUnificada
@@ -12,14 +15,134 @@ import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.Calendar
+import java.text.SimpleDateFormat
+import java.util.*
 
 class ViewModelMuerteBovi : ViewModel() {
 
-
-    // Estados del formulario de muerte/avortament
     private val repositorio = Repositorio()
-    private val _tipoMuerte = MutableLiveData("") // "01 - Mort" o "02 - Avortament"
+    private lateinit var sharedPreferencesManager: SharedPreferencesManager
+
+    // ============================================
+    // SECCIÓN: AUTOGUARDADO
+    // ============================================
+
+    fun inicializarSharedPreferences(context: Context) {
+        sharedPreferencesManager = SharedPreferencesManager(context)
+    }
+
+    // Detecta si el formulario tiene datos
+    fun tieneContenido(): Boolean {
+        return !_tipoMuerte.value.isNullOrEmpty() ||
+                !_identificadorMuerte.value.isNullOrEmpty() ||
+                !_fechaMuerte.value.isNullOrEmpty() ||
+                !_mesesGestacion.value.isNullOrEmpty() ||
+                _cadaverInaccesible.value == true ||
+                !_coordenadaX.value.isNullOrEmpty() ||
+                !_coordenadaY.value.isNullOrEmpty()
+    }
+
+    // Guarda automáticamente el formulario
+    fun guardarBorradorAutomatico() {
+        if (!tieneContenido()) {
+            Log.d("Autoguardado Muerte", "No hay contenido para guardar")
+            return
+        }
+
+        try {
+            val datosMuerte = mapOf(
+                "tipo" to _tipoMuerte.value,
+                "codigoTipo" to _codigoTipoMuerte.value,
+                "identificador" to _identificadorMuerte.value,
+                "fecha" to _fechaMuerte.value,
+                "mesesGestacion" to _mesesGestacion.value,
+                "cadaverInaccesible" to _cadaverInaccesible.value,
+                "coordenadaX" to _coordenadaX.value,
+                "coordenadaY" to _coordenadaY.value
+            )
+
+            // Buscar si ya existe un borrador de muerte
+            val borradorExistente = sharedPreferencesManager.obtenerBorradores()
+                .find { it.tipo == "MUERTE" && it.estado == "BORRADOR_AUTO" }
+
+            val borrador = if (borradorExistente != null) {
+                // Actualizar borrador existente
+                borradorExistente.copy(
+                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    datos = Gson().toJson(datosMuerte)
+                )
+            } else {
+                // Crear nuevo borrador
+                Borrador(
+                    id = "muerte_auto_${System.currentTimeMillis()}",
+                    tipo = "MUERTE",
+                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    datos = Gson().toJson(datosMuerte),
+                    estado = "BORRADOR_AUTO"
+                )
+            }
+
+            sharedPreferencesManager.guardarBorrador(borrador)
+            Log.d("Autoguardado Muerte", "Borrador guardado automáticamente")
+        } catch (e: Exception) {
+            Log.e("Error Autoguardado Muerte", "Error al guardar: ${e.message}", e)
+        }
+    }
+
+    // Cargar borrador existente
+    fun cargarBorradorExistente() {
+        try {
+            val borradores = sharedPreferencesManager.obtenerBorradores()
+            val borradorMuerte = borradores.find {
+                it.tipo == "MUERTE" && it.estado == "BORRADOR_AUTO"
+            }
+
+            if (borradorMuerte != null) {
+                val gson = Gson()
+                val datos: Map<String, Any?> = gson.fromJson(
+                    borradorMuerte.datos,
+                    object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
+                )
+
+                // Restaurar datos
+                _tipoMuerte.value = datos["tipo"] as? String ?: ""
+                _codigoTipoMuerte.value = datos["codigoTipo"] as? String ?: ""
+                _identificadorMuerte.value = datos["identificador"] as? String ?: ""
+                _fechaMuerte.value = datos["fecha"] as? String ?: ""
+                _mesesGestacion.value = datos["mesesGestacion"] as? String ?: ""
+                _cadaverInaccesible.value = datos["cadaverInaccesible"] as? Boolean ?: false
+                _coordenadaX.value = datos["coordenadaX"] as? String ?: ""
+                _coordenadaY.value = datos["coordenadaY"] as? String ?: ""
+
+                Log.d("Cargar Borrador", "Borrador de muerte cargado")
+            }
+        } catch (e: Exception) {
+            Log.e("Error Cargar Borrador", "Error al cargar: ${e.message}", e)
+        }
+    }
+
+    // Eliminar borrador al enviar exitosamente
+    fun eliminarBorradorAutomatico() {
+        try {
+            val borradores = sharedPreferencesManager.obtenerBorradores()
+            val borradorMuerte = borradores.find {
+                it.tipo == "MUERTE" && it.estado == "BORRADOR_AUTO"
+            }
+
+            if (borradorMuerte != null) {
+                sharedPreferencesManager.eliminarBorrador(borradorMuerte.id)
+                Log.d("Eliminar Borrador", "Borrador automático eliminado")
+            }
+        } catch (e: Exception) {
+            Log.e("Error Eliminar Borrador", "Error: ${e.message}", e)
+        }
+    }
+
+    // ============================================
+    // SECCIÓN: FALLECIMIENTO / MUERTE
+    // ============================================
+
+    private val _tipoMuerte = MutableLiveData("")
     val tipoMuerte = _tipoMuerte
 
     private val _identificadorMuerte = MutableLiveData("")
@@ -40,34 +163,32 @@ class ViewModelMuerteBovi : ViewModel() {
     private val _coordenadaY = MutableLiveData("")
     val coordenadaY = _coordenadaY
 
-    // Estados de expansión de menús desplegables - Muerte
     private val _tipoMuerteExpandido = MutableLiveData(false)
     val tipoMuerteExpandido = _tipoMuerteExpandido
 
-    // Estado para mostrar el DatePicker - Muerte
     private val _mostrarDatePickerMuerte = MutableLiveData(false)
     val mostrarDatePickerMuerte = _mostrarDatePickerMuerte
 
-    // Estados para feedback del registro - Muerte
     private val _registroMuerteExitoso = MutableLiveData<Boolean>()
     val registroMuerteExitoso = _registroMuerteExitoso
 
     private val _mensajeErrorMuerte = MutableLiveData<String>()
     val mensajeErrorMuerte = _mensajeErrorMuerte
 
-    // Estado de carga
+    private val _codiError = MutableLiveData<Int?>()
+    val codiError = _codiError
+
     private val _cargandoMuerte = MutableLiveData(false)
     val cargandoMuerte = _cargandoMuerte
 
-    // Lista de tipos de muerte
-    val listaTiposMuerte = listOf("01 - Mort", "02 - Avortament")
+    private val _codigoTipoMuerte = MutableLiveData<String>()
+    val codigoTipoMuerte = _codigoTipoMuerte
 
-    // Funciones para actualizar los campos - Muerte
-    fun seleccionarTipoMuerte(tipo: String) {
+    fun seleccionarTipoMuerte(tipo: String, codigo: String) {
         _tipoMuerte.value = tipo
+        _codigoTipoMuerte.value = codigo
         _tipoMuerteExpandido.value = false
 
-        // Limpiar meses gestación si cambia a Mort
         if (tipo.contains("Mort")) {
             _mesesGestacion.value = ""
         }
@@ -78,7 +199,6 @@ class ViewModelMuerteBovi : ViewModel() {
     }
 
     fun actualizarMesesGestacion(valor: String) {
-        // Solo permitir números de 1-9
         if (valor.isEmpty() || (valor.toIntOrNull() in 1..9)) {
             _mesesGestacion.value = valor
         }
@@ -88,7 +208,6 @@ class ViewModelMuerteBovi : ViewModel() {
         val nuevoValor = !(_cadaverInaccesible.value ?: false)
         _cadaverInaccesible.value = nuevoValor
 
-        // Limpiar coordenadas si se desactiva
         if (!nuevoValor) {
             _coordenadaX.value = ""
             _coordenadaY.value = ""
@@ -103,7 +222,6 @@ class ViewModelMuerteBovi : ViewModel() {
         _coordenadaY.value = valor
     }
 
-    // Funciones para controlar la expansión de menús - Muerte
     fun toggleTipoMuerteExpandido() {
         _tipoMuerteExpandido.value = !(_tipoMuerteExpandido.value ?: false)
     }
@@ -112,7 +230,6 @@ class ViewModelMuerteBovi : ViewModel() {
         _tipoMuerteExpandido.value = false
     }
 
-    // Funciones para controlar el DatePicker - Muerte
     fun mostrarDatePickerMuerte() {
         _mostrarDatePickerMuerte.value = true
     }
@@ -132,51 +249,35 @@ class ViewModelMuerteBovi : ViewModel() {
         _mostrarDatePickerMuerte.value = false
     }
 
-    // Función para obtener ubicación GPS actual
     fun obtenerUbicacionActual() {
-        // Por ahora valores de ejemplo en formato UTM
         _coordenadaX.value = "123456,12"
         _coordenadaY.value = "1234567,12"
         Log.d("GPS", "Ubicación obtenida - X: ${_coordenadaX.value}, Y: ${_coordenadaY.value}")
     }
 
-    // Función para validar el formulario - Muerte
     fun esFormularioMuerteValido(): Boolean {
-        // Validaciones básicas obligatorias
         val tipoValido = !_tipoMuerte.value.isNullOrEmpty()
         val identificadorValido = !_identificadorMuerte.value.isNullOrEmpty()
         val fechaValida = !_fechaMuerte.value.isNullOrEmpty()
 
-        // Si es avortament, validar meses gestación
         val mesesValidos = if (_tipoMuerte.value?.contains("Avortament") == true) {
             !_mesesGestacion.value.isNullOrEmpty() && _mesesGestacion.value?.toIntOrNull() in 1..9
         } else {
-            true // Si no es avortament, no se requiere
+            true
         }
 
-        // Si cadáver inaccesible, validar coordenadas
         val coordenadasValidas = if (_cadaverInaccesible.value == true) {
             !_coordenadaX.value.isNullOrEmpty() && !_coordenadaY.value.isNullOrEmpty()
         } else {
-            true // Si no está marcado, no se requieren coordenadas
+            true
         }
-
-        // Log para debug
-        Log.d("Validación Muerte", "Tipo: '${_tipoMuerte.value}' - válido: $tipoValido")
-        Log.d("Validación Muerte", "ID: '${_identificadorMuerte.value}' - válido: $identificadorValido")
-        Log.d("Validación Muerte", "Fecha: '${_fechaMuerte.value}' - válida: $fechaValida")
-        Log.d("Validación Muerte", "Meses: '${_mesesGestacion.value}' - válidos: $mesesValidos")
-        Log.d("Validación Muerte", "Cadáver inaccesible: ${_cadaverInaccesible.value}")
-        Log.d("Validación Muerte", "Coordenadas - válidas: $coordenadasValidas")
-        Log.d("Validación Muerte", "RESULTADO FINAL: ${tipoValido && identificadorValido && fechaValida && mesesValidos && coordenadasValidas}")
 
         return tipoValido && identificadorValido && fechaValida && mesesValidos && coordenadasValidas
     }
 
-
-    // Función para limpiar el formulario - Muerte
     fun limpiarFormularioMuerte() {
         _tipoMuerte.value = ""
+        _codigoTipoMuerte.value = ""
         _identificadorMuerte.value = ""
         _fechaMuerte.value = ""
         _mesesGestacion.value = ""
@@ -185,64 +286,44 @@ class ViewModelMuerteBovi : ViewModel() {
         _coordenadaY.value = ""
     }
 
-    // Función para resetear el estado de registro - Muerte
     fun resetearEstadoRegistroMuerte() {
         _registroMuerteExitoso.value = false
         _mensajeErrorMuerte.value = ""
+        _codiError.value = null
     }
 
-
-    // Funcionamiento de la API
-    // Funcionamiento de la API
     fun putMuerteBovino() {
-        // Validar que todos los campos requeridos estén completos
+        _codiError.value = null
+
         if (!esFormularioMuerteValido()) {
             val mensajeError = when {
-                _tipoMuerte.value.isNullOrEmpty() ->
-                    "Por favor, seleccione el tipo (Mort o Avortament)"
-                _identificadorMuerte.value.isNullOrEmpty() ->
-                    "Por favor, introduzca el ID del animal${if (_tipoMuerte.value?.contains("Avortament") == true) " (madre)" else ""}"
-                _fechaMuerte.value.isNullOrEmpty() ->
-                    "Por favor, seleccione la fecha de muerte"
-                _tipoMuerte.value?.contains("Avortament") == true && _mesesGestacion.value.isNullOrEmpty() ->
-                    "Por favor, introduzca los meses de gestación (1-9)"
-                _tipoMuerte.value?.contains("Avortament") == true && (_mesesGestacion.value?.toIntOrNull() !in 1..9) ->
-                    "Los meses de gestación deben estar entre 1 y 9"
-                _cadaverInaccesible.value == true && _coordenadaX.value.isNullOrEmpty() ->
-                    "Por favor, introduzca la coordenada X (Latitud)"
-                _cadaverInaccesible.value == true && _coordenadaY.value.isNullOrEmpty() ->
-                    "Por favor, introduzca la coordenada Y (Longitud)"
-                else ->
-                    "Por favor, complete todos los campos obligatorios marcados con *"
+                _tipoMuerte.value.isNullOrEmpty() -> 7
+                _identificadorMuerte.value.isNullOrEmpty() -> 0
+                _fechaMuerte.value.isNullOrEmpty() -> 8
+                _tipoMuerte.value?.contains("Avortament") == true && _mesesGestacion.value.isNullOrEmpty() -> 9
+                _cadaverInaccesible.value == true && _coordenadaX.value.isNullOrEmpty() -> 10
+                _cadaverInaccesible.value == true && _coordenadaY.value.isNullOrEmpty() -> 11
+                else -> 0
             }
-            _mensajeErrorMuerte.value = mensajeError
-            Log.e("Validación Muerte", mensajeError)
+            _codiError.value = mensajeError
+            Log.e("Validación Muerte", "Error: $mensajeError")
             return
         }
 
         viewModelScope.launch {
-            // Activar indicador de carga
             _cargandoMuerte.postValue(true)
 
             try {
-                // Extraer código de tipo: "01 - Mort" -> "01"
-                val tipoCodigo = _tipoMuerte.value?.substring(0, 2) ?: ""
-
-                // Convertir fecha a formato API (yyyymmdd)
+                val tipoCodigo = _codigoTipoMuerte.value?.substring(0, 2) ?: ""
                 val fechaAPI = DateUtils.convertirFechaAFormatoAPI(_fechaMuerte.value ?: "")
-
-                // Preparar coordenadas (null si cadáver no es inaccesible)
                 val coordX = if (_cadaverInaccesible.value == true) _coordenadaX.value else null
                 val coordY = if (_cadaverInaccesible.value == true) _coordenadaY.value else null
-
-                // Preparar meses gestación (null si no es avortament)
                 val mesesGest = if (_tipoMuerte.value?.contains("Avortament") == true) {
                     _mesesGestacion.value
                 } else {
                     null
                 }
 
-                // Crear objeto de petición
                 val request = RegistroMuerteBovi(
                     cadaverInaccesible = if (_cadaverInaccesible.value == true) "SI" else "NO",
                     coordenadaX = coordX,
@@ -256,16 +337,12 @@ class ViewModelMuerteBovi : ViewModel() {
                 )
                 Log.d("Registro Muerte", "Request: $request")
 
-                // Llamar a la API
                 val response = repositorio.putRegistrarMuerte(request)
 
-                // Procesar respuesta
                 withContext(Dispatchers.Main) {
-                    // Desactivar indicador de carga
                     _cargandoMuerte.value = false
 
                     when {
-                        // Caso: HTTP 200 OK
                         response.isSuccessful && response.body() != null -> {
                             val body = response.body()!!
                             if (body.codi == "0" || body.descripcio == "OK") {
@@ -273,26 +350,22 @@ class ViewModelMuerteBovi : ViewModel() {
                                 _mensajeErrorMuerte.value = ""
 
                                 Log.d("Registro Muerte", "Muerte reportada exitosamente")
-                                Log.d("Registro Muerte", "Respuesta: [${body.codi}] ${body.descripcio}")
 
-                                // Limpiar formulario después de registrar exitosamente
+                                // ELIMINAR BORRADOR AUTOMÁTICO AL ENVIAR EXITOSAMENTE
+                                eliminarBorradorAutomatico()
+
                                 limpiarFormularioMuerte()
-                            }
-                            // Caso inesperado: respuesta exitosa pero sin código 0 ni errores
-                            else {
+                            } else {
                                 _registroMuerteExitoso.value = false
                                 _mensajeErrorMuerte.value = "Respuesta inesperada del servidor: ${body.descripcio ?: "Sin descripción"}"
                                 Log.w("Registro Muerte", "Respuesta inesperada: [${body.codi}] ${body.descripcio}")
                             }
                         }
-
-                        // Caso 2: HTTP Error (4xx, 5xx)
                         !response.isSuccessful -> {
                             val errorBody = response.errorBody()?.string()
                             if (errorBody != null) {
                                 try {
                                     val errorObj = Gson().fromJson(errorBody, RespuestaUnificada::class.java)
-                                    // Cogemos la descripción del primer error, o un mensaje por defecto si está vacía
                                     _mensajeErrorMuerte.value = errorObj.errors?.firstOrNull()?.descripcio
                                         ?: "Error desconocido del servidor"
                                 } catch (e: Exception) {
@@ -301,13 +374,7 @@ class ViewModelMuerteBovi : ViewModel() {
                             }
                             _registroMuerteExitoso.value = false
                             Log.e("Error Registro Muerte", "HTTP ${response.code()}")
-                            Log.e("Error Registro Muerte", "Mensaje: ${response.message()}")
-                            if (errorBody != null) {
-                                Log.e("Error Registro Muerte", "Body: $errorBody")
-                            }
                         }
-
-                        // Caso 3: Respuesta exitosa pero sin body
                         else -> {
                             _registroMuerteExitoso.value = false
                             _mensajeErrorMuerte.value = "Error: Respuesta vacía del servidor"
@@ -316,7 +383,6 @@ class ViewModelMuerteBovi : ViewModel() {
                     }
                 }
             } catch (e: java.net.SocketTimeoutException) {
-                // Manejo específico de timeout
                 withContext(Dispatchers.Main) {
                     _cargandoMuerte.value = false
                     _registroMuerteExitoso.value = false
@@ -324,7 +390,6 @@ class ViewModelMuerteBovi : ViewModel() {
                     Log.e("Error Registro Muerte", "Timeout: ${e.message}", e)
                 }
             } catch (e: java.io.IOException) {
-                // Error de red
                 withContext(Dispatchers.Main) {
                     _cargandoMuerte.value = false
                     _registroMuerteExitoso.value = false
@@ -332,7 +397,6 @@ class ViewModelMuerteBovi : ViewModel() {
                     Log.e("Error Registro Muerte", "Error de red: ${e.message}", e)
                 }
             } catch (e: Exception) {
-                // Otros errores
                 withContext(Dispatchers.Main) {
                     _cargandoMuerte.value = false
                     _registroMuerteExitoso.value = false

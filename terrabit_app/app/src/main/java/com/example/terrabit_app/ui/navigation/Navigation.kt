@@ -18,6 +18,7 @@ import com.example.terrabit_app.ui.screen.Login
 import com.example.terrabit_app.ui.screen.Movimientos
 import com.example.terrabit_app.viewmodel.CorrecionSexoViewModel
 import com.example.terrabit_app.viewmodel.DrawerViewModel
+import com.example.terrabit_app.viewmodel.GuiasViewModel
 import com.example.terrabit_app.viewmodel.IdentificacionAplazaViewModel
 import com.example.terrabit_app.viewmodel.MainViewmodel
 import com.example.terrabit_app.viewmodel.MaterialViewModel
@@ -36,7 +37,8 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel ) {
     ) {
         // Pantalla principal
         composable(Routes.Home.route) {
-            Home(navController = navController, drawerViewModel)
+
+            Home(navController = navController, drawerViewModel, myViewmodel)
         }
 
         // Pantallas de categorías (intermedias)
@@ -64,7 +66,8 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel ) {
         }
 
         composable(Routes.GestionGuias.route) {
-            GestionGuias(navController = navController)
+            val guiasViewModel : GuiasViewModel = viewModel()
+            GestionGuias(navController = navController, guiasViewModel)
         }
 
         composable(Routes.Movimientos.route) {
