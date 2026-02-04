@@ -63,6 +63,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.terrabit_app.viewmodel.CorrecionSexoViewModel
 import com.example.terrabit_app.R
+import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
 
 
@@ -88,6 +89,8 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
     val mensajeCorreccionSexoExitosa = stringResource(R.string.successful_message_correct_sex)
     val mensajeErrorCorreccionSexo = stringResource(R.string.error_message_correct_sex)
 
+    // Recursos con codigo
+    val elementosConCodigos = ElementosConCodigos()
 
     // Mostrar Snackbar cuando hay mensaje de éxito o error
     LaunchedEffect(correccionSexoExitosa, mensajeError) {
@@ -348,16 +351,13 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                                         unfocusedTextColor = Color(0xFF1E293B)
                                     )
                                 )
-                                val sexos = mapOf<String, String>(
-                                    stringResource(R.string.male) to "02",
-                                    stringResource(R.string.female) to "01"
-                                )
+
                                 ExposedDropdownMenu(
                                     expanded = sexoCorreccionExpandido,
                                     onDismissRequest = { viewModel.cerrarSexoCorreccionMenu() },
                                     modifier = Modifier.background(Color.White)
                                 ) {
-                                    sexos.forEach { (sexo, codigo) ->
+                                    elementosConCodigos.sexos().forEach { (sexo, codigo) ->
                                         DropdownMenuItem(
                                             text = {
                                                 Text(
