@@ -57,6 +57,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -115,7 +116,7 @@ fun Login(
             },
             title = {
                 Text(
-                    text = "Error de Autenticación",
+                    text = stringResource(R.string.title_auth_error),
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
                     color = Color(0xFF1E293B)
@@ -140,7 +141,7 @@ fun Login(
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text("Entendido", fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.error_buttom), fontWeight = FontWeight.SemiBold)
                 }
             },
             containerColor = Color.White,
@@ -180,7 +181,7 @@ fun Login(
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         Text(
-                            "Procesando...",
+                            stringResource(R.string.loading_processing),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
                             color = Color(0xFF64748B)
@@ -222,13 +223,13 @@ fun Login(
                     color = Color.Black
                 )
                 Text(
-                    text = "Gestión Ganadera Inteligente",
+                    text = stringResource(R.string.subtitle_login),
                     fontSize = 18.sp,
                     color = Color.Gray
                 )
                 LoginCard(viewModel, loginState, uriHandler)
                 Text(
-                    text = "© 2026 Terrabit. Gestión ganadera moderna y eficiente",
+                    text = stringResource(R.string.footer_copyright),
                     fontSize = 12.sp,
                     color = Color.Gray
                 )
@@ -296,7 +297,7 @@ fun LoginCard(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Text(
-                    text = "Iniciar sesión",
+                    text = stringResource(R.string.title_login),
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
                     color = Color.Black
@@ -313,7 +314,7 @@ fun LoginCard(
                         nif = it
                         viewModel.clearFieldError("nif")
                     },
-                    placeholder = "Tu NIF",
+                    placeholder = stringResource(R.string.hint_nif),
                     icon = Icons.Outlined.AccountCircle,
                     isError = nifError != null,
                     keyboardOptions = KeyboardOptions(
@@ -335,7 +336,7 @@ fun LoginCard(
                 }
 
                 Text(
-                    text = "Contraseña",
+                    text = stringResource(R.string.label_password),
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
                 )
@@ -345,7 +346,7 @@ fun LoginCard(
                         password = it
                         viewModel.clearFieldError("password")
                     },
-                    placeholder = "Tu contraseña",
+                    placeholder = stringResource(R.string.hint_password),
                     icon = Icons.Outlined.Lock,
                     isPassword = true,
                     isError = passwordError != null,
@@ -369,7 +370,7 @@ fun LoginCard(
                 }
 
                 Text(
-                    text = "Código MO",
+                    text = stringResource(R.string.label_codimo),
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
                 )
@@ -379,7 +380,7 @@ fun LoginCard(
                         codiMO = it
                         viewModel.clearFieldError("codiMO")
                     },
-                    placeholder = "Tu código MO",
+                    placeholder = stringResource(R.string.hint_codimo),
                     icon = Icons.Outlined.Badge,
                     isError = codiMOError != null,
                     focusRequester = codiMOFocusRequester,
@@ -417,7 +418,7 @@ fun LoginCard(
                     onCheckedChange = { rememberMe = it }
                 )
                 Text(
-                    text = "¿Olvidaste tu contraseña?",
+                    text = stringResource(R.string.action_forgot_password),
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF5C7654),
                     textAlign = TextAlign.End,
@@ -447,7 +448,7 @@ fun LoginCard(
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     Text(
-                        text = "Acceder",
+                        text = stringResource(R.string.btn_login),
                         fontWeight = FontWeight.Bold,
                     )
                 }
@@ -535,7 +536,8 @@ fun CheckboxWithText(
             )
         )
         Text(
-            text = "Recordarme",
+            text = stringResource(R.string.label_remember_me),
+            fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
             color = Color.Gray
         )

@@ -14,8 +14,9 @@ import com.example.terrabit_app.ui.theme.Terrabit_appTheme
 import com.example.terrabit_app.viewmodel.DrawerViewModel  // ← NUEVO IMPORT
 import com.example.terrabit_app.viewmodel.MainViewmodel
 import com.example.terrabit_app.viewmodel.NacimientoViewmodel
+import androidx.appcompat.app.AppCompatActivity
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()

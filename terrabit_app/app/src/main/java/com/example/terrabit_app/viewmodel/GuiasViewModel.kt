@@ -1,0 +1,550 @@
+package com.example.terrabit_app.viewmodel
+
+import android.util.Log
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.terrabit_app.data.network.Repositorio
+import com.example.terrabit_app.data.network.guias.PeticionAltaGuia
+import com.example.terrabit_app.data.network.respuestas.ResAltaGuia
+import com.google.gson.Gson
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
+import java.util.Calendar
+
+class GuiasViewModel : ViewModel() {
+
+    // Instancia del repositorio
+    private val repositorio = Repositorio()
+
+    // ============================================
+    // SECCIÓN: ESTADOS DEL FORMULARIO
+    // ============================================
+
+    // Campos obligatorios
+    private val _explotacioOrigen = MutableLiveData("")
+    val explotacioOrigen = _explotacioOrigen
+
+    private val _explotacioDestinacio = MutableLiveData("")
+    val explotacioDestinacio = _explotacioDestinacio
+
+    private val _temporal = MutableLiveData("")
+    val temporal = _temporal
+
+    private val _dataSortida = MutableLiveData("")
+    val dataSortida = _dataSortida
+
+    private val _horaSortida = MutableLiveData("")
+    val horaSortida = _horaSortida
+
+    private val _dataArribada = MutableLiveData("")
+    val dataArribada = _dataArribada
+
+    private val _horaArribada = MutableLiveData("")
+    val horaArribada = _horaArribada
+
+    private val _mobilitat = MutableLiveData("")
+    val mobilitat = _mobilitat
+
+    private val _pais = MutableLiveData("")
+    val pais = _pais
+
+    private val _codiExplotacio = MutableLiveData("")
+    val codiExplotacio = _codiExplotacio
+
+    // Campos opcionales del transporte
+    private val _codiAtes = MutableLiveData("")
+    val codiAtes = _codiAtes
+
+    private val _nomTransportista = MutableLiveData("")
+    val nomTransportista = _nomTransportista
+
+    private val _mitjaTransport = MutableLiveData("")
+    val mitjaTransport = _mitjaTransport
+
+    private val _matricula = MutableLiveData("")
+    val matricula = _matricula
+
+    private val _nifConductor = MutableLiveData("")
+    val nifConductor = _nifConductor
+
+    private val _nomConductor = MutableLiveData("")
+    val nomConductor = _nomConductor
+
+    private val _identificadorsText = MutableLiveData("")
+    val identificadorsText = _identificadorsText
+
+    // Estados de expansión de menús desplegables
+    private val _temporalExpandido = MutableLiveData(false)
+    val temporalExpandido = _temporalExpandido
+
+    private val _mobilitatExpandido = MutableLiveData(false)
+    val mobilitatExpandido = _mobilitatExpandido
+
+    private val _codiAtesExpandido = MutableLiveData(false)
+    val codiAtesExpandido = _codiAtesExpandido
+
+    private val _mitjaTransportExpandido = MutableLiveData(false)
+    val mitjaTransportExpandido = _mitjaTransportExpandido
+
+    // Estados para DatePicker y TimePicker
+    private val _mostrarDatePickerSortida = MutableLiveData(false)
+    val mostrarDatePickerSortida = _mostrarDatePickerSortida
+
+    private val _mostrarTimePickerSortida = MutableLiveData(false)
+    val mostrarTimePickerSortida = _mostrarTimePickerSortida
+
+    private val _mostrarDatePickerArribada = MutableLiveData(false)
+    val mostrarDatePickerArribada = _mostrarDatePickerArribada
+
+    private val _mostrarTimePickerArribada = MutableLiveData(false)
+    val mostrarTimePickerArribada = _mostrarTimePickerArribada
+
+    // Estados de registro
+    private val _registroExitoso = MutableLiveData<Boolean>()
+    val registroExitoso = _registroExitoso
+
+    private val _mensajeError = MutableLiveData<String>()
+    val mensajeError = _mensajeError
+
+    private val _cargandoGuia = MutableLiveData(false)
+    val cargandoGuia = _cargandoGuia
+
+    // ============================================
+    // LISTAS DE OPCIONES
+    // ============================================
+
+    data class CodigoAtes(val codigo: String, val nombre: String)
+
+    val listaCodigosAtes = listOf(
+        CodigoAtes("D", "D - Transportista")
+    )
+
+    val listaTemporalOpciones = listOf(
+        "SI",
+        "NO"
+    )
+
+    val listaMobilitatOpciones = listOf(
+        "SI",
+        "NO"
+    )
+
+    val listaMitjaTransport = listOf(
+        "04 - Camió",
+        "05 - Vaixell",
+        "06 - Avió",
+        "07 - Tren",
+        "08 - Conducció a peu",
+        "99 - Altres"
+    )
+
+    // ============================================
+    // FUNCIONES PARA ACTUALIZAR CAMPOS
+    // ============================================
+
+    fun actualizarExplotacioOrigen(valor: String) {
+        _explotacioOrigen.value = valor
+    }
+
+    fun actualizarExplotacioDestinacio(valor: String) {
+        _explotacioDestinacio.value = valor
+    }
+
+    fun seleccionarTemporal(valor: String) {
+        _temporal.value = valor
+        _temporalExpandido.value = false
+    }
+
+    fun actualizarDataSortida(fecha: String) {
+        _dataSortida.value = fecha
+    }
+
+    fun actualizarHoraSortida(hora: String, minutos: String) {
+        _horaSortida.value = String.format("%02d:%02d", hora.toInt(), minutos.toInt())
+    }
+
+    fun actualizarDataArribada(fecha: String) {
+        _dataArribada.value = fecha
+    }
+
+    fun actualizarHoraArribada(hora: String, minutos: String) {
+        _horaArribada.value = String.format("%02d:%02d", hora.toInt(), minutos.toInt())
+    }
+
+    fun seleccionarMobilitat(valor: String) {
+        _mobilitat.value = valor
+        _mobilitatExpandido.value = false
+    }
+
+    fun actualizarPais(valor: String) {
+        _pais.value = valor
+    }
+
+    fun actualizarCodiExplotacio(valor: String) {
+        _codiExplotacio.value = valor
+    }
+
+    fun seleccionarCodiAtes(codigo: String) {
+        _codiAtes.value = codigo
+        _codiAtesExpandido.value = false
+    }
+
+    fun actualizarNomTransportista(nombre: String) {
+        _nomTransportista.value = nombre
+    }
+
+    fun seleccionarMitjaTransport(medio: String) {
+        _mitjaTransport.value = medio
+        _mitjaTransportExpandido.value = false
+    }
+
+    fun actualizarMatricula(matricula: String) {
+        _matricula.value = matricula
+    }
+
+    fun actualizarNifConductor(nif: String) {
+        _nifConductor.value = nif
+    }
+
+    fun actualizarNomConductor(nombre: String) {
+        _nomConductor.value = nombre
+    }
+
+    fun actualizarIdentificadorsText(texto: String) {
+        _identificadorsText.value = texto
+    }
+
+    // ============================================
+    // FUNCIONES PARA CONTROLAR EXPANSIÓN DE MENÚS
+    // ============================================
+
+    fun toggleTemporalExpandido() {
+        _temporalExpandido.value = !(_temporalExpandido.value ?: false)
+    }
+
+    fun toggleMobilitatExpandido() {
+        _mobilitatExpandido.value = !(_mobilitatExpandido.value ?: false)
+    }
+
+    fun toggleCodiAtesExpandido() {
+        _codiAtesExpandido.value = !(_codiAtesExpandido.value ?: false)
+    }
+
+    fun toggleMitjaTransportExpandido() {
+        _mitjaTransportExpandido.value = !(_mitjaTransportExpandido.value ?: false)
+    }
+
+    fun cerrarTemporalMenu() {
+        _temporalExpandido.value = false
+    }
+
+    fun cerrarMobilitatMenu() {
+        _mobilitatExpandido.value = false
+    }
+
+    fun cerrarCodiAtesMenu() {
+        _codiAtesExpandido.value = false
+    }
+
+    fun cerrarMitjaTransportMenu() {
+        _mitjaTransportExpandido.value = false
+    }
+
+    // ============================================
+    // FUNCIONES PARA CONTROLAR DATE/TIME PICKER
+    // ============================================
+
+    fun mostrarDatePickerSortida() {
+        _mostrarDatePickerSortida.value = true
+    }
+
+    fun ocultarDatePickerSortida() {
+        _mostrarDatePickerSortida.value = false
+    }
+
+    fun mostrarTimePickerSortida() {
+        _mostrarTimePickerSortida.value = true
+    }
+
+    fun ocultarTimePickerSortida() {
+        _mostrarTimePickerSortida.value = false
+    }
+
+    fun mostrarDatePickerArribada() {
+        _mostrarDatePickerArribada.value = true
+    }
+
+    fun ocultarDatePickerArribada() {
+        _mostrarDatePickerArribada.value = false
+    }
+
+    fun mostrarTimePickerArribada() {
+        _mostrarTimePickerArribada.value = true
+    }
+
+    fun ocultarTimePickerArribada() {
+        _mostrarTimePickerArribada.value = false
+    }
+
+    fun seleccionarFechaSortida(fechaMillis: Long) {
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = fechaMillis
+        val dia = calendar.get(Calendar.DAY_OF_MONTH)
+        val mes = calendar.get(Calendar.MONTH) + 1
+        val anio = calendar.get(Calendar.YEAR)
+
+        _dataSortida.value = String.format("%02d/%02d/%04d", dia, mes, anio)
+        _mostrarDatePickerSortida.value = false
+    }
+
+    fun seleccionarFechaArribada(fechaMillis: Long) {
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = fechaMillis
+        val dia = calendar.get(Calendar.DAY_OF_MONTH)
+        val mes = calendar.get(Calendar.MONTH) + 1
+        val anio = calendar.get(Calendar.YEAR)
+
+        _dataArribada.value = String.format("%02d/%02d/%04d", dia, mes, anio)
+        _mostrarDatePickerArribada.value = false
+    }
+
+    // ============================================
+    // VALIDACIÓN Y ALTA DE GUÍA
+    // ============================================
+
+    fun esFormularioValido(): Boolean {
+        val explotacioOrigenValida = !_explotacioOrigen.value.isNullOrEmpty()
+        val explotacioDestinacioValida = !_explotacioDestinacio.value.isNullOrEmpty()
+        val temporalValido = !_temporal.value.isNullOrEmpty()
+        val dataSortidaValida = !_dataSortida.value.isNullOrEmpty()
+        val horaSortidaValida = !_horaSortida.value.isNullOrEmpty()
+        val dataArribadaValida = !_dataArribada.value.isNullOrEmpty()
+        val horaArribadaValida = !_horaArribada.value.isNullOrEmpty()
+        val mobilitatValida = !_mobilitat.value.isNullOrEmpty()
+
+        return explotacioOrigenValida && explotacioDestinacioValida &&
+                temporalValido && dataSortidaValida && horaSortidaValida &&
+                dataArribadaValida && horaArribadaValida && mobilitatValida
+    }
+
+    fun confirmarAltaGuia() {
+        if (!esFormularioValido()) {
+            val mensajeError = when {
+                _explotacioOrigen.value.isNullOrEmpty() ->
+                    "Por favor, introduzca la explotación origen"
+                _explotacioDestinacio.value.isNullOrEmpty() ->
+                    "Por favor, introduzca la explotación destino"
+                _temporal.value.isNullOrEmpty() ->
+                    "Por favor, seleccione si es temporal"
+                _dataSortida.value.isNullOrEmpty() ->
+                    "Por favor, seleccione la fecha de sortida"
+                _horaSortida.value.isNullOrEmpty() ->
+                    "Por favor, seleccione la hora de sortida"
+                _dataArribada.value.isNullOrEmpty() ->
+                    "Por favor, seleccione la fecha de arribada"
+                _horaArribada.value.isNullOrEmpty() ->
+                    "Por favor, seleccione la hora de arribada"
+                _mobilitat.value.isNullOrEmpty() ->
+                    "Por favor, seleccione si es mobilitat"
+                else ->
+                    "Por favor, complete todos los campos obligatorios marcados con *"
+            }
+            _mensajeError.value = mensajeError
+            Log.e("Validación Guía", mensajeError)
+            return
+        }
+
+        viewModelScope.launch {
+            // Activar indicador de carga
+            _cargandoGuia.postValue(true)
+
+            try {
+                // Convertir fechas al formato API (yyyyMMddHHmm)
+                val fechaHoraSortidaAPI = convertirFechaHoraAFormatoAPI(
+                    _dataSortida.value ?: "",
+                    _horaSortida.value ?: ""
+                )
+
+                val fechaHoraArribadaAPI = convertirFechaHoraAFormatoAPI(
+                    _dataArribada.value ?: "",
+                    _horaArribada.value ?: ""
+                )
+
+                // La API espera "SI" o "NO"
+                val temporalAPI = _temporal.value ?: ""
+                val mobilitatAPI = _mobilitat.value ?: ""
+
+                // Extraer código del medio de transporte (primeros 2 dígitos)
+                val codigoMedio = _mitjaTransport.value?.take(2) ?: ""
+
+                // Procesar identificadores (separados por comas o saltos de línea)
+                val identificadoresList = if (_identificadorsText.value.isNullOrEmpty()) {
+                    null
+                } else {
+                    _identificadorsText.value
+                        ?.split("[,\\n]".toRegex())
+                        ?.map { it.trim() }
+                        ?.filter { it.isNotEmpty() }
+                }
+
+                // Crear objeto de petición
+                val request = PeticionAltaGuia(
+                    nif = "S0800608B",
+                    passwordMobilitat = "L1855m58",
+                    especie = "01", // Bovino
+                    explotacioOrigen = _explotacioOrigen.value ?: "",
+                    explotacioDestinacio = _explotacioDestinacio.value ?: "",
+                    temporal = temporalAPI,
+                    dataSortida = fechaHoraSortidaAPI,
+                    dataArribada = fechaHoraArribadaAPI,
+                    mobilitat = mobilitatAPI,
+                    pais = _pais.value?.ifEmpty { null },
+                    codiExplotacio = _codiExplotacio.value?.ifEmpty { null },
+                    codiAtes = _codiAtes.value?.ifEmpty { null },
+                    nomTransportista = _nomTransportista.value?.ifEmpty { null },
+                    mitjaTransport = codigoMedio.ifEmpty { null },
+                    matricula = _matricula.value?.ifEmpty { null },
+                    nifConductor = _nifConductor.value?.ifEmpty { null },
+                    nomConductor = _nomConductor.value?.ifEmpty { null },
+                    identificadors = identificadoresList
+                )
+
+                Log.d("Alta Guía", "Request: $request")
+
+                // Llamar a la API
+                val response = repositorio.putAltaGuia(request)
+
+                withContext(Dispatchers.Main) {
+                    // Desactivar indicador de carga
+                    _cargandoGuia.value = false
+
+                    when {
+                        // Caso: HTTP 200 OK
+                        response.isSuccessful && response.body() != null -> {
+                            val body = response.body()!!
+
+                            if (body.codiRemo == "0" || body.descripcio?.contains("correcte", ignoreCase = true) == true) {
+                                _registroExitoso.value = true
+                                _mensajeError.value = ""
+
+                                Log.d("Alta Guía", "Guía creada exitosamente")
+                                Log.d("Alta Guía", "Respuesta: [${body.codiRemo}] ${body.descripcio}")
+
+                                limpiarFormulario()
+                            } else {
+                                // Si no es exitoso pero viene en el body
+                                _registroExitoso.value = false
+                                _mensajeError.value = body.descripcio ?: "Error desconocido"
+                                Log.w("Alta Guía", "Respuesta inesperada: [${body.codiRemo}] ${body.descripcio}")
+                            }
+                        }
+
+                        // Caso: HTTP Error (4xx, 5xx)
+                        !response.isSuccessful -> {
+                            val errorBody = response.errorBody()?.string()
+                            if (errorBody != null) {
+                                try {
+                                    val errorObj = Gson().fromJson(errorBody, ResAltaGuia::class.java)
+                                    // MEJORADO: Extraer del array de errores si existe
+                                    _mensajeError.value = errorObj.errors?.firstOrNull()?.descripcio
+                                        ?: errorObj.descripcio
+                                                ?: "Error desconocido del servidor"
+                                } catch (e: Exception) {
+                                    _mensajeError.value = "Error al procesar respuesta"
+                                    Log.e("Error parsing", "Error: ${e.message}", e)
+                                }
+                            } else {
+                                _mensajeError.value = "Error del servidor sin detalles"
+                            }
+                            _registroExitoso.value = false
+                            Log.e("Error Guía", "HTTP ${response.code()}: ${response.message()}")
+                            if (errorBody != null) {
+                                Log.e("Error Guía", "Body: $errorBody")
+                            }
+                        }
+
+                        // Caso: Respuesta exitosa pero sin body
+                        else -> {
+                            _registroExitoso.value = false
+                            _mensajeError.value = "Error: Respuesta vacía del servidor"
+                            Log.e("Error Guía", "Respuesta vacía del servidor")
+                        }
+                    }
+                }
+            } catch (e: java.net.SocketTimeoutException) {
+                withContext(Dispatchers.Main) {
+                    _cargandoGuia.value = false
+                    _registroExitoso.value = false
+                    _mensajeError.value = "Tiempo de espera agotado. La operación puede haberse completado, por favor verifique."
+                    Log.e("Error Guía", "Timeout: ${e.message}", e)
+                }
+            } catch (e: java.io.IOException) {
+                withContext(Dispatchers.Main) {
+                    _cargandoGuia.value = false
+                    _registroExitoso.value = false
+                    _mensajeError.value = "Error de conexión. Verifique su conexión a internet."
+                    Log.e("Error Guía", "Error de red: ${e.message}", e)
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    _cargandoGuia.value = false
+                    _registroExitoso.value = false
+                    _mensajeError.value = "Error inesperado: ${e.message ?: "Error desconocido"}"
+                    Log.e("Error Guía", "Error general: ${e.message}", e)
+                    e.printStackTrace()
+                }
+            }
+        }
+    }
+
+    // ============================================
+    // FUNCIONES AUXILIARES
+    // ============================================
+
+    fun limpiarFormulario() {
+        _explotacioOrigen.value = ""
+        _explotacioDestinacio.value = ""
+        _temporal.value = ""
+        _dataSortida.value = ""
+        _horaSortida.value = ""
+        _dataArribada.value = ""
+        _horaArribada.value = ""
+        _mobilitat.value = ""
+        _pais.value = ""
+        _codiExplotacio.value = ""
+        _codiAtes.value = ""
+        _nomTransportista.value = ""
+        _mitjaTransport.value = ""
+        _matricula.value = ""
+        _nifConductor.value = ""
+        _nomConductor.value = ""
+        _identificadorsText.value = ""
+    }
+
+    fun resetearEstadoRegistro() {
+        _registroExitoso.value = false
+        _mensajeError.value = ""
+    }
+
+    private fun convertirFechaHoraAFormatoAPI(fecha: String, hora: String): String {
+        return try {
+            if (fecha.length == 10 && hora.length == 5) {
+                val partesFecha = fecha.split("/")
+                val partesHora = hora.split(":")
+                val dia = partesFecha[0]
+                val mes = partesFecha[1]
+                val anio = partesFecha[2]
+                val horas = partesHora[0]
+                val minutos = partesHora[1]
+                "$anio$mes$dia$horas$minutos"
+            } else {
+                ""
+            }
+        } catch (e: Exception) {
+            Log.e("Error conversión fecha/hora", e.message ?: "Error desconocido")
+            ""
+        }
+    }
+}

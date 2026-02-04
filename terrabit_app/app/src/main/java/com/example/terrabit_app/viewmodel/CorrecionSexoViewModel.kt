@@ -36,19 +36,25 @@ class CorrecionSexoViewModel: ViewModel() {
     private val _mensajeErrorCorreccionSexo = MutableLiveData<String>()
     val mensajeErrorCorreccionSexo = _mensajeErrorCorreccionSexo
 
+    private val _codiError = MutableLiveData<Int?>()
+    val codiError = _codiError
+
+
     private val _estadoCarga = MutableLiveData(false)
     val estadoCarga = _estadoCarga
 
     // Lista de opciones de sexo (AGREGADO)
     val listaSexos = listOf("Macho", "Hembra")
+    private var codigoSexo = ""
 
     // Funciones para actualizar los campos
     fun actualizarIdentificadorCorreccionSexo(nuevoId: String) {
         _identificadorCorreccionSexo.value = nuevoId
     }
 
-    fun seleccionarSexoCorreccion(sexo: String) {
+    fun seleccionarSexoCorreccion(sexo: String, codigo: String) {
         _sexoCorreccionSeleccionado.value = sexo
+        codigoSexo = codigo
         _sexoCorreccionExpandido.value = false
     }
 
@@ -70,37 +76,35 @@ class CorrecionSexoViewModel: ViewModel() {
 
     // Función para corregir el sexo del animal
     fun corregirSexoAnimal() {
+        // Resetear mensaje de error
+        _codiError.value = null
+
         // Validar que todos los campos requeridos estén completos
         if (!esFormularioCorreccionSexoValido()) {
             val mensajeError = when {
                 _identificadorCorreccionSexo.value.isNullOrEmpty() ->
-                    "Por favor, introduzca el identificador del animal"
+                    12
                 _sexoCorreccionSeleccionado.value.isNullOrEmpty() ->
-                    "Por favor, seleccione el sexo correcto"
+                   4
                 else ->
-                    "Por favor, complete todos los campos obligatorios marcados con *"
+                   0
             }
-            _mensajeErrorCorreccionSexo.value = mensajeError
-            Log.e("Validación Corrección Sexo", mensajeError)
+            _codiError.value = mensajeError
+            Log.e("Validación Corrección Sexo", "Formulario no válido: $mensajeError")
             return
         }
 
         viewModelScope.launch {
             _estadoCarga.value = true
             try {
-                // Convertir sexo al formato de la API
-                val sexoAPI = when (_sexoCorreccionSeleccionado.value) {
-                    "Macho" -> "02"
-                    "Hembra" -> "01"
-                    else -> ""
-                }
+
 
                 // Crear objeto de petición
                 val request = PetModicarAnimal(
                     identificador = _identificadorCorreccionSexo.value ?: "",
                     nif = "S0800608B",
                     passwordMobilitat = "L1855m58",
-                    sexe = sexoAPI
+                    sexe = codigoSexo
                 )
 
                 Log.d("Corrección Sexo", "Enviando petición a la API...")

@@ -9,12 +9,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.terrabit_app.ui.components.TarjetaAccion
 import com.example.terrabit_app.ui.navigation.Routes
+import com.example.terrabit_app.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -24,7 +26,7 @@ fun GuiasMovimientos(navController: NavController) {
             TopAppBar(
                 title = {
                     Text(
-                        "Guías y Movimientos",
+                        stringResource(R.string.name_guias_movimientos),
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
@@ -55,7 +57,7 @@ fun GuiasMovimientos(navController: NavController) {
 
             // Descripción
             Text(
-                "Selecciona una acción",
+                stringResource(R.string.subtitle_guias_movimientos),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color(0xFF64748B),
@@ -78,7 +80,7 @@ fun GuiasMovimientos(navController: NavController) {
                 ) {
                     TarjetaAccion(
                         icono = Icons.Default.Create,
-                        titulo = "Altas Guías",
+                        titulo = stringResource(R.string.action_create_guide),
                         subtitulo = "",
                         colorFondo = Color(0xFFE28F41),
                         modifier = Modifier.weight(1f),
@@ -87,7 +89,7 @@ fun GuiasMovimientos(navController: NavController) {
 
                     TarjetaAccion(
                         icono = Icons.Default.Send,
-                        titulo = "Confirmar Movimientos",
+                        titulo = stringResource(R.string.action_confirm_movement),
                         subtitulo = "",
                         colorFondo = Color(0xFFE28F41),
                         contadorBadge = 2,
