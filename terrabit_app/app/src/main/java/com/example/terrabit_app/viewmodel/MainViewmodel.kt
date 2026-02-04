@@ -1,24 +1,18 @@
 package com.example.terrabit_app.viewmodel
 
-import android.content.Context
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.terrabit_app.data.Borrador
-import com.example.terrabit_app.data.SharedPreferencesManager
 import com.example.terrabit_app.data.network.Identificadores.Identificadores
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.animales.RegistroMuerteBovi
 import com.example.terrabit_app.data.network.material.PetSolicitudMaterial
 import com.example.terrabit_app.data.network.material.Unitat
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.text.SimpleDateFormat
 import java.util.*
 
 class MainViewmodel : ViewModel() {
@@ -631,7 +625,6 @@ class MainViewmodel : ViewModel() {
     }
 
     // Función para solicitar material
-// Función para solicitar material
     fun solicitarMaterial() {
         if (!esFormularioMaterialValido()) {
             val mensajeError = when {
@@ -832,179 +825,4 @@ class MainViewmodel : ViewModel() {
             ""
         }
     }
-
-
-    // ============================================
-// SECCIÓN: BORRADORES
-// ============================================
-
-    private lateinit var sharedPreferencesManager: SharedPreferencesManager
-
-    fun inicializarSharedPreferences(context: Context) {
-        sharedPreferencesManager = SharedPreferencesManager(context)
-    }
-
-    private val _borradores = MutableLiveData<List<Borrador>>()
-    val borradores = _borradores
-
-    fun cargarBorradores() {
-        viewModelScope.launch {
-            try {
-                val listaBorradores = sharedPreferencesManager.obtenerBorradores()
-                _borradores.postValue(listaBorradores)
-            } catch (e: Exception) {
-                Log.e("Error Borradores", "Error al cargar: ${e.message}", e)
-                _borradores.postValue(emptyList())
-            }
-        }
-    }
-
-    fun guardarBorradorMuerte() {
-        try {
-            val datosMuerte = mapOf(
-                "tipo" to _tipoMuerte.value,
-                "identificador" to _identificadorMuerte.value,
-                "fecha" to _fechaMuerte.value,
-                "mesesGestacion" to _mesesGestacion.value,
-                "cadaverInaccesible" to _cadaverInaccesible.value,
-                "coordenadaX" to _coordenadaX.value,
-                "coordenadaY" to _coordenadaY.value
-            )
-
-            val borrador = Borrador(
-                id = "muerte_${System.currentTimeMillis()}",
-                tipo = "MUERTE",
-                fecha = _fechaMuerte.value ?: "",
-                datos = Gson().toJson(datosMuerte),
-                estado = "PENDIENTE"
-            )
-
-            sharedPreferencesManager.guardarBorrador(borrador)
-            cargarBorradores()
-
-            Log.d("Borrador Muerte", "Guardado exitosamente")
-        } catch (e: Exception) {
-            Log.e("Error Borrador Muerte", "Error al guardar: ${e.message}", e)
-        }
-    }
-
-    fun guardarBorradorMaterial() {
-        try {
-            val datosMaterial = mapOf(
-                "empresaSubministradora" to _empresaSubministradora.value,
-                "codigoEmpresa" to _codigoEmpresa.value,
-                "tipoEnviamiento" to _tipoEnviamiento.value,
-                "destinoLliurament" to _destinoLliurament.value,
-                "oficinaComarcal" to _oficinaComarcal.value,
-                "direccion" to _direccion.value,
-                "poblacion" to _poblacion.value,
-                "codigoPostal" to _codigoPostal.value,
-                "municipio" to _municipio.value,
-                "telefonoContacto" to _telefonoContacto.value,
-                "identificadorMaterial" to _identificadorMaterial.value,
-                "tipoMaterial" to _tipoMaterial.value,
-                "numeroUnidades" to _numeroUnidades.value,
-                "codigoExplotacion" to _codigoExplotacion.value
-            )
-
-            val borrador = Borrador(
-                id = "material_${System.currentTimeMillis()}",
-                tipo = "MATERIAL",
-                fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
-                datos = Gson().toJson(datosMaterial),
-                estado = "PENDIENTE"
-            )
-
-            sharedPreferencesManager.guardarBorrador(borrador)
-            cargarBorradores()
-
-            Log.d("Borrador Material", "Guardado exitosamente")
-        } catch (e: Exception) {
-            Log.e("Error Borrador Material", "Error al guardar: ${e.message}", e)
-        }
-    }
-
-    fun eliminarBorrador(id: String) {
-        viewModelScope.launch {
-            try {
-                sharedPreferencesManager.eliminarBorrador(id)
-                cargarBorradores()
-            } catch (e: Exception) {
-                Log.e("Error Borrador", "Error al eliminar: ${e.message}", e)
-            }
-        }
-    }
-
-    fun reintentarEnvioBorrador(borrador: Borrador) {
-        viewModelScope.launch {
-            try {
-                // Actualizar estado a "ENVIANDO"
-                val borradorActualizado = borrador.copy(estado = "ENVIANDO")
-                sharedPreferencesManager.guardarBorrador(borradorActualizado)
-                cargarBorradores()
-
-                // Parsear datos
-                val gson = Gson()
-                val datos: Map<String, Any?> = gson.fromJson(
-                    borrador.datos,
-                    object : TypeToken<Map<String, Any?>>() {}.type
-                )
-
-                when (borrador.tipo) {
-                    "MUERTE" -> {
-                        // Restaurar datos en el ViewModel
-                        _tipoMuerte.value = datos["tipo"] as? String ?: ""
-                        _identificadorMuerte.value = datos["identificador"] as? String ?: ""
-                        _fechaMuerte.value = datos["fecha"] as? String ?: ""
-                        _mesesGestacion.value = datos["mesesGestacion"] as? String ?: ""
-                        _cadaverInaccesible.value = datos["cadaverInaccesible"] as? Boolean ?: false
-                        _coordenadaX.value = datos["coordenadaX"] as? String ?: ""
-                        _coordenadaY.value = datos["coordenadaY"] as? String ?: ""
-
-                        // Intentar enviar
-                        putMuerteBovino()
-
-                        // Si fue exitoso, eliminar borrador
-                        if (_registroMuerteExitoso.value == true) {
-                            eliminarBorrador(borrador.id)
-                        }
-                    }
-                    "MATERIAL" -> {
-                        // Restaurar datos
-                        _empresaSubministradora.value = datos["empresaSubministradora"] as? String ?: ""
-                        _codigoEmpresa.value = datos["codigoEmpresa"] as? String ?: ""
-                        _tipoEnviamiento.value = datos["tipoEnviamiento"] as? String ?: ""
-                        _destinoLliurament.value = datos["destinoLliurament"] as? String ?: ""
-                        _oficinaComarcal.value = datos["oficinaComarcal"] as? String ?: ""
-                        _direccion.value = datos["direccion"] as? String ?: ""
-                        _poblacion.value = datos["poblacion"] as? String ?: ""
-                        _codigoPostal.value = datos["codigoPostal"] as? String ?: ""
-                        _municipio.value = datos["municipio"] as? String ?: ""
-                        _telefonoContacto.value = datos["telefonoContacto"] as? String ?: ""
-                        _identificadorMaterial.value = datos["identificadorMaterial"] as? String ?: ""
-                        _tipoMaterial.value = datos["tipoMaterial"] as? String ?: ""
-                        _numeroUnidades.value = datos["numeroUnidades"] as? String ?: "1"
-                        _codigoExplotacion.value = datos["codigoExplotacion"] as? String ?: ""
-
-                        // Intentar enviar
-                        solicitarMaterial()
-
-                        // Si fue exitoso, eliminar borrador
-                        if (_registroMaterialExitoso.value == true) {
-                            eliminarBorrador(borrador.id)
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e("Error Reintento", "Error al reintentar envío: ${e.message}", e)
-
-                // Actualizar estado a ERROR
-                val borradorError = borrador.copy(estado = "ERROR")
-                sharedPreferencesManager.guardarBorrador(borradorError)
-                cargarBorradores()
-            }
-        }
-    }
-
-
 }
