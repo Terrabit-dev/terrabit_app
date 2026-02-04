@@ -1,28 +1,181 @@
 package com.example.terrabit_app.viewmodel
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.terrabit_app.data.Borrador
+import com.example.terrabit_app.data.SharedPreferencesManager
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.guias.PeticionAltaGuia
 import com.example.terrabit_app.data.network.respuestas.ResAltaGuia
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Dispatchers
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 class GuiasViewModel : ViewModel() {
 
-    // Instancia del repositorio
     private val repositorio = Repositorio()
+    private lateinit var sharedPreferencesManager: SharedPreferencesManager
+
+    // ============================================
+    // SECCIÓN: AUTOGUARDADO
+    // ============================================
+
+    fun inicializarSharedPreferences(context: Context) {
+        sharedPreferencesManager = SharedPreferencesManager(context)
+    }
+
+    // Detecta si el formulario tiene datos
+    fun tieneContenido(): Boolean {
+        return !_explotacioOrigen.value.isNullOrEmpty() ||
+                !_explotacioDestinacio.value.isNullOrEmpty() ||
+                !_temporal.value.isNullOrEmpty() ||
+                !_dataSortida.value.isNullOrEmpty() ||
+                !_horaSortida.value.isNullOrEmpty() ||
+                !_dataArribada.value.isNullOrEmpty() ||
+                !_horaArribada.value.isNullOrEmpty() ||
+                !_mobilitat.value.isNullOrEmpty() ||
+                !_pais.value.isNullOrEmpty() ||
+                !_codiExplotacio.value.isNullOrEmpty() ||
+                !_codiAtes.value.isNullOrEmpty() ||
+                !_nomTransportista.value.isNullOrEmpty() ||
+                !_mitjaTransport.value.isNullOrEmpty() ||
+                !_matricula.value.isNullOrEmpty() ||
+                !_nifConductor.value.isNullOrEmpty() ||
+                !_nomConductor.value.isNullOrEmpty() ||
+                (_identificadors.value?.any { it.isNotEmpty() } == true)
+    }
+
+    // Guarda automáticamente el formulario
+    fun guardarBorradorAutomatico() {
+        if (!tieneContenido()) {
+            Log.d("Autoguardado Guía", "No hay contenido para guardar")
+            return
+        }
+
+        try {
+            val datosGuia = mapOf(
+                "explotacioOrigen" to _explotacioOrigen.value,
+                "explotacioDestinacio" to _explotacioDestinacio.value,
+                "temporal" to _temporal.value,
+                "dataSortida" to _dataSortida.value,
+                "horaSortida" to _horaSortida.value,
+                "dataArribada" to _dataArribada.value,
+                "horaArribada" to _horaArribada.value,
+                "mobilitat" to _mobilitat.value,
+                "pais" to _pais.value,
+                "codiExplotacio" to _codiExplotacio.value,
+                "codiAtes" to _codiAtes.value,
+                "nomTransportista" to _nomTransportista.value,
+                "mitjaTransport" to _mitjaTransport.value,
+                "matricula" to _matricula.value,
+                "nifConductor" to _nifConductor.value,
+                "nomConductor" to _nomConductor.value,
+                "identificadors" to _identificadors.value
+            )
+
+            // Buscar si ya existe un borrador de guía
+            val borradorExistente = sharedPreferencesManager.obtenerBorradores()
+                .find { it.tipo == "GUIA" && it.estado == "BORRADOR_AUTO" }
+
+            val borrador = if (borradorExistente != null) {
+                // Actualizar borrador existente
+                borradorExistente.copy(
+                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    datos = Gson().toJson(datosGuia)
+                )
+            } else {
+                // Crear nuevo borrador
+                Borrador(
+                    id = "guia_auto_${System.currentTimeMillis()}",
+                    tipo = "GUIA",
+                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    datos = Gson().toJson(datosGuia),
+                    estado = "BORRADOR_AUTO"
+                )
+            }
+
+            sharedPreferencesManager.guardarBorrador(borrador)
+            Log.d("Autoguardado Guía", "Borrador guardado automáticamente")
+        } catch (e: Exception) {
+            Log.e("Error Autoguardado Guía", "Error al guardar: ${e.message}", e)
+        }
+    }
+
+    // Cargar borrador existente
+    fun cargarBorradorExistente() {
+        try {
+            val borradores = sharedPreferencesManager.obtenerBorradores()
+            val borradorGuia = borradores.find {
+                it.tipo == "GUIA" && it.estado == "BORRADOR_AUTO"
+            }
+
+            if (borradorGuia != null) {
+                val gson = Gson()
+                val datos: Map<String, Any?> = gson.fromJson(
+                    borradorGuia.datos,
+                    object : TypeToken<Map<String, Any?>>() {}.type
+                )
+
+                // Restaurar datos
+                _explotacioOrigen.value = datos["explotacioOrigen"] as? String ?: ""
+                _explotacioDestinacio.value = datos["explotacioDestinacio"] as? String ?: ""
+                _temporal.value = datos["temporal"] as? String ?: ""
+                _dataSortida.value = datos["dataSortida"] as? String ?: ""
+                _horaSortida.value = datos["horaSortida"] as? String ?: ""
+                _dataArribada.value = datos["dataArribada"] as? String ?: ""
+                _horaArribada.value = datos["horaArribada"] as? String ?: ""
+                _mobilitat.value = datos["mobilitat"] as? String ?: ""
+                _pais.value = datos["pais"] as? String ?: ""
+                _codiExplotacio.value = datos["codiExplotacio"] as? String ?: ""
+                _codiAtes.value = datos["codiAtes"] as? String ?: ""
+                _nomTransportista.value = datos["nomTransportista"] as? String ?: ""
+                _mitjaTransport.value = datos["mitjaTransport"] as? String ?: ""
+                _matricula.value = datos["matricula"] as? String ?: ""
+                _nifConductor.value = datos["nifConductor"] as? String ?: ""
+                _nomConductor.value = datos["nomConductor"] as? String ?: ""
+
+                // Restaurar lista de identificadores
+                @Suppress("UNCHECKED_CAST")
+                val identificadoresList = datos["identificadors"] as? List<String>
+                _identificadors.value = identificadoresList ?: listOf("")
+
+                Log.d("Cargar Borrador", "Borrador de guía cargado")
+            }
+        } catch (e: Exception) {
+            Log.e("Error Cargar Borrador", "Error al cargar: ${e.message}", e)
+        }
+    }
+
+    // Eliminar borrador al enviar exitosamente
+    fun eliminarBorradorAutomatico() {
+        try {
+            val borradores = sharedPreferencesManager.obtenerBorradores()
+            val borradorGuia = borradores.find {
+                it.tipo == "GUIA" && it.estado == "BORRADOR_AUTO"
+            }
+
+            if (borradorGuia != null) {
+                sharedPreferencesManager.eliminarBorrador(borradorGuia.id)
+                Log.d("Eliminar Borrador", "Borrador automático eliminado")
+            }
+        } catch (e: Exception) {
+            Log.e("Error Eliminar Borrador", "Error: ${e.message}", e)
+        }
+    }
 
     // ============================================
     // SECCIÓN: ESTADOS DEL FORMULARIO
     // ============================================
 
-    // Campos obligatorios
     private val _explotacioOrigen = MutableLiveData("")
     val explotacioOrigen = _explotacioOrigen
 
@@ -53,7 +206,6 @@ class GuiasViewModel : ViewModel() {
     private val _codiExplotacio = MutableLiveData("")
     val codiExplotacio = _codiExplotacio
 
-    // Campos opcionales del transporte
     private val _codiAtes = MutableLiveData("")
     val codiAtes = _codiAtes
 
@@ -72,23 +224,18 @@ class GuiasViewModel : ViewModel() {
     private val _nomConductor = MutableLiveData("")
     val nomConductor = _nomConductor
 
-    private val _identificadorsText = MutableLiveData("")
-    val identificadorsText = _identificadorsText
+    private val _identificadors = MutableLiveData<List<String>>(listOf(""))
+    val identificadors = _identificadors
 
-    // Estados de expansión de menús desplegables
     private val _temporalExpandido = MutableLiveData(false)
     val temporalExpandido = _temporalExpandido
 
     private val _mobilitatExpandido = MutableLiveData(false)
     val mobilitatExpandido = _mobilitatExpandido
 
-    private val _codiAtesExpandido = MutableLiveData(false)
-    val codiAtesExpandido = _codiAtesExpandido
-
     private val _mitjaTransportExpandido = MutableLiveData(false)
     val mitjaTransportExpandido = _mitjaTransportExpandido
 
-    // Estados para DatePicker y TimePicker
     private val _mostrarDatePickerSortida = MutableLiveData(false)
     val mostrarDatePickerSortida = _mostrarDatePickerSortida
 
@@ -101,7 +248,6 @@ class GuiasViewModel : ViewModel() {
     private val _mostrarTimePickerArribada = MutableLiveData(false)
     val mostrarTimePickerArribada = _mostrarTimePickerArribada
 
-    // Estados de registro
     private val _registroExitoso = MutableLiveData<Boolean>()
     val registroExitoso = _registroExitoso
 
@@ -115,22 +261,8 @@ class GuiasViewModel : ViewModel() {
     // LISTAS DE OPCIONES
     // ============================================
 
-    data class CodigoAtes(val codigo: String, val nombre: String)
-
-    val listaCodigosAtes = listOf(
-        CodigoAtes("D", "D - Transportista")
-    )
-
-    val listaTemporalOpciones = listOf(
-        "SI",
-        "NO"
-    )
-
-    val listaMobilitatOpciones = listOf(
-        "SI",
-        "NO"
-    )
-
+    val listaTemporalOpciones = listOf("SI", "NO")
+    val listaMobilitatOpciones = listOf("SI", "NO")
     val listaMitjaTransport = listOf(
         "04 - Camió",
         "05 - Vaixell",
@@ -186,9 +318,10 @@ class GuiasViewModel : ViewModel() {
         _codiExplotacio.value = valor
     }
 
-    fun seleccionarCodiAtes(codigo: String) {
-        _codiAtes.value = codigo
-        _codiAtesExpandido.value = false
+    fun campoCodiAtes(codigo: String) {
+        if (codigo.length <= 15) {
+            _codiAtes.value = codigo
+        }
     }
 
     fun actualizarNomTransportista(nombre: String) {
@@ -205,15 +338,35 @@ class GuiasViewModel : ViewModel() {
     }
 
     fun actualizarNifConductor(nif: String) {
-        _nifConductor.value = nif
+        if (nif.length <= 9) {
+            _nifConductor.value = nif
+        }
     }
 
     fun actualizarNomConductor(nombre: String) {
         _nomConductor.value = nombre
     }
 
-    fun actualizarIdentificadorsText(texto: String) {
-        _identificadorsText.value = texto
+    fun actualizarIdentificador(index: Int, valor: String) {
+        val listaActual = _identificadors.value?.toMutableList() ?: mutableListOf()
+        if (index < listaActual.size) {
+            listaActual[index] = valor
+            _identificadors.value = listaActual
+        }
+    }
+
+    fun agregarIdentificador() {
+        val listaActual = _identificadors.value?.toMutableList() ?: mutableListOf()
+        listaActual.add("")
+        _identificadors.value = listaActual
+    }
+
+    fun eliminarIdentificador(index: Int) {
+        val listaActual = _identificadors.value?.toMutableList() ?: mutableListOf()
+        if (listaActual.size > 1 && index < listaActual.size) {
+            listaActual.removeAt(index)
+            _identificadors.value = listaActual
+        }
     }
 
     // ============================================
@@ -228,10 +381,6 @@ class GuiasViewModel : ViewModel() {
         _mobilitatExpandido.value = !(_mobilitatExpandido.value ?: false)
     }
 
-    fun toggleCodiAtesExpandido() {
-        _codiAtesExpandido.value = !(_codiAtesExpandido.value ?: false)
-    }
-
     fun toggleMitjaTransportExpandido() {
         _mitjaTransportExpandido.value = !(_mitjaTransportExpandido.value ?: false)
     }
@@ -242,10 +391,6 @@ class GuiasViewModel : ViewModel() {
 
     fun cerrarMobilitatMenu() {
         _mobilitatExpandido.value = false
-    }
-
-    fun cerrarCodiAtesMenu() {
-        _codiAtesExpandido.value = false
     }
 
     fun cerrarMitjaTransportMenu() {
@@ -357,11 +502,9 @@ class GuiasViewModel : ViewModel() {
         }
 
         viewModelScope.launch {
-            // Activar indicador de carga
             _cargandoGuia.postValue(true)
 
             try {
-                // Convertir fechas al formato API (yyyyMMddHHmm)
                 val fechaHoraSortidaAPI = convertirFechaHoraAFormatoAPI(
                     _dataSortida.value ?: "",
                     _horaSortida.value ?: ""
@@ -372,28 +515,19 @@ class GuiasViewModel : ViewModel() {
                     _horaArribada.value ?: ""
                 )
 
-                // La API espera "SI" o "NO"
                 val temporalAPI = _temporal.value ?: ""
                 val mobilitatAPI = _mobilitat.value ?: ""
-
-                // Extraer código del medio de transporte (primeros 2 dígitos)
                 val codigoMedio = _mitjaTransport.value?.take(2) ?: ""
 
-                // Procesar identificadores (separados por comas o saltos de línea)
-                val identificadoresList = if (_identificadorsText.value.isNullOrEmpty()) {
-                    null
-                } else {
-                    _identificadorsText.value
-                        ?.split("[,\\n]".toRegex())
-                        ?.map { it.trim() }
-                        ?.filter { it.isNotEmpty() }
-                }
+                val identificadoresList = _identificadors.value
+                    ?.map { it.trim() }
+                    ?.filter { it.isNotEmpty() }
+                    ?.takeIf { it.isNotEmpty() }
 
-                // Crear objeto de petición
                 val request = PeticionAltaGuia(
                     nif = "S0800608B",
                     passwordMobilitat = "L1855m58",
-                    especie = "01", // Bovino
+                    especie = "01",
                     explotacioOrigen = _explotacioOrigen.value ?: "",
                     explotacioDestinacio = _explotacioDestinacio.value ?: "",
                     temporal = temporalAPI,
@@ -413,15 +547,12 @@ class GuiasViewModel : ViewModel() {
 
                 Log.d("Alta Guía", "Request: $request")
 
-                // Llamar a la API
                 val response = repositorio.putAltaGuia(request)
 
                 withContext(Dispatchers.Main) {
-                    // Desactivar indicador de carga
                     _cargandoGuia.value = false
 
                     when {
-                        // Caso: HTTP 200 OK
                         response.isSuccessful && response.body() != null -> {
                             val body = response.body()!!
 
@@ -430,24 +561,22 @@ class GuiasViewModel : ViewModel() {
                                 _mensajeError.value = ""
 
                                 Log.d("Alta Guía", "Guía creada exitosamente")
-                                Log.d("Alta Guía", "Respuesta: [${body.codiRemo}] ${body.descripcio}")
+
+                                // ELIMINAR BORRADOR AUTOMÁTICO AL ENVIAR EXITOSAMENTE
+                                eliminarBorradorAutomatico()
 
                                 limpiarFormulario()
                             } else {
-                                // Si no es exitoso pero viene en el body
                                 _registroExitoso.value = false
                                 _mensajeError.value = body.descripcio ?: "Error desconocido"
                                 Log.w("Alta Guía", "Respuesta inesperada: [${body.codiRemo}] ${body.descripcio}")
                             }
                         }
-
-                        // Caso: HTTP Error (4xx, 5xx)
                         !response.isSuccessful -> {
                             val errorBody = response.errorBody()?.string()
                             if (errorBody != null) {
                                 try {
                                     val errorObj = Gson().fromJson(errorBody, ResAltaGuia::class.java)
-                                    // MEJORADO: Extraer del array de errores si existe
                                     _mensajeError.value = errorObj.errors?.firstOrNull()?.descripcio
                                         ?: errorObj.descripcio
                                                 ?: "Error desconocido del servidor"
@@ -460,12 +589,7 @@ class GuiasViewModel : ViewModel() {
                             }
                             _registroExitoso.value = false
                             Log.e("Error Guía", "HTTP ${response.code()}: ${response.message()}")
-                            if (errorBody != null) {
-                                Log.e("Error Guía", "Body: $errorBody")
-                            }
                         }
-
-                        // Caso: Respuesta exitosa pero sin body
                         else -> {
                             _registroExitoso.value = false
                             _mensajeError.value = "Error: Respuesta vacía del servidor"
@@ -520,7 +644,7 @@ class GuiasViewModel : ViewModel() {
         _matricula.value = ""
         _nifConductor.value = ""
         _nomConductor.value = ""
-        _identificadorsText.value = ""
+        _identificadors.value = listOf("")
     }
 
     fun resetearEstadoRegistro() {
