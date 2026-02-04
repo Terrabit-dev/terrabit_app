@@ -68,7 +68,8 @@ fun Home(
                     mostrarBorradores = true
                     scope.launch { drawerState.close() }
                 },
-                borradoresSeleccionado = mostrarBorradores
+                borradoresSeleccionado = mostrarBorradores,
+                navController = navController
             )
         }
     ) {
@@ -335,7 +336,8 @@ fun DrawerContent(
     tipoSeleccionado: String,
     onTipoSeleccionado: (String) -> Unit,
     onBorradoresClick: () -> Unit,
-    borradoresSeleccionado: Boolean
+    borradoresSeleccionado: Boolean,
+    navController: NavController
 ) {
     ModalDrawerSheet(
         drawerContainerColor = Color.White,
@@ -384,7 +386,10 @@ fun DrawerContent(
                 icono = Icons.Default.Agriculture,
                 titulo = stringResource(R.string.bovinos_name),
                 seleccionado = tipoSeleccionado == stringResource(R.string.bovinos_name) && !borradoresSeleccionado,
-                onClick = { onTipoSeleccionado("Bovinos") }
+                onClick = {
+                    onTipoSeleccionado("Bovinos")
+                    navController.navigate(Routes.HomeBovinos.route)
+                }
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -394,7 +399,10 @@ fun DrawerContent(
                 icono = Icons.Default.EmojiNature,
                 titulo = stringResource(R.string.porcionos_name),
                 seleccionado = tipoSeleccionado == stringResource(R.string.porcionos_name) && !borradoresSeleccionado,
-                onClick = { onTipoSeleccionado("Porcinos") }
+                onClick = {
+                    onTipoSeleccionado("Porcinos")
+                    navController.navigate(Routes.HomePorcinos.route)
+                }
             )
 
             Spacer(modifier = Modifier.height(8.dp))

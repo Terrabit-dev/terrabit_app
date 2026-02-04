@@ -58,7 +58,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
-import com.example.terrabit_app.ui.screen.TarjetaMenu
+import com.example.terrabit_app.ui.pantallas.TarjetaMenu
 import com.example.terrabit_app.viewmodel.DrawerViewModel
 import kotlinx.coroutines.launch
 
