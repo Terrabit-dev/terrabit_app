@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">Terrabit</string>
-    <string name="app_version">Versión 1.0.0</string>
     <string name="app_copyright">© 2026 Terrabit</string>
 
     <string name="drawer_subtitle">Gestión Ganadera</string>
