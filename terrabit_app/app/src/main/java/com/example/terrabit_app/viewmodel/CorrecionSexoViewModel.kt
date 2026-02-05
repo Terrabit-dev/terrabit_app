@@ -124,7 +124,7 @@ class CorrecionSexoViewModel: ViewModel() {
     val estadoCarga = _estadoCarga
 
     // Lista de opciones de sexo (AGREGADO)
-    val listaSexos = listOf("Macho", "Hembra")
+
     private var codigoSexo = ""
 
     // Funciones para actualizar los campos

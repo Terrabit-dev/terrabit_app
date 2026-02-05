@@ -32,4 +32,29 @@ class ElementosConCodigos {
         )
         return listaTiposMuerte
     }
+
+    @Composable
+    fun Transporte(): Map<String, String> {
+        val listaTransporte = mapOf<String, String>(
+            stringResource(R.string.option_truck) to "04",
+            stringResource(R.string.option_boat) to "05",
+            stringResource(R.string.option_airplane) to "06",
+            stringResource(R.string.option_train) to "07",
+            stringResource(R.string.option_walking) to "08",
+            stringResource(R.string.option_other) to "99"
+        )
+        return listaTransporte
+    }
+
+    @Composable
+    fun EstadosLlegada(): Map<String, String> {
+        val listaEstadosLlegada = mapOf<String, String>(
+            stringResource(R.string.option_arrival) to "92",
+            stringResource(R.string.option_death_transport) to "93",
+            stringResource(R.string.option_death_stable) to "94",
+            stringResource(R.string.option_sacrificed) to "80"
+        )
+        return listaEstadosLlegada
+    }
+
 }

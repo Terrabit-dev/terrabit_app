@@ -27,6 +27,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.terrabit_app.viewmodel.MovimientosViewModel
 import com.example.terrabit_app.R
+import com.example.terrabit_app.utils.ElementosConCodigos
+import com.example.terrabit_app.utils.alertsErrosScreens
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,6 +60,8 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
     val registroExitoso by viewModel.registroExitoso.observeAsState(false)
     val mensajeError by viewModel.mensajeError.observeAsState("")
     val estadoCarga by viewModel.cargandoMovimiento.observeAsState(false)
+    val codiError by viewModel.codiError.observeAsState()
+
 
     // Snackbar
     val snackbarHostState = remember { SnackbarHostState() }
@@ -65,6 +69,9 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
 
     // Textos recurrentes
     val successMessage = stringResource(R.string.successful_message_confirm_movs)
+
+    // Elementos con codigos (Transporte, Estado de llegada)
+    val elementosConCodigos = ElementosConCodigos()
 
     // Efectos
     LaunchedEffect(registroExitoso) {
@@ -77,14 +84,14 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
         }
     }
 
-    LaunchedEffect(mensajeError) {
-        if (mensajeError.isNotEmpty()) {
+    LaunchedEffect(mensajeError, codiError) {
+        if (mensajeError.isNotEmpty() || codiError != null) {
             mostrarDialogoError = true
         }
     }
 
     // Diálogo de Error
-    if (mostrarDialogoError && mensajeError.isNotEmpty()) {
+    if (mostrarDialogoError) {
         AlertDialog(
             onDismissRequest = {
                 mostrarDialogoError = false
@@ -108,7 +115,9 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
             },
             text = {
                 Text(
-                    text = mensajeError,
+                    text = if (codiError != null) {
+                        alertsErrosScreens(codiError!!)
+                    } else mensajeError,
                     fontSize = 16.sp,
                     color = Color(0xFF475569),
                     lineHeight = 24.sp
@@ -632,7 +641,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                     onDismissRequest = { viewModel.cerrarEstatArribadaMenu() },
                                     modifier = Modifier.background(Color.White)
                                 ) {
-                                    viewModel.listaEstatArribada.forEach { estat ->
+                                   elementosConCodigos.EstadosLlegada().forEach { (estat, codigo) ->
                                         DropdownMenuItem(
                                             text = {
                                                 Text(
@@ -642,7 +651,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                                     fontWeight = FontWeight.Normal
                                                 )
                                             },
-                                            onClick = { viewModel.seleccionarEstatArribada(estat) },
+                                            onClick = { viewModel.seleccionarEstatArribada(estat, codigo) },
                                             contentPadding = PaddingValues(
                                                 horizontal = 16.dp,
                                                 vertical = 14.dp
@@ -731,7 +740,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                     onDismissRequest = { viewModel.cerrarMitjaTransportMenu() },
                                     modifier = Modifier.background(Color.White)
                                 ) {
-                                    viewModel.listaMitjaTransport.forEach { medio ->
+                                    elementosConCodigos.Transporte().forEach { (medio, codigo) ->
                                         DropdownMenuItem(
                                             text = {
                                                 Text(
@@ -741,18 +750,13 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                                     fontWeight = FontWeight.Normal
                                                 )
                                             },
-                                            onClick = { viewModel.seleccionarMitjaTransport(medio) },
+                                            onClick = { viewModel.seleccionarMitjaTransport(medio, codigo) },
                                             contentPadding = PaddingValues(
                                                 horizontal = 16.dp,
                                                 vertical = 14.dp
                                             )
                                         )
-                                        if (medio != viewModel.listaMitjaTransport.last()) {
-                                            HorizontalDivider(
-                                                color = Color(0xFFF1F5F9),
-                                                thickness = 1.dp
-                                            )
-                                        }
+
                                     }
                                 }
                             }

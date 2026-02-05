@@ -379,12 +379,6 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                                                 disabledTextColor = Color(0xFF94A3B8)
                                             )
                                         )
-                                        if (sexo != viewModel.listaSexos.last()) {
-                                            HorizontalDivider(
-                                                color = Color(0xFFF1F5F9),
-                                                thickness = 1.dp
-                                            )
-                                        }
                                     }
                                 }
                             }

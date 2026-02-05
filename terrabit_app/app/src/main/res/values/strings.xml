@@ -143,6 +143,25 @@
     <string name="form_error_animal_id">Por favor, introduzca el identificador del animal</string>
     <string name="form_error_date_indentification">Por favor, introduzca la fecha de identificación del animal</string>
 
+    <string name="form_error_remo_code">Por favor, introduzca el código REMO de la guía</string>
+    <string name="form_error_arrival_date">Por favor, seleccione la fecha de llegada</string>
+    <string name="form_error_arrival_time">Por favor, seleccione la hora de llegada</string>
+    <string name="form_error_ates_code">Por favor, seleccione el código ATES</string>
+    <string name="form_error_destination_farm">Por favor, introduzca la explotación de destino</string>
+    <string name="form_error_arrival_status">Por favor, seleccione el estado de llegada</string>
+
+    <string name="option_truck">Camión</string>
+    <string name="option_train">Tren</string>
+    <string name="option_airplane">Avión</string>
+    <string name="option_boat">Barco</string>
+    <string name="option_other">Otros</string>
+    <string name="option_walking">Conducción a pie</string>
+    <string name="option_sacrificed">Sacrificado</string>
+    <string name="option_death_transport">Fallecido duanrante el transporte</string>
+    <string name="option_death_stable">Fallecido en el establo</string>
+    <string name="option_arrival">Llegado</string>
+
+
     <string name="form_date_identification">Fecha de Identificación *</string>
     <string name="form_id_animal_description">Introducir o escanear ID del animal</string>
     <string name="form_id_animal">ID Animal *</string>
