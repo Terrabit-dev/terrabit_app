@@ -41,12 +41,10 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel ) {
     ) {
         // Pantalla principal
         composable(Routes.HomeBovinos.route) {
-            Home(navController = navController, drawerViewModel, myViewmodel)
-        composable(Routes.Home.route) {
-
             val borradorviewmodel: BorradorViewModel = viewModel()
             Home(navController = navController, drawerViewModel, myViewmodel, borradorviewmodel)
         }
+
 
         // Pantalla principal porcinos
         composable(Routes.HomePorcinos.route) {
