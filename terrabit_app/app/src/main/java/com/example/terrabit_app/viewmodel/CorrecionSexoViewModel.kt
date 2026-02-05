@@ -61,9 +61,8 @@ class CorrecionSexoViewModel: ViewModel() {
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
                     datos = Gson().toJson(datosCorregirSexo)
                 )
-
+            } else {
                 // Creacion nuevo borrador
-            }else {
                 Borrador(
                     id = "corregir_sexo_auto${System.currentTimeMillis()}",
                     tipo = "CORREGIR_SEXO",
@@ -76,21 +75,51 @@ class CorrecionSexoViewModel: ViewModel() {
             Log.d("Autoguardado Correcion Sexo", "Borrador guardado automáticamente")
         }catch (e: Exception){
             Log.e("Error Autoguardado Correcion Sexo", "Error al guardar: ${e.message}", e)
-
         }
-
     }
 
 
     //Cargar Borrador Existente
     fun cargarBorradorExistente(){
-        TODO()
+        try {
+            val borradores = sharedPreferencesManager.obtenerBorradores()
+            val borradorCorreccionSexo = borradores.find {
+                it.tipo == "CORREGIR_SEXO" && it.estado == "BORRADOR_AUTO"
+            }
+
+            if (borradorCorreccionSexo != null) {
+                val gson = Gson()
+                val datos: Map<String, Any?> = gson.fromJson(
+                    borradorCorreccionSexo.datos,
+                    object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
+                )
+
+                // Restaurar datos
+                _identificadorCorreccionSexo.value = datos["identificador"] as? String ?: ""
+                _sexoCorreccionSeleccionado.value = datos["sexoSeleccionado"] as? String ?: ""
+
+                Log.d("Cargar Borrador", "Borrador de corrección de sexo cargado")
+            }
+        } catch (e: Exception) {
+            Log.e("Error Cargar Borrador", "Error al cargar: ${e.message}", e)
+        }
     }
 
     // Eliminar Borrador Existente
-
     fun eliminarBorradorAutomatico(){
-        TODO()
+        try {
+            val borradores = sharedPreferencesManager.obtenerBorradores()
+            val borradorCorreccionSexo = borradores.find {
+                it.tipo == "CORREGIR_SEXO" && it.estado == "BORRADOR_AUTO"
+            }
+
+            if (borradorCorreccionSexo != null) {
+                sharedPreferencesManager.eliminarBorrador(borradorCorreccionSexo.id)
+                Log.d("Eliminar Borrador", "Borrador automático eliminado")
+            }
+        } catch (e: Exception) {
+            Log.e("Error Eliminar Borrador", "Error: ${e.message}", e)
+        }
     }
 
 
@@ -124,7 +153,7 @@ class CorrecionSexoViewModel: ViewModel() {
     val estadoCarga = _estadoCarga
 
     // Lista de opciones de sexo (AGREGADO)
-
+    val listaSexos = listOf("Macho", "Hembra")
     private var codigoSexo = ""
 
     // Funciones para actualizar los campos
@@ -165,9 +194,9 @@ class CorrecionSexoViewModel: ViewModel() {
                 _identificadorCorreccionSexo.value.isNullOrEmpty() ->
                     12
                 _sexoCorreccionSeleccionado.value.isNullOrEmpty() ->
-                   4
+                    4
                 else ->
-                   0
+                    0
             }
             _codiError.value = mensajeError
             Log.e("Validación Corrección Sexo", "Formulario no válido: $mensajeError")
@@ -204,6 +233,12 @@ class CorrecionSexoViewModel: ViewModel() {
                             if (body.codi == "0" || body.descripcio == "OK") {
                                 _correccionSexoExitosa.value = true
                                 _mensajeErrorCorreccionSexo.value = ""
+
+                                Log.d("Corrección Sexo", "Sexo corregido exitosamente")
+
+                                // ELIMINAR BORRADOR AUTOMÁTICO AL ENVIAR EXITOSAMENTE
+                                eliminarBorradorAutomatico()
+
                                 // Limpiar formulario después de corregir exitosamente
                                 limpiarFormularioCorreccionSexo()
                             }
