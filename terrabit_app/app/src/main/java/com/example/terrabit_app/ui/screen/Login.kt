@@ -87,7 +87,7 @@ fun Login(
     LaunchedEffect(loginState) {
         when (loginState) {
             is LoginState.Success -> {
-                navController.navigate(Routes.Home.route) {
+                navController.navigate(Routes.HomeBovinos.route) {
                     popUpTo(Routes.Login.route) { inclusive = true }
                 }
             }

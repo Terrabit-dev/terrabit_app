@@ -174,4 +174,11 @@
     <string name="accept_buttom">Aceptar</string>
     <string name="cancel_buttom">Cancelar</string>
     <string name="form_date_description">Seleccionar fecha</string>
+
+    <string name="card_description_crear_guias_porcinos">Registrar salidas de porcinos</string>
+    <string name="card_crear_guias">Crear guías</string>
+
+    <string name="content_description_selecionado">Seleccionado</string>
+    <string name="content_description_menu">Menú</string>
+    <string name="content_description_notificaciones">Notificaciones</string>
 </resources>

@@ -170,4 +170,12 @@
     <string name="accept_buttom">Acceptar</string>
     <string name="cancel_buttom">Cancel·lar</string>
     <string name="form_date_description">Seleccionar data</string>
+
+    <string name="card_description_crear_guias_porcinos">Registrar sortides de porcins</string>
+    <string name="card_crear_guias">Crear guies</string>
+
+    <string name="content_description_selecionado">Seleccionat</string>
+    <string name="content_description_menu">Menú</string>
+    <string name="content_description_notificaciones">Notificacions</string>
+
 </resources>
