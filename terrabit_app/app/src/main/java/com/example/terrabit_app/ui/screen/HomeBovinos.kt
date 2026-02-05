@@ -31,13 +31,15 @@ import com.example.terrabit_app.viewmodel.DrawerViewModel
 import com.example.terrabit_app.viewmodel.MainViewmodel
 import kotlinx.coroutines.launch
 import com.example.terrabit_app.R
+import com.example.terrabit_app.viewmodel.BorradorViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Home(
     navController: NavController,
     drawerViewModel: DrawerViewModel,
-    mainViewModel: MainViewmodel
+    mainViewModel: MainViewmodel,
+    borradorViewmodel: BorradorViewModel
 ) {
     val context = LocalContext.current
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -49,8 +51,8 @@ fun Home(
 
     // Inicializar SharedPreferences y cargar borradores
     LaunchedEffect(Unit) {
-        mainViewModel.inicializarSharedPreferences(context)
-        mainViewModel.cargarBorradores()
+        borradorViewmodel.inicializarSharedPreferences(context)
+        borradorViewmodel.cargarBorradores()
     }
 
     // Drawer con menú lateral
@@ -83,7 +85,7 @@ fun Home(
             ) {
                 if (mostrarBorradores) {
                     BorradoresScreen(
-                        viewModel = mainViewModel,
+                        viewModel = borradorViewmodel,
                         onMenuClick = {
                             scope.launch { drawerState.open() }
                         }

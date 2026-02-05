@@ -81,6 +81,22 @@ class MovimientosViewModel : ViewModel() {
     private val _mitjaTransport = MutableLiveData("")
     val mitjaTransport = _mitjaTransport
 
+
+    // Codigos de error para la api
+    private val _codiTransport = MutableLiveData("")
+    val codiTransport = _codiTransport
+
+    private val _codiEstats = MutableLiveData("")
+    val codiEstats = _codiEstats
+
+    // Codigo de error para el control de errores
+
+    private  val _codiError = MutableLiveData<Int?>()
+    val codiError = _codiError
+
+    // Estados del conductor
+
+
     private val _nifConductor = MutableLiveData("")
     val nifConductor = _nifConductor
 
@@ -136,14 +152,7 @@ class MovimientosViewModel : ViewModel() {
     )
 
     // Medios de transporte
-    val listaMitjaTransport = listOf(
-        "01 - Camió",
-        "05 - Vaixell",
-        "06 - Avió",
-        "07 - Tren",
-        "08 - Conducció a peu",
-        "99 - Altres"
-    )
+
 
     // Estados de arribada
     val listaEstatArribada = listOf(
@@ -181,8 +190,9 @@ class MovimientosViewModel : ViewModel() {
         _matricula.value = matricula
     }
 
-    fun seleccionarMitjaTransport(medio: String) {
+    fun seleccionarMitjaTransport(medio: String, codigo: String) {
         _mitjaTransport.value = medio
+        _codiTransport.value = codigo
         _mitjaTransportExpandido.value = false
     }
 
@@ -202,8 +212,9 @@ class MovimientosViewModel : ViewModel() {
         _identificadorAnimal.value = identificador
     }
 
-    fun seleccionarEstatArribada(estat: String) {
+    fun seleccionarEstatArribada(estat: String, codigo: String) {
         _estatArribada.value = estat
+        _codiEstats.value = codigo
         _estatArribadaExpandido.value = false
     }
 
@@ -292,24 +303,24 @@ class MovimientosViewModel : ViewModel() {
         if (!esFormularioValido()) {
             val mensajeError = when {
                 _codiRemo.value.isNullOrEmpty() ->
-                    "Por favor, introduzca el código REMO de la guía"
+                    14
                 _dataArribada.value.isNullOrEmpty() ->
-                    "Por favor, seleccione la fecha de arribada"
+                   15
                 _horaArribada.value.isNullOrEmpty() ->
-                    "Por favor, seleccione la hora de arribada"
+                   16
                 _codiAtes.value.isNullOrEmpty() ->
-                    "Por favor, seleccione el código ATES"
+                    17
                 _explotacioDestinacio.value.isNullOrEmpty() ->
-                    "Por favor, introduzca la explotación de destino"
+                   18
                 _identificadorAnimal.value.isNullOrEmpty() ->
-                    "Por favor, introduzca el identificador del animal"
+                   12
                 _estatArribada.value.isNullOrEmpty() ->
-                    "Por favor, seleccione el estado de arribada"
+                   19
                 else ->
-                    "Por favor, complete todos los campos obligatorios marcados con *"
+                    0
             }
-            _mensajeError.value = mensajeError
-            Log.e("Validación Movimiento", mensajeError)
+            _codiError.value = mensajeError
+            Log.e("Validación Movimiento", "Error: $mensajeError")
             return
         }
 
@@ -326,8 +337,6 @@ class MovimientosViewModel : ViewModel() {
                     _horaArribada.value ?: ""
                 )
 
-                // Extraer código del medio de transporte (primeros 2 dígitos)
-                val codigoMedio = _mitjaTransport.value?.take(2) ?: ""
 
                 // Extraer código del estado de arribada (primeros 2 dígitos)
                 val codigoEstat = _estatArribada.value?.take(2) ?: ""
@@ -353,7 +362,7 @@ class MovimientosViewModel : ViewModel() {
                     dataArribada = fechaHoraArribadaAPI,
                     codiAtes = _codiAtes.value ?: "",
                     nomTransportista = _nomTransportista.value ?: "",
-                    mitjaTransport = codigoMedio,
+                    mitjaTransport = _codiTransport.value ?: "",
                     matricula = _matricula.value ?: "",
                     nifConductor = _nifConductor.value ?: "",
                     nomConductor = _nomConductor.value ?: "",
