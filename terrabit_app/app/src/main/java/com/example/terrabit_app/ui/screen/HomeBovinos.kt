@@ -3,20 +3,60 @@ package com.example.terrabit_app.ui.pantallas
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Agriculture
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Drafts
+import androidx.compose.material.icons.filled.EmojiNature
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.LocalShipping
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material3.Badge
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDrawerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -26,11 +66,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.os.LocaleListCompat
 import androidx.navigation.NavController
+import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
+import com.example.terrabit_app.ui.theme.BlueGrey
+import com.example.terrabit_app.ui.theme.DarkBlueGrey
+import com.example.terrabit_app.ui.theme.DarkWhiteBackground
+import com.example.terrabit_app.ui.theme.ErrorRed
+import com.example.terrabit_app.ui.theme.MainGreen
+import com.example.terrabit_app.ui.theme.MainOrange
+import com.example.terrabit_app.ui.theme.MintCreamGreen
+import com.example.terrabit_app.ui.theme.WhiteBackground
 import com.example.terrabit_app.viewmodel.DrawerViewModel
 import com.example.terrabit_app.viewmodel.MainViewmodel
 import kotlinx.coroutines.launch
-import com.example.terrabit_app.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,7 +122,7 @@ fun Home(
         }
     ) {
         Scaffold(
-            containerColor = Color(0xFFF5F7FA)
+            containerColor = WhiteBackground
         ) { padding ->
             Box(
                 modifier = Modifier
@@ -126,7 +174,7 @@ fun HomeContent(
             stringResource(R.string.subtitle_home),
             fontSize = 26.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF1E293B),
+            color = DarkBlueGrey,
             letterSpacing = 0.3.sp,
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
         )
@@ -145,7 +193,7 @@ fun HomeContent(
                 icono = Icons.Default.Agriculture,
                 titulo = stringResource(R.string.card_name_animals),
                 descripcion = stringResource(R.string.card_description_animals),
-                colorFondo = Color(0xFF3F8F6B),
+                colorFondo = MainGreen,
                 onClick = { navController.navigate(Routes.GestionBovinos.route) }
             )
 
@@ -154,7 +202,7 @@ fun HomeContent(
                 icono = Icons.Default.LocalShipping,
                 titulo = stringResource(R.string.card_name_guias),
                 descripcion = stringResource(R.string.card_description_guias),
-                colorFondo = Color(0xFFE28F41),
+                colorFondo = MainOrange,
                 contadorBadge = 2,
                 onClick = { navController.navigate(Routes.GuiasMovimientos.route) }
             )
@@ -164,7 +212,7 @@ fun HomeContent(
                 icono = Icons.Default.ShoppingCart,
                 titulo = stringResource(R.string.card_name_material),
                 descripcion = stringResource(R.string.card_description_material),
-                colorFondo = Color(0xFF3F8F6B),
+                colorFondo = MainGreen,
                 onClick = { navController.navigate(Routes.MaterialCategoria.route) }
             )
         }
@@ -177,7 +225,7 @@ fun HomeContent(
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp),
             colors = CardDefaults.cardColors(
-                containerColor = Color(0xFFE8F5E9)
+                containerColor = MintCreamGreen
             ),
             shape = RoundedCornerShape(16.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
@@ -190,13 +238,13 @@ fun HomeContent(
             ) {
                 Surface(
                     shape = RoundedCornerShape(12.dp),
-                    color = Color(0xFF4A7C59).copy(alpha = 0.15f),
+                    color = MainGreen.copy(alpha = 0.15f),
                     modifier = Modifier.size(48.dp)
                 ) {
                     Icon(
                         Icons.Default.Info,
                         contentDescription = null,
-                        tint = Color(0xFF4A7C59),
+                        tint = MainGreen,
                         modifier = Modifier.padding(12.dp)
                     )
                 }
@@ -208,14 +256,14 @@ fun HomeContent(
                         stringResource(R.string.information_title_home),
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp,
-                        color = Color(0xFF2E5C3E),
+                        color = MainGreen,
                         letterSpacing = 0.2.sp
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         stringResource(R.string.information_description_home),
                         fontSize = 14.sp,
-                        color = Color(0xFF475569),
+                        color = DarkBlueGrey,
                         lineHeight = 20.sp,
                         letterSpacing = 0.1.sp
                     )
@@ -278,7 +326,7 @@ fun TarjetaMenu(
                 // Badge de notificación
                 if (contadorBadge != null) {
                     Badge(
-                        containerColor = Color(0xFFFF5252),
+                        containerColor = ErrorRed,
                         modifier = Modifier
                             .offset(x = 4.dp, y = (-4).dp)
                     ) {
@@ -302,14 +350,14 @@ fun TarjetaMenu(
                     titulo,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 17.sp,
-                    color = Color(0xFF1E293B),
+                    color = DarkBlueGrey,
                     letterSpacing = 0.2.sp
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
                     descripcion,
                     fontSize = 14.sp,
-                    color = Color(0xFF64748B),
+                    color = BlueGrey,
                     lineHeight = 18.sp
                 )
             }
@@ -318,7 +366,7 @@ fun TarjetaMenu(
             Icon(
                 Icons.Default.ChevronRight,
                 contentDescription = "Ver más",
-                tint = Color(0xFF94A3B8),
+                tint = BlueGrey,
                 modifier = Modifier.size(28.dp)
             )
         }
@@ -358,17 +406,17 @@ fun DrawerContent(
                     "Terrabit",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF4A7C59)
+                    color = MainGreen
                 )
                 Text(
                     stringResource(R.string.drawer_subtitle),
                     fontSize = 14.sp,
-                    color = Color(0xFF64748B),
+                    color = BlueGrey,
                     modifier = Modifier.padding(top = 4.dp)
                 )
             }
 
-            HorizontalDivider(color = Color(0xFFE2E8F0))
+            HorizontalDivider(color = DarkWhiteBackground)
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -377,7 +425,7 @@ fun DrawerContent(
                 stringResource(R.string.drawer_explained),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF64748B),
+                color = BlueGrey,
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
             )
 
@@ -421,7 +469,7 @@ fun DrawerContent(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFFF1F5F9)
+                    containerColor = WhiteBackground
                 ),
                 shape = RoundedCornerShape(12.dp)
             ) {
@@ -431,12 +479,12 @@ fun DrawerContent(
                     Text(
                         "Versión 1.0.0",
                         fontSize = 12.sp,
-                        color = Color(0xFF64748B)
+                        color = DarkBlueGrey
                     )
                     Text(
                         "© 2026 Terrabit",
                         fontSize = 10.sp,
-                        color = Color(0xFF94A3B8),
+                        color = BlueGrey,
                         modifier = Modifier.padding(top = 4.dp)
                     )
                 }
@@ -452,9 +500,9 @@ fun OpcionTipoAnimal(
     seleccionado: Boolean,
     onClick: () -> Unit
 ) {
-    val backgroundColor = if (seleccionado) Color(0xFF4A7C59).copy(alpha = 0.1f) else Color.Transparent
-    val textColor = if (seleccionado) Color(0xFF4A7C59) else Color(0xFF64748B)
-    val iconColor = if (seleccionado) Color(0xFF4A7C59) else Color(0xFF94A3B8)
+    val backgroundColor = if (seleccionado) MainGreen.copy(alpha = 0.1f) else Color.Transparent
+    val textColor = if (seleccionado) MainGreen else DarkBlueGrey
+    val iconColor = if (seleccionado) MainGreen else BlueGrey
 
     Surface(
         modifier = Modifier
@@ -487,7 +535,7 @@ fun OpcionTipoAnimal(
                 Icon(
                     Icons.Default.Check,
                     contentDescription = "Seleccionado",
-                    tint = Color(0xFF4A7C59),
+                    tint = MainGreen,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -507,12 +555,15 @@ fun HeaderBienvenida(
             .height(200.dp)
             .clip(RoundedCornerShape(bottomStart = 30.dp, bottomEnd = 30.dp))
             .background(
+                color = MainGreen
+                /*
                 brush = Brush.verticalGradient(
                     colors = listOf(
                         Color(0xFF2F6F4E),
                         Color(0xFF3F8F6B)
                     )
                 )
+                */
             )
     ) {
         Column(

@@ -48,7 +48,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
@@ -59,6 +58,14 @@ import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.pantallas.TarjetaMenu
+import com.example.terrabit_app.ui.theme.BlueGrey
+import com.example.terrabit_app.ui.theme.DarkBlueGrey
+import com.example.terrabit_app.ui.theme.DarkWhiteBackground
+import com.example.terrabit_app.ui.theme.ErrorRed
+import com.example.terrabit_app.ui.theme.MainGreen
+import com.example.terrabit_app.ui.theme.MainOrange
+import com.example.terrabit_app.ui.theme.MintCreamOrange
+import com.example.terrabit_app.ui.theme.WhiteBackground
 import com.example.terrabit_app.viewmodel.DrawerViewModel
 import kotlinx.coroutines.launch
 
@@ -89,7 +96,7 @@ fun HomePorcinos(
         }
     ) {
         Scaffold(
-            containerColor = Color(0xFFF5F7FA)
+            containerColor = WhiteBackground
         ) { padding ->
             Column(
                 modifier = Modifier
@@ -112,7 +119,7 @@ fun HomePorcinos(
                     text = stringResource(R.string.subtitle_home),
                     fontSize = 26.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E293B),
+                    color = DarkBlueGrey,
                     letterSpacing = 0.3.sp,
                     modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
                 )
@@ -131,7 +138,7 @@ fun HomePorcinos(
                         icono = Icons.Default.Agriculture,
                         titulo = stringResource(R.string.card_crear_guias),
                         descripcion = stringResource(R.string.card_description_crear_guias_porcinos),
-                        colorFondo = Color(0xFFE28F41),
+                        colorFondo = MainOrange,
                         onClick = { navController.navigate(Routes.GestionPorcinos.route) }
                     )
 
@@ -140,7 +147,7 @@ fun HomePorcinos(
                         icono = Icons.Default.LocalShipping,
                         titulo = stringResource(R.string.card_name_guias),
                         descripcion = stringResource(R.string.card_description_guias),
-                        colorFondo = Color(0xFF3F8F6B),
+                        colorFondo = MainGreen,
                         contadorBadge = 2,
                         onClick = { navController.navigate(Routes.GuiasMovimientosPorcinos.route) }
                     )
@@ -150,7 +157,7 @@ fun HomePorcinos(
                         icono = Icons.Default.ShoppingCart,
                         titulo = stringResource(R.string.card_name_material),
                         descripcion = stringResource(R.string.card_description_material),
-                        colorFondo = Color(0xFFE28F41),
+                        colorFondo = MainOrange,
                         onClick = { navController.navigate(Routes.MaterialCategoria.route) }
                     )
                 }
@@ -163,7 +170,7 @@ fun HomePorcinos(
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFFE8F5E9)
+                        containerColor = MintCreamOrange
                     ),
                     shape = RoundedCornerShape(16.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
@@ -176,13 +183,13 @@ fun HomePorcinos(
                     ) {
                         Surface(
                             shape = RoundedCornerShape(12.dp),
-                            color = Color(0xFF4A7C59).copy(alpha = 0.15f),
+                            color = MainOrange.copy(alpha = 0.15f),
                             modifier = Modifier.size(48.dp)
                         ) {
                             Icon(
                                 Icons.Default.Info,
                                 contentDescription = null,
-                                tint = Color(0xFFE28F41),
+                                tint = MainOrange,
                                 modifier = Modifier.padding(12.dp)
                             )
                         }
@@ -194,14 +201,14 @@ fun HomePorcinos(
                                 text = stringResource(R.string.information_title_home),
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp,
-                                color = Color(0xFFBA7A3D),
+                                color = MainOrange,
                                 letterSpacing = 0.2.sp
                             )
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
                                 text = stringResource(R.string.information_description_home),
                                 fontSize = 14.sp,
-                                color = Color(0xFF475569),
+                                color = DarkBlueGrey,
                                 lineHeight = 20.sp,
                                 letterSpacing = 0.1.sp
                             )
@@ -241,17 +248,17 @@ fun DrawerContentPorcinos(
                     text = stringResource(R.string.app_name),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFFE28F41)
+                    color = MainOrange
                 )
                 Text(
                     stringResource(R.string.drawer_subtitle),
                     fontSize = 14.sp,
-                    color = Color(0xFF64748B),
+                    color = BlueGrey,
                     modifier = Modifier.padding(top = 4.dp)
                 )
             }
 
-            HorizontalDivider(color = Color(0xFFE2E8F0))
+            HorizontalDivider(color = DarkWhiteBackground)
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -260,7 +267,7 @@ fun DrawerContentPorcinos(
                 "Tipo de Animal",
                 fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF64748B),
+                color = BlueGrey,
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
             )
 
@@ -291,7 +298,7 @@ fun DrawerContentPorcinos(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFFF1F5F9)
+                    containerColor = WhiteBackground
                 ),
                 shape = RoundedCornerShape(12.dp)
             ) {
@@ -301,12 +308,12 @@ fun DrawerContentPorcinos(
                     Text(
                         text = stringResource(R.string.app_version),
                         fontSize = 12.sp,
-                        color = Color(0xFF64748B)
+                        color = BlueGrey
                     )
                     Text(
                         text = stringResource(R.string.app_copyright),
                         fontSize = 10.sp,
-                        color = Color(0xFF94A3B8),
+                        color = BlueGrey,
                         modifier = Modifier.padding(top = 4.dp)
                     )
                 }
@@ -322,9 +329,9 @@ fun OpcionTipoAnimalPorcinos(
     seleccionado: Boolean,
     onClick: () -> Unit
 ) {
-    val backgroundColor = if (seleccionado) Color(0xFFE28F41).copy(alpha = 0.1f) else Color.Transparent
-    val textColor = if (seleccionado) Color(0xFFE28F41) else Color(0xFF64748B)
-    val iconColor = if (seleccionado) Color(0xFFE28F41) else Color(0xFF94A3B8)
+    val backgroundColor = if (seleccionado) MainOrange.copy(alpha = 0.1f) else Color.Transparent
+    val textColor = if (seleccionado) MainOrange else DarkBlueGrey
+    val iconColor = if (seleccionado) MainOrange else BlueGrey
 
     Surface(
         modifier = Modifier
@@ -357,7 +364,7 @@ fun OpcionTipoAnimalPorcinos(
                 Icon(
                     Icons.Default.Check,
                     contentDescription = stringResource(R.string.content_description_selecionado),
-                    tint = Color(0xFF4A7C59),
+                    tint = MainOrange,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -376,12 +383,13 @@ fun HeaderBienvenidaPorcinos(
             .height(200.dp)
             .clip(RoundedCornerShape(bottomStart = 30.dp, bottomEnd = 30.dp))
             .background(
-                brush = Brush.verticalGradient(
+                color = MainOrange
+                /* brush = Brush.verticalGradient(
                     colors = listOf(
-                        Color(0xFFBA7A3D),
-                        Color(0xFFE28F41)
+                        DarkMainOrange,
+                        MainOrange
                     )
-                )
+                ) */
             )
     ) {
         Column(
@@ -433,7 +441,7 @@ fun HeaderBienvenidaPorcinos(
                     }
 
                     Badge(
-                        containerColor = Color(0xFFFF5252),
+                        containerColor = ErrorRed,
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .offset(x = (-4).dp, y = 4.dp)
