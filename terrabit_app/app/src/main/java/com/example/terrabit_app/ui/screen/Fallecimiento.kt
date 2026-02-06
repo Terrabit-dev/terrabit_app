@@ -31,6 +31,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
 import com.example.terrabit_app.viewmodel.ViewModelMuerteBovi
 import com.example.terrabit_app.R
+import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -62,6 +63,9 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
 
     val mensajeRegistroExitoso = stringResource(R.string.successful_message_dead)
     val mensajeRegistroError = stringResource(R.string.error_message_dead)
+
+    // Recursos con codigo
+    val elementosConCodigos = ElementosConCodigos()
 
     // ============================================
     // INICIALIZACIÓN Y CARGA DE BORRADOR
@@ -401,16 +405,13 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                         unfocusedTextColor = Color(0xFF1E293B)
                                     )
                                 )
-                                val listaTiposMuerte = mapOf<String, String>(
-                                    stringResource(R.string.form_type_dead_dead) to "01",
-                                    stringResource(R.string.form_type_dead_abort) to "02"
-                                )
+
                                 ExposedDropdownMenu(
                                     expanded = tipoExpandido,
                                     onDismissRequest = { viewModel.cerrarTipoMuerteMenu() },
                                     modifier = Modifier.background(Color.White)
                                 ) {
-                                    listaTiposMuerte.forEach { (tipo, codigo) ->
+                                    elementosConCodigos.Muertes().forEach { (tipo, codigo) ->
                                         DropdownMenuItem(
                                             text = {
                                                 Text(

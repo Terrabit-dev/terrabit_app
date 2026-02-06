@@ -19,6 +19,7 @@ import com.example.terrabit_app.ui.screen.Movimientos
 import com.example.terrabit_app.ui.screen.porcinos.EntradasPorcinos
 import com.example.terrabit_app.ui.screen.porcinos.GestionGuiasPorcinos
 import com.example.terrabit_app.ui.screen.porcinos.HomePorcinos
+import com.example.terrabit_app.viewmodel.BorradorViewModel
 import com.example.terrabit_app.viewmodel.CorrecionSexoViewModel
 import com.example.terrabit_app.viewmodel.DrawerViewModel
 import com.example.terrabit_app.viewmodel.GuiasViewModel
@@ -40,8 +41,10 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel ) {
     ) {
         // Pantalla principal
         composable(Routes.HomeBovinos.route) {
-            Home(navController = navController, drawerViewModel, myViewmodel)
+            val borradorviewmodel: BorradorViewModel = viewModel()
+            Home(navController = navController, drawerViewModel, myViewmodel, borradorviewmodel)
         }
+
 
         // Pantalla principal porcinos
         composable(Routes.HomePorcinos.route) {

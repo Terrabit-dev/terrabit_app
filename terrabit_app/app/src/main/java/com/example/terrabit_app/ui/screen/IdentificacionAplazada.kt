@@ -130,9 +130,7 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                 else -> {}
             }
         }
-
         lifecycleOwner.lifecycle.addObserver(observer)
-
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
         }

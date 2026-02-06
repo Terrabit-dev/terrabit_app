@@ -100,6 +100,35 @@
     <string name="content_description_hide">Ocultar</string>
     <string name="content_description_show">Mostrar</string>
 
+    <string name="name_confirm_movs">Confirmar Moviments</string>
+    <string name="form_movs_title_necessary">Dades Obligatòries</string>
+    <string name="form_codi_remo">Codi REMO de la Guia *</string>
+    <string name="form_codi_remo_description">Introduir codi REMO</string>
+    <string name="form_date_arrival">Data d\'arribada *</string>
+    <string name="form_date_arrival_description">Data</string>
+    <string name="form_hour_arrival">Hora *</string>
+    <string name="form_hour_arrival_description">Hora</string>
+    <string name="form_codi_ates">Codi ATES Transportista *</string>
+    <string name="form_codi_ates_description">Seleccionar codi</string>
+    <string name="form_exploitation_destination">Explotació Destí *</string>
+    <string name="form_exploitation_destination_description">Codi d\'explotació REGA</string>
+    <string name="form_state_arrival">Estat d\'arribada *</string>
+    <string name="form_state_arrival_description">Seleccionar estat</string>
+    <string name="form_movs_title_optionals">Dades Opcionals del Transport</string>
+    <string name="form_ways_transports">Mitjà de Transport</string>
+    <string name="form_ways_transports_description">Seleccionar mitjà</string>
+    <string name="form_matricule_transport">Matrícula del Vehicle</string>
+    <string name="form_matricule_transports_description">Matrícula del Vehicle</string>
+    <string name="form_name_transportits">Nom del Transportista</string>
+    <string name="form_name_transportits_description">Nom complet</string>
+    <string name="form_nif_driver">NIF del Conductor</string>
+    <string name="form_nif_driver_description">Exemple: 12345678A</string>
+    <string name="form_name_driver">Nom del Conductor</string>
+    <string name="form_name_driver_description">Nom complet</string>
+    <string name="error_message_confirm_movs">Error en Confirmar Moviment</string>
+    <string name="successful_message_confirm_movs">Moviment confirmat correctament</string>
+    <string name="buttom_form_confirm_movs">Confirmar Moviment</string>
+
     <string name="form_error_mother_id">Si us plau, introduïu l\'ID de la mare</string>
     <string name="form_error_breeding_id">Si us plau, introduïu l\'ID de la cria</string>
     <string name="form_error_birthdate_id">Si us plau, seleccioneu la data de naixement</string>
@@ -114,6 +143,23 @@
     <string name="form_error_longitud">Si us plau, introduïu la coordenada Y (Longitud)</string>
     <string name="form_error_animal_id">Si us plau, introduïu l\'identificador de l\'animal</string>
     <string name="form_error_date_indentification">Si us plau, introduïu la data d\'identificació de l\'animal</string>
+    <string name="form_error_remo_code">Si us plau, introduïu el codi REMO de la guia</string>
+    <string name="form_error_arrival_date">Si us plau, seleccioneu la data d\'arribada</string>
+    <string name="form_error_arrival_time">Si us plau, seleccioneu l\'hora d\'arribada</string>
+    <string name="form_error_ates_code">Si us plau, seleccioneu el codi ATES</string>
+    <string name="form_error_destination_farm">Si us plau, introduïu l\'explotació de destí</string>
+    <string name="form_error_arrival_status">Si us plau, seleccioneu l\'estat d\'arribada</string>
+
+    <string name="option_truck">Camió</string>
+    <string name="option_train">Tren</string>
+    <string name="option_airplane">Avió</string>
+    <string name="option_boat">Vaixell</string>
+    <string name="option_other">Altres</string>
+    <string name="option_walking">Conducció a peu</string>
+    <string name="option_sacrificed">Sacrificat</string>
+    <string name="option_death_transport">Mort durant el transport</string>
+    <string name="option_death_stable">Mort a l\'estable</string>
+    <string name="option_arrival">Arribat</string>
 
     <string name="form_date_identification">Data d\'Identificació *</string>
     <string name="form_id_animal_description">Introduir o escanejar ID de l\'animal</string>
@@ -124,4 +170,12 @@
     <string name="accept_buttom">Acceptar</string>
     <string name="cancel_buttom">Cancel·lar</string>
     <string name="form_date_description">Seleccionar data</string>
+
+    <string name="card_description_crear_guias_porcinos">Registrar sortides de porcins</string>
+    <string name="card_crear_guias">Crear guies</string>
+
+    <string name="content_description_selecionado">Seleccionat</string>
+    <string name="content_description_menu">Menú</string>
+    <string name="content_description_notificaciones">Notificacions</string>
+
 </resources>

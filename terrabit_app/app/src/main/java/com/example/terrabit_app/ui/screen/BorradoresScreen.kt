@@ -24,11 +24,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.terrabit_app.data.Borrador
-import com.example.terrabit_app.viewmodel.MainViewmodel
+import com.example.terrabit_app.viewmodel.BorradorViewModel
 
 @Composable
 fun BorradoresScreen(
-    viewModel: MainViewmodel,
+    viewModel: BorradorViewModel,
     onMenuClick: () -> Unit
 ) {
     val borradores by viewModel.borradores.observeAsState(emptyList())
@@ -75,42 +75,6 @@ fun BorradoresScreen(
                     borradoresFiltered = borradores
                 }
             )
-
-            ChipFiltro(
-                texto = "Muerte (${borradores.count { it.tipo == "MUERTE" }})",
-                seleccionado = filtroSeleccionado == "Muerte",
-                onClick = {
-                    filtroSeleccionado = "Muerte"
-                    borradoresFiltered = borradores.filter { it.tipo == "MUERTE" }
-                }
-            )
-
-            ChipFiltro(
-                texto = "Material (${borradores.count { it.tipo == "MATERIAL" }})",
-                seleccionado = filtroSeleccionado == "Material",
-                onClick = {
-                    filtroSeleccionado = "Material"
-                    borradoresFiltered = borradores.filter { it.tipo == "MATERIAL" }
-                }
-            )
-
-            ChipFiltro(
-                texto = "Nacimiento (${borradores.count { it.tipo == "NACIMIENTO" }})",
-                seleccionado = filtroSeleccionado == "Nacimiento",
-                onClick = {
-                    filtroSeleccionado = "Nacimiento"
-                    borradoresFiltered = borradores.filter { it.tipo == "NACIMIENTO" }
-                }
-            )
-
-            ChipFiltro(
-                texto = "ID Aplazada (${borradores.count { it.tipo == "IDENTIFICACION_APLAZADA" }})",
-                seleccionado = filtroSeleccionado == "ID Aplazada",
-                onClick = {
-                    filtroSeleccionado = "ID Aplazada"
-                    borradoresFiltered = borradores.filter { it.tipo == "IDENTIFICACION_APLAZADA" }
-                }
-            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -150,8 +114,12 @@ fun BorradoresScreen(
                 items(borradoresFiltered) { borrador ->
                     TarjetaBorrador(
                         borrador = borrador,
-                        onReintentarClick = { viewModel.reintentarEnvioBorrador(borrador) },
-                        onEliminarClick = { viewModel.eliminarBorrador(borrador.id) }
+                        onReintentarClick = {
+                            // TODO: Implementar reintento
+                        },
+                        onEliminarClick = {
+                            viewModel.eliminarBorrador(borrador.id)
+                        }
                     )
                 }
 
@@ -354,7 +322,7 @@ fun TarjetaBorrador(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(96.dp), // ⚠️ ALTURA FIJA PARA TODAS LAS TARJETAS
+            .height(96.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.White
         ),
@@ -409,12 +377,12 @@ fun TarjetaBorrador(
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // Información (usar weight para ocupar el espacio disponible)
+            // Información
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .fillMaxHeight(), // Llenar la altura disponible
-                verticalArrangement = Arrangement.Center // Centrar contenido verticalmente
+                    .fillMaxHeight(),
+                verticalArrangement = Arrangement.Center
             ) {
                 // Título y estado en la misma línea
                 Row(
@@ -435,7 +403,7 @@ fun TarjetaBorrador(
 
                     Spacer(modifier = Modifier.width(8.dp))
 
-                    // Badge de estado con ancho fijo
+                    // Badge de estado
                     Surface(
                         color = when (borrador.estado) {
                             "ENVIANDO" -> Color(0xFFFFA726).copy(alpha = 0.15f)

@@ -30,6 +30,7 @@ import com.example.terrabit_app.viewmodel.MainViewmodel
 import com.example.terrabit_app.viewmodel.NacimientoViewmodel
 import kotlin.collections.emptyList
 import com.example.terrabit_app.R
+import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -67,6 +68,8 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
     // mensajes de respuesta
     val mensajeRegistroExitoso = stringResource(R.string.successful_message_born)
     val mensajeRegistroError = stringResource(R.string.error_message_born)
+    // Recursos con codigo
+    val elementosConCodigos = ElementosConCodigos()
 
     // Mostrar Snackbar cuando hay éxito
     LaunchedEffect(registroExitoso) {
@@ -537,17 +540,13 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                         unfocusedTextColor = Color(0xFF1E293B)
                                     )
                                 )
-                                val sexos = mapOf<String, String>(
-                                    stringResource(R.string.male) to "02",
-                                    stringResource(R.string.female) to "01"
-                                )
                                 ExposedDropdownMenu(
                                     expanded = sexoExpandido,
                                     onDismissRequest = { viewModel.cerrarSexoMenu() },
                                     modifier = Modifier
                                         .background(Color.White)
                                 ) {
-                                    sexos.forEach { (sexo, codigo) ->
+                                    elementosConCodigos.sexos().forEach { (sexo, codigo) ->
                                         DropdownMenuItem(
                                             text = {
                                                 Text(
@@ -698,18 +697,14 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                         unfocusedTextColor = Color(0xFF1E293B)
                                     )
                                 )
-                                val aptitudes = mapOf<String, String>(
-                                    stringResource(R.string.option_aptitude_meat) to "02",
-                                    stringResource(R.string.option_aptitude_milk) to "01",
-                                    stringResource(R.string.option_aptitude_double) to "03"
-                                )
+
                                 ExposedDropdownMenu(
                                     expanded = aptitudExpandida,
                                     onDismissRequest = { viewModel.cerrarAptitudMenu() },
                                     modifier = Modifier
                                         .background(Color.White)
                                 ) {
-                                    aptitudes.forEach { (aptitud, codigo) ->
+                                    elementosConCodigos.aptitudes().forEach { (aptitud, codigo) ->
                                         DropdownMenuItem(
                                             text = {
                                                 Text(

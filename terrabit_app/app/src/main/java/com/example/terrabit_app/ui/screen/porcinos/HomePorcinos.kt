@@ -306,12 +306,12 @@ fun DrawerContentPorcinos(
                     modifier = Modifier.padding(16.dp)
                 ) {
                     Text(
-                        text = stringResource(R.string.app_version),
+                        text = "Versión 1.0.0",
                         fontSize = 12.sp,
                         color = BlueGrey
                     )
                     Text(
-                        text = stringResource(R.string.app_copyright),
+                        text = "© 2026 Terrabit",
                         fontSize = 10.sp,
                         color = BlueGrey,
                         modifier = Modifier.padding(top = 4.dp)
