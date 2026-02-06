@@ -258,19 +258,17 @@ class GuiasViewModel : ViewModel() {
     val cargandoGuia = _cargandoGuia
 
     // ============================================
-    // LISTAS DE OPCIONES
+    //  CODIGOS DE PARAMETROS PARA LA API
     // ============================================
+    private var codiTemporal = ""
+    private var codiGuiaMobilidad = ""
 
-    val listaTemporalOpciones = listOf("SI", "NO")
-    val listaMobilitatOpciones = listOf("SI", "NO")
-    val listaMitjaTransport = listOf(
-        "04 - Camió",
-        "05 - Vaixell",
-        "06 - Avió",
-        "07 - Tren",
-        "08 - Conducció a peu",
-        "99 - Altres"
-    )
+    private  var codiTransport = ""
+
+    //codigo para la gestion de mensajes de errores
+    private val _codiError = MutableLiveData<Int?>()
+    val codiError = _codiError
+
 
     // ============================================
     // FUNCIONES PARA ACTUALIZAR CAMPOS
@@ -284,8 +282,9 @@ class GuiasViewModel : ViewModel() {
         _explotacioDestinacio.value = valor
     }
 
-    fun seleccionarTemporal(valor: String) {
+    fun seleccionarTemporal(valor: String, codigo: String) {
         _temporal.value = valor
+        codiTemporal = codigo
         _temporalExpandido.value = false
     }
 
@@ -305,8 +304,9 @@ class GuiasViewModel : ViewModel() {
         _horaArribada.value = String.format("%02d:%02d", hora.toInt(), minutos.toInt())
     }
 
-    fun seleccionarMobilitat(valor: String) {
+    fun seleccionarMobilitat(valor: String, codigo: String) {
         _mobilitat.value = valor
+        codiGuiaMobilidad = codigo
         _mobilitatExpandido.value = false
     }
 
@@ -328,8 +328,9 @@ class GuiasViewModel : ViewModel() {
         _nomTransportista.value = nombre
     }
 
-    fun seleccionarMitjaTransport(medio: String) {
+    fun seleccionarMitjaTransport(medio: String, codigo: String) {
         _mitjaTransport.value = medio
+        codiTransport = codigo
         _mitjaTransportExpandido.value = false
     }
 
@@ -475,29 +476,31 @@ class GuiasViewModel : ViewModel() {
     }
 
     fun confirmarAltaGuia() {
+        _codiError.value = null
+
         if (!esFormularioValido()) {
             val mensajeError = when {
                 _explotacioOrigen.value.isNullOrEmpty() ->
-                    "Por favor, introduzca la explotación origen"
+                    20
                 _explotacioDestinacio.value.isNullOrEmpty() ->
-                    "Por favor, introduzca la explotación destino"
+                   18
                 _temporal.value.isNullOrEmpty() ->
-                    "Por favor, seleccione si es temporal"
+                    21
                 _dataSortida.value.isNullOrEmpty() ->
-                    "Por favor, seleccione la fecha de sortida"
+                    22
                 _horaSortida.value.isNullOrEmpty() ->
-                    "Por favor, seleccione la hora de sortida"
+                    23
                 _dataArribada.value.isNullOrEmpty() ->
-                    "Por favor, seleccione la fecha de arribada"
+                   15
                 _horaArribada.value.isNullOrEmpty() ->
-                    "Por favor, seleccione la hora de arribada"
+                    16
                 _mobilitat.value.isNullOrEmpty() ->
-                    "Por favor, seleccione si es mobilitat"
+                    24
                 else ->
-                    "Por favor, complete todos los campos obligatorios marcados con *"
+                   0
             }
-            _mensajeError.value = mensajeError
-            Log.e("Validación Guía", mensajeError)
+            _codiError.value = mensajeError
+            Log.e("Validación Guía", "$mensajeError")
             return
         }
 

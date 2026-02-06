@@ -57,4 +57,13 @@ class ElementosConCodigos {
         return listaEstadosLlegada
     }
 
+    @Composable
+    fun OpcionesSiNo(): Map<String, String>{
+        val listaOpciones= mapOf<String, String>(
+            stringResource(R.string.option_yes) to "SI",
+            stringResource(R.string.option_no) to "NO"
+        )
+        return listaOpciones
+    }
+
 }
