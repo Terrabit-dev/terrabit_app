@@ -1,11 +1,14 @@
 package com.example.terrabit_app.viewmodel
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.R
+import com.example.terrabit_app.data.Borrador
+import com.example.terrabit_app.data.SharedPreferencesManager
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.Identificadores.Identificadores
 import com.example.terrabit_app.data.network.animales.RegistroNacimientoBovi
@@ -16,12 +19,122 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 class NacimientoViewmodel : ViewModel() {
 
     // Instancia del repositorio
     private val repositorio = Repositorio()
+
+    private lateinit var sharedPreferencesManager: SharedPreferencesManager
+
+    // ============================================
+    // SECCIÓN: AUTOGUARDADO
+    // ============================================
+
+    fun inicializarSharedPreferences(context: Context) {
+        sharedPreferencesManager = SharedPreferencesManager(context)
+    }
+
+    fun tieneContenido(): Boolean {
+        return !_idMadre.value.isNullOrEmpty() ||
+                !_idCria.value.isNullOrEmpty() ||
+                !_fechaNacimiento.value.isNullOrEmpty() ||
+                !_fechaIdentificacion.value.isNullOrEmpty() ||
+                !_sexoSeleccionado.value.isNullOrEmpty() ||
+                !_razaSeleccionada.value.isNullOrEmpty() ||
+                !_aptitudSeleccionada.value.isNullOrEmpty()
+    }
+
+    fun guardarBorradorAutomatico() {
+        if (!tieneContenido()) {
+            Log.d("Autoguardado Nacimiento", "No hay contenido para guardar")
+            return
+        }
+
+        try {
+            val datosNacimiento = mapOf(
+                "idMadre" to _idMadre.value,
+                "idCria" to _idCria.value,
+                "fechaNacimiento" to _fechaNacimiento.value,
+                "fechaIdentificacion" to _fechaIdentificacion.value,
+                "sexoSeleccionado" to _sexoSeleccionado.value,
+                "razaSeleccionada" to _razaSeleccionada.value,
+                "aptitudSeleccionada" to _aptitudSeleccionada.value
+            )
+
+            val borradorExistente = sharedPreferencesManager.obtenerBorradores()
+                .find { it.tipo == "NACIMIENTO" && it.estado == "BORRADOR_AUTO" }
+
+            val borrador = if (borradorExistente != null) {
+                borradorExistente.copy(
+                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    datos = Gson().toJson(datosNacimiento)
+                )
+            } else {
+                Borrador(
+                    id = "nacimiento_auto_${System.currentTimeMillis()}",
+                    tipo = "NACIMIENTO",
+                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    datos = Gson().toJson(datosNacimiento),
+                    estado = "BORRADOR_AUTO"
+                )
+            }
+
+            sharedPreferencesManager.guardarBorrador(borrador)
+            Log.d("Autoguardado Nacimiento", "Borrador guardado automáticamente")
+        } catch (e: Exception) {
+            Log.e("Error Autoguardado Nacimiento", "Error al guardar: ${e.message}", e)
+        }
+    }
+
+    fun cargarBorradorExistente() {
+        try {
+            val borradores = sharedPreferencesManager.obtenerBorradores()
+            val borradorNacimiento = borradores.find {
+                it.tipo == "NACIMIENTO" && it.estado == "BORRADOR_AUTO"
+            }
+
+            if (borradorNacimiento != null) {
+                val gson = Gson()
+                val datos: Map<String, Any?> = gson.fromJson(
+                    borradorNacimiento.datos,
+                    object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
+                )
+
+                _idMadre.value = datos["idMadre"] as? String ?: ""
+                _idCria.value = datos["idCria"] as? String ?: ""
+                _fechaNacimiento.value = datos["fechaNacimiento"] as? String ?: ""
+                _fechaIdentificacion.value = datos["fechaIdentificacion"] as? String ?: ""
+                _sexoSeleccionado.value = datos["sexoSeleccionado"] as? String ?: ""
+                _razaSeleccionada.value = datos["razaSeleccionada"] as? String ?: ""
+                _aptitudSeleccionada.value = datos["aptitudSeleccionada"] as? String ?: ""
+
+                Log.d("Cargar Borrador", "Borrador de nacimiento cargado")
+            }
+        } catch (e: Exception) {
+            Log.e("Error Cargar Borrador", "Error al cargar: ${e.message}", e)
+        }
+    }
+
+    fun eliminarBorradorAutomatico() {
+        try {
+            val borradores = sharedPreferencesManager.obtenerBorradores()
+            val borradorNacimiento = borradores.find {
+                it.tipo == "NACIMIENTO" && it.estado == "BORRADOR_AUTO"
+            }
+
+            if (borradorNacimiento != null) {
+                sharedPreferencesManager.eliminarBorrador(borradorNacimiento.id)
+                Log.d("Eliminar Borrador", "Borrador automático eliminado")
+            }
+        } catch (e: Exception) {
+            Log.e("Error Eliminar Borrador", "Error: ${e.message}", e)
+        }
+    }
 
     // ============================================
     // SECCIÓN: IDENTIFICADORES
@@ -246,15 +359,15 @@ class NacimientoViewmodel : ViewModel() {
                 _fechaNacimiento.value.isNullOrEmpty() ->
                     3
                 _sexoSeleccionado.value.isNullOrEmpty() ->
-                   4
+                    4
                 _razaSeleccionada.value.isNullOrEmpty() ->
                     5
                 _aptitudSeleccionada.value.isNullOrEmpty() ->
-                   6
+                    6
                 else ->
                     0
             }
-           _codiError.value = mensajeError
+            _codiError.value = mensajeError
             Log.e("Validación Nacimiento", "Error: $mensajeError")
             return
         }
@@ -304,6 +417,10 @@ class NacimientoViewmodel : ViewModel() {
 
                                 Log.d("Registro Nacimiento", "Nacimiento reportado exitosamente")
                                 Log.d("Registro Nacimiento", "Respuesta: [${body.codi}] ${body.descripcio}")
+
+                                // ELIMINAR BORRADOR AUTOMÁTICO AL ENVIAR EXITOSAMENTE
+                                eliminarBorradorAutomatico()
+
                                 // Limpiar formulario después de registrar exitosamente
                                 limpiarFormularioNacimiento()
                             }

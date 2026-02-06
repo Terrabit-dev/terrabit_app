@@ -32,6 +32,12 @@ import kotlin.collections.emptyList
 import com.example.terrabit_app.R
 import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.runtime.DisposableEffect
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.compose.material3.TextButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,6 +77,11 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
     // Recursos con codigo
     val elementosConCodigos = ElementosConCodigos()
 
+    //Variables Borrador
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var mostrarDialogoRecuperacion by remember { mutableStateOf(false) }
+
     // Mostrar Snackbar cuando hay éxito
     LaunchedEffect(registroExitoso) {
         if (registroExitoso) {
@@ -80,6 +91,106 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
             )
             viewModel.resetearEstadoRegistro()
         }
+    }
+
+    // Carga de Borrador
+    LaunchedEffect(Unit) {
+        viewModel.inicializarSharedPreferences(context)
+
+        // Verificar si hay borrador guardado
+        if (viewModel.tieneContenido()) {
+            // Ya hay datos cargados, no hacer nada
+        } else {
+            // Intentar cargar borrador existente
+            viewModel.cargarBorradorExistente()
+
+            // Si después de cargar hay contenido, mostrar diálogo
+            if (viewModel.tieneContenido()) {
+                mostrarDialogoRecuperacion = true
+            }
+        }
+    }
+
+    // Autoguardado + deteccion de cierre de pantalla
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_PAUSE -> {
+                    // Usuario sale de la pantalla - GUARDAR AUTOMÁTICAMENTE
+                    if (viewModel.tieneContenido()) {
+                        viewModel.guardarBorradorAutomatico()
+                    }
+                }
+                Lifecycle.Event.ON_STOP -> {
+                    // Pantalla ya no visible
+                }
+                else -> {}
+            }
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    // Mensaje de Recuperar borrador anterior.
+    if (mostrarDialogoRecuperacion) {
+        AlertDialog(
+            onDismissRequest = { },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = null,
+                    tint = Color(0xFF4A7C59),
+                    modifier = Modifier.size(48.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = "Borrador encontrado",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    color = Color(0xFF1E293B)
+                )
+            },
+            text = {
+                Text(
+                    text = "Se encontró un formulario sin completar. ¿Deseas recuperarlo?",
+                    fontSize = 16.sp,
+                    color = Color(0xFF475569),
+                    lineHeight = 24.sp
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        mostrarDialogoRecuperacion = false
+                        // Los datos ya están cargados
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF4A7C59)
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text("Recuperar", fontWeight = FontWeight.SemiBold)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        mostrarDialogoRecuperacion = false
+                        viewModel.eliminarBorradorAutomatico()
+                        viewModel.limpiarFormularioNacimiento()
+                    }
+                ) {
+                    Text("Descartar", color = Color(0xFF64748B))
+                }
+            },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(16.dp)
+        )
     }
 
     // Mostrar diálogo cuando hay error
