@@ -18,6 +18,9 @@
     <string name="information_title_home">Información del Sistema</string>
     <string name="information_description_home">Todos los datos se sincronizan automáticamente con el sistema de registro de la Generalitat de Catalunya.</string>
 
+    <string name="list_bovinos">Mis Bovinos</string>
+    <string name="list_bovinos_subtitle">Mira tus Bovinos Disponibles</string>
+
     <string name="gestion_name_bovinos">Gestión de Bovinos</string>
     <string name="gestion_subtitle_bovinos">Selecciona una acción</string>
     <string name="action_register_born">Registrar Nacimiento</string>

@@ -1,10 +1,11 @@
-package com.example.terrabit_app.ui.screen
+package com.example.terrabit_app.ui.screen.bovinos
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,7 +18,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -25,13 +25,14 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDefaults
-import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -43,7 +44,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -56,7 +56,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -65,38 +64,48 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
-import com.example.terrabit_app.viewmodel.IdentificacionAplazaViewModel
+import com.example.terrabit_app.viewmodel.CorrecionSexoViewModel
 import com.example.terrabit_app.R
+import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun IdentificacionApalzada(navController: NavController, viewModel: IdentificacionAplazaViewModel){
-    val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
-
+fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewModel) {
     // Observar variables del ViewModel
-    val identificadorAnimal by viewModel.identificadorAnimal.observeAsState("")
-    val identifiacionExitosa by viewModel.identificacionExitosa.observeAsState(false)
-    val mensajeError by viewModel.mensajeErrorIdentificacion.observeAsState("")
+    val identificadorCorreccionSexo by viewModel.identificadorCorreccionSexo.observeAsState("")
+    val sexoCorreccionSeleccionado by viewModel.sexoCorreccionSeleccionado.observeAsState("")
+    val sexoCorreccionExpandido by viewModel.sexoCorreccionExpandido.observeAsState(false)
+
+    // Observar estado de registro para mostrar mensajes
+    val correccionSexoExitosa by viewModel.correccionSexoExitosa.observeAsState(false)
+    val mensajeError by viewModel.mensajeErrorCorreccionSexo.observeAsState("")
     val codiError by viewModel.codiError.observeAsState()
     val estadoCarga by viewModel.estadoCarga.observeAsState(false)
-    val fechaIdentificacion by viewModel.fechaIdentificacion.observeAsState("")
-    val mostrarDatePickerIdentificadores by viewModel.mostrarDatePickerIdentificacion.observeAsState(false)
 
+    // Snackbar host state
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
+
+    // Mensajes de respuestas
+    val mensajeCorreccionSexoExitosa = stringResource(R.string.successful_message_correct_sex)
+    val mensajeErrorCorreccionSexo = stringResource(R.string.error_message_correct_sex)
+
+    // Recursos con codigo
+    val elementosConCodigos = ElementosConCodigos()
+
+
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     var mostrarDialogoRecuperacion by remember { mutableStateOf(false) }
 
-    val tituloExito = stringResource(id = R.string.successful_message_identification_postpone)
-    val titulloError = stringResource(id = R.string.error_message_identification_postpone)
 
-    // ============================================
-    // INICIALIZACIÓN Y CARGA DE BORRADOR
-    // ============================================
+    // Inicializacion de Borrador y Carga
     LaunchedEffect(Unit) {
-        viewModel.inicializarSharedPreferences(context)
+        viewModel.initSharedPreferences(context)
 
         // Verificar si hay borrador guardado
         if (viewModel.tieneContenido()) {
@@ -110,11 +119,11 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                 mostrarDialogoRecuperacion = true
             }
         }
+
     }
 
-    // ============================================
-    // DETECCIÓN DE CICLO DE VIDA (AUTOGUARDADO)
-    // ============================================
+
+    // Ciclo de Vida Deteccion
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
@@ -136,9 +145,8 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
         }
     }
 
-    // ============================================
-    // DIÁLOGO DE RECUPERACIÓN DE BORRADOR
-    // ============================================
+
+    // Mostrar mensaje para recuperar borrador
     if (mostrarDialogoRecuperacion) {
         AlertDialog(
             onDismissRequest = { },
@@ -185,7 +193,7 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                     onClick = {
                         mostrarDialogoRecuperacion = false
                         viewModel.eliminarBorradorAutomatico()
-                        viewModel.limpiarFormulario()
+                        viewModel.limpiarFormularioCorreccionSexo()
                     }
                 ) {
                     Text("Descartar", color = Color(0xFF64748B))
@@ -196,34 +204,32 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
         )
     }
 
-    // Mostrar Snackbar cuando hay mensaje de éxito
-    LaunchedEffect(identifiacionExitosa) {
-        if (identifiacionExitosa) {
+    // Mostrar Snackbar cuando hay mensaje de éxito o error
+    LaunchedEffect(correccionSexoExitosa, mensajeError) {
+        if (correccionSexoExitosa) {
             snackbarHostState.showSnackbar(
-                message = tituloExito,
+                message = mensajeCorreccionSexoExitosa,
                 duration = SnackbarDuration.Short
             )
-            viewModel.resetearEstadoIdentificacion()
+            viewModel.resetearEstadoCorreccionSexo()
         }
     }
-
     // Mostrar diálogo cuando hay error
     LaunchedEffect(mensajeError, codiError) {
         if (mensajeError.isNotEmpty() || codiError != null) {
             mostrarDialogoError = true
         }
     }
-
     // Diálogo de Error
     if (mostrarDialogoError) {
         AlertDialog(
             onDismissRequest = {
                 mostrarDialogoError = false
-                viewModel.resetearEstadoIdentificacion()
+                viewModel.resetearEstadoCorreccionSexo()
             },
             icon = {
                 Icon(
-                    imageVector = Icons.Default.ArrowBack,
+                    imageVector = Icons.Default.ArrowBack, // Usa un icono de error apropiado
                     contentDescription = null,
                     tint = Color(0xFF4A7C59),
                     modifier = Modifier.size(48.dp)
@@ -231,7 +237,7 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
             },
             title = {
                 Text(
-                    text = titulloError,
+                    text =mensajeErrorCorreccionSexo,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
                     color = Color(0xFF1E293B)
@@ -251,7 +257,7 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                 Button(
                     onClick = {
                         mostrarDialogoError = false
-                        viewModel.resetearEstadoIdentificacion()
+                        viewModel.resetearEstadoCorreccionSexo()
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF4A7C59)
@@ -265,45 +271,13 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
             shape = RoundedCornerShape(16.dp)
         )
     }
-
-    if (mostrarDatePickerIdentificadores) {
-        val datePickerState = rememberDatePickerState()
-        DatePickerDialog(
-            onDismissRequest = { viewModel.ocultarDatePickerIdentificacion() },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        datePickerState.selectedDateMillis?.let { millis ->
-                            viewModel.seleccionarFechaIdentificacion(millis)
-                        }
-                    }
-                ) {
-                    Text(stringResource(R.string.accept_buttom), color = Color(0xFF4A7C59))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { viewModel.ocultarDatePickerIdentificacion() }) {
-                    Text(stringResource(R.string.cancel_buttom), color = Color(0xFF64748B))
-                }
-            }
-        ) {
-            DatePicker(
-                state = datePickerState,
-                colors = DatePickerDefaults.colors(
-                    selectedDayContainerColor = Color(0xFF4A7C59),
-                    todayDateBorderColor = Color(0xFF4A7C59)
-                )
-            )
-        }
-    }
-
     // Indicador de carga en pantalla completa
     if (estadoCarga) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Black.copy(alpha = 0.5f))
-                .clickable(enabled = false) { },
+                .clickable(enabled = false) { }, // Bloquear interacción
             contentAlignment = Alignment.Center
         ) {
             Card(
@@ -341,21 +315,16 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
         }
     }
     else {
+
         Scaffold(
             topBar = {
                 TopAppBar(
                     title = {
                         Column {
                             Text(
-                                stringResource(R.string.name_identification_postpone),
+                                stringResource(R.string.name_sex_correct),
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.SemiBold
-                            )
-                            Text(
-                                stringResource(R.string.subtitle_identification_postpone),
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Normal,
-                                color = Color.White.copy(alpha = 0.9f)
                             )
                         }
                     },
@@ -375,7 +344,7 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                 SnackbarHost(hostState = snackbarHostState) { data ->
                     Snackbar(
                         snackbarData = data,
-                        containerColor = Color(0xFF4A7C59),
+                        containerColor = Color(0xFF4A7C59), // Verde para éxito
                         contentColor = Color.White,
                         shape = RoundedCornerShape(12.dp)
                     )
@@ -418,8 +387,8 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                             )
                             Spacer(modifier = Modifier.height(10.dp))
                             OutlinedTextField(
-                                value = identificadorAnimal,
-                                onValueChange = { viewModel.actualizarIdentificadorAnimal(it) },
+                                value = identificadorCorreccionSexo,
+                                onValueChange = { viewModel.actualizarIdentificadorCorreccionSexo(it) },
                                 modifier = Modifier.fillMaxWidth(),
                                 placeholder = {
                                     Text(
@@ -453,65 +422,91 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                             )
                         }
 
-                        // Fecha de Identificación
+                        // Sexo Correcto
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                stringResource(R.string.form_date_identification),
+                                stringResource(R.string.form_sex),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color(0xFF1E293B),
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { viewModel.mostrarDatePickerIdentificacion() }
+                            ExposedDropdownMenuBox(
+                                expanded = sexoCorreccionExpandido,
+                                onExpandedChange = { viewModel.toggleSexoCorreccionExpandido() }
                             ) {
                                 OutlinedTextField(
-                                    value = fechaIdentificacion,
+                                    value = sexoCorreccionSeleccionado,
                                     onValueChange = {},
-                                    modifier = Modifier.fillMaxWidth(),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .menuAnchor(),
+                                    readOnly = true,
                                     placeholder = {
                                         Text(
-                                            stringResource(R.string.form_date_description),
+                                            stringResource(R.string.form_sex_description),
                                             color = Color(0xFF94A3B8)
                                         )
                                     },
-                                    leadingIcon = {
-                                        Icon(
-                                            imageVector = Icons.Default.DateRange,
-                                            contentDescription = "Calendario",
-                                            tint = Color(0xFF4A7C59)
+                                    trailingIcon = {
+                                        ExposedDropdownMenuDefaults.TrailingIcon(
+                                            expanded = sexoCorreccionExpandido
                                         )
                                     },
-                                    readOnly = true,
-                                    enabled = false,
+                                    singleLine = true,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        disabledTextColor = Color(0xFF1E293B),
-                                        disabledBorderColor = Color(0xFFCBD5E1),
-                                        disabledLeadingIconColor = Color(0xFF4A7C59),
-                                        disabledPlaceholderColor = Color(0xFF94A3B8)
-                                    ),
-                                    singleLine = true
+                                        focusedBorderColor = Color(0xFF4A7C59),
+                                        unfocusedBorderColor = Color(0xFFCBD5E1),
+                                        focusedTextColor = Color(0xFF1E293B),
+                                        unfocusedTextColor = Color(0xFF1E293B)
+                                    )
                                 )
+
+                                ExposedDropdownMenu(
+                                    expanded = sexoCorreccionExpandido,
+                                    onDismissRequest = { viewModel.cerrarSexoCorreccionMenu() },
+                                    modifier = Modifier.background(Color.White)
+                                ) {
+                                    elementosConCodigos.sexos().forEach { (sexo, codigo) ->
+                                        DropdownMenuItem(
+                                            text = {
+                                                Text(
+                                                    sexo,
+                                                    fontSize = 15.sp,
+                                                    color = Color(0xFF1E293B),
+                                                    fontWeight = FontWeight.Normal
+                                                )
+                                            },
+                                            onClick = { viewModel.seleccionarSexoCorreccion(sexo, codigo) },
+                                            contentPadding = PaddingValues(
+                                                horizontal = 16.dp,
+                                                vertical = 14.dp
+                                            ),
+                                            colors = MenuDefaults.itemColors(
+                                                textColor = Color(0xFF1E293B),
+                                                leadingIconColor = Color(0xFF1E293B),
+                                                trailingIconColor = Color(0xFF1E293B),
+                                                disabledTextColor = Color(0xFF94A3B8)
+                                            )
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
                 }
 
-                // Botón Corregir Identificacion
+                // Botón Corregir Sexo
                 Button(
-                    onClick = { viewModel.corregirIdentificacion() },
+                    onClick = { viewModel.corregirSexoAnimal() },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp, vertical = 24.dp)
                         .height(56.dp),
-                    enabled = !estadoCarga,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF4A7C59),
-                        disabledContainerColor = Color(0xFFCBD5E1)
+                        containerColor = Color(0xFF4A7C59)
                     ),
                     shape = MaterialTheme.shapes.medium,
                     elevation = ButtonDefaults.buttonElevation(
@@ -520,7 +515,7 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                     )
                 ) {
                     Text(
-                        stringResource(R.string.buttom_form_identification_postpone),
+                        stringResource(R.string.buttom_form_correct_sex),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         letterSpacing = 0.5.sp

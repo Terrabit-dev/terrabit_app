@@ -11,6 +11,7 @@ sealed class Routes(val route: String) {
     // Organización Bovinos
     object GestionBovinos : Routes("gestion_bovinos")
     object GuiasMovimientos : Routes("guias_movimientos")
+    object ListarBovinos : Routes("listar_bovinos")
 
     // Organización Porcinos
     object GestionPorcinos : Routes("gestion_porcinos")
