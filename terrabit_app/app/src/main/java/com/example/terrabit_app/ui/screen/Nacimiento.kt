@@ -109,6 +109,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                 mostrarDialogoRecuperacion = true
             }
         }
+
     }
 
     // Autoguardado + deteccion de cierre de pantalla

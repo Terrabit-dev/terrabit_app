@@ -120,6 +120,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                 mostrarDialogoRecuperacion = true
             }
         }
+
     }
 
 
