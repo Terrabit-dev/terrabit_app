@@ -29,7 +29,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -67,10 +66,15 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
-import com.example.terrabit_app.viewmodel.CorrecionSexoViewModel
 import com.example.terrabit_app.R
+import com.example.terrabit_app.ui.theme.BlueGrey
+import com.example.terrabit_app.ui.theme.DarkBlueGrey
+import com.example.terrabit_app.ui.theme.DarkWhiteBackground
+import com.example.terrabit_app.ui.theme.MainGreen
+import com.example.terrabit_app.ui.theme.WhiteBackground
 import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
+import com.example.terrabit_app.viewmodel.CorrecionSexoViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -154,7 +158,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
                     contentDescription = null,
-                    tint = Color(0xFF4A7C59),
+                    tint = MainGreen,
                     modifier = Modifier.size(48.dp)
                 )
             },
@@ -163,14 +167,14 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                     text = "Borrador encontrado",
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
-                    color = Color(0xFF1E293B)
+                    color = DarkBlueGrey
                 )
             },
             text = {
                 Text(
                     text = "Se encontró un formulario sin completar. ¿Deseas recuperarlo?",
                     fontSize = 16.sp,
-                    color = Color(0xFF475569),
+                    color = BlueGrey,
                     lineHeight = 24.sp
                 )
             },
@@ -181,7 +185,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                         // Los datos ya están cargados
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF4A7C59)
+                        containerColor = MainGreen
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
@@ -196,7 +200,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                         viewModel.limpiarFormularioCorreccionSexo()
                     }
                 ) {
-                    Text("Descartar", color = Color(0xFF64748B))
+                    Text("Descartar", color = BlueGrey)
                 }
             },
             containerColor = Color.White,
@@ -231,7 +235,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                 Icon(
                     imageVector = Icons.Default.ArrowBack, // Usa un icono de error apropiado
                     contentDescription = null,
-                    tint = Color(0xFF4A7C59),
+                    tint = MainGreen,
                     modifier = Modifier.size(48.dp)
                 )
             },
@@ -240,7 +244,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                     text =mensajeErrorCorreccionSexo,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
-                    color = Color(0xFF1E293B)
+                    color = DarkBlueGrey
                 )
             },
             text = {
@@ -249,7 +253,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                         alertsErrosScreens(codiError!!)
                     } else mensajeError,
                     fontSize = 16.sp,
-                    color = Color(0xFF475569),
+                    color = BlueGrey,
                     lineHeight = 24.sp
                 )
             },
@@ -260,7 +264,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                         viewModel.resetearEstadoCorreccionSexo()
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF4A7C59)
+                        containerColor = MainGreen
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
@@ -299,7 +303,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                     ) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(48.dp),
-                            color = Color(0xFF4A7C59),
+                            color = MainGreen,
                             strokeWidth = 4.dp
                         )
                         Spacer(modifier = Modifier.height(12.dp))
@@ -307,7 +311,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                             "Procesando...",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
-                            color = Color(0xFF64748B)
+                            color = BlueGrey
                         )
                     }
                 }
@@ -334,7 +338,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color(0xFF4A7C59),
+                        containerColor = MainGreen,
                         titleContentColor = Color.White,
                         navigationIconContentColor = Color.White
                     )
@@ -344,13 +348,13 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                 SnackbarHost(hostState = snackbarHostState) { data ->
                     Snackbar(
                         snackbarData = data,
-                        containerColor = Color(0xFF4A7C59), // Verde para éxito
+                        containerColor = MainGreen, // Verde para éxito
                         contentColor = Color.White,
                         shape = RoundedCornerShape(12.dp)
                     )
                 }
             },
-            containerColor = Color(0xFFF5F7FA)
+            containerColor = WhiteBackground
         ) { padding ->
             Column(
                 modifier = Modifier
@@ -382,7 +386,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                                 stringResource(R.string.form_id_animal),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1E293B),
+                                color = DarkBlueGrey,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -393,7 +397,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                                 placeholder = {
                                     Text(
                                         stringResource(R.string.form_id_animal_description),
-                                        color = Color(0xFF94A3B8)
+                                        color = BlueGrey
                                     )
                                 },
                                 trailingIcon = {
@@ -401,18 +405,18 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                                         Icon(
                                             Icons.Outlined.CameraAlt,
                                             contentDescription = "Escanear",
-                                            tint = Color(0xFF4A7C59)
+                                            tint = MainGreen
                                         )
                                     }
                                 },
                                 singleLine = true,
                                 shape = MaterialTheme.shapes.medium,
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = Color(0xFF4A7C59),
-                                    unfocusedBorderColor = Color(0xFFCBD5E1),
-                                    focusedTextColor = Color(0xFF1E293B),
-                                    unfocusedTextColor = Color(0xFF1E293B),
-                                    cursorColor = Color(0xFF4A7C59)
+                                    focusedBorderColor = MainGreen,
+                                    unfocusedBorderColor = DarkWhiteBackground,
+                                    focusedTextColor = DarkBlueGrey,
+                                    unfocusedTextColor = DarkBlueGrey,
+                                    cursorColor = MainGreen
                                 ),
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Text,
@@ -428,7 +432,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                                 stringResource(R.string.form_sex),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1E293B),
+                                color = DarkBlueGrey,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -446,7 +450,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                                     placeholder = {
                                         Text(
                                             stringResource(R.string.form_sex_description),
-                                            color = Color(0xFF94A3B8)
+                                            color = BlueGrey
                                         )
                                     },
                                     trailingIcon = {
@@ -457,10 +461,10 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                                     singleLine = true,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = Color(0xFF4A7C59),
-                                        unfocusedBorderColor = Color(0xFFCBD5E1),
-                                        focusedTextColor = Color(0xFF1E293B),
-                                        unfocusedTextColor = Color(0xFF1E293B)
+                                        focusedBorderColor = MainGreen,
+                                        unfocusedBorderColor = DarkWhiteBackground,
+                                        focusedTextColor = DarkBlueGrey,
+                                        unfocusedTextColor = DarkBlueGrey
                                     )
                                 )
 
@@ -475,7 +479,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                                                 Text(
                                                     sexo,
                                                     fontSize = 15.sp,
-                                                    color = Color(0xFF1E293B),
+                                                    color = DarkBlueGrey,
                                                     fontWeight = FontWeight.Normal
                                                 )
                                             },
@@ -485,10 +489,10 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                                                 vertical = 14.dp
                                             ),
                                             colors = MenuDefaults.itemColors(
-                                                textColor = Color(0xFF1E293B),
-                                                leadingIconColor = Color(0xFF1E293B),
-                                                trailingIconColor = Color(0xFF1E293B),
-                                                disabledTextColor = Color(0xFF94A3B8)
+                                                textColor = DarkBlueGrey,
+                                                leadingIconColor = DarkBlueGrey,
+                                                trailingIconColor = DarkBlueGrey,
+                                                disabledTextColor = BlueGrey
                                             )
                                         )
                                     }
@@ -506,7 +510,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                         .padding(horizontal = 20.dp, vertical = 24.dp)
                         .height(56.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF4A7C59)
+                        containerColor = MainGreen
                     ),
                     shape = MaterialTheme.shapes.medium,
                     elevation = ButtonDefaults.buttonElevation(

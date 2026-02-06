@@ -1,11 +1,28 @@
 package com.example.terrabit_app.ui.pantallas
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -14,9 +31,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.components.TarjetaAccion
 import com.example.terrabit_app.ui.navigation.Routes
-import com.example.terrabit_app.R
+import com.example.terrabit_app.ui.theme.BlueGrey
+import com.example.terrabit_app.ui.theme.ErrorRed
+import com.example.terrabit_app.ui.theme.MainGreen
+import com.example.terrabit_app.ui.theme.WhiteBackground
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,11 +62,11 @@ fun GestionBovinos(navController: NavController) {
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF4A7C59)
+                    containerColor = MainGreen
                 )
             )
         },
-        containerColor = Color(0xFFF5F7FA)
+        containerColor = WhiteBackground
     ) { padding ->
         Column(
             modifier = Modifier
@@ -60,7 +81,7 @@ fun GestionBovinos(navController: NavController) {
                 stringResource(R.string.gestion_subtitle_bovinos),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF64748B),
+                color = BlueGrey,
                 modifier = Modifier.padding(horizontal = 20.dp)
             )
 
@@ -82,7 +103,7 @@ fun GestionBovinos(navController: NavController) {
                         icono = Icons.Default.Add,
                         titulo = stringResource(R.string.action_register_born),
                         subtitulo = "",
-                        colorFondo = Color(0xFF4A7C59),
+                        colorFondo = MainGreen,
                         modifier = Modifier.weight(1f),
                         onClick = { navController.navigate(Routes.Nacimiento.route) }
                     )
@@ -91,7 +112,7 @@ fun GestionBovinos(navController: NavController) {
                         icono = Icons.Default.Clear,
                         titulo = stringResource(R.string.action_report_dead),
                         subtitulo = "",
-                        colorFondo = Color(0xFFD32F2F),
+                        colorFondo = ErrorRed,
                         modifier = Modifier.weight(1f),
                         onClick = { navController.navigate(Routes.Fallecimiento.route) }
                     )
@@ -104,7 +125,7 @@ fun GestionBovinos(navController: NavController) {
                         icono = Icons.Default.Edit,
                         titulo = stringResource(R.string.action_correct_sex),
                         subtitulo = "",
-                        colorFondo = Color(0xFF4A7C59),
+                        colorFondo = MainGreen,
                         modifier = Modifier.weight(1f),
                         onClick = { navController.navigate(Routes.CorregirBovino.route) }
                     )
@@ -113,7 +134,7 @@ fun GestionBovinos(navController: NavController) {
                         icono = Icons.Default.AddCircle,
                         titulo = stringResource(R.string.action_identify_animal),
                         subtitulo = "",
-                        colorFondo = Color(0xFF4A7C59),
+                        colorFondo = MainGreen,
                         modifier = Modifier.weight(1f),
                         onClick = { navController.navigate(Routes.IdentificacionAplazada.route) }
                     )
