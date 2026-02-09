@@ -285,34 +285,4 @@ class CrearGuiaPorcinosViewModel: ViewModel() {
             ""
         }
     }
-
-    // LA TEVA FUNCIÓ DE CÀRREGA (De API a UI)
-    fun cargarDatosGuia(guia: AltaMovimientoGTR) {
-        val fechaSalida = guia.dataSortida.toString().let {
-            "${it.substring(6, 8)}/${it.substring(4, 6)}/${it.substring(0, 4)}"
-        }
-        val fechaLlegada = guia.dataArribada.toString().let {
-            "${it.substring(6, 8)}/${it.substring(4, 6)}/${it.substring(0, 4)}"
-        }
-        val horaSalida = guia.dataSortida.toString().let {
-            "${it.substring(8, 10)}:${it.substring(10, 12)}"
-        }
-        val horaLlegada = guia.dataArribada.toString().let {
-            "${it.substring(8, 10)}:${it.substring(10, 12)}"
-        }
-
-        _uiState.update { currentState ->
-            currentState.copy(
-                explotacion = guia.explotacioEntrada,
-                categoriaSeleccionada = guia.codiCategoria,
-                numAnimales = guia.numAnimals.toString(),
-                fechaSalida = fechaSalida,
-                fechaLlegada = fechaLlegada,
-                horaSalida = horaSalida,
-                horaLlegada = horaLlegada,
-                matricula= guia.mitjaTransport.toString(),
-                nifConductor = guia.nifConductor.toString()
-            )
-        }
-    }
 }

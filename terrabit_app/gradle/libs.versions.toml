@@ -12,6 +12,8 @@ composeNavigation = "2.8.9"
 serialization = "1.7.3"
 navigationCompose = "2.9.6"
 appcompat = "1.7.1"
+foundationLayout = "1.10.3"
+foundation = "1.10.3"
 
 
 [libraries]
@@ -33,6 +35,8 @@ navigation-compose = { module = "androidx.navigation:navigation-compose", versio
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization"}
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundationLayout" }
+androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
 
 
 [plugins]
