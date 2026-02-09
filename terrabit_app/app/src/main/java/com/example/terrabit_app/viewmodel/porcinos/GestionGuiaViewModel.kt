@@ -1,0 +1,169 @@
+package com.example.terrabit_app.viewmodel.porcinos
+
+import androidx.core.text.isDigitsOnly
+import androidx.lifecycle.ViewModel
+import com.example.terrabit_app.ui.screen.porcinos.GestionPorcinosUiState
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import java.util.Calendar
+
+class GestionGuiaViewModel: ViewModel() {
+    private val _uiState = MutableStateFlow(GestionPorcinosUiState())
+    val uiState : StateFlow<GestionPorcinosUiState> = _uiState.asStateFlow()
+
+    private var categoriaApiSeleccionada: String = "0"
+    private var medioTransporteApiSeleccionada: String = "0"
+    fun actualizarExplotacion(nuevaExplotacion: String) {
+        if (nuevaExplotacion.length <= 14) {
+            _uiState.update { currentState ->
+                currentState.copy(explotacion = nuevaExplotacion)
+            }
+        }
+    }
+
+    fun toggleCategoriaExpandido() {
+        _uiState.update { currentState ->
+            currentState.copy(categoriaExpandido = !currentState.categoriaExpandido)
+        }
+    }
+
+    fun cerrarCategoriaMenu() {
+        _uiState.update { currentState ->
+            currentState.copy(categoriaExpandido = false)
+        }
+    }
+
+    fun seleccionarCategoria(categoria: String, codigo: String) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                categoriaSeleccionada = categoria,
+                categoriaExpandido = false,
+                categoriaApiSeleccionada = codigo
+            )
+        }
+    }
+
+    fun actualizarNumAnimales(nuevoNumAnimales: String) {
+        if (nuevoNumAnimales.isEmpty()) {
+            _uiState.update { it.copy(numAnimales = "") }
+            return
+        }
+
+        if (nuevoNumAnimales.isDigitsOnly()) {
+            val numero = nuevoNumAnimales.toIntOrNull() ?: 1
+
+            if (numero >= 1) {
+                _uiState.update { currentState ->
+                    currentState.copy(numAnimales = nuevoNumAnimales)
+                }
+            }
+        }
+    }
+
+    fun mostrarDatePickerSalida() {
+        _uiState.update { currentState ->
+            currentState.copy(mostrarDatePickerSalida = true)
+        }
+    }
+
+    fun ocultarDatePickerSalida() {
+        _uiState.update { currentState ->
+            currentState.copy(mostrarDatePickerSalida = false)
+        }
+    }
+
+    fun seleccionarFechaSalida(fechaMillis: Long) {
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = fechaMillis
+        val dia = calendar.get(Calendar.DAY_OF_MONTH)
+        val mes = calendar.get(Calendar.MONTH) + 1
+        val anio = calendar.get(Calendar.YEAR)
+
+        _uiState.update { currentState ->
+            currentState.copy(
+                fechaSalida = String.format("%02d/%02d/%04d", dia, mes, anio),
+                mostrarDatePickerSalida = false
+            )
+        }
+    }
+
+    fun mostrarDatePickerLlegada() {
+        _uiState.update { currentState ->
+            currentState.copy(mostrarDatePickerLlegada = true)
+        }
+    }
+
+    fun ocultarDatePickerLlegada() {
+        _uiState.update { currentState ->
+            currentState.copy(mostrarDatePickerLlegada = false)
+        }
+    }
+
+    fun seleccionarFechaLlegada(fechaMillis: Long) {
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = fechaMillis
+        val dia = calendar.get(Calendar.DAY_OF_MONTH)
+        val mes = calendar.get(Calendar.MONTH) + 1
+        val anio = calendar.get(Calendar.YEAR)
+
+        _uiState.update { currentState ->
+            currentState.copy(
+                fechaLlegada = String.format("%02d/%02d/%04d", dia, mes, anio),
+                mostrarDatePickerLlegada = false
+            )
+        }
+    }
+
+    fun actualizarCodigoSIR(nuevoCodigoSIR: String) {
+        if (nuevoCodigoSIR.length <= 15) {
+            _uiState.update { currentState ->
+                currentState.copy(codigoSIR = nuevoCodigoSIR)
+            }
+        }
+    }
+
+    fun toggleMedioTransporteExpandido() {
+        _uiState.update { currentState ->
+            currentState.copy(medioTransporteExpandido = !currentState.medioTransporteExpandido)
+        }
+    }
+
+    fun cerrarMedioTransporteMenu() {
+        _uiState.update { currentState ->
+            currentState.copy(medioTransporteExpandido = false)
+        }
+    }
+
+    fun seleccionarMedioTransporte(medioTransporte: String, codigo: String) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                medioTransporteSeleccionado = medioTransporte,
+                medioTransporteApiSeleccionado = codigo,
+                medioTransporteExpandido = false
+            )
+        }
+    }
+
+    fun actualizarMatricula(nuevaMatricula: String) {
+        if (nuevaMatricula.length <= 10) {
+            _uiState.update { currentState ->
+                currentState.copy(matricula = nuevaMatricula)
+            }
+        }
+    }
+
+    fun actualizarNifConductor(nif: String) {
+        if (nif.length <= 9) {
+            _uiState.update { currentState ->
+                currentState.copy(nifConductor = nif)
+            }
+        }
+    }
+
+    fun crearGuia() {
+        _uiState.update { GestionPorcinosUiState() }
+        /*TODO*/
+    }
+}
