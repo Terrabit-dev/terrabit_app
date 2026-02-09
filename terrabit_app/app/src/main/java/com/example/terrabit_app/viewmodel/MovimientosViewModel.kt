@@ -8,6 +8,7 @@ import com.example.terrabit_app.data.network.Identificadores.IdenMovimiento
 import com.example.terrabit_app.data.network.moviminetos.modelos.Movimientos
 import com.example.terrabit_app.data.network.moviminetos.modelos.PetConfirmacionMovi
 import com.example.terrabit_app.data.network.respuestas.ResConfirmacionMovi
+import com.example.terrabit_app.data.network.respuestas.RespuestaUnificada
 import com.example.terrabit_app.utils.DateUtils.convertirFechaAFormatoAPI
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
@@ -626,9 +627,9 @@ class MovimientosViewModel : ViewModel() {
                             val errorBody = response.errorBody()?.string()
                             if (errorBody != null) {
                                 try {
-                                    val errorObj = Gson().fromJson(errorBody, ResConfirmacionMovi::class.java)
-                                    _mensajeError.value = errorObj.descripcio
-                                        ?: "Error desconocido del servidor"
+                                    val errorObj = Gson().fromJson(errorBody, RespuestaUnificada::class.java)
+                                    _mensajeError.value = errorObj.errors?.firstOrNull()?.descripcio
+                                        ?: "Error desconocido"
                                 } catch (e: Exception) {
                                     _mensajeError.value = "Error al procesar respuesta"
                                 }
