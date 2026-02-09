@@ -142,7 +142,7 @@ fun GestionPorcinos(
                 title = {
                     Column {
                         Text(
-                            "Crear Guía",
+                            text = stringResource(R.string.card_crear_guias),
                             fontSize = 20.sp,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -150,7 +150,7 @@ fun GestionPorcinos(
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -189,7 +189,7 @@ fun GestionPorcinos(
                     // Explotación de Entrada
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            text = "Explotación de Entrada *",
+                            text = stringResource(R.string.form_porcinos_expl_entrada),
                             fontSize = 15.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = DarkBlueGrey,
@@ -202,7 +202,7 @@ fun GestionPorcinos(
                             modifier = Modifier.fillMaxWidth(),
                             placeholder = {
                                 Text(
-                                    text = "Introducir código de explotación de entrada",
+                                    text = stringResource(R.string.form_porcinos_cod_expl_entrada),
                                     color = BlueGrey
                                 )
                             },
@@ -226,7 +226,7 @@ fun GestionPorcinos(
                     // Codigo de Categoria
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            text = "Código de Categoría *",
+                            text = stringResource(R.string.form_porcinos_cod_cat),
                             fontSize = 15.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = DarkBlueGrey,
@@ -246,7 +246,7 @@ fun GestionPorcinos(
                                 readOnly = true,
                                 placeholder = {
                                     Text(
-                                        text = "Seleccionar categoria",
+                                        text = stringResource(R.string.form_porcinos_descr_cat),
                                         color = BlueGrey
                                     )
                                 },
@@ -302,7 +302,7 @@ fun GestionPorcinos(
                     // Número de Animales
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            text = "Número de Animales *",
+                            text = stringResource(R.string.form_porcinos_nAnimales),
                             fontSize = 15.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = DarkBlueGrey,
@@ -315,7 +315,7 @@ fun GestionPorcinos(
                             modifier = Modifier.fillMaxWidth(),
                             placeholder = {
                                 Text(
-                                    text = "Introducir número de animales",
+                                    text = stringResource(R.string.form_porcinos_descr_nAnimales),
                                     color = BlueGrey
                                 )
                             },
@@ -339,7 +339,7 @@ fun GestionPorcinos(
                     // Fecha de Salida
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            text = "Fecha de salida *",
+                            text = stringResource(R.string.form_porcinos_fecha_salida),
                             fontSize = 15.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = DarkBlueGrey,
@@ -357,14 +357,14 @@ fun GestionPorcinos(
                                 modifier = Modifier.fillMaxWidth(),
                                 placeholder = {
                                     Text(
-                                        text = "Seleccionar fecha de salida",
+                                        text = stringResource(R.string.form_porcinos_descr_fechaS),
                                         color = BlueGrey
                                     )
                                 },
                                 leadingIcon = {
                                     Icon(
                                         Icons.Default.DateRange,
-                                        contentDescription = "Calendario",
+                                        contentDescription = stringResource(R.string.content_description_calendario),
                                         tint = MainOrange
                                     )
                                 },
@@ -385,7 +385,7 @@ fun GestionPorcinos(
                     // Fecha de Llegada
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            text = "Fecha de llegada *",
+                            text = stringResource(R.string.form_porcinos_fecha_llegada),
                             fontSize = 15.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = DarkBlueGrey,
@@ -403,14 +403,14 @@ fun GestionPorcinos(
                                 modifier = Modifier.fillMaxWidth(),
                                 placeholder = {
                                     Text(
-                                        text = "Seleccionar fecha de salida",
+                                        text = stringResource(R.string.form_porcinos_descr_fechaLl),
                                         color = BlueGrey
                                     )
                                 },
                                 leadingIcon = {
                                     Icon(
                                         Icons.Default.DateRange,
-                                        contentDescription = "Calendario",
+                                        contentDescription = stringResource(R.string.content_description_calendario),
                                         tint = MainOrange
                                     )
                                 },
@@ -431,7 +431,7 @@ fun GestionPorcinos(
                     // Opcional - Código SIR
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            text = "Código SIR",
+                            text = stringResource(R.string.form_porcinos_cod_sir),
                             fontSize = 15.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = DarkBlueGrey,
@@ -444,7 +444,7 @@ fun GestionPorcinos(
                             modifier = Modifier.fillMaxWidth(),
                             placeholder = {
                                 Text(
-                                    text = "Introducir código SIR",
+                                    text = stringResource(R.string.form_porcinos_descr_sir),
                                     color = BlueGrey
                                 )
                             },
@@ -468,7 +468,7 @@ fun GestionPorcinos(
                     // Opcional - Medio de Transporte
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            text = "Medio de Transporte",
+                            text = stringResource(R.string.form_porcinos_medio_trans),
                             fontSize = 15.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = DarkBlueGrey,
@@ -488,7 +488,7 @@ fun GestionPorcinos(
                                 readOnly = true,
                                 placeholder = {
                                     Text(
-                                        text = "Seleccionar medio de transporte",
+                                        text = stringResource(R.string.form_porcinos_descr_MTransp),
                                         color = BlueGrey
                                     )
                                 },
@@ -544,7 +544,7 @@ fun GestionPorcinos(
                     // Opcional - Matrícula
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            text = "Matrícula",
+                            text = stringResource(R.string.form_porcinos_matricula),
                             fontSize = 15.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = DarkBlueGrey,
@@ -557,7 +557,7 @@ fun GestionPorcinos(
                             modifier = Modifier.fillMaxWidth(),
                             placeholder = {
                                 Text(
-                                    text = "Introducir Matrícula",
+                                    text = stringResource(R.string.form_porcinos_descr_matricula),
                                     color = BlueGrey
                                 )
                             },
@@ -581,7 +581,7 @@ fun GestionPorcinos(
                     // Opcional - NIF Conductor
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            text = "NIF del Conductor",
+                            text = stringResource(R.string.form_porcinos_nifCond),
                             fontSize = 15.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = DarkBlueGrey,
@@ -594,7 +594,7 @@ fun GestionPorcinos(
                             modifier = Modifier.fillMaxWidth(),
                             placeholder = {
                                 Text(
-                                    text = "Introducir NIF del conductor",
+                                    text = stringResource(R.string.form_porcinos_descr_nifCond),
                                     color = BlueGrey
                                 )
                             },
@@ -633,7 +633,7 @@ fun GestionPorcinos(
                         )
                     ) {
                         Text(
-                            text = "Crear Guia",
+                            text = stringResource(R.string.card_crear_guias),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold,
                             letterSpacing = 0.5.sp

@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">Terrabit</string>
 
+    <string name="app_version">Versió 1.0.0</string>
     <string name="drawer_subtitle">Gestió Ramadera</string>
     <string name="drawer_explained">Tipus d\'Animal</string>
     <string name="bovinos_name">Bovins</string>
@@ -324,5 +325,29 @@
     <string name="form_unitats_description">Ingressi el numero d\'unitats</string>
     <string name="alert_material_codiMo">El Codi MO és obligatori per al tipus de material seleccionat</string>
     <string name="alert_necessary_codiMO">Camp obligatori per a aquesta mena de material</string>
+    <string name="title_porcinos_gestion_guias">Gestionar Guies</string>
+    <string name="name_confirmar_entradas">Confirmar Entrades</string>
+    <string name="gestion_subtitle_porcinos">Seleccioneu una acció</string>
+    <string name="card_confirm_edit_guias_porcinos">Confirma i edita les guies</string>
+    <string name="card_confirm_entrada_porcinos">Confirmar entrades</string>
+    <string name="form_porcinos_expl_entrada">Explotació d\'Entrada *</string>
+    <string name="form_porcinos_cod_expl_entrada">Introduïu el codi d\'explotació d\'entrada</string>
+    <string name="form_porcinos_cod_cat">Codi de categoria *</string>
+    <string name="form_porcinos_descr_cat">Selecciona categoria</string>
+    <string name="form_porcinos_nAnimales">Nombre d\'Animals *</string>
+    <string name="form_porcinos_descr_nAnimales">Introdueix el nombre d\'animals</string>
+    <string name="form_porcinos_fecha_salida">Data de sortida *</string>
+    <string name="form_porcinos_descr_fechaS">Seleccioneu la data de sortida</string>
+    <string name="content_description_calendario">Calendari</string>
+    <string name="form_porcinos_fecha_llegada">Data d\'arribada *</string>
+    <string name="form_porcinos_descr_fechaLl">Seleccioneu la data d\'arribada</string>
+    <string name="form_porcinos_cod_sir">Codi SIR</string>
+    <string name="form_porcinos_descr_sir">Introduïu el codi SIR</string>
+    <string name="form_porcinos_medio_trans">Mitjà de transport</string>
+    <string name="form_porcinos_descr_MTransp">Seleccioneu un mitjà de transport</string>
+    <string name="form_porcinos_matricula">Matricula</string>
+    <string name="form_porcinos_descr_matricula">Introduïu Matricula</string>
+    <string name="form_porcinos_nifCond">NIF del Conductor</string>
+    <string name="form_porcinos_descr_nifCond">Introduïu NIF del conductor</string>
 
 </resources>
