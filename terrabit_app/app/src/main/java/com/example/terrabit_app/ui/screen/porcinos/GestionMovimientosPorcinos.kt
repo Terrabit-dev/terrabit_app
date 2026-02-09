@@ -24,10 +24,12 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.components.TarjetaAccion
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.theme.BlueGrey
@@ -42,7 +44,7 @@ fun GuiasMovimientosPorcinos(navController: NavController) {
             TopAppBar(
                 title = {
                     Text(
-                        "Guías y Movimientos",
+                        text = stringResource(R.string.card_name_guias),
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
@@ -51,7 +53,7 @@ fun GuiasMovimientosPorcinos(navController: NavController) {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             Icons.Default.ArrowBack,
-                            contentDescription = "Volver",
+                            contentDescription = stringResource(R.string.content_description_back),
                             tint = Color.White
                         )
                     }
@@ -73,7 +75,7 @@ fun GuiasMovimientosPorcinos(navController: NavController) {
 
             // Descripción
             Text(
-                "Selecciona una acción",
+                text = stringResource(R.string.gestion_subtitle_porcinos),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = BlueGrey,
@@ -96,7 +98,7 @@ fun GuiasMovimientosPorcinos(navController: NavController) {
                 ) {
                     TarjetaAccion(
                         icono = Icons.Default.Create,
-                        titulo = "Confirmar y editar guias",
+                        titulo = stringResource(R.string.card_confirm_edit_guias_porcinos),
                         subtitulo = "",
                         colorFondo = MainGreen,
                         modifier = Modifier.weight(1f),
@@ -105,7 +107,7 @@ fun GuiasMovimientosPorcinos(navController: NavController) {
 
                     TarjetaAccion(
                         icono = Icons.Default.Send,
-                        titulo = "Confirmar Entradas",
+                        titulo = stringResource(R.string.card_confirm_entrada_porcinos),
                         subtitulo = "",
                         colorFondo = MainGreen,
                         contadorBadge = 2,
