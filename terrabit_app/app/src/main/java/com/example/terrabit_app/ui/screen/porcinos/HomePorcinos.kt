@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -25,12 +24,13 @@ import androidx.compose.material.icons.filled.EmojiNature
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocalShipping
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -44,7 +44,10 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -58,10 +61,10 @@ import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.pantallas.TarjetaMenu
+import com.example.terrabit_app.ui.pantallas.cambiarIdioma
 import com.example.terrabit_app.ui.theme.BlueGrey
 import com.example.terrabit_app.ui.theme.DarkBlueGrey
 import com.example.terrabit_app.ui.theme.DarkWhiteBackground
-import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
 import com.example.terrabit_app.ui.theme.MintCreamOrange
@@ -377,6 +380,8 @@ fun HeaderBienvenidaPorcinos(
     tipoAnimal: String,
     onMenuClick: () -> Unit
 ) {
+    var expanded by remember { mutableStateOf(false) }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -384,12 +389,6 @@ fun HeaderBienvenidaPorcinos(
             .clip(RoundedCornerShape(bottomStart = 30.dp, bottomEnd = 30.dp))
             .background(
                 color = MainOrange
-                /* brush = Brush.verticalGradient(
-                    colors = listOf(
-                        DarkMainOrange,
-                        MainOrange
-                    )
-                ) */
             )
     ) {
         Column(
@@ -420,12 +419,12 @@ fun HeaderBienvenidaPorcinos(
                     )
                 }
 
-                // Notificaciones
                 Box(
                     contentAlignment = Alignment.Center
                 ) {
+                    // Botón de configuración
                     IconButton(
-                        onClick = { /* Notificaciones */ },
+                        onClick = { expanded = true },
                         modifier = Modifier
                             .size(40.dp)
                             .background(
@@ -434,23 +433,31 @@ fun HeaderBienvenidaPorcinos(
                             )
                     ) {
                         Icon(
-                            Icons.Default.Notifications,
-                            contentDescription = stringResource(R.string.content_description_notificaciones),
+                            Icons.Default.Settings,
+                            contentDescription = "Configuración",
                             tint = Color.White
                         )
                     }
 
-                    Badge(
-                        containerColor = ErrorRed,
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .offset(x = (-4).dp, y = 4.dp)
+                    // Menú Desplegable
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
                     ) {
-                        Text(
-                            "3",
-                            color = Color.White,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold
+                        DropdownMenuItem(
+                            text = { Text("Castellano") },
+                            onClick = {
+                                expanded = false
+                                cambiarIdioma("es")
+                            }
+                        )
+
+                        DropdownMenuItem(
+                            text = { Text("Català") },
+                            onClick = {
+                                expanded = false
+                                cambiarIdioma("ca")
+                            }
                         )
                     }
                 }
