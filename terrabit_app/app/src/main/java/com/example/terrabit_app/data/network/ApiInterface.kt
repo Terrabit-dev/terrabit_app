@@ -135,7 +135,7 @@ interface ApiInterface {
      * 5.1 SW Alta de guies
      * Crea un nuevo movimiento en el sistema GTR.
      */
-    @PUT("gtr/WSAltaguies/AppJava/WSAltaGuia")
+    @PUT("WSAltaguies/AppJava/WSAltaGuia")
     suspend fun altaMovimientoPorcino(
         @Body request: AltaMovimientoGTR
     ): Response<AltaGuiaExitoResponse>
@@ -144,7 +144,7 @@ interface ApiInterface {
      * 5.2 SW càrrega de guies DST per mobilitat
      * Descarga las guías marcadas para movilidad desde el origen.
      */
-    @GET("gtr/WSMobilitat/AppJava/WSCarregaGuiesMobilitat")
+    @GET("WSMobilitat/AppJava/WSCarregaGuiesMobilitat")
     suspend fun     listarMovimientosOrigenPorcino(
         @Query("nif") nif: String?,
         @Query("password") password: String?,
@@ -157,7 +157,7 @@ interface ApiInterface {
      * 5.3 SW DST’s tramitats en App Mòbil
      * Modifica y cierra (pasa a "Emesa") una guía descargada previamente.
      */
-    @PUT("gtr/WSMobilitat/AppJava/WSModificarGuiasMovilitat")
+    @PUT("WSMobilitat/AppJava/WSModificarGuiasMovilitat")
     suspend fun tramitarMovimientoMovilidadPorcina(
         @Body request: ModificarMovimentsAGias
     ): Response<GtrStandardResponse>
@@ -169,7 +169,7 @@ interface ApiInterface {
      * 5.2 Consulta de moviments confirmació d’entrada
      * Lista las guías que están esperando a que el destino confirme la llegada.
      */
-    @GET("gtr/WSConfirmacioMoviments/AppJava/WSObtenirMovimentPteConfirmar")
+    @GET("WSConfirmacioMoviments/AppJava/WSObtenirMovimentPteConfirmar")
     suspend fun listarMovimientosPendientesEntradaPorcina(
         @Query("nif") nif: String?,
         @Query("password") password: String?,
@@ -182,7 +182,7 @@ interface ApiInterface {
      * 5.1 Confirmació de moviments d’entrada
      * El destino confirma oficialmente que los animales han llegado.
      */
-    @PUT("gtr/WSConfirmacioMoviments/AppJava/WSConfirmarMoviment")
+    @PUT("WSConfirmacioMoviments/AppJava/WSConfirmarMoviment")
     suspend fun confirmarEntradaMovimientoPorcina(
         @Body request: ConfirmarMovimientosRequest
     ): Response<GtrConfirmacioResponse>
