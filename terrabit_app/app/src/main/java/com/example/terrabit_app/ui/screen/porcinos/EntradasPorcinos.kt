@@ -23,6 +23,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.terrabit_app.ui.theme.Blue
+import com.example.terrabit_app.ui.theme.MainGreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,7 +39,7 @@ fun EntradasPorcinos(navController: NavController) {
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF4A7C59),
+                    containerColor = MainGreen,
                     titleContentColor = Color.White,
                     navigationIconContentColor = Color.White
                 )
@@ -56,7 +58,7 @@ fun EntradasPorcinos(navController: NavController) {
                 "Confirmar Entradas",
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1565C0)
+                color = Blue
             )
             Spacer(modifier = Modifier.height(24.dp))
             Text(

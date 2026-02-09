@@ -2,7 +2,16 @@ package com.example.terrabit_app.ui.screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -10,9 +19,37 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.CameraAlt
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -21,6 +58,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.terrabit_app.ui.theme.BlueGrey
+import com.example.terrabit_app.ui.theme.DarkBlueGrey
+import com.example.terrabit_app.ui.theme.DarkWhiteBackground
+import com.example.terrabit_app.ui.theme.ErrorRed
+import com.example.terrabit_app.ui.theme.MainGreen
+import com.example.terrabit_app.ui.theme.WhiteBackground
 import com.example.terrabit_app.viewmodel.MaterialViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -81,7 +124,7 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
                     contentDescription = null,
-                    tint = Color(0xFFD32F2F),
+                    tint = ErrorRed,
                     modifier = Modifier.size(48.dp)
                 )
             },
@@ -90,14 +133,14 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                     text = "Error al Solicitar Material",
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
-                    color = Color(0xFF1E293B)
+                    color = DarkBlueGrey
                 )
             },
             text = {
                 Text(
                     text = mensajeError,
                     fontSize = 16.sp,
-                    color = Color(0xFF475569),
+                    color = BlueGrey,
                     lineHeight = 24.sp
                 )
             },
@@ -108,7 +151,7 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                         viewModel.resetearEstadoRegistroMaterial()
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFD32F2F)
+                        containerColor = ErrorRed
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
@@ -148,7 +191,7 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                     ) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(48.dp),
-                            color = Color(0xFF3F8F6B),
+                            color = MainGreen,
                             strokeWidth = 4.dp
                         )
                         Spacer(modifier = Modifier.height(12.dp))
@@ -156,7 +199,7 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                             "Procesando...",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
-                            color = Color(0xFF64748B)
+                            color = BlueGrey
                         )
                     }
                 }
@@ -188,7 +231,7 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color(0xFF3F8F6B),
+                        containerColor = MainGreen,
                         titleContentColor = Color.White,
                         navigationIconContentColor = Color.White
                     )
@@ -198,13 +241,13 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                 SnackbarHost(hostState = snackbarHostState) { data ->
                     Snackbar(
                         snackbarData = data,
-                        containerColor = Color(0xFF3F8F6B),
+                        containerColor = MainGreen,
                         contentColor = Color.White,
                         shape = RoundedCornerShape(12.dp)
                     )
                 }
             },
-            containerColor = Color(0xFFF5F7FA)
+            containerColor = WhiteBackground
         ) { padding ->
             Column(
                 modifier = Modifier
@@ -234,7 +277,7 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                                 "Empresa Subministradora *",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1E293B),
+                                color = DarkBlueGrey,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -247,15 +290,15 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                                     onValueChange = {},
                                     modifier = Modifier.fillMaxWidth().menuAnchor(),
                                     readOnly = true,
-                                    placeholder = { Text("Seleccionar empresa", color = Color(0xFF94A3B8)) },
+                                    placeholder = { Text("Seleccionar empresa", color = BlueGrey) },
                                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(empresaExpandida) },
                                     singleLine = true,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = Color(0xFF3F8F6B),
-                                        unfocusedBorderColor = Color(0xFFCBD5E1),
-                                        focusedTextColor = Color(0xFF1E293B),
-                                        unfocusedTextColor = Color(0xFF1E293B)
+                                        focusedBorderColor = MainGreen,
+                                        unfocusedBorderColor = DarkWhiteBackground,
+                                        focusedTextColor = DarkBlueGrey,
+                                        unfocusedTextColor = DarkBlueGrey
                                     )
                                 )
                                 ExposedDropdownMenu(
@@ -269,14 +312,14 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                                                 Text(
                                                     empresa.nombre,
                                                     fontSize = 15.sp,
-                                                    color = Color(0xFF1E293B)
+                                                    color = DarkBlueGrey
                                                 )
                                             },
                                             onClick = { viewModel.seleccionarEmpresa(empresa.nombre, empresa.nif) },
                                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
                                         )
                                         if (empresa != viewModel.listaEmpresas.last()) {
-                                            HorizontalDivider(color = Color(0xFFF1F5F9), thickness = 1.dp)
+                                            HorizontalDivider(color = DarkWhiteBackground, thickness = 1.dp)
                                         }
                                     }
                                 }
@@ -289,7 +332,7 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                                 "Tipo de Envío *",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1E293B),
+                                color = DarkBlueGrey,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -302,15 +345,15 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                                     onValueChange = {},
                                     modifier = Modifier.fillMaxWidth().menuAnchor(),
                                     readOnly = true,
-                                    placeholder = { Text("Seleccionar tipo de envío", color = Color(0xFF94A3B8)) },
+                                    placeholder = { Text("Seleccionar tipo de envío", color = BlueGrey) },
                                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(tipoEnviamientoExpandido) },
                                     singleLine = true,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = Color(0xFF3F8F6B),
-                                        unfocusedBorderColor = Color(0xFFCBD5E1),
-                                        focusedTextColor = Color(0xFF1E293B),
-                                        unfocusedTextColor = Color(0xFF1E293B)
+                                        focusedBorderColor = MainGreen,
+                                        unfocusedBorderColor = DarkWhiteBackground,
+                                        focusedTextColor = DarkBlueGrey,
+                                        unfocusedTextColor = DarkBlueGrey
                                     )
                                 )
                                 ExposedDropdownMenu(
@@ -320,12 +363,12 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                                 ) {
                                     viewModel.listaTiposEnviamiento.forEach { tipo ->
                                         DropdownMenuItem(
-                                            text = { Text(tipo, fontSize = 15.sp, color = Color(0xFF1E293B)) },
+                                            text = { Text(tipo, fontSize = 15.sp, color = DarkBlueGrey) },
                                             onClick = { viewModel.seleccionarTipoEnviamiento(tipo) },
                                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
                                         )
                                         if (tipo != viewModel.listaTiposEnviamiento.last()) {
-                                            HorizontalDivider(color = Color(0xFFF1F5F9), thickness = 1.dp)
+                                            HorizontalDivider(color = DarkWhiteBackground, thickness = 1.dp)
                                         }
                                     }
                                 }
@@ -338,7 +381,7 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                                 "Destino de Entrega *",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1E293B),
+                                color = DarkBlueGrey,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -351,15 +394,15 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                                     onValueChange = {},
                                     modifier = Modifier.fillMaxWidth().menuAnchor(),
                                     readOnly = true,
-                                    placeholder = { Text("Seleccionar destino", color = Color(0xFF94A3B8)) },
+                                    placeholder = { Text("Seleccionar destino", color = BlueGrey) },
                                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(destinoExpandido) },
                                     singleLine = true,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = Color(0xFF3F8F6B),
-                                        unfocusedBorderColor = Color(0xFFCBD5E1),
-                                        focusedTextColor = Color(0xFF1E293B),
-                                        unfocusedTextColor = Color(0xFF1E293B)
+                                        focusedBorderColor = MainGreen,
+                                        unfocusedBorderColor = DarkWhiteBackground,
+                                        focusedTextColor = DarkBlueGrey,
+                                        unfocusedTextColor = DarkBlueGrey
                                     )
                                 )
                                 ExposedDropdownMenu(
@@ -369,12 +412,12 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                                 ) {
                                     viewModel.listaDestinos.forEach { destino ->
                                         DropdownMenuItem(
-                                            text = { Text(destino, fontSize = 15.sp, color = Color(0xFF1E293B)) },
+                                            text = { Text(destino, fontSize = 15.sp, color = DarkBlueGrey) },
                                             onClick = { viewModel.seleccionarDestino(destino) },
                                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
                                         )
                                         if (destino != viewModel.listaDestinos.last()) {
-                                            HorizontalDivider(color = Color(0xFFF1F5F9), thickness = 1.dp)
+                                            HorizontalDivider(color = DarkWhiteBackground, thickness = 1.dp)
                                         }
                                     }
                                 }
@@ -388,7 +431,7 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                                     "Oficina Comarcal *",
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = Color(0xFF1E293B),
+                                    color = DarkBlueGrey,
                                     letterSpacing = 0.15.sp
                                 )
                                 Spacer(modifier = Modifier.height(10.dp))
@@ -401,15 +444,15 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                                         onValueChange = {},
                                         modifier = Modifier.fillMaxWidth().menuAnchor(),
                                         readOnly = true,
-                                        placeholder = { Text("Seleccionar oficina comarcal", color = Color(0xFF94A3B8)) },
+                                        placeholder = { Text("Seleccionar oficina comarcal", color = BlueGrey) },
                                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(oficinaComarcalExpandida) },
                                         singleLine = true,
                                         shape = MaterialTheme.shapes.medium,
                                         colors = OutlinedTextFieldDefaults.colors(
-                                            focusedBorderColor = Color(0xFF3F8F6B),
-                                            unfocusedBorderColor = Color(0xFFCBD5E1),
-                                            focusedTextColor = Color(0xFF1E293B),
-                                            unfocusedTextColor = Color(0xFF1E293B)
+                                            focusedBorderColor = MainGreen,
+                                            unfocusedBorderColor = DarkWhiteBackground,
+                                            focusedTextColor = DarkBlueGrey,
+                                            unfocusedTextColor = DarkBlueGrey
                                         )
                                     )
                                     ExposedDropdownMenu(
@@ -419,12 +462,12 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                                     ) {
                                         viewModel.listaOficinasComarcales.forEach { oc ->
                                             DropdownMenuItem(
-                                                text = { Text("${oc.codigo} - ${oc.nombre}", fontSize = 15.sp, color = Color(0xFF1E293B)) },
+                                                text = { Text("${oc.codigo} - ${oc.nombre}", fontSize = 15.sp, color = DarkBlueGrey) },
                                                 onClick = { viewModel.seleccionarOficinaComarcal(oc.nombre, oc.codigo) },
                                                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
                                             )
                                             if (oc != viewModel.listaOficinasComarcales.last()) {
-                                                HorizontalDivider(color = Color(0xFFF1F5F9), thickness = 1.dp)
+                                                HorizontalDivider(color = DarkWhiteBackground, thickness = 1.dp)
                                             }
                                         }
                                     }
@@ -440,7 +483,7 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                                         "Dirección *",
                                         fontSize = 15.sp,
                                         fontWeight = FontWeight.SemiBold,
-                                        color = Color(0xFF1E293B),
+                                        color = DarkBlueGrey,
                                         letterSpacing = 0.15.sp
                                     )
                                     Spacer(modifier = Modifier.height(10.dp))
@@ -448,15 +491,15 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                                         value = direccion,
                                         onValueChange = { viewModel.actualizarDireccion(it) },
                                         modifier = Modifier.fillMaxWidth(),
-                                        placeholder = { Text("Introducir dirección", color = Color(0xFF94A3B8)) },
+                                        placeholder = { Text("Introducir dirección", color = BlueGrey) },
                                         singleLine = true,
                                         shape = MaterialTheme.shapes.medium,
                                         colors = OutlinedTextFieldDefaults.colors(
-                                            focusedBorderColor = Color(0xFF3F8F6B),
-                                            unfocusedBorderColor = Color(0xFFCBD5E1),
-                                            focusedTextColor = Color(0xFF1E293B),
-                                            unfocusedTextColor = Color(0xFF1E293B),
-                                            cursorColor = Color(0xFF3F8F6B)
+                                            focusedBorderColor = MainGreen,
+                                            unfocusedBorderColor = DarkWhiteBackground,
+                                            focusedTextColor = DarkBlueGrey,
+                                            unfocusedTextColor = DarkBlueGrey,
+                                            cursorColor = MainGreen
                                         )
                                     )
                                 }
@@ -466,7 +509,7 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                                         "Población *",
                                         fontSize = 15.sp,
                                         fontWeight = FontWeight.SemiBold,
-                                        color = Color(0xFF1E293B),
+                                        color = DarkBlueGrey,
                                         letterSpacing = 0.15.sp
                                     )
                                     Spacer(modifier = Modifier.height(10.dp))
@@ -474,15 +517,15 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                                         value = poblacion,
                                         onValueChange = { viewModel.actualizarPoblacion(it) },
                                         modifier = Modifier.fillMaxWidth(),
-                                        placeholder = { Text("Introducir población", color = Color(0xFF94A3B8)) },
+                                        placeholder = { Text("Introducir población", color = BlueGrey) },
                                         singleLine = true,
                                         shape = MaterialTheme.shapes.medium,
                                         colors = OutlinedTextFieldDefaults.colors(
-                                            focusedBorderColor = Color(0xFF3F8F6B),
-                                            unfocusedBorderColor = Color(0xFFCBD5E1),
-                                            focusedTextColor = Color(0xFF1E293B),
-                                            unfocusedTextColor = Color(0xFF1E293B),
-                                            cursorColor = Color(0xFF3F8F6B)
+                                            focusedBorderColor = MainGreen,
+                                            unfocusedBorderColor = DarkWhiteBackground,
+                                            focusedTextColor = DarkBlueGrey,
+                                            unfocusedTextColor = DarkBlueGrey,
+                                            cursorColor = MainGreen
                                         )
                                     )
                                 }
@@ -492,7 +535,7 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                                         "Código Postal *",
                                         fontSize = 15.sp,
                                         fontWeight = FontWeight.SemiBold,
-                                        color = Color(0xFF1E293B),
+                                        color = DarkBlueGrey,
                                         letterSpacing = 0.15.sp
                                     )
                                     Spacer(modifier = Modifier.height(10.dp))
@@ -500,16 +543,16 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                                         value = codigoPostal,
                                         onValueChange = { viewModel.actualizarCodigoPostal(it) },
                                         modifier = Modifier.fillMaxWidth(),
-                                        placeholder = { Text("Introducir código postal", color = Color(0xFF94A3B8)) },
+                                        placeholder = { Text("Introducir código postal", color = BlueGrey) },
                                         singleLine = true,
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                         shape = MaterialTheme.shapes.medium,
                                         colors = OutlinedTextFieldDefaults.colors(
-                                            focusedBorderColor = Color(0xFF3F8F6B),
-                                            unfocusedBorderColor = Color(0xFFCBD5E1),
-                                            focusedTextColor = Color(0xFF1E293B),
-                                            unfocusedTextColor = Color(0xFF1E293B),
-                                            cursorColor = Color(0xFF3F8F6B)
+                                            focusedBorderColor = MainGreen,
+                                            unfocusedBorderColor = DarkWhiteBackground,
+                                            focusedTextColor = DarkBlueGrey,
+                                            unfocusedTextColor = DarkBlueGrey,
+                                            cursorColor = MainGreen
                                         )
                                     )
                                 }
@@ -519,7 +562,7 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                                         "Municipio *",
                                         fontSize = 15.sp,
                                         fontWeight = FontWeight.SemiBold,
-                                        color = Color(0xFF1E293B),
+                                        color = DarkBlueGrey,
                                         letterSpacing = 0.15.sp
                                     )
                                     Spacer(modifier = Modifier.height(10.dp))
@@ -527,15 +570,15 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                                         value = municipio,
                                         onValueChange = { viewModel.actualizarMunicipio(it) },
                                         modifier = Modifier.fillMaxWidth(),
-                                        placeholder = { Text("Introducir municipio", color = Color(0xFF94A3B8)) },
+                                        placeholder = { Text("Introducir municipio", color = BlueGrey) },
                                         singleLine = true,
                                         shape = MaterialTheme.shapes.medium,
                                         colors = OutlinedTextFieldDefaults.colors(
-                                            focusedBorderColor = Color(0xFF3F8F6B),
-                                            unfocusedBorderColor = Color(0xFFCBD5E1),
-                                            focusedTextColor = Color(0xFF1E293B),
-                                            unfocusedTextColor = Color(0xFF1E293B),
-                                            cursorColor = Color(0xFF3F8F6B)
+                                            focusedBorderColor = MainGreen,
+                                            unfocusedBorderColor = DarkWhiteBackground,
+                                            focusedTextColor = DarkBlueGrey,
+                                            unfocusedTextColor = DarkBlueGrey,
+                                            cursorColor = MainGreen
                                         )
                                     )
                                 }
@@ -545,7 +588,7 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                                         "Teléfono de Contacto *",
                                         fontSize = 15.sp,
                                         fontWeight = FontWeight.SemiBold,
-                                        color = Color(0xFF1E293B),
+                                        color = DarkBlueGrey,
                                         letterSpacing = 0.15.sp
                                     )
                                     Spacer(modifier = Modifier.height(10.dp))
@@ -553,16 +596,16 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                                         value = telefonoContacto,
                                         onValueChange = { viewModel.actualizarTelefonoContacto(it) },
                                         modifier = Modifier.fillMaxWidth(),
-                                        placeholder = { Text("Introducir teléfono", color = Color(0xFF94A3B8)) },
+                                        placeholder = { Text("Introducir teléfono", color = BlueGrey) },
                                         singleLine = true,
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                                         shape = MaterialTheme.shapes.medium,
                                         colors = OutlinedTextFieldDefaults.colors(
-                                            focusedBorderColor = Color(0xFF3F8F6B),
-                                            unfocusedBorderColor = Color(0xFFCBD5E1),
-                                            focusedTextColor = Color(0xFF1E293B),
-                                            unfocusedTextColor = Color(0xFF1E293B),
-                                            cursorColor = Color(0xFF3F8F6B)
+                                            focusedBorderColor = MainGreen,
+                                            unfocusedBorderColor = DarkWhiteBackground,
+                                            focusedTextColor = DarkBlueGrey,
+                                            unfocusedTextColor = DarkBlueGrey,
+                                            cursorColor = MainGreen
                                         )
                                     )
                                 }
@@ -575,7 +618,7 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                                 "Identificador *",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1E293B),
+                                color = DarkBlueGrey,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -583,24 +626,24 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                                 value = identificadorMaterial,
                                 onValueChange = { viewModel.actualizarIdentificadorMaterial(it) },
                                 modifier = Modifier.fillMaxWidth(),
-                                placeholder = { Text("Introducir o escanear identificador", color = Color(0xFF94A3B8)) },
+                                placeholder = { Text("Introducir o escanear identificador", color = BlueGrey) },
                                 trailingIcon = {
                                     IconButton(onClick = { /* Acción de cámara */ }) {
                                         Icon(
                                             Icons.Outlined.CameraAlt,
                                             contentDescription = "Escanear",
-                                            tint = Color(0xFF3F8F6B)
+                                            tint = MainGreen
                                         )
                                     }
                                 },
                                 singleLine = true,
                                 shape = MaterialTheme.shapes.medium,
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = Color(0xFF3F8F6B),
-                                    unfocusedBorderColor = Color(0xFFCBD5E1),
-                                    focusedTextColor = Color(0xFF1E293B),
-                                    unfocusedTextColor = Color(0xFF1E293B),
-                                    cursorColor = Color(0xFF3F8F6B)
+                                    focusedBorderColor = MainGreen,
+                                    unfocusedBorderColor = DarkWhiteBackground,
+                                    focusedTextColor = DarkBlueGrey,
+                                    unfocusedTextColor = DarkBlueGrey,
+                                    cursorColor = MainGreen
                                 ),
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Text,
@@ -615,7 +658,7 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                                 "Tipo de Material *",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1E293B),
+                                color = DarkBlueGrey,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -628,15 +671,15 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                                     onValueChange = {},
                                     modifier = Modifier.fillMaxWidth().menuAnchor(),
                                     readOnly = true,
-                                    placeholder = { Text("Seleccionar tipo de material", color = Color(0xFF94A3B8)) },
+                                    placeholder = { Text("Seleccionar tipo de material", color = BlueGrey) },
                                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(tipoMaterialExpandido) },
                                     singleLine = true,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = Color(0xFF3F8F6B),
-                                        unfocusedBorderColor = Color(0xFFCBD5E1),
-                                        focusedTextColor = Color(0xFF1E293B),
-                                        unfocusedTextColor = Color(0xFF1E293B)
+                                        focusedBorderColor = MainGreen,
+                                        unfocusedBorderColor = DarkWhiteBackground,
+                                        focusedTextColor = DarkBlueGrey,
+                                        unfocusedTextColor = DarkBlueGrey
                                     )
                                 )
                                 ExposedDropdownMenu(
@@ -646,12 +689,12 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                                 ) {
                                     viewModel.listaTiposMaterial.forEach { tipo ->
                                         DropdownMenuItem(
-                                            text = { Text("${tipo.codigo} - ${tipo.nombre}", fontSize = 15.sp, color = Color(0xFF1E293B)) },
+                                            text = { Text("${tipo.codigo} - ${tipo.nombre}", fontSize = 15.sp, color = DarkBlueGrey) },
                                             onClick = { viewModel.seleccionarTipoMaterial(tipo.nombre, tipo.codigo) },
                                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
                                         )
                                         if (tipo != viewModel.listaTiposMaterial.last()) {
-                                            HorizontalDivider(color = Color(0xFFF1F5F9), thickness = 1.dp)
+                                            HorizontalDivider(color = DarkWhiteBackground, thickness = 1.dp)
                                         }
                                     }
                                 }
@@ -669,8 +712,8 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                         .height(56.dp),
                     enabled = !estadoCarga, // Deshabilitar mientras carga
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF3F8F6B),
-                        disabledContainerColor = Color(0xFFCBD5E1)
+                        containerColor = MainGreen,
+                        disabledContainerColor = DarkWhiteBackground
                     ),
                     shape = MaterialTheme.shapes.medium,
                     elevation = ButtonDefaults.buttonElevation(

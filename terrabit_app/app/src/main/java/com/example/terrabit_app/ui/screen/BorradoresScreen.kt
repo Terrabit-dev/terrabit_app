@@ -3,32 +3,72 @@ package com.example.terrabit_app.ui.pantallas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Badge
+import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.ChildCare
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.terrabit_app.data.Borrador
-import com.example.terrabit_app.viewmodel.MainViewmodel
+import com.example.terrabit_app.ui.theme.Blue
+import com.example.terrabit_app.ui.theme.BlueGrey
+import com.example.terrabit_app.ui.theme.DarkBlueGrey
+import com.example.terrabit_app.ui.theme.ErrorRed
+import com.example.terrabit_app.ui.theme.MainGreen
+import com.example.terrabit_app.ui.theme.MainOrange
+import com.example.terrabit_app.ui.theme.WhiteBackground
+import com.example.terrabit_app.viewmodel.BorradorViewModel
 
 @Composable
 fun BorradoresScreen(
-    viewModel: MainViewmodel,
+    viewModel: BorradorViewModel,
     onMenuClick: () -> Unit
 ) {
     val borradores by viewModel.borradores.observeAsState(emptyList())
@@ -50,7 +90,7 @@ fun BorradoresScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF5F7FA))
+            .background(WhiteBackground)
     ) {
         HeaderBorradores(
             totalBorradores = borradores.size,
@@ -75,42 +115,6 @@ fun BorradoresScreen(
                     borradoresFiltered = borradores
                 }
             )
-
-            ChipFiltro(
-                texto = "Muerte (${borradores.count { it.tipo == "MUERTE" }})",
-                seleccionado = filtroSeleccionado == "Muerte",
-                onClick = {
-                    filtroSeleccionado = "Muerte"
-                    borradoresFiltered = borradores.filter { it.tipo == "MUERTE" }
-                }
-            )
-
-            ChipFiltro(
-                texto = "Material (${borradores.count { it.tipo == "MATERIAL" }})",
-                seleccionado = filtroSeleccionado == "Material",
-                onClick = {
-                    filtroSeleccionado = "Material"
-                    borradoresFiltered = borradores.filter { it.tipo == "MATERIAL" }
-                }
-            )
-
-            ChipFiltro(
-                texto = "Nacimiento (${borradores.count { it.tipo == "NACIMIENTO" }})",
-                seleccionado = filtroSeleccionado == "Nacimiento",
-                onClick = {
-                    filtroSeleccionado = "Nacimiento"
-                    borradoresFiltered = borradores.filter { it.tipo == "NACIMIENTO" }
-                }
-            )
-
-            ChipFiltro(
-                texto = "ID Aplazada (${borradores.count { it.tipo == "IDENTIFICACION_APLAZADA" }})",
-                seleccionado = filtroSeleccionado == "ID Aplazada",
-                onClick = {
-                    filtroSeleccionado = "ID Aplazada"
-                    borradoresFiltered = borradores.filter { it.tipo == "IDENTIFICACION_APLAZADA" }
-                }
-            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -130,13 +134,13 @@ fun BorradoresScreen(
                         Icons.Default.Description,
                         contentDescription = null,
                         modifier = Modifier.size(64.dp),
-                        tint = Color(0xFF94A3B8)
+                        tint = BlueGrey
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         "No hay borradores guardados",
                         fontSize = 16.sp,
-                        color = Color(0xFF64748B)
+                        color = BlueGrey
                     )
                 }
             }
@@ -150,8 +154,12 @@ fun BorradoresScreen(
                 items(borradoresFiltered) { borrador ->
                     TarjetaBorrador(
                         borrador = borrador,
-                        onReintentarClick = { viewModel.reintentarEnvioBorrador(borrador) },
-                        onEliminarClick = { viewModel.eliminarBorrador(borrador.id) }
+                        onReintentarClick = {
+                            // TODO: Implementar reintento
+                        },
+                        onEliminarClick = {
+                            viewModel.eliminarBorrador(borrador.id)
+                        }
                     )
                 }
 
@@ -175,14 +183,7 @@ fun HeaderBorradores(
             .fillMaxWidth()
             .height(200.dp)
             .clip(RoundedCornerShape(bottomStart = 30.dp, bottomEnd = 30.dp))
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF2F6F4E),
-                        Color(0xFF3F8F6B)
-                    )
-                )
-            )
+            .background(color = MainGreen)
     ) {
         Column(
             modifier = Modifier
@@ -315,7 +316,7 @@ fun ChipFiltro(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
             fontSize = 14.sp,
             fontWeight = if (seleccionado) FontWeight.SemiBold else FontWeight.Normal,
-            color = if (seleccionado) Color(0xFF1E293B) else Color(0xFF64748B)
+            color = if (seleccionado) DarkBlueGrey else BlueGrey
         )
     }
 }
@@ -354,7 +355,7 @@ fun TarjetaBorrador(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(96.dp), // ⚠️ ALTURA FIJA PARA TODAS LAS TARJETAS
+            .height(96.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.White
         ),
@@ -371,12 +372,12 @@ fun TarjetaBorrador(
             Surface(
                 shape = RoundedCornerShape(12.dp),
                 color = when (borrador.tipo) {
-                    "MUERTE" -> Color(0xFFFF5252).copy(alpha = 0.15f)
-                    "MATERIAL" -> Color(0xFF3F8F6B).copy(alpha = 0.15f)
-                    "NACIMIENTO" -> Color(0xFF4A7C59).copy(alpha = 0.15f)
-                    "CORRECCION_SEXO" -> Color(0xFF2563EB).copy(alpha = 0.15f)
-                    "IDENTIFICACION_APLAZADA" -> Color(0xFF4A7C59).copy(alpha = 0.15f)
-                    else -> Color(0xFF94A3B8).copy(alpha = 0.15f)
+                    "MUERTE" -> ErrorRed.copy(alpha = 0.15f)
+                    "MATERIAL" -> MainGreen.copy(alpha = 0.15f)
+                    "NACIMIENTO" -> MainGreen.copy(alpha = 0.15f)
+                    "CORRECCION_SEXO" -> Blue.copy(alpha = 0.15f)
+                    "IDENTIFICACION_APLAZADA" -> MainGreen.copy(alpha = 0.15f)
+                    else -> BlueGrey.copy(alpha = 0.15f)
                 },
                 modifier = Modifier.size(56.dp)
             ) {
@@ -395,12 +396,12 @@ fun TarjetaBorrador(
                         },
                         contentDescription = null,
                         tint = when (borrador.tipo) {
-                            "MUERTE" -> Color(0xFFFF5252)
-                            "MATERIAL" -> Color(0xFF3F8F6B)
-                            "NACIMIENTO" -> Color(0xFF4A7C59)
-                            "CORRECCION_SEXO" -> Color(0xFF2563EB)
-                            "IDENTIFICACION_APLAZADA" -> Color(0xFF4A7C59)
-                            else -> Color(0xFF94A3B8)
+                            "MUERTE" -> ErrorRed
+                            "MATERIAL" -> MainGreen
+                            "NACIMIENTO" -> MainGreen
+                            "CORRECCION_SEXO" -> Blue
+                            "IDENTIFICACION_APLAZADA" -> MainGreen
+                            else -> BlueGrey
                         },
                         modifier = Modifier.size(28.dp)
                     )
@@ -409,12 +410,12 @@ fun TarjetaBorrador(
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // Información (usar weight para ocupar el espacio disponible)
+            // Información
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .fillMaxHeight(), // Llenar la altura disponible
-                verticalArrangement = Arrangement.Center // Centrar contenido verticalmente
+                    .fillMaxHeight(),
+                verticalArrangement = Arrangement.Center
             ) {
                 // Título y estado en la misma línea
                 Row(
@@ -426,7 +427,7 @@ fun TarjetaBorrador(
                         obtenerNombreTipo(borrador.tipo),
                         fontSize = 17.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF1E293B),
+                        color = DarkBlueGrey,
                         letterSpacing = 0.2.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -435,14 +436,14 @@ fun TarjetaBorrador(
 
                     Spacer(modifier = Modifier.width(8.dp))
 
-                    // Badge de estado con ancho fijo
+                    // Badge de estado
                     Surface(
                         color = when (borrador.estado) {
-                            "ENVIANDO" -> Color(0xFFFFA726).copy(alpha = 0.15f)
-                            "ERROR" -> Color(0xFFFF5252).copy(alpha = 0.15f)
-                            "BORRADOR_AUTO" -> Color(0xFF3F8F6B).copy(alpha = 0.15f)
-                            "PENDIENTE" -> Color(0xFF94A3B8).copy(alpha = 0.15f)
-                            else -> Color(0xFF94A3B8).copy(alpha = 0.15f)
+                            "ENVIANDO" -> MainOrange.copy(alpha = 0.15f)
+                            "ERROR" -> ErrorRed.copy(alpha = 0.15f)
+                            "BORRADOR_AUTO" -> MainGreen.copy(alpha = 0.15f)
+                            "PENDIENTE" -> BlueGrey.copy(alpha = 0.15f)
+                            else -> BlueGrey.copy(alpha = 0.15f)
                         },
                         shape = RoundedCornerShape(8.dp)
                     ) {
@@ -453,11 +454,11 @@ fun TarjetaBorrador(
                             fontWeight = FontWeight.Medium,
                             maxLines = 1,
                             color = when (borrador.estado) {
-                                "ENVIANDO" -> Color(0xFFFFA726)
-                                "ERROR" -> Color(0xFFFF5252)
-                                "BORRADOR_AUTO" -> Color(0xFF3F8F6B)
-                                "PENDIENTE" -> Color(0xFF64748B)
-                                else -> Color(0xFF64748B)
+                                "ENVIANDO" -> MainOrange
+                                "ERROR" -> ErrorRed
+                                "BORRADOR_AUTO" -> MainGreen
+                                "PENDIENTE" -> BlueGrey
+                                else -> BlueGrey
                             }
                         )
                     }
@@ -473,13 +474,13 @@ fun TarjetaBorrador(
                         Icons.Default.CalendarToday,
                         contentDescription = null,
                         modifier = Modifier.size(14.dp),
-                        tint = Color(0xFF94A3B8)
+                        tint = BlueGrey
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         borrador.fecha,
                         fontSize = 14.sp,
-                        color = Color(0xFF64748B),
+                        color = BlueGrey,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -495,7 +496,7 @@ fun TarjetaBorrador(
                     Icon(
                         Icons.Default.MoreVert,
                         contentDescription = "Opciones",
-                        tint = Color(0xFF94A3B8),
+                        tint = BlueGrey,
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -511,7 +512,7 @@ fun TarjetaBorrador(
                                     Icons.Default.Refresh,
                                     contentDescription = null,
                                     modifier = Modifier.size(20.dp),
-                                    tint = Color(0xFF3F8F6B)
+                                    tint = MainGreen
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Text("Reintentar envío")
@@ -530,10 +531,10 @@ fun TarjetaBorrador(
                                     Icons.Default.Delete,
                                     contentDescription = null,
                                     modifier = Modifier.size(20.dp),
-                                    tint = Color(0xFFFF5252)
+                                    tint = ErrorRed
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
-                                Text("Eliminar", color = Color(0xFFFF5252))
+                                Text("Eliminar", color = ErrorRed)
                             }
                         },
                         onClick = {

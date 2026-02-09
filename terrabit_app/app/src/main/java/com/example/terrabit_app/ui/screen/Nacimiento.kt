@@ -1,9 +1,17 @@
 package com.example.terrabit_app.ui.screen
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -12,9 +20,43 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.outlined.CameraAlt
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuDefaults
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,12 +67,16 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.terrabit_app.data.network.Identificadores.Identificadores
-import com.example.terrabit_app.viewmodel.MainViewmodel
-import com.example.terrabit_app.viewmodel.NacimientoViewmodel
-import kotlin.collections.emptyList
 import com.example.terrabit_app.R
+import com.example.terrabit_app.data.network.Identificadores.Identificadores
+import com.example.terrabit_app.ui.theme.BlueGrey
+import com.example.terrabit_app.ui.theme.DarkBlueGrey
+import com.example.terrabit_app.ui.theme.DarkWhiteBackground
+import com.example.terrabit_app.ui.theme.MainGreen
+import com.example.terrabit_app.ui.theme.WhiteBackground
+import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
+import com.example.terrabit_app.viewmodel.NacimientoViewmodel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,6 +113,8 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
     // mensajes de respuesta
     val mensajeRegistroExitoso = stringResource(R.string.successful_message_born)
     val mensajeRegistroError = stringResource(R.string.error_message_born)
+    // Recursos con codigo
+    val elementosConCodigos = ElementosConCodigos()
 
     // Mostrar Snackbar cuando hay éxito
     LaunchedEffect(registroExitoso) {
@@ -97,7 +145,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                 Icon(
                     imageVector = Icons.Default.ArrowBack, // Usa un icono de error apropiado
                     contentDescription = null,
-                    tint = Color(0xFF4A7C59),
+                    tint = MainGreen,
                     modifier = Modifier.size(48.dp)
                 )
             },
@@ -106,7 +154,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                     text = mensajeRegistroError,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
-                    color = Color(0xFF1E293B)
+                    color = DarkBlueGrey
                 )
             },
             text = {
@@ -115,7 +163,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                         alertsErrosScreens(codiError!!)
                     } else mensajeError,
                     fontSize = 16.sp,
-                    color = Color(0xFF475569),
+                    color = BlueGrey,
                     lineHeight = 24.sp
                 )
             },
@@ -126,7 +174,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                         viewModel.resetearEstadoRegistro()
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF4A7C59)
+                        containerColor = MainGreen
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
@@ -156,20 +204,20 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                         }
                     }
                 ) {
-                    Text(stringResource(R.string.accept_buttom), color = Color(0xFF4A7C59))
+                    Text(stringResource(R.string.accept_buttom), color = MainGreen)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.ocultarDatePicker() }) {
-                    Text(stringResource(R.string.cancel_buttom), color = Color(0xFF64748B))
+                    Text(stringResource(R.string.cancel_buttom), color = BlueGrey)
                 }
             }
         ) {
             DatePicker(
                 state = datePickerState,
                 colors = DatePickerDefaults.colors(
-                    selectedDayContainerColor = Color(0xFF4A7C59),
-                    todayDateBorderColor = Color(0xFF4A7C59)
+                    selectedDayContainerColor = MainGreen,
+                    todayDateBorderColor = MainGreen
                 )
             )
         }
@@ -188,20 +236,20 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                         }
                     }
                 ) {
-                    Text(stringResource(R.string.accept_buttom), color = Color(0xFF4A7C59))
+                    Text(stringResource(R.string.accept_buttom), color = MainGreen)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.ocultarDatePickerIdentificacion() }) {
-                    Text(stringResource(R.string.cancel_buttom), color = Color(0xFF64748B))
+                    Text(stringResource(R.string.cancel_buttom), color = BlueGrey)
                 }
             }
         ) {
             DatePicker(
                 state = datePickerState,
                 colors = DatePickerDefaults.colors(
-                    selectedDayContainerColor = Color(0xFF4A7C59),
-                    todayDateBorderColor = Color(0xFF4A7C59)
+                    selectedDayContainerColor = MainGreen,
+                    todayDateBorderColor = MainGreen
                 )
             )
         }
@@ -235,7 +283,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                     ) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(48.dp),
-                            color = Color(0xFF4A7C59),
+                            color = MainGreen,
                             strokeWidth = 4.dp
                         )
                         Spacer(modifier = Modifier.height(12.dp))
@@ -243,7 +291,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                             "Procesando...",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
-                            color = Color(0xFF64748B)
+                            color = BlueGrey
                         )
                     }
                 }
@@ -269,7 +317,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color(0xFF4A7C59),
+                        containerColor = MainGreen,
                         titleContentColor = Color.White,
                         navigationIconContentColor = Color.White
                     )
@@ -279,13 +327,13 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                 SnackbarHost(hostState = snackbarHostState) { data ->
                     Snackbar(
                         snackbarData = data,
-                        containerColor = Color(0xFF4A7C59), // Verde para éxito
+                        containerColor = MainGreen, // Verde para éxito
                         contentColor = Color.White,
                         shape = RoundedCornerShape(12.dp)
                     )
                 }
             },
-            containerColor = Color(0xFFF5F7FA)
+            containerColor = WhiteBackground
         ) { padding ->
             Column(
                 modifier = Modifier
@@ -317,7 +365,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                 stringResource(R.string.form_id_mother),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1E293B),
+                                color = DarkBlueGrey,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -328,7 +376,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                 placeholder = {
                                     Text(
                                         stringResource(R.string.form_mother_description),
-                                        color = Color(0xFF94A3B8)
+                                        color = BlueGrey
                                     )
                                 },
                                 trailingIcon = {
@@ -336,18 +384,18 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                         Icon(
                                             Icons.Outlined.CameraAlt,
                                             contentDescription = "Escanear",
-                                            tint = Color(0xFF4A7C59)
+                                            tint = MainGreen
                                         )
                                     }
                                 },
                                 singleLine = true,
                                 shape = MaterialTheme.shapes.medium,
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = Color(0xFF4A7C59),
-                                    unfocusedBorderColor = Color(0xFFCBD5E1),
-                                    focusedTextColor = Color(0xFF1E293B),
-                                    unfocusedTextColor = Color(0xFF1E293B),
-                                    cursorColor = Color(0xFF4A7C59)
+                                    focusedBorderColor = MainGreen,
+                                    unfocusedBorderColor = DarkWhiteBackground,
+                                    focusedTextColor = DarkBlueGrey,
+                                    unfocusedTextColor = DarkBlueGrey,
+                                    cursorColor = MainGreen
                                 ),
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Text,
@@ -363,7 +411,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                 stringResource(R.string.form_id_breeding),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1E293B),
+                                color = DarkBlueGrey,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -374,7 +422,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                 placeholder = {
                                     Text(
                                         stringResource(R.string.form_id_breeding_description),
-                                        color = Color(0xFF94A3B8)
+                                        color = BlueGrey
                                     )
                                 },
                                 trailingIcon = {
@@ -382,7 +430,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                         Icon(
                                             Icons.Outlined.CameraAlt,
                                             contentDescription = "Escanear",
-                                            tint = Color(0xFF4A7C59)
+                                            tint = MainGreen
                                         )
                                     }
 
@@ -390,11 +438,11 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                 singleLine = true,
                                 shape = MaterialTheme.shapes.medium,
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = Color(0xFF4A7C59),
-                                    unfocusedBorderColor = Color(0xFFCBD5E1),
-                                    focusedTextColor = Color(0xFF1E293B),
-                                    unfocusedTextColor = Color(0xFF1E293B),
-                                    cursorColor = Color(0xFF4A7C59)
+                                    focusedBorderColor = MainGreen,
+                                    unfocusedBorderColor = DarkWhiteBackground,
+                                    focusedTextColor = DarkBlueGrey,
+                                    unfocusedTextColor = DarkBlueGrey,
+                                    cursorColor = MainGreen
                                 ),
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Text,
@@ -410,7 +458,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                 stringResource(R.string.form_birthdate),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1E293B),
+                                color = DarkBlueGrey,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -426,24 +474,24 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                     placeholder = {
                                         Text(
                                             stringResource(R.string.form_date_description),
-                                            color = Color(0xFF94A3B8)
+                                            color = BlueGrey
                                         )
                                     },
                                     leadingIcon = {
                                         Icon(
                                             Icons.Default.DateRange,
                                             contentDescription = "Calendario",
-                                            tint = Color(0xFF4A7C59)
+                                            tint = MainGreen
                                         )
                                     },
                                     readOnly = true,
                                     enabled = false,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        disabledTextColor = Color(0xFF1E293B),
-                                        disabledBorderColor = Color(0xFFCBD5E1),
-                                        disabledLeadingIconColor = Color(0xFF4A7C59),
-                                        disabledPlaceholderColor = Color(0xFF94A3B8)
+                                        disabledTextColor = DarkBlueGrey,
+                                        disabledBorderColor = DarkWhiteBackground,
+                                        disabledLeadingIconColor = MainGreen,
+                                        disabledPlaceholderColor = BlueGrey
                                     ),
                                     singleLine = true
                                 )
@@ -456,7 +504,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                 stringResource(R.string.form_date_identification),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1E293B),
+                                color = DarkBlueGrey,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -472,24 +520,24 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                     placeholder = {
                                         Text(
                                             stringResource(R.string.form_date_description),
-                                            color = Color(0xFF94A3B8)
+                                            color = BlueGrey
                                         )
                                     },
                                     leadingIcon = {
                                         Icon(
                                             imageVector = Icons.Default.DateRange,
                                             contentDescription = "Calendario",
-                                            tint = Color(0xFF4A7C59)
+                                            tint = MainGreen
                                         )
                                     },
                                     readOnly = true,
                                     enabled = false,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        disabledTextColor = Color(0xFF1E293B),
-                                        disabledBorderColor = Color(0xFFCBD5E1),
-                                        disabledLeadingIconColor = Color(0xFF4A7C59),
-                                        disabledPlaceholderColor = Color(0xFF94A3B8)
+                                        disabledTextColor = DarkBlueGrey,
+                                        disabledBorderColor = DarkWhiteBackground,
+                                        disabledLeadingIconColor = MainGreen,
+                                        disabledPlaceholderColor = BlueGrey
                                     ),
                                     singleLine = true
                                 )
@@ -502,7 +550,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                 stringResource(R.string.form_sex),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1E293B),
+                                color = DarkBlueGrey,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -520,7 +568,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                     placeholder = {
                                         Text(
                                             stringResource(R.string.form_sex_description),
-                                            color = Color(0xFF94A3B8)
+                                            color = BlueGrey
                                         )
                                     },
                                     trailingIcon = {
@@ -531,15 +579,11 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                     singleLine = true,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = Color(0xFF4A7C59),
-                                        unfocusedBorderColor = Color(0xFFCBD5E1),
-                                        focusedTextColor = Color(0xFF1E293B),
-                                        unfocusedTextColor = Color(0xFF1E293B)
+                                        focusedBorderColor = MainGreen,
+                                        unfocusedBorderColor = DarkWhiteBackground,
+                                        focusedTextColor = DarkBlueGrey,
+                                        unfocusedTextColor = DarkBlueGrey
                                     )
-                                )
-                                val sexos = mapOf<String, String>(
-                                    stringResource(R.string.male) to "02",
-                                    stringResource(R.string.female) to "01"
                                 )
                                 ExposedDropdownMenu(
                                     expanded = sexoExpandido,
@@ -547,13 +591,13 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                     modifier = Modifier
                                         .background(Color.White)
                                 ) {
-                                    sexos.forEach { (sexo, codigo) ->
+                                    elementosConCodigos.sexos().forEach { (sexo, codigo) ->
                                         DropdownMenuItem(
                                             text = {
                                                 Text(
                                                     sexo,
                                                     fontSize = 15.sp,
-                                                    color = Color(0xFF1E293B),
+                                                    color = DarkBlueGrey,
                                                     fontWeight = FontWeight.Normal
                                                 )
                                             },
@@ -563,10 +607,10 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                                 vertical = 14.dp
                                             ),
                                             colors = MenuDefaults.itemColors(
-                                                textColor = Color(0xFF1E293B),
-                                                leadingIconColor = Color(0xFF1E293B),
-                                                trailingIconColor = Color(0xFF1E293B),
-                                                disabledTextColor = Color(0xFF94A3B8)
+                                                textColor = DarkBlueGrey,
+                                                leadingIconColor = DarkBlueGrey,
+                                                trailingIconColor = DarkBlueGrey,
+                                                disabledTextColor = BlueGrey
                                             )
                                         )
                                     }
@@ -582,7 +626,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                 stringResource(R.string.form_raze),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1E293B),
+                                color = DarkBlueGrey,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -600,7 +644,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                     placeholder = {
                                         Text(
                                             stringResource(R.string.form_raze_description),
-                                            color = Color(0xFF94A3B8)
+                                            color = BlueGrey
                                         )
                                     },
                                     trailingIcon = {
@@ -611,10 +655,10 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                     singleLine = true,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = Color(0xFF4A7C59),
-                                        unfocusedBorderColor = Color(0xFFCBD5E1),
-                                        focusedTextColor = Color(0xFF1E293B),
-                                        unfocusedTextColor = Color(0xFF1E293B)
+                                        focusedBorderColor = MainGreen,
+                                        unfocusedBorderColor = DarkWhiteBackground,
+                                        focusedTextColor = DarkBlueGrey,
+                                        unfocusedTextColor = DarkBlueGrey
                                     )
                                 )
                                 ExposedDropdownMenu(
@@ -629,7 +673,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                                 Text(
                                                     raza.nombre,
                                                     fontSize = 15.sp,
-                                                    color = Color(0xFF1E293B),
+                                                    color = DarkBlueGrey,
                                                     fontWeight = FontWeight.Normal
                                                 )
                                             },
@@ -640,15 +684,15 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                                 vertical = 14.dp
                                             ),
                                             colors = MenuDefaults.itemColors(
-                                                textColor = Color(0xFF1E293B),
-                                                leadingIconColor = Color(0xFF1E293B),
-                                                trailingIconColor = Color(0xFF1E293B),
-                                                disabledTextColor = Color(0xFF94A3B8)
+                                                textColor = DarkBlueGrey,
+                                                leadingIconColor = DarkBlueGrey,
+                                                trailingIconColor = DarkBlueGrey,
+                                                disabledTextColor = BlueGrey
                                             )
                                         )
                                         if (raza != viewModel.razasBovinas.last()) {
                                             HorizontalDivider(
-                                                color = Color(0xFFF1F5F9),
+                                                color = DarkWhiteBackground,
                                                 thickness = 1.dp
                                             )
                                         }
@@ -663,7 +707,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                 stringResource(R.string.form_aptitude),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1E293B),
+                                color = DarkBlueGrey,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -681,7 +725,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                     placeholder = {
                                         Text(
                                             stringResource(R.string.form_aptitude_description),
-                                            color = Color(0xFF94A3B8)
+                                            color = BlueGrey
                                         )
                                     },
                                     trailingIcon = {
@@ -692,30 +736,26 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                     singleLine = true,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = Color(0xFF4A7C59),
-                                        unfocusedBorderColor = Color(0xFFCBD5E1),
-                                        focusedTextColor = Color(0xFF1E293B),
-                                        unfocusedTextColor = Color(0xFF1E293B)
+                                        focusedBorderColor = MainGreen,
+                                        unfocusedBorderColor = DarkWhiteBackground,
+                                        focusedTextColor = DarkBlueGrey,
+                                        unfocusedTextColor = DarkBlueGrey
                                     )
                                 )
-                                val aptitudes = mapOf<String, String>(
-                                    stringResource(R.string.option_aptitude_meat) to "02",
-                                    stringResource(R.string.option_aptitude_milk) to "01",
-                                    stringResource(R.string.option_aptitude_double) to "03"
-                                )
+
                                 ExposedDropdownMenu(
                                     expanded = aptitudExpandida,
                                     onDismissRequest = { viewModel.cerrarAptitudMenu() },
                                     modifier = Modifier
                                         .background(Color.White)
                                 ) {
-                                    aptitudes.forEach { (aptitud, codigo) ->
+                                    elementosConCodigos.aptitudes().forEach { (aptitud, codigo) ->
                                         DropdownMenuItem(
                                             text = {
                                                 Text(
                                                     aptitud,
                                                     fontSize = 15.sp,
-                                                    color = Color(0xFF1E293B),
+                                                    color = DarkBlueGrey,
                                                     fontWeight = FontWeight.Normal
                                                 )
                                             },
@@ -725,15 +765,15 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                                 vertical = 14.dp
                                             ),
                                             colors = MenuDefaults.itemColors(
-                                                textColor = Color(0xFF1E293B),
-                                                leadingIconColor = Color(0xFF1E293B),
-                                                trailingIconColor = Color(0xFF1E293B),
-                                                disabledTextColor = Color(0xFF94A3B8)
+                                                textColor = DarkBlueGrey,
+                                                leadingIconColor = DarkBlueGrey,
+                                                trailingIconColor = DarkBlueGrey,
+                                                disabledTextColor = BlueGrey
                                             )
                                         )
                                         if (aptitud != viewModel.listaAptitudes.last()) {
                                             HorizontalDivider(
-                                                color = Color(0xFFF1F5F9),
+                                                color = DarkWhiteBackground,
                                                 thickness = 1.dp
                                             )
                                         }
@@ -753,8 +793,8 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                         .height(56.dp),
                     enabled = !estadoCarga, // Deshabilitar mientras carga
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF4A7C59),
-                        disabledContainerColor = Color(0xFFCBD5E1)
+                        containerColor = MainGreen,
+                        disabledContainerColor = DarkWhiteBackground
                     ),
                     shape = MaterialTheme.shapes.medium,
                     elevation = ButtonDefaults.buttonElevation(

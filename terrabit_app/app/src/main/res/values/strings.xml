@@ -1,7 +1,6 @@
 <resources>
     <string name="app_name">Terrabit</string>
-    <string name="app_version">Versión 1.0.0</string>
-    <string name="app_copyright">© 2026 Terrabit</string>
+
 
     <string name="drawer_subtitle">Gestión Ganadera</string>
     <string name="drawer_explained">Tipo de Animal</string>
@@ -103,6 +102,35 @@
     <string name="content_description_hide">Ocultar</string>
     <string name="content_description_show">Mostrar</string>
 
+    <string name="name_confirm_movs">Confirmar Movimientos</string>
+    <string name="form_movs_title_necessary">Datos Obligatorios</string>
+    <string name="form_codi_remo">Código REMO de la Guía *</string>
+    <string name="form_codi_remo_description">Introducir código REMO</string>
+    <string name="form_date_arrival">Fecha llegada *</string>
+    <string name="form_date_arrival_description">Fecha</string>
+    <string name="form_hour_arrival">Hora *</string>
+    <string name="form_hour_arrival_description">Hora</string>
+    <string name="form_codi_ates">Código ATES Transportista *</string>
+    <string name="form_codi_ates_description">Seleccionar código</string>
+    <string name="form_exploitation_destination">Explotación Destino *</string>
+    <string name="form_exploitation_destination_description">Código de explotación REGA</string>
+    <string name="form_state_arrival">Estado de llegada *</string>
+    <string name="form_state_arrival_description">Seleccionar estado</string>
+    <string name="form_movs_title_optionals">Datos Opcionales del Transporte</string>
+    <string name="form_ways_transports">Medio de Transporte</string>
+    <string name="form_ways_transports_description">Seleccionar medio</string>
+    <string name="form_matricule_transport">Matrícula del Vehículo</string>
+    <string name="form_matricule_transports_description">Matrícula del Vehículo</string>
+    <string name="form_name_transportits">Nombre del Transportista</string>
+    <string name="form_name_transportits_description">Nombre completo</string>
+    <string name="form_nif_driver">NIF del Conductor</string>
+    <string name="form_nif_driver_description">Ejemplo: 12345678A</string>
+    <string name="form_name_driver">Nombre del Conductor</string>
+    <string name="form_name_driver_description">Nombre completo</string>
+    <string name="error_message_confirm_movs">Error al Confirmar Movimiento</string>
+    <string name="successful_message_confirm_movs">Movimiento confirmado exitosamente</string>
+    <string name="buttom_form_confirm_movs">Confirmar Movimiento</string>
+
     <string name="form_error_mother_id">Por favor, introduzca el ID de la madre</string>
     <string name="form_error_breeding_id">Por favor, introduzca el ID de la cría</string>
     <string name="form_error_birthdate_id">Por favor, seleccione la fecha de nacimiento</string>
@@ -117,6 +145,25 @@
     <string name="form_error_longitud">Por favor, introduzca la coordenada Y (Longitud)</string>
     <string name="form_error_animal_id">Por favor, introduzca el identificador del animal</string>
     <string name="form_error_date_indentification">Por favor, introduzca la fecha de identificación del animal</string>
+
+    <string name="form_error_remo_code">Por favor, introduzca el código REMO de la guía</string>
+    <string name="form_error_arrival_date">Por favor, seleccione la fecha de llegada</string>
+    <string name="form_error_arrival_time">Por favor, seleccione la hora de llegada</string>
+    <string name="form_error_ates_code">Por favor, seleccione el código ATES</string>
+    <string name="form_error_destination_farm">Por favor, introduzca la explotación de destino</string>
+    <string name="form_error_arrival_status">Por favor, seleccione el estado de llegada</string>
+
+    <string name="option_truck">Camión</string>
+    <string name="option_train">Tren</string>
+    <string name="option_airplane">Avión</string>
+    <string name="option_boat">Barco</string>
+    <string name="option_other">Otros</string>
+    <string name="option_walking">Conducción a pie</string>
+    <string name="option_sacrificed">Sacrificado</string>
+    <string name="option_death_transport">Fallecido duanrante el transporte</string>
+    <string name="option_death_stable">Fallecido en el establo</string>
+    <string name="option_arrival">Llegado</string>
+
 
     <string name="form_date_identification">Fecha de Identificación *</string>
     <string name="form_id_animal_description">Introducir o escanear ID del animal</string>

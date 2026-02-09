@@ -2,32 +2,96 @@ package com.example.terrabit_app.ui.screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerDefaults
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
+import com.example.terrabit_app.ui.theme.BlueGrey
+import com.example.terrabit_app.ui.theme.DarkBlueGrey
+import com.example.terrabit_app.ui.theme.DarkWhiteBackground
+import com.example.terrabit_app.ui.theme.ErrorRed
+import com.example.terrabit_app.ui.theme.MainGreen
+import com.example.terrabit_app.ui.theme.MainOrange
+import com.example.terrabit_app.ui.theme.WhiteBackground
 import com.example.terrabit_app.viewmodel.GuiasViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+
     // Observar variables del ViewModel
     val explotacioOrigen by viewModel.explotacioOrigen.observeAsState("")
     val explotacioDestinacio by viewModel.explotacioDestinacio.observeAsState("")
@@ -45,30 +109,123 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
     val matricula by viewModel.matricula.observeAsState("")
     val nifConductor by viewModel.nifConductor.observeAsState("")
     val nomConductor by viewModel.nomConductor.observeAsState("")
-    val identificadorsText by viewModel.identificadorsText.observeAsState("")
+    val identificadors by viewModel.identificadors.observeAsState(listOf(""))
 
-    // Estados de expansión
     val temporalExpandido by viewModel.temporalExpandido.observeAsState(false)
     val mobilitatExpandido by viewModel.mobilitatExpandido.observeAsState(false)
-    val codiAtesExpandido by viewModel.codiAtesExpandido.observeAsState(false)
     val mitjaTransportExpandido by viewModel.mitjaTransportExpandido.observeAsState(false)
 
-    // DatePicker y TimePicker
     val mostrarDatePickerSortida by viewModel.mostrarDatePickerSortida.observeAsState(false)
     val mostrarTimePickerSortida by viewModel.mostrarTimePickerSortida.observeAsState(false)
     val mostrarDatePickerArribada by viewModel.mostrarDatePickerArribada.observeAsState(false)
     val mostrarTimePickerArribada by viewModel.mostrarTimePickerArribada.observeAsState(false)
 
-    // Estados de registro
     val registroExitoso by viewModel.registroExitoso.observeAsState(false)
     val mensajeError by viewModel.mensajeError.observeAsState("")
     val estadoCarga by viewModel.cargandoGuia.observeAsState(false)
 
-    // Snackbar
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
+    var mostrarDialogoRecuperacion by remember { mutableStateOf(false) }
 
-    // Efectos
+    // ============================================
+    // INICIALIZACIÓN Y CARGA DE BORRADOR
+    // ============================================
+    LaunchedEffect(Unit) {
+        viewModel.inicializarSharedPreferences(context)
+
+        if (viewModel.tieneContenido()) {
+            // Ya hay datos cargados
+        } else {
+            viewModel.cargarBorradorExistente()
+
+            if (viewModel.tieneContenido()) {
+                mostrarDialogoRecuperacion = true
+            }
+        }
+    }
+
+    // ============================================
+    // DETECCIÓN DE CICLO DE VIDA (AUTOGUARDADO)
+    // ============================================
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_PAUSE -> {
+                    if (viewModel.tieneContenido()) {
+                        viewModel.guardarBorradorAutomatico()
+                    }
+                }
+                else -> {}
+            }
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    // ============================================
+    // DIÁLOGO DE RECUPERACIÓN DE BORRADOR
+    // ============================================
+    if (mostrarDialogoRecuperacion) {
+        AlertDialog(
+            onDismissRequest = { },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = null,
+                    tint = MainOrange,
+                    modifier = Modifier.size(48.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = "Borrador encontrado",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    color = DarkBlueGrey
+                )
+            },
+            text = {
+                Text(
+                    text = "Se encontró un formulario sin completar. ¿Deseas recuperarlo?",
+                    fontSize = 16.sp,
+                    color = BlueGrey,
+                    lineHeight = 24.sp
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        mostrarDialogoRecuperacion = false
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MainOrange
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text("Recuperar", fontWeight = FontWeight.SemiBold)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        mostrarDialogoRecuperacion = false
+                        viewModel.eliminarBorradorAutomatico()
+                        viewModel.limpiarFormulario()
+                    }
+                ) {
+                    Text("Descartar", color = BlueGrey)
+                }
+            },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(16.dp)
+        )
+    }
+
     LaunchedEffect(registroExitoso) {
         if (registroExitoso) {
             snackbarHostState.showSnackbar(
@@ -85,7 +242,6 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
         }
     }
 
-    // Diálogo de Error
     if (mostrarDialogoError && mensajeError.isNotEmpty()) {
         AlertDialog(
             onDismissRequest = {
@@ -96,7 +252,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
                     contentDescription = null,
-                    tint = Color(0xFFE28F41),
+                    tint = MainOrange,
                     modifier = Modifier.size(48.dp)
                 )
             },
@@ -105,14 +261,14 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                     text = "Error al Crear Guía",
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
-                    color = Color(0xFF1E293B)
+                    color = DarkBlueGrey
                 )
             },
             text = {
                 Text(
                     text = mensajeError,
                     fontSize = 16.sp,
-                    color = Color(0xFF475569),
+                    color = BlueGrey,
                     lineHeight = 24.sp
                 )
             },
@@ -123,7 +279,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                         viewModel.resetearEstadoRegistro()
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFE28F41)
+                        containerColor = MainOrange
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
@@ -135,7 +291,6 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
         )
     }
 
-    // DatePickerDialog Sortida
     if (mostrarDatePickerSortida) {
         val datePickerState = rememberDatePickerState()
         DatePickerDialog(
@@ -148,26 +303,25 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                         }
                     }
                 ) {
-                    Text("Aceptar", color = Color(0xFFE28F41))
+                    Text("Aceptar", color = MainOrange)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.ocultarDatePickerSortida() }) {
-                    Text("Cancelar", color = Color(0xFF64748B))
+                    Text("Cancelar", color = BlueGrey)
                 }
             }
         ) {
             DatePicker(
                 state = datePickerState,
                 colors = DatePickerDefaults.colors(
-                    selectedDayContainerColor = Color(0xFFE28F41),
-                    todayDateBorderColor = Color(0xFFE28F41)
+                    selectedDayContainerColor = MainOrange,
+                    todayDateBorderColor = MainOrange
                 )
             )
         }
     }
 
-    // TimePickerDialog Sortida
     if (mostrarTimePickerSortida) {
         val timePickerState = rememberTimePickerState()
         AlertDialog(
@@ -182,12 +336,12 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                         viewModel.ocultarTimePickerSortida()
                     }
                 ) {
-                    Text("Aceptar", color = Color(0xFFE28F41))
+                    Text("Aceptar", color = MainOrange)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.ocultarTimePickerSortida() }) {
-                    Text("Cancelar", color = Color(0xFF64748B))
+                    Text("Cancelar", color = BlueGrey)
                 }
             },
             text = {
@@ -195,14 +349,13 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                     state = timePickerState,
                     colors = TimePickerDefaults.colors(
                         clockDialSelectedContentColor = Color.White,
-                        selectorColor = Color(0xFFE28F41)
+                        selectorColor = MainOrange
                     )
                 )
             }
         )
     }
 
-    // DatePickerDialog Arribada
     if (mostrarDatePickerArribada) {
         val datePickerState = rememberDatePickerState()
         DatePickerDialog(
@@ -215,26 +368,25 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                         }
                     }
                 ) {
-                    Text("Aceptar", color = Color(0xFFE28F41))
+                    Text("Aceptar", color = MainOrange)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.ocultarDatePickerArribada() }) {
-                    Text("Cancelar", color = Color(0xFF64748B))
+                    Text("Cancelar", color = BlueGrey)
                 }
             }
         ) {
             DatePicker(
                 state = datePickerState,
                 colors = DatePickerDefaults.colors(
-                    selectedDayContainerColor = Color(0xFFE28F41),
-                    todayDateBorderColor = Color(0xFFE28F41)
+                    selectedDayContainerColor = MainOrange,
+                    todayDateBorderColor = MainOrange
                 )
             )
         }
     }
 
-    // TimePickerDialog Arribada
     if (mostrarTimePickerArribada) {
         val timePickerState = rememberTimePickerState()
         AlertDialog(
@@ -249,12 +401,12 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                         viewModel.ocultarTimePickerArribada()
                     }
                 ) {
-                    Text("Aceptar", color = Color(0xFFE28F41))
+                    Text("Aceptar", color = MainOrange)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.ocultarTimePickerArribada() }) {
-                    Text("Cancelar", color = Color(0xFF64748B))
+                    Text("Cancelar", color = BlueGrey)
                 }
             },
             text = {
@@ -262,14 +414,13 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                     state = timePickerState,
                     colors = TimePickerDefaults.colors(
                         clockDialSelectedContentColor = Color.White,
-                        selectorColor = Color(0xFFE28F41)
+                        selectorColor = MainOrange
                     )
                 )
             }
         )
     }
 
-    // Indicador de carga
     if (estadoCarga) {
         Box(
             modifier = Modifier
@@ -294,7 +445,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                     ) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(48.dp),
-                            color = Color(0xFFE28F41),
+                            color = MainOrange,
                             strokeWidth = 4.dp
                         )
                         Spacer(modifier = Modifier.height(12.dp))
@@ -302,7 +453,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                             "Procesando...",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
-                            color = Color(0xFF64748B)
+                            color = BlueGrey
                         )
                     }
                 }
@@ -327,7 +478,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color(0xFFE28F41),
+                        containerColor = MainOrange,
                         titleContentColor = Color.White,
                         navigationIconContentColor = Color.White
                     )
@@ -337,13 +488,13 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                 SnackbarHost(hostState = snackbarHostState) { data ->
                     Snackbar(
                         snackbarData = data,
-                        containerColor = Color(0xFF4A7C59),
+                        containerColor = MainGreen,
                         contentColor = Color.White,
                         shape = RoundedCornerShape(12.dp)
                     )
                 }
             },
-            containerColor = Color(0xFFF5F7FA)
+            containerColor = WhiteBackground
         ) { padding ->
             Column(
                 modifier = Modifier
@@ -353,7 +504,6 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
             ) {
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Card principal - Datos Obligatorios
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -372,16 +522,15 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                             "Datos Obligatorios",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E293B)
+                            color = DarkBlueGrey
                         )
 
-                        // Explotación Origen
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 "Explotación Origen *",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1E293B),
+                                color = DarkBlueGrey,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -392,17 +541,17 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                 placeholder = {
                                     Text(
                                         "Formato MO o REGA",
-                                        color = Color(0xFF94A3B8)
+                                        color = BlueGrey
                                     )
                                 },
                                 singleLine = true,
                                 shape = MaterialTheme.shapes.medium,
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = Color(0xFFE28F41),
-                                    unfocusedBorderColor = Color(0xFFCBD5E1),
-                                    focusedTextColor = Color(0xFF1E293B),
-                                    unfocusedTextColor = Color(0xFF1E293B),
-                                    cursorColor = Color(0xFFE28F41)
+                                    focusedBorderColor = MainOrange,
+                                    unfocusedBorderColor = DarkWhiteBackground,
+                                    focusedTextColor = DarkBlueGrey,
+                                    unfocusedTextColor = DarkBlueGrey,
+                                    cursorColor = MainOrange
                                 ),
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Text,
@@ -411,13 +560,12 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                             )
                         }
 
-                        // Explotación Destino
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 "Explotación Destino *",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1E293B),
+                                color = DarkBlueGrey,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -428,17 +576,17 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                 placeholder = {
                                     Text(
                                         "Formato MO o REGA",
-                                        color = Color(0xFF94A3B8)
+                                        color = BlueGrey
                                     )
                                 },
                                 singleLine = true,
                                 shape = MaterialTheme.shapes.medium,
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = Color(0xFFE28F41),
-                                    unfocusedBorderColor = Color(0xFFCBD5E1),
-                                    focusedTextColor = Color(0xFF1E293B),
-                                    unfocusedTextColor = Color(0xFF1E293B),
-                                    cursorColor = Color(0xFFE28F41)
+                                    focusedBorderColor = MainOrange,
+                                    unfocusedBorderColor = DarkWhiteBackground,
+                                    focusedTextColor = DarkBlueGrey,
+                                    unfocusedTextColor = DarkBlueGrey,
+                                    cursorColor = MainOrange
                                 ),
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Text,
@@ -447,13 +595,12 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                             )
                         }
 
-                        // Temporal
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 "Temporal *",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1E293B),
+                                color = DarkBlueGrey,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -471,7 +618,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                     placeholder = {
                                         Text(
                                             "SI;NO",
-                                            color = Color(0xFF94A3B8)
+                                            color = BlueGrey
                                         )
                                     },
                                     trailingIcon = {
@@ -482,10 +629,10 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                     singleLine = true,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = Color(0xFFE28F41),
-                                        unfocusedBorderColor = Color(0xFFCBD5E1),
-                                        focusedTextColor = Color(0xFF1E293B),
-                                        unfocusedTextColor = Color(0xFF1E293B)
+                                        focusedBorderColor = MainOrange,
+                                        unfocusedBorderColor = DarkWhiteBackground,
+                                        focusedTextColor = DarkBlueGrey,
+                                        unfocusedTextColor = DarkBlueGrey
                                     )
                                 )
                                 ExposedDropdownMenu(
@@ -499,7 +646,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                                 Text(
                                                     opcion,
                                                     fontSize = 15.sp,
-                                                    color = Color(0xFF1E293B),
+                                                    color = DarkBlueGrey,
                                                     fontWeight = FontWeight.Normal
                                                 )
                                             },
@@ -511,7 +658,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                         )
                                         if (opcion != viewModel.listaTemporalOpciones.last()) {
                                             HorizontalDivider(
-                                                color = Color(0xFFF1F5F9),
+                                                color = DarkWhiteBackground,
                                                 thickness = 1.dp
                                             )
                                         }
@@ -520,7 +667,6 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                             }
                         }
 
-                        // Fecha y Hora de Sortida
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -530,7 +676,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                     "Fecha Sortida *",
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = Color(0xFF1E293B),
+                                    color = DarkBlueGrey,
                                     letterSpacing = 0.15.sp
                                 )
                                 Spacer(modifier = Modifier.height(10.dp))
@@ -546,24 +692,24 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                         placeholder = {
                                             Text(
                                                 "Fecha",
-                                                color = Color(0xFF94A3B8)
+                                                color = BlueGrey
                                             )
                                         },
                                         leadingIcon = {
                                             Icon(
                                                 Icons.Default.DateRange,
                                                 contentDescription = "Calendario",
-                                                tint = Color(0xFFE28F41)
+                                                tint = MainOrange
                                             )
                                         },
                                         readOnly = true,
                                         enabled = false,
                                         shape = MaterialTheme.shapes.medium,
                                         colors = OutlinedTextFieldDefaults.colors(
-                                            disabledTextColor = Color(0xFF1E293B),
-                                            disabledBorderColor = Color(0xFFCBD5E1),
-                                            disabledLeadingIconColor = Color(0xFFE28F41),
-                                            disabledPlaceholderColor = Color(0xFF94A3B8)
+                                            disabledTextColor = DarkBlueGrey,
+                                            disabledBorderColor = DarkWhiteBackground,
+                                            disabledLeadingIconColor = MainOrange,
+                                            disabledPlaceholderColor = BlueGrey
                                         ),
                                         singleLine = true
                                     )
@@ -575,7 +721,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                     "Hora *",
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = Color(0xFF1E293B),
+                                    color = DarkBlueGrey,
                                     letterSpacing = 0.15.sp
                                 )
                                 Spacer(modifier = Modifier.height(10.dp))
@@ -591,24 +737,24 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                         placeholder = {
                                             Text(
                                                 "Hora",
-                                                color = Color(0xFF94A3B8)
+                                                color = BlueGrey
                                             )
                                         },
                                         leadingIcon = {
                                             Icon(
                                                 Icons.Default.Schedule,
                                                 contentDescription = "Reloj",
-                                                tint = Color(0xFFE28F41)
+                                                tint = MainOrange
                                             )
                                         },
                                         readOnly = true,
                                         enabled = false,
                                         shape = MaterialTheme.shapes.medium,
                                         colors = OutlinedTextFieldDefaults.colors(
-                                            disabledTextColor = Color(0xFF1E293B),
-                                            disabledBorderColor = Color(0xFFCBD5E1),
-                                            disabledLeadingIconColor = Color(0xFFE28F41),
-                                            disabledPlaceholderColor = Color(0xFF94A3B8)
+                                            disabledTextColor = DarkBlueGrey,
+                                            disabledBorderColor = DarkWhiteBackground,
+                                            disabledLeadingIconColor = MainOrange,
+                                            disabledPlaceholderColor = BlueGrey
                                         ),
                                         singleLine = true
                                     )
@@ -616,7 +762,6 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                             }
                         }
 
-                        // Fecha y Hora de Arribada
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -626,7 +771,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                     "Fecha Arribada *",
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = Color(0xFF1E293B),
+                                    color = DarkBlueGrey,
                                     letterSpacing = 0.15.sp
                                 )
                                 Spacer(modifier = Modifier.height(10.dp))
@@ -642,24 +787,24 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                         placeholder = {
                                             Text(
                                                 "Fecha",
-                                                color = Color(0xFF94A3B8)
+                                                color = BlueGrey
                                             )
                                         },
                                         leadingIcon = {
                                             Icon(
                                                 Icons.Default.DateRange,
                                                 contentDescription = "Calendario",
-                                                tint = Color(0xFFE28F41)
+                                                tint = MainOrange
                                             )
                                         },
                                         readOnly = true,
                                         enabled = false,
                                         shape = MaterialTheme.shapes.medium,
                                         colors = OutlinedTextFieldDefaults.colors(
-                                            disabledTextColor = Color(0xFF1E293B),
-                                            disabledBorderColor = Color(0xFFCBD5E1),
-                                            disabledLeadingIconColor = Color(0xFFE28F41),
-                                            disabledPlaceholderColor = Color(0xFF94A3B8)
+                                            disabledTextColor = DarkBlueGrey,
+                                            disabledBorderColor = DarkWhiteBackground,
+                                            disabledLeadingIconColor = MainOrange,
+                                            disabledPlaceholderColor = BlueGrey
                                         ),
                                         singleLine = true
                                     )
@@ -671,7 +816,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                     "Hora *",
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = Color(0xFF1E293B),
+                                    color = DarkBlueGrey,
                                     letterSpacing = 0.15.sp
                                 )
                                 Spacer(modifier = Modifier.height(10.dp))
@@ -687,24 +832,24 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                         placeholder = {
                                             Text(
                                                 "Hora",
-                                                color = Color(0xFF94A3B8)
+                                                color = BlueGrey
                                             )
                                         },
                                         leadingIcon = {
                                             Icon(
                                                 Icons.Default.Schedule,
                                                 contentDescription = "Reloj",
-                                                tint = Color(0xFFE28F41)
+                                                tint = MainOrange
                                             )
                                         },
                                         readOnly = true,
                                         enabled = false,
                                         shape = MaterialTheme.shapes.medium,
                                         colors = OutlinedTextFieldDefaults.colors(
-                                            disabledTextColor = Color(0xFF1E293B),
-                                            disabledBorderColor = Color(0xFFCBD5E1),
-                                            disabledLeadingIconColor = Color(0xFFE28F41),
-                                            disabledPlaceholderColor = Color(0xFF94A3B8)
+                                            disabledTextColor = DarkBlueGrey,
+                                            disabledBorderColor = DarkWhiteBackground,
+                                            disabledLeadingIconColor = MainOrange,
+                                            disabledPlaceholderColor = BlueGrey
                                         ),
                                         singleLine = true
                                     )
@@ -712,13 +857,12 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                             }
                         }
 
-                        // Mobilitat
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 "Guía per mobilitat *",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1E293B),
+                                color = DarkBlueGrey,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -736,7 +880,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                     placeholder = {
                                         Text(
                                             "SI;NO",
-                                            color = Color(0xFF94A3B8)
+                                            color = BlueGrey
                                         )
                                     },
                                     trailingIcon = {
@@ -747,10 +891,10 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                     singleLine = true,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = Color(0xFFE28F41),
-                                        unfocusedBorderColor = Color(0xFFCBD5E1),
-                                        focusedTextColor = Color(0xFF1E293B),
-                                        unfocusedTextColor = Color(0xFF1E293B)
+                                        focusedBorderColor = MainOrange,
+                                        unfocusedBorderColor = DarkWhiteBackground,
+                                        focusedTextColor = DarkBlueGrey,
+                                        unfocusedTextColor = DarkBlueGrey
                                     )
                                 )
                                 ExposedDropdownMenu(
@@ -764,7 +908,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                                 Text(
                                                     opcion,
                                                     fontSize = 15.sp,
-                                                    color = Color(0xFF1E293B),
+                                                    color = DarkBlueGrey,
                                                     fontWeight = FontWeight.Normal
                                                 )
                                             },
@@ -776,7 +920,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                         )
                                         if (opcion != viewModel.listaMobilitatOpciones.last()) {
                                             HorizontalDivider(
-                                                color = Color(0xFFF1F5F9),
+                                                color = DarkWhiteBackground,
                                                 thickness = 1.dp
                                             )
                                         }
@@ -785,13 +929,12 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                             }
                         }
 
-                        // País
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 "Codi país per guies amb destí PIF *",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1E293B),
+                                color = DarkBlueGrey,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -802,17 +945,17 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                 placeholder = {
                                     Text(
                                         "Tipus explotació: Centre d'Inspecció",
-                                        color = Color(0xFF94A3B8)
+                                        color = BlueGrey
                                     )
                                 },
                                 singleLine = true,
                                 shape = MaterialTheme.shapes.medium,
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = Color(0xFFE28F41),
-                                    unfocusedBorderColor = Color(0xFFCBD5E1),
-                                    focusedTextColor = Color(0xFF1E293B),
-                                    unfocusedTextColor = Color(0xFF1E293B),
-                                    cursorColor = Color(0xFFE28F41)
+                                    focusedBorderColor = MainOrange,
+                                    unfocusedBorderColor = DarkWhiteBackground,
+                                    focusedTextColor = DarkBlueGrey,
+                                    unfocusedTextColor = DarkBlueGrey,
+                                    cursorColor = MainOrange
                                 ),
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Text,
@@ -821,13 +964,12 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                             )
                         }
 
-                        // Código Explotación
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 "Codi explotació, per guies amb destí PIF",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1E293B),
+                                color = DarkBlueGrey,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -838,17 +980,17 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                 placeholder = {
                                     Text(
                                         "Obligatori si explotacioDestinacio és un tipus explotació",
-                                        color = Color(0xFF94A3B8)
+                                        color = BlueGrey
                                     )
                                 },
                                 singleLine = true,
                                 shape = MaterialTheme.shapes.medium,
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = Color(0xFFE28F41),
-                                    unfocusedBorderColor = Color(0xFFCBD5E1),
-                                    focusedTextColor = Color(0xFF1E293B),
-                                    unfocusedTextColor = Color(0xFF1E293B),
-                                    cursorColor = Color(0xFFE28F41)
+                                    focusedBorderColor = MainOrange,
+                                    unfocusedBorderColor = DarkWhiteBackground,
+                                    focusedTextColor = DarkBlueGrey,
+                                    unfocusedTextColor = DarkBlueGrey,
+                                    cursorColor = MainOrange
                                 ),
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Text,
@@ -861,7 +1003,6 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Card de Datos Opcionales del Transporte
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -880,83 +1021,50 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                             "Datos Opcionales del Transporte",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E293B)
+                            color = DarkBlueGrey
                         )
 
-                        // Código ATES
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 "Código ATES Transportista",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1E293B),
+                                color = DarkBlueGrey,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
-                            ExposedDropdownMenuBox(
-                                expanded = codiAtesExpandido,
-                                onExpandedChange = { viewModel.toggleCodiAtesExpandido() }
-                            ) {
-                                OutlinedTextField(
-                                    value = codiAtes,
-                                    onValueChange = {},
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .menuAnchor(),
-                                    readOnly = true,
-                                    placeholder = {
-                                        Text(
-                                            "Seleccionar código",
-                                            color = Color(0xFF94A3B8)
-                                        )
-                                    },
-                                    trailingIcon = {
-                                        ExposedDropdownMenuDefaults.TrailingIcon(
-                                            expanded = codiAtesExpandido
-                                        )
-                                    },
-                                    singleLine = true,
-                                    shape = MaterialTheme.shapes.medium,
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = Color(0xFFE28F41),
-                                        unfocusedBorderColor = Color(0xFFCBD5E1),
-                                        focusedTextColor = Color(0xFF1E293B),
-                                        unfocusedTextColor = Color(0xFF1E293B)
+                            OutlinedTextField(
+                                value = codiAtes,
+                                onValueChange = { if (it.length <= 15) viewModel.campoCodiAtes(it) },
+                                modifier = Modifier.fillMaxWidth(),
+                                placeholder = {
+                                    Text(
+                                        "Máximo 15 caracteres",
+                                        color = BlueGrey
                                     )
+                                },
+                                singleLine = true,
+                                shape = MaterialTheme.shapes.medium,
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = MainOrange,
+                                    unfocusedBorderColor = DarkWhiteBackground,
+                                    focusedTextColor = DarkBlueGrey,
+                                    unfocusedTextColor = DarkBlueGrey,
+                                    cursorColor = MainOrange
+                                ),
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Text,
+                                    imeAction = ImeAction.Next
                                 )
-                                ExposedDropdownMenu(
-                                    expanded = codiAtesExpandido,
-                                    onDismissRequest = { viewModel.cerrarCodiAtesMenu() },
-                                    modifier = Modifier.background(Color.White)
-                                ) {
-                                    viewModel.listaCodigosAtes.forEach { ates ->
-                                        DropdownMenuItem(
-                                            text = {
-                                                Text(
-                                                    "${ates.codigo} - ${ates.nombre}",
-                                                    fontSize = 15.sp,
-                                                    color = Color(0xFF1E293B),
-                                                    fontWeight = FontWeight.Normal
-                                                )
-                                            },
-                                            onClick = { viewModel.seleccionarCodiAtes(ates.codigo) },
-                                            contentPadding = PaddingValues(
-                                                horizontal = 16.dp,
-                                                vertical = 14.dp
-                                            )
-                                        )
-                                    }
-                                }
-                            }
+                            )
                         }
 
-                        // Nombre Transportista
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 "Nombre del Transportista",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1E293B),
+                                color = DarkBlueGrey,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -967,17 +1075,17 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                 placeholder = {
                                     Text(
                                         "Si existeix ATES a GTR no s'actualitzará",
-                                        color = Color(0xFF94A3B8)
+                                        color = BlueGrey
                                     )
                                 },
                                 singleLine = true,
                                 shape = MaterialTheme.shapes.medium,
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = Color(0xFFE28F41),
-                                    unfocusedBorderColor = Color(0xFFCBD5E1),
-                                    focusedTextColor = Color(0xFF1E293B),
-                                    unfocusedTextColor = Color(0xFF1E293B),
-                                    cursorColor = Color(0xFFE28F41)
+                                    focusedBorderColor = MainOrange,
+                                    unfocusedBorderColor = DarkWhiteBackground,
+                                    focusedTextColor = DarkBlueGrey,
+                                    unfocusedTextColor = DarkBlueGrey,
+                                    cursorColor = MainOrange
                                 ),
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Text,
@@ -986,13 +1094,12 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                             )
                         }
 
-                        // Medio de Transporte
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 "Medio de Transporte",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1E293B),
+                                color = DarkBlueGrey,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -1010,7 +1117,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                     placeholder = {
                                         Text(
                                             "Seleccionar medio",
-                                            color = Color(0xFF94A3B8)
+                                            color = BlueGrey
                                         )
                                     },
                                     trailingIcon = {
@@ -1021,10 +1128,10 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                     singleLine = true,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = Color(0xFFE28F41),
-                                        unfocusedBorderColor = Color(0xFFCBD5E1),
-                                        focusedTextColor = Color(0xFF1E293B),
-                                        unfocusedTextColor = Color(0xFF1E293B)
+                                        focusedBorderColor = MainOrange,
+                                        unfocusedBorderColor = DarkWhiteBackground,
+                                        focusedTextColor = DarkBlueGrey,
+                                        unfocusedTextColor = DarkBlueGrey
                                     )
                                 )
                                 ExposedDropdownMenu(
@@ -1038,7 +1145,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                                 Text(
                                                     medio,
                                                     fontSize = 15.sp,
-                                                    color = Color(0xFF1E293B),
+                                                    color = DarkBlueGrey,
                                                     fontWeight = FontWeight.Normal
                                                 )
                                             },
@@ -1050,7 +1157,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                         )
                                         if (medio != viewModel.listaMitjaTransport.last()) {
                                             HorizontalDivider(
-                                                color = Color(0xFFF1F5F9),
+                                                color = DarkWhiteBackground,
                                                 thickness = 1.dp
                                             )
                                         }
@@ -1059,13 +1166,12 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                             }
                         }
 
-                        // Matrícula
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 "Matrícula del Vehículo",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1E293B),
+                                color = DarkBlueGrey,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -1076,17 +1182,17 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                 placeholder = {
                                     Text(
                                         "Ejemplo: 1234ABC",
-                                        color = Color(0xFF94A3B8)
+                                        color = BlueGrey
                                     )
                                 },
                                 singleLine = true,
                                 shape = MaterialTheme.shapes.medium,
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = Color(0xFFE28F41),
-                                    unfocusedBorderColor = Color(0xFFCBD5E1),
-                                    focusedTextColor = Color(0xFF1E293B),
-                                    unfocusedTextColor = Color(0xFF1E293B),
-                                    cursorColor = Color(0xFFE28F41)
+                                    focusedBorderColor = MainOrange,
+                                    unfocusedBorderColor = DarkWhiteBackground,
+                                    focusedTextColor = DarkBlueGrey,
+                                    unfocusedTextColor = DarkBlueGrey,
+                                    cursorColor = MainOrange
                                 ),
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Text,
@@ -1095,13 +1201,12 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                             )
                         }
 
-                        // NIF Conductor
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 "NIF del Conductor",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1E293B),
+                                color = DarkBlueGrey,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -1111,18 +1216,18 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                 modifier = Modifier.fillMaxWidth(),
                                 placeholder = {
                                     Text(
-                                        "Si existeix NIF al mestre persones GTR no s'actualitzará",
-                                        color = Color(0xFF94A3B8)
+                                        "Ejemplo: 12345678A",
+                                        color = BlueGrey
                                     )
                                 },
                                 singleLine = true,
                                 shape = MaterialTheme.shapes.medium,
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = Color(0xFFE28F41),
-                                    unfocusedBorderColor = Color(0xFFCBD5E1),
-                                    focusedTextColor = Color(0xFF1E293B),
-                                    unfocusedTextColor = Color(0xFF1E293B),
-                                    cursorColor = Color(0xFFE28F41)
+                                    focusedBorderColor = MainOrange,
+                                    unfocusedBorderColor = DarkWhiteBackground,
+                                    focusedTextColor = DarkBlueGrey,
+                                    unfocusedTextColor = DarkBlueGrey,
+                                    cursorColor = MainOrange
                                 ),
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Text,
@@ -1131,13 +1236,12 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                             )
                         }
 
-                        // Nombre Conductor
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 "Nombre del Conductor",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1E293B),
+                                color = DarkBlueGrey,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -1148,17 +1252,17 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                 placeholder = {
                                     Text(
                                         "Nombre completo",
-                                        color = Color(0xFF94A3B8)
+                                        color = BlueGrey
                                     )
                                 },
                                 singleLine = true,
                                 shape = MaterialTheme.shapes.medium,
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = Color(0xFFE28F41),
-                                    unfocusedBorderColor = Color(0xFFCBD5E1),
-                                    focusedTextColor = Color(0xFF1E293B),
-                                    unfocusedTextColor = Color(0xFF1E293B),
-                                    cursorColor = Color(0xFFE28F41)
+                                    focusedBorderColor = MainOrange,
+                                    unfocusedBorderColor = DarkWhiteBackground,
+                                    focusedTextColor = DarkBlueGrey,
+                                    unfocusedTextColor = DarkBlueGrey,
+                                    cursorColor = MainOrange
                                 ),
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Text,
@@ -1167,47 +1271,86 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                             )
                         }
 
-                        // Identificadores
                         Column(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                "Identificadores de los Animales",
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1E293B),
-                                letterSpacing = 0.15.sp
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            OutlinedTextField(
-                                value = identificadorsText,
-                                onValueChange = { viewModel.actualizarIdentificadorsText(it) },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(120.dp),
-                                placeholder = {
-                                    Text(
-                                        "Separados por comas o saltos de línea",
-                                        color = Color(0xFF94A3B8)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    "Identificadores de los Animales",
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = DarkBlueGrey,
+                                    letterSpacing = 0.15.sp
+                                )
+                                IconButton(
+                                    onClick = { viewModel.agregarIdentificador() },
+                                    modifier = Modifier.size(36.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Add,
+                                        contentDescription = "Agregar identificador",
+                                        tint = MainOrange
                                     )
-                                },
-                                shape = MaterialTheme.shapes.medium,
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = Color(0xFFE28F41),
-                                    unfocusedBorderColor = Color(0xFFCBD5E1),
-                                    focusedTextColor = Color(0xFF1E293B),
-                                    unfocusedTextColor = Color(0xFF1E293B),
-                                    cursorColor = Color(0xFFE28F41)
-                                ),
-                                keyboardOptions = KeyboardOptions(
-                                    keyboardType = KeyboardType.Text,
-                                    imeAction = ImeAction.Done
-                                ),
-                                maxLines = 5
-                            )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            identificadors.forEachIndexed { index, identificador ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(bottom = 12.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    OutlinedTextField(
+                                        value = identificador,
+                                        onValueChange = { viewModel.actualizarIdentificador(index, it) },
+                                        modifier = Modifier.weight(1f),
+                                        placeholder = {
+                                            Text(
+                                                "Ejemplo: 1234567890LPOI",
+                                                color = BlueGrey
+                                            )
+                                        },
+                                        singleLine = true,
+                                        shape = MaterialTheme.shapes.medium,
+                                        colors = OutlinedTextFieldDefaults.colors(
+                                            focusedBorderColor = MainOrange,
+                                            unfocusedBorderColor = DarkWhiteBackground,
+                                            focusedTextColor = DarkBlueGrey,
+                                            unfocusedTextColor = DarkBlueGrey,
+                                            cursorColor = MainOrange
+                                        ),
+                                        keyboardOptions = KeyboardOptions(
+                                            keyboardType = KeyboardType.Text,
+                                            imeAction = if (index == identificadors.lastIndex) ImeAction.Done else ImeAction.Next
+                                        )
+                                    )
+
+                                    if (identificadors.size > 1) {
+                                        IconButton(
+                                            onClick = { viewModel.eliminarIdentificador(index) },
+                                            modifier = Modifier.size(36.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Close,
+                                                contentDescription = "Eliminar identificador",
+                                                tint = ErrorRed
+                                            )
+                                        }
+                                    } else {
+                                        Spacer(modifier = Modifier.width(36.dp))
+                                    }
+                                }
+                            }
                         }
                     }
                 }
 
-                // Botón Crear Guía
                 Button(
                     onClick = { viewModel.confirmarAltaGuia() },
                     modifier = Modifier
@@ -1216,8 +1359,8 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                         .height(56.dp),
                     enabled = !estadoCarga,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFE28F41),
-                        disabledContainerColor = Color(0xFFCBD5E1)
+                        containerColor = MainOrange,
+                        disabledContainerColor = DarkWhiteBackground
                     ),
                     shape = MaterialTheme.shapes.medium,
                     elevation = ButtonDefaults.buttonElevation(

@@ -23,6 +23,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.terrabit_app.ui.theme.Blue
+import com.example.terrabit_app.ui.theme.MainOrange
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,7 +39,7 @@ fun GestionGuiasPorcinos(navController: NavController) {
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFFE28F41),
+                    containerColor = MainOrange,
                     titleContentColor = Color.White,
                     navigationIconContentColor = Color.White
                 )
@@ -56,7 +58,7 @@ fun GestionGuiasPorcinos(navController: NavController) {
                 "Gestionar Guías Porcinas",
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1565C0)
+                color = Blue
             )
             Spacer(modifier = Modifier.height(24.dp))
             Text(
