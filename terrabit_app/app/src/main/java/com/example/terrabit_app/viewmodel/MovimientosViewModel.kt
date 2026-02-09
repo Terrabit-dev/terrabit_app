@@ -8,6 +8,7 @@ import com.example.terrabit_app.data.network.Identificadores.IdenMovimiento
 import com.example.terrabit_app.data.network.moviminetos.modelos.Movimientos
 import com.example.terrabit_app.data.network.moviminetos.modelos.PetConfirmacionMovi
 import com.example.terrabit_app.data.network.respuestas.ResConfirmacionMovi
+import com.example.terrabit_app.utils.DateUtils.convertirFechaAFormatoAPI
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -277,6 +278,211 @@ class MovimientosViewModel : ViewModel() {
         _dataArribada.value = String.format("%02d/%02d/%04d", dia, mes, anio)
         _mostrarDatePickerArribada.value = false
     }
+    // ============================================
+    // SECCIÓN: LISTA DE ANIMALES
+    // ============================================
+
+    private val limitePesoCanal = 5
+    private val limiteClassCanel = 5
+
+
+    // Usar directamente IdenMovimiento con valores por defecto
+    private val _listaAnimales = MutableLiveData<List<IdenMovimiento>>(
+        listOf(
+            IdenMovimiento(
+                identificador = "",
+                estatArribada = "",
+                classCanal = null,
+                dataSacrMort = null,
+                pesCanal = null,
+                tipusPresentacio = null
+            )
+        )
+    )
+    val listaAnimales = _listaAnimales
+
+
+
+
+    // Map para rastrear qué animal está siendo editado (por índice)
+    private val _estatArribadaExpandidoPorIndice = MutableLiveData<Map<Int, Boolean>>(emptyMap())
+    val estatArribadaExpandidoPorIndice = _estatArribadaExpandidoPorIndice
+
+    private val _classCanalExpandidoPorIndice = MutableLiveData<Map<Int, Boolean>>(emptyMap())
+    val classCanalExpandidoPorIndice = _classCanalExpandidoPorIndice
+
+    private val _tipusPresentacioExpandidoPorIndice = MutableLiveData<Map<Int, Boolean>>(emptyMap())
+    val tipusPresentacioExpandidoPorIndice = _tipusPresentacioExpandidoPorIndice
+
+    private val _mostrarDatePickerPorIndice = MutableLiveData<Map<Int, Boolean>>(emptyMap())
+    val mostrarDatePickerPorIndice = _mostrarDatePickerPorIndice
+
+    // Temporal para mostrar el texto del estado en la UI
+    private val _textoEstatArribadaPorIndice = MutableLiveData<Map<Int, String>>(emptyMap())
+    val textoEstatArribadaPorIndice = _textoEstatArribadaPorIndice
+
+    // Listas de opciones para estado "80 - Sacrificat"
+
+// ============================================
+// FUNCIONES PARA GESTIONAR ANIMALES
+// ============================================
+
+    fun agregarAnimal() {
+        val listaActual = _listaAnimales.value ?: emptyList()
+        val nuevoAnimal = IdenMovimiento(
+            identificador = "",
+            estatArribada = "",
+            classCanal = null,
+            dataSacrMort = null,
+            pesCanal = null,
+            tipusPresentacio = null
+        )
+        _listaAnimales.value = listaActual + nuevoAnimal
+    }
+
+    fun eliminarAnimal(indice: Int) {
+        val listaActual = _listaAnimales.value ?: emptyList()
+        if (listaActual.size > 1) { // Mantener al menos un animal
+            _listaAnimales.value = listaActual.filterIndexed { index, _ -> index != indice }
+
+            // Limpiar estados de expansión del animal eliminado
+            _estatArribadaExpandidoPorIndice.value = _estatArribadaExpandidoPorIndice.value?.minus(indice)
+            _classCanalExpandidoPorIndice.value = _classCanalExpandidoPorIndice.value?.minus(indice)
+            _tipusPresentacioExpandidoPorIndice.value = _tipusPresentacioExpandidoPorIndice.value?.minus(indice)
+            _mostrarDatePickerPorIndice.value = _mostrarDatePickerPorIndice.value?.minus(indice)
+            _textoEstatArribadaPorIndice.value = _textoEstatArribadaPorIndice.value?.minus(indice)
+        }
+    }
+
+    fun actualizarIdentificadorAnimal(indice: Int, identificador: String) {
+        val listaActual = _listaAnimales.value ?: emptyList()
+        _listaAnimales.value = listaActual.mapIndexed { index, animal ->
+            if (index == indice) animal.copy(identificador = identificador)
+            else animal
+        }
+    }
+    fun actualizarClassCanal(indice: Int, clase: String) {
+        val listaActual = _listaAnimales.value ?: emptyList()
+        if (clase.length <= limiteClassCanel){
+            _listaAnimales.value = listaActual.mapIndexed { index, animal ->
+                if (index == indice) animal.copy(classCanal = clase)
+                else animal
+            }
+        }
+    }
+
+    fun seleccionarEstatArribadaAnimal(indice: Int, estatTexto: String, estatCodigo: String) {
+        val listaActual = _listaAnimales.value ?: emptyList()
+        _listaAnimales.value = listaActual.mapIndexed { index, animal ->
+            if (index == indice) {
+                // Si cambia a un estado diferente de "80", limpiar campos de sacrificio
+                if (estatCodigo != "80") {
+                    animal.copy(
+                        estatArribada = estatCodigo,
+                        classCanal = null,
+                        dataSacrMort = null,
+                        pesCanal = null,
+                        tipusPresentacio = null
+                    )
+                } else {
+                    animal.copy(estatArribada = estatCodigo)
+                }
+            } else animal
+        }
+
+        // Guardar texto para mostrar en UI
+        val mapaTexto = _textoEstatArribadaPorIndice.value ?: emptyMap()
+        _textoEstatArribadaPorIndice.value = mapaTexto + (indice to estatCodigo)
+
+        // Cerrar menú
+        val mapaActual = _estatArribadaExpandidoPorIndice.value ?: emptyMap()
+        _estatArribadaExpandidoPorIndice.value = mapaActual + (indice to false)
+    }
+
+    fun actualizarDataSacrMort(indice: Int, fecha: String) {
+        val listaActual = _listaAnimales.value ?: emptyList()
+        _listaAnimales.value = listaActual.mapIndexed { index, animal ->
+            if (index == indice) animal.copy(dataSacrMort = fecha)
+            else animal
+        }
+    }
+
+    fun actualizarPesCanal(indice: Int, peso: String) {
+        val listaActual = _listaAnimales.value ?: emptyList()
+        if (peso.length <= 5) {
+            _listaAnimales.value = listaActual.mapIndexed { index, animal ->
+                if (index == indice) animal.copy(pesCanal = peso)
+                else animal
+            }
+        }
+
+    }
+
+
+    fun seleccionarTipusPresentacio(indice: Int, codigo: String) {
+        val listaActual = _listaAnimales.value ?: emptyList()
+        _listaAnimales.value = listaActual.mapIndexed { index, animal ->
+            if (index == indice) animal.copy(tipusPresentacio = codigo)
+            else animal
+        }
+
+        // Cerrar menú
+        val mapaActual = _tipusPresentacioExpandidoPorIndice.value ?: emptyMap()
+        _tipusPresentacioExpandidoPorIndice.value = mapaActual + (indice to false)
+    }
+
+    // Funciones para controlar la expansión de menús por índice
+    fun toggleEstatArribadaExpandido(indice: Int) {
+        val mapaActual = _estatArribadaExpandidoPorIndice.value ?: emptyMap()
+        val valorActual = mapaActual[indice] ?: false
+        _estatArribadaExpandidoPorIndice.value = mapaActual + (indice to !valorActual)
+    }
+
+
+    fun toggleTipusPresentacioExpandido(indice: Int) {
+        val mapaActual = _tipusPresentacioExpandidoPorIndice.value ?: emptyMap()
+        val valorActual = mapaActual[indice] ?: false
+        _tipusPresentacioExpandidoPorIndice.value = mapaActual + (indice to !valorActual)
+    }
+
+    fun cerrarEstatArribadaMenu(indice: Int) {
+        val mapaActual = _estatArribadaExpandidoPorIndice.value ?: emptyMap()
+        _estatArribadaExpandidoPorIndice.value = mapaActual + (indice to false)
+    }
+
+
+    fun cerrarTipusPresentacioMenu(indice: Int) {
+        val mapaActual = _tipusPresentacioExpandidoPorIndice.value ?: emptyMap()
+        _tipusPresentacioExpandidoPorIndice.value = mapaActual + (indice to false)
+    }
+
+    // DatePicker para fecha de sacrificio/muerte
+    fun mostrarDatePickerSacrMort(indice: Int) {
+        val mapaActual = _mostrarDatePickerPorIndice.value ?: emptyMap()
+        _mostrarDatePickerPorIndice.value = mapaActual + (indice to true)
+    }
+
+    fun ocultarDatePickerSacrMort(indice: Int) {
+        val mapaActual = _mostrarDatePickerPorIndice.value ?: emptyMap()
+        _mostrarDatePickerPorIndice.value = mapaActual + (indice to false)
+    }
+
+    fun seleccionarFechaSacrMort(indice: Int, fechaMillis: Long) {
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = fechaMillis
+        val dia = calendar.get(Calendar.DAY_OF_MONTH)
+        val mes = calendar.get(Calendar.MONTH) + 1
+        val anio = calendar.get(Calendar.YEAR)
+
+        val fechaFormateada = String.format("%02d/%02d/%04d", dia, mes, anio)
+        actualizarDataSacrMort(indice, fechaFormateada)
+        ocultarDatePickerSacrMort(indice)
+    }
+
+
+
+
+
 
     // ============================================
     // VALIDACIÓN Y CONFIRMACIÓN
@@ -289,12 +495,26 @@ class MovimientosViewModel : ViewModel() {
         val horaArribadaValida = !_horaArribada.value.isNullOrEmpty()
         val codiAtesValido = !_codiAtes.value.isNullOrEmpty()
         val explotacioDestinacioValida = !_explotacioDestinacio.value.isNullOrEmpty()
-        val identificadorValido = !_identificadorAnimal.value.isNullOrEmpty()
-        val estatArribadaValido = !_estatArribada.value.isNullOrEmpty()
+
+        // Validar todos los animales
+        val listaAnimales = _listaAnimales.value ?: emptyList()
+        val animalesValidos = listaAnimales.all { animal ->
+            val identificadorValido = animal.identificador.isNotEmpty()
+            val estatValido = animal.estatArribada.isNotEmpty()
+
+            // Si el estado es "80" (Sacrificat), validar campos adicionales
+            val camposAdicionales = if (animal.estatArribada == "80") {
+                !animal.dataSacrMort.isNullOrEmpty() &&
+                        !animal.pesCanal.isNullOrEmpty() &&
+                        !animal.classCanal.isNullOrEmpty() &&
+                        !animal.tipusPresentacio.isNullOrEmpty()
+            } else true
+
+            identificadorValido && estatValido && camposAdicionales
+        }
 
         return codiRemoValido && dataArribadaValida && horaArribadaValida &&
-                codiAtesValido && explotacioDestinacioValida &&
-                identificadorValido && estatArribadaValido
+                codiAtesValido && explotacioDestinacioValida && animalesValidos
     }
 
     // Función para confirmar movimiento con gestión mejorada de errores
@@ -336,22 +556,20 @@ class MovimientosViewModel : ViewModel() {
                     _dataArribada.value ?: "",
                     _horaArribada.value ?: ""
                 )
-
-
                 // Extraer código del estado de arribada (primeros 2 dígitos)
                 val codigoEstat = _estatArribada.value?.take(2) ?: ""
 
-                // Crear lista de identificadores usando IdenMovimiento
-                val listaIdentificadores = listOf(
-                    IdenMovimiento(
-                        identificador = _identificadorAnimal.value ?: "",
-                        estatArribada = codigoEstat,
-                        classCanal = null,
-                        dataSacrMort = null,
-                        pesCanal = null,
-                        tipusPresentacio = null
+                // Crear lista de identificadores directamente
+                val listaIdentificadores = _listaAnimales.value ?: emptyList()
+
+                // Convertir fechas de formato dd/MM/yyyy a yyyyMMdd para los que tienen estado "80"
+                val listaIdentificadoresAPI = listaIdentificadores.map { animal ->
+                    animal.copy(
+                        dataSacrMort = if (animal.estatArribada == "80" && animal.dataSacrMort != null) {
+                            convertirFechaAFormatoAPI(animal.dataSacrMort)
+                        } else null
                     )
-                )
+                }
 
                 // Crear objeto de petición
                 val request = PetConfirmacionMovi(
@@ -367,7 +585,7 @@ class MovimientosViewModel : ViewModel() {
                     nifConductor = _nifConductor.value ?: "",
                     nomConductor = _nomConductor.value ?: "",
                     explotacioDestinacio = _explotacioDestinacio.value ?: "",
-                    identificadors = listaIdentificadores
+                    identificadors = listaIdentificadoresAPI
                 )
                 Log.d("Confirmar Movimiento", "Request: $request")
 
@@ -476,8 +694,23 @@ class MovimientosViewModel : ViewModel() {
         _nifConductor.value = ""
         _nomConductor.value = ""
         _explotacioDestinacio.value = ""
-        _identificadorAnimal.value = ""
-        _estatArribada.value = ""
+
+        // Resetear lista de animales a un solo animal vacío
+        _listaAnimales.value = listOf(
+            IdenMovimiento(
+                identificador = "",
+                estatArribada = "",
+                classCanal = null,
+                dataSacrMort = null,
+                pesCanal = null,
+                tipusPresentacio = null
+            )
+        )
+        _estatArribadaExpandidoPorIndice.value = emptyMap()
+        _classCanalExpandidoPorIndice.value = emptyMap()
+        _tipusPresentacioExpandidoPorIndice.value = emptyMap()
+        _mostrarDatePickerPorIndice.value = emptyMap()
+        _textoEstatArribadaPorIndice.value = emptyMap()
     }
 
     // Función para resetear el estado de registro

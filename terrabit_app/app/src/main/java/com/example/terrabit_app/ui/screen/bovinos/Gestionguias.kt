@@ -602,7 +602,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                     onDismissRequest = { viewModel.cerrarTemporalMenu() },
                                     modifier = Modifier.background(Color.White)
                                 ) {
-                                    elementosConCodigos.OpcionesSiNo().forEach { (opcion, codi) ->
+                                    elementosConCodigos.opcionesSiNo().forEach { (opcion, codi) ->
                                         DropdownMenuItem(
                                             text = {
                                                 Text(
@@ -858,7 +858,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                     onDismissRequest = { viewModel.cerrarMobilitatMenu() },
                                     modifier = Modifier.background(Color.White)
                                 ) {
-                                    elementosConCodigos.OpcionesSiNo().forEach { (opcion, codi) ->
+                                    elementosConCodigos.opcionesSiNo().forEach { (opcion, codi) ->
                                         DropdownMenuItem(
                                             text = {
                                                 Text(
@@ -1089,7 +1089,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                     onDismissRequest = { viewModel.cerrarMitjaTransportMenu() },
                                     modifier = Modifier.background(Color.White)
                                 ) {
-                                    elementosConCodigos.Transporte().forEach { (medio, codi) ->
+                                    elementosConCodigos.transporte().forEach { (medio, codi) ->
                                         DropdownMenuItem(
                                             text = {
                                                 Text(

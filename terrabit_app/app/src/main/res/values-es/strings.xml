@@ -117,6 +117,7 @@
     <string name="form_exploitation_destination_description">Código de explotación REGA</string>
     <string name="form_state_arrival">Estado de llegada *</string>
     <string name="form_state_arrival_description">Seleccionar estado</string>
+    <string name="form_movs_title_animals">Información del transporte</string>
     <string name="form_movs_title_optionals">Datos Opcionales del Transporte</string>
     <string name="form_ways_transports">Medio de Transporte</string>
     <string name="form_ways_transports_description">Seleccionar medio</string>
@@ -131,6 +132,14 @@
     <string name="error_message_confirm_movs">Error al Confirmar Movimiento</string>
     <string name="successful_message_confirm_movs">Movimiento confirmado exitosamente</string>
     <string name="buttom_form_confirm_movs">Confirmar Movimiento</string>
+    <string name="form_movs_title_sacrifate_dade">Datos de sacrifício</string>
+    <string name="form_date_sacrifice">Fecha de sacrifício *</string>
+    <string name="form_weight_canal">Peso de Canal *</string>
+    <string name="form_weight_canal_description">Introducir el peso</string>
+    <string name="form_class_canal">Clase de Canal *</string>
+    <string name="form_class_canal_description">Seleccionar clase</string>
+    <string name="form_type_presentation">Tipo de presentació *</string>
+    <string name="form_type_presentation_description">Seleccionar tipo</string>
 
     <string name="name_manage_guides">Gestionar Guías</string>
 

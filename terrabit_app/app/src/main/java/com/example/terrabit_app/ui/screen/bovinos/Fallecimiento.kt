@@ -411,7 +411,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                     onDismissRequest = { viewModel.cerrarTipoMuerteMenu() },
                                     modifier = Modifier.background(Color.White)
                                 ) {
-                                    elementosConCodigos.Muertes().forEach { (tipo, codigo) ->
+                                    elementosConCodigos.muertes().forEach { (tipo, codigo) ->
                                         DropdownMenuItem(
                                             text = {
                                                 Text(
