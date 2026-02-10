@@ -2,7 +2,18 @@ package com.example.terrabit_app.ui.screen.bovinos
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -12,9 +23,44 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.outlined.CameraAlt
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,10 +75,19 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
-import com.example.terrabit_app.viewmodel.ViewModelMuerteBovi
 import com.example.terrabit_app.R
+import com.example.terrabit_app.ui.theme.BlueGrey
+import com.example.terrabit_app.ui.theme.DarkBlueGrey
+import com.example.terrabit_app.ui.theme.DarkOrange
+import com.example.terrabit_app.ui.theme.DarkWhiteBackground
+import com.example.terrabit_app.ui.theme.ErrorRed
+import com.example.terrabit_app.ui.theme.MainGreen
+import com.example.terrabit_app.ui.theme.MainOrange
+import com.example.terrabit_app.ui.theme.WhiteBackground
+import com.example.terrabit_app.ui.theme.Yellow
 import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
+import com.example.terrabit_app.viewmodel.ViewModelMuerteBovi
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -116,7 +171,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
                     contentDescription = null,
-                    tint = Color(0xFFD32F2F),
+                    tint = ErrorRed,
                     modifier = Modifier.size(48.dp)
                 )
             },
@@ -125,14 +180,14 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                     text = "Borrador encontrado",
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
-                    color = Color(0xFF1E293B)
+                    color = DarkBlueGrey
                 )
             },
             text = {
                 Text(
                     text = "Se encontró un formulario sin completar. ¿Deseas recuperarlo?",
                     fontSize = 16.sp,
-                    color = Color(0xFF475569),
+                    color = BlueGrey,
                     lineHeight = 24.sp
                 )
             },
@@ -142,7 +197,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                         mostrarDialogoRecuperacion = false
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFD32F2F)
+                        containerColor = ErrorRed
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
@@ -157,7 +212,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                         viewModel.limpiarFormularioMuerte()
                     }
                 ) {
-                    Text("Descartar", color = Color(0xFF64748B))
+                    Text("Descartar", color = BlueGrey)
                 }
             },
             containerColor = Color.White,
@@ -191,7 +246,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
                     contentDescription = null,
-                    tint = Color(0xFFD32F2F),
+                    tint = ErrorRed,
                     modifier = Modifier.size(48.dp)
                 )
             },
@@ -200,14 +255,14 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                     text = mensajeRegistroError,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
-                    color = Color(0xFF1E293B)
+                    color = DarkBlueGrey
                 )
             },
             text = {
                 Text(
                     text = mensajeError.ifEmpty { alertsErrosScreens(codiError!!) },
                     fontSize = 16.sp,
-                    color = Color(0xFF475569),
+                    color = BlueGrey,
                     lineHeight = 24.sp
                 )
             },
@@ -218,7 +273,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                         viewModel.resetearEstadoRegistroMuerte()
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFD32F2F)
+                        containerColor = ErrorRed
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
@@ -242,20 +297,20 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                         }
                     }
                 ) {
-                    Text(stringResource(R.string.accept_buttom), color = Color(0xFFD32F2F))
+                    Text(stringResource(R.string.accept_buttom), color = ErrorRed)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.ocultarDatePickerMuerte() }) {
-                    Text(stringResource(R.string.cancel_buttom), color = Color(0xFF64748B))
+                    Text(stringResource(R.string.cancel_buttom), color = BlueGrey)
                 }
             }
         ) {
             DatePicker(
                 state = datePickerState,
                 colors = DatePickerDefaults.colors(
-                    selectedDayContainerColor = Color(0xFFD32F2F),
-                    todayDateBorderColor = Color(0xFFD32F2F)
+                    selectedDayContainerColor = ErrorRed,
+                    todayDateBorderColor = ErrorRed
                 )
             )
         }
@@ -288,7 +343,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                     ) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(48.dp),
-                            color = Color(0xFFD32F2F),
+                            color = ErrorRed,
                             strokeWidth = 4.dp
                         )
                         Spacer(modifier = Modifier.height(12.dp))
@@ -296,7 +351,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                             "Procesando...",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
-                            color = Color(0xFF64748B)
+                            color = BlueGrey
                         )
                     }
                 }
@@ -322,7 +377,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color(0xFFD32F2F),
+                        containerColor = ErrorRed,
                         titleContentColor = Color.White,
                         navigationIconContentColor = Color.White
                     )
@@ -332,13 +387,13 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                 SnackbarHost(hostState = snackbarHostState) { data ->
                     Snackbar(
                         snackbarData = data,
-                        containerColor = Color(0xFF4A7C59),
+                        containerColor = MainGreen,
                         contentColor = Color.White,
                         shape = RoundedCornerShape(12.dp)
                     )
                 }
             },
-            containerColor = Color(0xFFF5F7FA)
+            containerColor = WhiteBackground
         ) { padding ->
             Column(
                 modifier = Modifier
@@ -370,7 +425,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                 stringResource(R.string.form_type_dead),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1E293B),
+                                color = DarkBlueGrey,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -388,7 +443,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                     placeholder = {
                                         Text(
                                             stringResource(R.string.form_type_dead_description),
-                                            color = Color(0xFF94A3B8)
+                                            color = BlueGrey
                                         )
                                     },
                                     trailingIcon = {
@@ -399,10 +454,10 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                     singleLine = true,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = Color(0xFFD32F2F),
-                                        unfocusedBorderColor = Color(0xFFCBD5E1),
-                                        focusedTextColor = Color(0xFF1E293B),
-                                        unfocusedTextColor = Color(0xFF1E293B)
+                                        focusedBorderColor = ErrorRed,
+                                        unfocusedBorderColor = DarkWhiteBackground,
+                                        focusedTextColor = DarkBlueGrey,
+                                        unfocusedTextColor = DarkBlueGrey
                                     )
                                 )
 
@@ -417,7 +472,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                                 Text(
                                                     tipo,
                                                     fontSize = 15.sp,
-                                                    color = Color(0xFF1E293B),
+                                                    color = DarkBlueGrey,
                                                     fontWeight = FontWeight.Normal
                                                 )
                                             },
@@ -438,7 +493,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                 if (tipoMuerte.contains("01")) stringResource(R.string.form_id_animal) else stringResource(R.string.form_id_mother),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1E293B),
+                                color = DarkBlueGrey,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -452,7 +507,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                             stringResource(R.string.form_id_animal_description)
                                         else
                                             stringResource(R.string.form_mother_description),
-                                        color = Color(0xFF94A3B8)
+                                        color = BlueGrey
                                     )
                                 },
                                 trailingIcon = {
@@ -460,18 +515,18 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                         Icon(
                                             Icons.Outlined.CameraAlt,
                                             contentDescription = "Escanear",
-                                            tint = Color(0xFFD32F2F)
+                                            tint = ErrorRed
                                         )
                                     }
                                 },
                                 singleLine = true,
                                 shape = MaterialTheme.shapes.medium,
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = Color(0xFFD32F2F),
-                                    unfocusedBorderColor = Color(0xFFCBD5E1),
-                                    focusedTextColor = Color(0xFF1E293B),
-                                    unfocusedTextColor = Color(0xFF1E293B),
-                                    cursorColor = Color(0xFFD32F2F)
+                                    focusedBorderColor = ErrorRed,
+                                    unfocusedBorderColor = DarkWhiteBackground,
+                                    focusedTextColor = DarkBlueGrey,
+                                    unfocusedTextColor = DarkBlueGrey,
+                                    cursorColor = ErrorRed
                                 ),
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Text,
@@ -487,7 +542,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                 stringResource(R.string.form_dead_date),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1E293B),
+                                color = DarkBlueGrey,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -503,24 +558,24 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                     placeholder = {
                                         Text(
                                             stringResource(R.string.form_date_description),
-                                            color = Color(0xFF94A3B8)
+                                            color = BlueGrey
                                         )
                                     },
                                     leadingIcon = {
                                         Icon(
                                             Icons.Default.DateRange,
                                             contentDescription = "Calendario",
-                                            tint = Color(0xFFD32F2F)
+                                            tint = ErrorRed
                                         )
                                     },
                                     readOnly = true,
                                     enabled = false,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        disabledTextColor = Color(0xFF1E293B),
-                                        disabledBorderColor = Color(0xFFCBD5E1),
-                                        disabledLeadingIconColor = Color(0xFFD32F2F),
-                                        disabledPlaceholderColor = Color(0xFF94A3B8)
+                                        disabledTextColor = DarkBlueGrey,
+                                        disabledBorderColor = DarkWhiteBackground,
+                                        disabledLeadingIconColor = ErrorRed,
+                                        disabledPlaceholderColor = BlueGrey
                                     ),
                                     singleLine = true
                                 )
@@ -534,7 +589,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                     stringResource(R.string.form_pregnancy_months),
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = Color(0xFF1E293B),
+                                    color = DarkBlueGrey,
                                     letterSpacing = 0.15.sp
                                 )
                                 Spacer(modifier = Modifier.height(10.dp))
@@ -545,17 +600,17 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                     placeholder = {
                                         Text(
                                             stringResource(R.string.form_pregnancy_months_description),
-                                            color = Color(0xFF94A3B8)
+                                            color = BlueGrey
                                         )
                                     },
                                     singleLine = true,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = Color(0xFFD32F2F),
-                                        unfocusedBorderColor = Color(0xFFCBD5E1),
-                                        focusedTextColor = Color(0xFF1E293B),
-                                        unfocusedTextColor = Color(0xFF1E293B),
-                                        cursorColor = Color(0xFFD32F2F)
+                                        focusedBorderColor = ErrorRed,
+                                        unfocusedBorderColor = DarkWhiteBackground,
+                                        focusedTextColor = DarkBlueGrey,
+                                        unfocusedTextColor = DarkBlueGrey,
+                                        cursorColor = ErrorRed
                                     ),
                                     keyboardOptions = KeyboardOptions(
                                         keyboardType = KeyboardType.Number,
@@ -595,13 +650,13 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                     stringResource(R.string.title_cadaver),
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = Color(0xFF1E293B)
+                                    color = DarkBlueGrey
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     stringResource(R.string.description_cadaver),
                                     fontSize = 13.sp,
-                                    color = Color(0xFF64748B),
+                                    color = BlueGrey,
                                     lineHeight = 18.sp
                                 )
                             }
@@ -610,9 +665,9 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                 onCheckedChange = { viewModel.toggleCadaverInaccesible() },
                                 colors = SwitchDefaults.colors(
                                     checkedThumbColor = Color.White,
-                                    checkedTrackColor = Color(0xFFD32F2F),
+                                    checkedTrackColor = ErrorRed,
                                     uncheckedThumbColor = Color.White,
-                                    uncheckedTrackColor = Color(0xFFCBD5E1)
+                                    uncheckedTrackColor = DarkWhiteBackground
                                 )
                             )
                         }
@@ -623,7 +678,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = Color(0xFFFEF3C7)
+                                    containerColor = WhiteBackground
                                 ),
                                 shape = RoundedCornerShape(12.dp),
                                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
@@ -639,7 +694,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                         Icon(
                                             Icons.Default.LocationOn,
                                             contentDescription = null,
-                                            tint = Color(0xFFD97706),
+                                            tint = MainOrange,
                                             modifier = Modifier.size(24.dp)
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
@@ -647,7 +702,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                             stringResource(R.string.title_gps),
                                             fontSize = 16.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = Color(0xFF92400E)
+                                            color = ErrorRed
                                         )
                                     }
 
@@ -667,13 +722,13 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                         Icon(
                                             Icons.Default.LocationOn,
                                             contentDescription = null,
-                                            tint = Color(0xFFD97706),
+                                            tint = MainOrange,
                                             modifier = Modifier.size(20.dp)
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
                                         Text(
                                             stringResource(R.string.buttom_gps),
-                                            color = Color(0xFF92400E),
+                                            color = ErrorRed,
                                             fontWeight = FontWeight.SemiBold
                                         )
                                     }
@@ -689,7 +744,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                                 stringResource(R.string.gps_laltitud),
                                                 fontSize = 13.sp,
                                                 fontWeight = FontWeight.SemiBold,
-                                                color = Color(0xFF92400E)
+                                                color = ErrorRed
                                             )
                                             Spacer(modifier = Modifier.height(6.dp))
                                             OutlinedTextField(
@@ -699,17 +754,17 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                                     Text(
                                                         stringResource(R.string.gps_laltitud_description),
                                                         fontSize = 13.sp,
-                                                        color = Color(0xFFA16207)
+                                                        color = DarkOrange
                                                     )
                                                 },
                                                 singleLine = true,
                                                 shape = RoundedCornerShape(8.dp),
                                                 colors = OutlinedTextFieldDefaults.colors(
-                                                    focusedBorderColor = Color(0xFFD97706),
-                                                    unfocusedBorderColor = Color(0xFFFBBF24),
-                                                    focusedTextColor = Color(0xFF92400E),
-                                                    unfocusedTextColor = Color(0xFF92400E),
-                                                    cursorColor = Color(0xFFD97706),
+                                                    focusedBorderColor = MainOrange,
+                                                    unfocusedBorderColor = Yellow,
+                                                    focusedTextColor = ErrorRed,
+                                                    unfocusedTextColor = ErrorRed,
+                                                    cursorColor = MainOrange,
                                                     focusedContainerColor = Color.White,
                                                     unfocusedContainerColor = Color.White
                                                 ),
@@ -726,7 +781,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                                 stringResource(R.string.gps_longitud),
                                                 fontSize = 13.sp,
                                                 fontWeight = FontWeight.SemiBold,
-                                                color = Color(0xFF92400E)
+                                                color = ErrorRed
                                             )
                                             Spacer(modifier = Modifier.height(6.dp))
                                             OutlinedTextField(
@@ -736,17 +791,17 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                                     Text(
                                                         stringResource(R.string.gps_longitud_description),
                                                         fontSize = 13.sp,
-                                                        color = Color(0xFFA16207)
+                                                        color = DarkOrange
                                                     )
                                                 },
                                                 singleLine = true,
                                                 shape = RoundedCornerShape(8.dp),
                                                 colors = OutlinedTextFieldDefaults.colors(
-                                                    focusedBorderColor = Color(0xFFD97706),
-                                                    unfocusedBorderColor = Color(0xFFFBBF24),
-                                                    focusedTextColor = Color(0xFF92400E),
-                                                    unfocusedTextColor = Color(0xFF92400E),
-                                                    cursorColor = Color(0xFFD97706),
+                                                    focusedBorderColor = MainOrange,
+                                                    unfocusedBorderColor = Yellow,
+                                                    focusedTextColor = ErrorRed,
+                                                    unfocusedTextColor = ErrorRed,
+                                                    cursorColor = MainOrange,
                                                     focusedContainerColor = Color.White,
                                                     unfocusedContainerColor = Color.White
                                                 ),
@@ -772,8 +827,8 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                         .height(56.dp),
                     enabled = !estadoCarga,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFD32F2F),
-                        disabledContainerColor = Color(0xFFCBD5E1)
+                        containerColor = ErrorRed,
+                        disabledContainerColor = DarkWhiteBackground
                     ),
                     shape = MaterialTheme.shapes.medium,
                     elevation = ButtonDefaults.buttonElevation(

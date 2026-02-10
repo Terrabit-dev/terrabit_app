@@ -66,9 +66,14 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
-import com.example.terrabit_app.viewmodel.IdentificacionAplazaViewModel
 import com.example.terrabit_app.R
+import com.example.terrabit_app.ui.theme.BlueGrey
+import com.example.terrabit_app.ui.theme.DarkBlueGrey
+import com.example.terrabit_app.ui.theme.DarkWhiteBackground
+import com.example.terrabit_app.ui.theme.MainGreen
+import com.example.terrabit_app.ui.theme.WhiteBackground
 import com.example.terrabit_app.utils.alertsErrosScreens
+import com.example.terrabit_app.viewmodel.IdentificacionAplazaViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -146,7 +151,7 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
                     contentDescription = null,
-                    tint = Color(0xFF4A7C59),
+                    tint = MainGreen,
                     modifier = Modifier.size(48.dp)
                 )
             },
@@ -155,14 +160,14 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                     text = "Borrador encontrado",
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
-                    color = Color(0xFF1E293B)
+                    color = DarkBlueGrey
                 )
             },
             text = {
                 Text(
                     text = "Se encontró un formulario sin completar. ¿Deseas recuperarlo?",
                     fontSize = 16.sp,
-                    color = Color(0xFF475569),
+                    color = BlueGrey,
                     lineHeight = 24.sp
                 )
             },
@@ -173,7 +178,7 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                         // Los datos ya están cargados
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF4A7C59)
+                        containerColor = MainGreen
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
@@ -188,7 +193,7 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                         viewModel.limpiarFormulario()
                     }
                 ) {
-                    Text("Descartar", color = Color(0xFF64748B))
+                    Text("Descartar", color = BlueGrey)
                 }
             },
             containerColor = Color.White,
@@ -225,7 +230,7 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
                     contentDescription = null,
-                    tint = Color(0xFF4A7C59),
+                    tint = MainGreen,
                     modifier = Modifier.size(48.dp)
                 )
             },
@@ -234,7 +239,7 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                     text = titulloError,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
-                    color = Color(0xFF1E293B)
+                    color = DarkBlueGrey
                 )
             },
             text = {
@@ -243,7 +248,7 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                         alertsErrosScreens(codiError!!)
                     } else mensajeError,
                     fontSize = 16.sp,
-                    color = Color(0xFF475569),
+                    color = BlueGrey,
                     lineHeight = 24.sp
                 )
             },
@@ -254,7 +259,7 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                         viewModel.resetearEstadoIdentificacion()
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF4A7C59)
+                        containerColor = MainGreen
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
@@ -278,20 +283,20 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                         }
                     }
                 ) {
-                    Text(stringResource(R.string.accept_buttom), color = Color(0xFF4A7C59))
+                    Text(stringResource(R.string.accept_buttom), color = MainGreen)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.ocultarDatePickerIdentificacion() }) {
-                    Text(stringResource(R.string.cancel_buttom), color = Color(0xFF64748B))
+                    Text(stringResource(R.string.cancel_buttom), color = BlueGrey)
                 }
             }
         ) {
             DatePicker(
                 state = datePickerState,
                 colors = DatePickerDefaults.colors(
-                    selectedDayContainerColor = Color(0xFF4A7C59),
-                    todayDateBorderColor = Color(0xFF4A7C59)
+                    selectedDayContainerColor = MainGreen,
+                    todayDateBorderColor = MainGreen
                 )
             )
         }
@@ -325,7 +330,7 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                     ) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(48.dp),
-                            color = Color(0xFF4A7C59),
+                            color = MainGreen,
                             strokeWidth = 4.dp
                         )
                         Spacer(modifier = Modifier.height(12.dp))
@@ -333,7 +338,7 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                             "Procesando...",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
-                            color = Color(0xFF64748B)
+                            color = BlueGrey
                         )
                     }
                 }
@@ -365,7 +370,7 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color(0xFF4A7C59),
+                        containerColor = MainGreen,
                         titleContentColor = Color.White,
                         navigationIconContentColor = Color.White
                     )
@@ -375,13 +380,13 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                 SnackbarHost(hostState = snackbarHostState) { data ->
                     Snackbar(
                         snackbarData = data,
-                        containerColor = Color(0xFF4A7C59),
+                        containerColor = MainGreen,
                         contentColor = Color.White,
                         shape = RoundedCornerShape(12.dp)
                     )
                 }
             },
-            containerColor = Color(0xFFF5F7FA)
+            containerColor = WhiteBackground
         ) { padding ->
             Column(
                 modifier = Modifier
@@ -413,7 +418,7 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                                 stringResource(R.string.form_id_animal),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1E293B),
+                                color = DarkBlueGrey,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -424,7 +429,7 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                                 placeholder = {
                                     Text(
                                         stringResource(R.string.form_id_animal_description),
-                                        color = Color(0xFF94A3B8)
+                                        color = BlueGrey
                                     )
                                 },
                                 trailingIcon = {
@@ -432,18 +437,18 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                                         Icon(
                                             Icons.Outlined.CameraAlt,
                                             contentDescription = "Escanear",
-                                            tint = Color(0xFF4A7C59)
+                                            tint = MainGreen
                                         )
                                     }
                                 },
                                 singleLine = true,
                                 shape = MaterialTheme.shapes.medium,
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = Color(0xFF4A7C59),
-                                    unfocusedBorderColor = Color(0xFFCBD5E1),
-                                    focusedTextColor = Color(0xFF1E293B),
-                                    unfocusedTextColor = Color(0xFF1E293B),
-                                    cursorColor = Color(0xFF4A7C59)
+                                    focusedBorderColor = MainGreen,
+                                    unfocusedBorderColor = DarkWhiteBackground,
+                                    focusedTextColor = DarkBlueGrey,
+                                    unfocusedTextColor = DarkBlueGrey,
+                                    cursorColor = MainGreen
                                 ),
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Text,
@@ -459,7 +464,7 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                                 stringResource(R.string.form_date_identification),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1E293B),
+                                color = DarkBlueGrey,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -475,24 +480,24 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                                     placeholder = {
                                         Text(
                                             stringResource(R.string.form_date_description),
-                                            color = Color(0xFF94A3B8)
+                                            color = BlueGrey
                                         )
                                     },
                                     leadingIcon = {
                                         Icon(
                                             imageVector = Icons.Default.DateRange,
                                             contentDescription = "Calendario",
-                                            tint = Color(0xFF4A7C59)
+                                            tint = MainGreen
                                         )
                                     },
                                     readOnly = true,
                                     enabled = false,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        disabledTextColor = Color(0xFF1E293B),
-                                        disabledBorderColor = Color(0xFFCBD5E1),
-                                        disabledLeadingIconColor = Color(0xFF4A7C59),
-                                        disabledPlaceholderColor = Color(0xFF94A3B8)
+                                        disabledTextColor = DarkBlueGrey,
+                                        disabledBorderColor = DarkWhiteBackground,
+                                        disabledLeadingIconColor = MainGreen,
+                                        disabledPlaceholderColor = BlueGrey
                                     ),
                                     singleLine = true
                                 )
@@ -510,8 +515,8 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                         .height(56.dp),
                     enabled = !estadoCarga,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF4A7C59),
-                        disabledContainerColor = Color(0xFFCBD5E1)
+                        containerColor = MainGreen,
+                        disabledContainerColor = DarkWhiteBackground
                     ),
                     shape = MaterialTheme.shapes.medium,
                     elevation = ButtonDefaults.buttonElevation(

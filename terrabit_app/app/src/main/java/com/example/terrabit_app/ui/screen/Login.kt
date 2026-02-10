@@ -71,6 +71,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
+import com.example.terrabit_app.ui.theme.BlueGrey
+import com.example.terrabit_app.ui.theme.DarkBlueGrey
+import com.example.terrabit_app.ui.theme.ErrorRed
+import com.example.terrabit_app.ui.theme.MainGreen
+import com.example.terrabit_app.ui.theme.WhiteBackground
 import com.example.terrabit_app.viewmodel.LoginState
 import com.example.terrabit_app.viewmodel.LoginViewModel
 
@@ -111,7 +116,7 @@ fun Login(
                 Icon(
                     imageVector = Icons.Outlined.Lock,
                     contentDescription = null,
-                    tint = Color(0xFF5C7654),
+                    tint = MainGreen,
                     modifier = Modifier.size(48.dp)
                 )
             },
@@ -120,14 +125,14 @@ fun Login(
                     text = stringResource(R.string.title_auth_error),
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
-                    color = Color(0xFF1E293B)
+                    color = DarkBlueGrey
                 )
             },
             text = {
                 Text(
                     text = mensajeError,
                     fontSize = 16.sp,
-                    color = Color(0xFF475569),
+                    color = BlueGrey,
                     lineHeight = 24.sp
                 )
             },
@@ -138,7 +143,7 @@ fun Login(
                         viewModel.resetState()
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF5C7654)
+                        containerColor = MainGreen
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
@@ -177,7 +182,7 @@ fun Login(
                     ) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(48.dp),
-                            color = Color(0xFF5C7654),
+                            color = MainGreen,
                             strokeWidth = 4.dp
                         )
                         Spacer(modifier = Modifier.height(12.dp))
@@ -185,7 +190,7 @@ fun Login(
                             stringResource(R.string.loading_processing),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
-                            color = Color(0xFF64748B)
+                            color = BlueGrey
                         )
                     }
                 }
@@ -200,7 +205,7 @@ fun Login(
                         focusManager.clearFocus()
                     })
                 },
-            color = Color(0xFFF5F3EF)
+            color = WhiteBackground
         ) {
             Column(
                 modifier = Modifier
@@ -330,7 +335,7 @@ fun LoginCard(
                 if (nifError != null) {
                     Text(
                         text = nifError ?: "",
-                        color = Color(0xFFD32F2F),
+                        color = ErrorRed,
                         fontSize = 12.sp,
                         modifier = Modifier.padding(start = 16.dp)
                     )
@@ -364,7 +369,7 @@ fun LoginCard(
                 if (passwordError != null) {
                     Text(
                         text = passwordError ?: "",
-                        color = Color(0xFFD32F2F),
+                        color = ErrorRed,
                         fontSize = 12.sp,
                         modifier = Modifier.padding(start = 16.dp)
                     )
@@ -400,7 +405,7 @@ fun LoginCard(
                 if (codiMOError != null) {
                     Text(
                         text = codiMOError ?: "",
-                        color = Color(0xFFD32F2F),
+                        color = ErrorRed,
                         fontSize = 12.sp,
                         modifier = Modifier.padding(start = 16.dp)
                     )
@@ -421,7 +426,7 @@ fun LoginCard(
                 Text(
                     text = stringResource(R.string.action_forgot_password),
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF5C7654),
+                    color = MainGreen,
                     textAlign = TextAlign.End,
                     modifier = Modifier.clickable {
                         uriHandler.openUri("https://aplicacions.agricultura.gencat.cat/gtr/porci/AppJava/views/recuperarContrasenya.xhtml")
@@ -442,9 +447,9 @@ fun LoginCard(
                     },
                     enabled = loginState !is LoginState.Loading,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF5C7654),
+                        containerColor = MainGreen,
                         contentColor = Color.White,
-                        disabledContainerColor = Color(0xFFCBD5E1)
+                        disabledContainerColor = WhiteBackground
                     ),
                     shape = RoundedCornerShape(10.dp)
                 ) {
@@ -512,9 +517,9 @@ fun CustomOutlinedTextField(
             focusedContainerColor = Color.White,
             unfocusedTrailingIconColor = Color.Gray,
             focusedTextColor = Color.Black,
-            errorIndicatorColor = Color(0xFFD32F2F),
+            errorIndicatorColor = ErrorRed,
             errorContainerColor = Color.White,
-            errorLeadingIconColor = Color(0xFFD32F2F)
+            errorLeadingIconColor = ErrorRed
         )
     )
 }
