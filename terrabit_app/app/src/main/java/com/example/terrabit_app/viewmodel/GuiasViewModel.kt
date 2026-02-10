@@ -25,15 +25,18 @@ class GuiasViewModel : ViewModel() {
     private val repositorio = Repositorio()
     private lateinit var sharedPreferencesManager: SharedPreferencesManager
 
-    // ============================================
-    // SECCIÓN: AUTOGUARDADO
-    // ============================================
+    // ID único para la sesión actual del formulario
+    private var borradorSesionId: String = ""
 
     fun inicializarSharedPreferences(context: Context) {
         sharedPreferencesManager = SharedPreferencesManager(context)
+
+        // Generar nuevo ID de sesión si no existe
+        if (borradorSesionId.isEmpty()) {
+            borradorSesionId = "guia_auto_${System.currentTimeMillis()}"
+        }
     }
 
-    // Detecta si el formulario tiene datos
     fun tieneContenido(): Boolean {
         return !_explotacioOrigen.value.isNullOrEmpty() ||
                 !_explotacioDestinacio.value.isNullOrEmpty() ||
@@ -54,7 +57,6 @@ class GuiasViewModel : ViewModel() {
                 (_identificadors.value?.any { it.isNotEmpty() } == true)
     }
 
-    // Guarda automáticamente el formulario
     fun guardarBorradorAutomatico() {
         if (!tieneContenido()) {
             Log.d("Autoguardado Guía", "No hay contenido para guardar")
@@ -79,23 +81,26 @@ class GuiasViewModel : ViewModel() {
                 "matricula" to _matricula.value,
                 "nifConductor" to _nifConductor.value,
                 "nomConductor" to _nomConductor.value,
-                "identificadors" to _identificadors.value
+                "identificadors" to _identificadors.value,
+                "codiTemporal" to codiTemporal,
+                "codiGuiaMobilidad" to codiGuiaMobilidad,
+                "codiTransport" to codiTransport
             )
 
-            // Buscar si ya existe un borrador de guía
+            // Buscar si ya existe este borrador específico de la sesión actual
             val borradorExistente = sharedPreferencesManager.obtenerBorradores()
-                .find { it.tipo == "GUIA" && it.estado == "BORRADOR_AUTO" }
+                .find { it.id == borradorSesionId }
 
             val borrador = if (borradorExistente != null) {
-                // Actualizar borrador existente
+                // Actualizar borrador de esta sesión
                 borradorExistente.copy(
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
                     datos = Gson().toJson(datosGuia)
                 )
             } else {
-                // Crear nuevo borrador
+                // Crear nuevo borrador con ID de sesión
                 Borrador(
-                    id = "guia_auto_${System.currentTimeMillis()}",
+                    id = borradorSesionId,
                     tipo = "GUIA",
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
                     datos = Gson().toJson(datosGuia),
@@ -104,77 +109,94 @@ class GuiasViewModel : ViewModel() {
             }
 
             sharedPreferencesManager.guardarBorrador(borrador)
-            Log.d("Autoguardado Guía", "Borrador guardado automáticamente")
+            Log.d("Autoguardado Guía", "Borrador guardado: $borradorSesionId")
         } catch (e: Exception) {
             Log.e("Error Autoguardado Guía", "Error al guardar: ${e.message}", e)
         }
     }
 
-    // Cargar borrador existente
     fun cargarBorradorExistente() {
         try {
             val borradores = sharedPreferencesManager.obtenerBorradores()
-            val borradorGuia = borradores.find {
+
+            // Buscar cualquier borrador de tipo GUIA con estado BORRADOR_AUTO
+            val borradoresGuia = borradores.filter {
                 it.tipo == "GUIA" && it.estado == "BORRADOR_AUTO"
             }
 
-            if (borradorGuia != null) {
-                val gson = Gson()
-                val datos: Map<String, Any?> = gson.fromJson(
-                    borradorGuia.datos,
-                    object : TypeToken<Map<String, Any?>>() {}.type
-                )
+            if (borradoresGuia.isNotEmpty()) {
+                // Tomar el más reciente (último guardado)
+                val borradorGuia = borradoresGuia.maxByOrNull {
+                    it.id.substringAfter("guia_auto_").toLongOrNull() ?: 0L
+                }
 
-                // Restaurar datos
-                _explotacioOrigen.value = datos["explotacioOrigen"] as? String ?: ""
-                _explotacioDestinacio.value = datos["explotacioDestinacio"] as? String ?: ""
-                _temporal.value = datos["temporal"] as? String ?: ""
-                _dataSortida.value = datos["dataSortida"] as? String ?: ""
-                _horaSortida.value = datos["horaSortida"] as? String ?: ""
-                _dataArribada.value = datos["dataArribada"] as? String ?: ""
-                _horaArribada.value = datos["horaArribada"] as? String ?: ""
-                _mobilitat.value = datos["mobilitat"] as? String ?: ""
-                _pais.value = datos["pais"] as? String ?: ""
-                _codiExplotacio.value = datos["codiExplotacio"] as? String ?: ""
-                _codiAtes.value = datos["codiAtes"] as? String ?: ""
-                _nomTransportista.value = datos["nomTransportista"] as? String ?: ""
-                _mitjaTransport.value = datos["mitjaTransport"] as? String ?: ""
-                _matricula.value = datos["matricula"] as? String ?: ""
-                _nifConductor.value = datos["nifConductor"] as? String ?: ""
-                _nomConductor.value = datos["nomConductor"] as? String ?: ""
+                if (borradorGuia != null) {
+                    // Asignar este ID a la sesión actual
+                    borradorSesionId = borradorGuia.id
 
-                // Restaurar lista de identificadores
-                @Suppress("UNCHECKED_CAST")
-                val identificadoresList = datos["identificadors"] as? List<String>
-                _identificadors.value = identificadoresList ?: listOf("")
+                    val gson = Gson()
+                    val datos: Map<String, Any?> = gson.fromJson(
+                        borradorGuia.datos,
+                        object : TypeToken<Map<String, Any?>>() {}.type
+                    )
 
-                Log.d("Cargar Borrador", "Borrador de guía cargado")
+                    // Restaurar datos
+                    _explotacioOrigen.value = datos["explotacioOrigen"] as? String ?: ""
+                    _explotacioDestinacio.value = datos["explotacioDestinacio"] as? String ?: ""
+                    _temporal.value = datos["temporal"] as? String ?: ""
+                    _dataSortida.value = datos["dataSortida"] as? String ?: ""
+                    _horaSortida.value = datos["horaSortida"] as? String ?: ""
+                    _dataArribada.value = datos["dataArribada"] as? String ?: ""
+                    _horaArribada.value = datos["horaArribada"] as? String ?: ""
+                    _mobilitat.value = datos["mobilitat"] as? String ?: ""
+                    _pais.value = datos["pais"] as? String ?: ""
+                    _codiExplotacio.value = datos["codiExplotacio"] as? String ?: ""
+                    _codiAtes.value = datos["codiAtes"] as? String ?: ""
+                    _nomTransportista.value = datos["nomTransportista"] as? String ?: ""
+                    _mitjaTransport.value = datos["mitjaTransport"] as? String ?: ""
+                    _matricula.value = datos["matricula"] as? String ?: ""
+                    _nifConductor.value = datos["nifConductor"] as? String ?: ""
+                    _nomConductor.value = datos["nomConductor"] as? String ?: ""
+
+                    // Restaurar códigos
+                    codiTemporal = datos["codiTemporal"] as? String ?: ""
+                    codiGuiaMobilidad = datos["codiGuiaMobilidad"] as? String ?: ""
+                    codiTransport = datos["codiTransport"] as? String ?: ""
+
+                    // Restaurar lista de identificadores
+                    @Suppress("UNCHECKED_CAST")
+                    val identificadoresList = datos["identificadors"] as? List<String>
+                    _identificadors.value = identificadoresList ?: listOf("")
+
+                    Log.d("Cargar Borrador", "Borrador cargado: $borradorSesionId")
+                }
             }
         } catch (e: Exception) {
             Log.e("Error Cargar Borrador", "Error al cargar: ${e.message}", e)
         }
     }
 
-    // Eliminar borrador al enviar exitosamente
     fun eliminarBorradorAutomatico() {
         try {
-            val borradores = sharedPreferencesManager.obtenerBorradores()
-            val borradorGuia = borradores.find {
-                it.tipo == "GUIA" && it.estado == "BORRADOR_AUTO"
-            }
-
-            if (borradorGuia != null) {
-                sharedPreferencesManager.eliminarBorrador(borradorGuia.id)
-                Log.d("Eliminar Borrador", "Borrador automático eliminado")
+            if (borradorSesionId.isNotEmpty()) {
+                sharedPreferencesManager.eliminarBorrador(borradorSesionId)
+                Log.d("Eliminar Borrador", "Borrador eliminado: $borradorSesionId")
+                borradorSesionId = "" // Resetear el ID de sesión
             }
         } catch (e: Exception) {
             Log.e("Error Eliminar Borrador", "Error: ${e.message}", e)
         }
     }
 
-    // ============================================
-    // SECCIÓN: ESTADOS DEL FORMULARIO
-    // ============================================
+    fun obtenerBorradoresGuia(): List<Borrador> {
+        return try {
+            sharedPreferencesManager.obtenerBorradores()
+                .filter { it.tipo == "GUIA" && it.estado == "BORRADOR_AUTO" }
+        } catch (e: Exception) {
+            Log.e("Error", "Error al obtener borradores: ${e.message}", e)
+            emptyList()
+        }
+    }
 
     private val _explotacioOrigen = MutableLiveData("")
     val explotacioOrigen = _explotacioOrigen
@@ -257,22 +279,12 @@ class GuiasViewModel : ViewModel() {
     private val _cargandoGuia = MutableLiveData(false)
     val cargandoGuia = _cargandoGuia
 
-    // ============================================
-    //  CODIGOS DE PARAMETROS PARA LA API
-    // ============================================
     private var codiTemporal = ""
     private var codiGuiaMobilidad = ""
+    private var codiTransport = ""
 
-    private  var codiTransport = ""
-
-    //codigo para la gestion de mensajes de errores
     private val _codiError = MutableLiveData<Int?>()
     val codiError = _codiError
-
-
-    // ============================================
-    // FUNCIONES PARA ACTUALIZAR CAMPOS
-    // ============================================
 
     fun actualizarExplotacioOrigen(valor: String) {
         _explotacioOrigen.value = valor
@@ -370,10 +382,6 @@ class GuiasViewModel : ViewModel() {
         }
     }
 
-    // ============================================
-    // FUNCIONES PARA CONTROLAR EXPANSIÓN DE MENÚS
-    // ============================================
-
     fun toggleTemporalExpandido() {
         _temporalExpandido.value = !(_temporalExpandido.value ?: false)
     }
@@ -397,10 +405,6 @@ class GuiasViewModel : ViewModel() {
     fun cerrarMitjaTransportMenu() {
         _mitjaTransportExpandido.value = false
     }
-
-    // ============================================
-    // FUNCIONES PARA CONTROLAR DATE/TIME PICKER
-    // ============================================
 
     fun mostrarDatePickerSortida() {
         _mostrarDatePickerSortida.value = true
@@ -456,10 +460,6 @@ class GuiasViewModel : ViewModel() {
         _mostrarDatePickerArribada.value = false
     }
 
-    // ============================================
-    // VALIDACIÓN Y ALTA DE GUÍA
-    // ============================================
-
     fun esFormularioValido(): Boolean {
         val explotacioOrigenValida = !_explotacioOrigen.value.isNullOrEmpty()
         val explotacioDestinacioValida = !_explotacioDestinacio.value.isNullOrEmpty()
@@ -480,24 +480,15 @@ class GuiasViewModel : ViewModel() {
 
         if (!esFormularioValido()) {
             val mensajeError = when {
-                _explotacioOrigen.value.isNullOrEmpty() ->
-                    20
-                _explotacioDestinacio.value.isNullOrEmpty() ->
-                   18
-                _temporal.value.isNullOrEmpty() ->
-                    21
-                _dataSortida.value.isNullOrEmpty() ->
-                    22
-                _horaSortida.value.isNullOrEmpty() ->
-                    23
-                _dataArribada.value.isNullOrEmpty() ->
-                   15
-                _horaArribada.value.isNullOrEmpty() ->
-                    16
-                _mobilitat.value.isNullOrEmpty() ->
-                    24
-                else ->
-                   0
+                _explotacioOrigen.value.isNullOrEmpty() -> 20
+                _explotacioDestinacio.value.isNullOrEmpty() -> 18
+                _temporal.value.isNullOrEmpty() -> 21
+                _dataSortida.value.isNullOrEmpty() -> 22
+                _horaSortida.value.isNullOrEmpty() -> 23
+                _dataArribada.value.isNullOrEmpty() -> 15
+                _horaArribada.value.isNullOrEmpty() -> 16
+                _mobilitat.value.isNullOrEmpty() -> 24
+                else -> 0
             }
             _codiError.value = mensajeError
             Log.e("Validación Guía", "$mensajeError")
@@ -520,7 +511,6 @@ class GuiasViewModel : ViewModel() {
 
                 val temporalAPI = _temporal.value ?: ""
                 val mobilitatAPI = _mobilitat.value ?: ""
-                val codigoMedio = _mitjaTransport.value?.take(2) ?: ""
 
                 val identificadoresList = _identificadors.value
                     ?.map { it.trim() }
@@ -565,9 +555,7 @@ class GuiasViewModel : ViewModel() {
 
                                 Log.d("Alta Guía", "Guía creada exitosamente")
 
-                                // ELIMINAR BORRADOR AUTOMÁTICO AL ENVIAR EXITOSAMENTE
                                 eliminarBorradorAutomatico()
-
                                 limpiarFormulario()
                             } else {
                                 _registroExitoso.value = false
@@ -600,7 +588,6 @@ class GuiasViewModel : ViewModel() {
                             _registroExitoso.value = false
                             _mensajeError.value = "Error: Respuesta vacía del servidor"
                             Log.e("Error Guía", "Respuesta vacía del servidor")
-
                         }
                     }
                 }
@@ -630,10 +617,6 @@ class GuiasViewModel : ViewModel() {
         }
     }
 
-    // ============================================
-    // FUNCIONES AUXILIARES
-    // ============================================
-
     fun limpiarFormulario() {
         _explotacioOrigen.value = ""
         _explotacioDestinacio.value = ""
@@ -652,11 +635,18 @@ class GuiasViewModel : ViewModel() {
         _nifConductor.value = ""
         _nomConductor.value = ""
         _identificadors.value = listOf("")
+        codiTemporal = ""
+        codiGuiaMobilidad = ""
+        codiTransport = ""
+
+        // Generar nuevo ID de sesión para el próximo formulario
+        borradorSesionId = ""
     }
 
     fun resetearEstadoRegistro() {
         _registroExitoso.value = false
         _mensajeError.value = ""
+        _codiError.value = null
     }
 
     private fun convertirFechaHoraAFormatoAPI(fecha: String, hora: String): String {

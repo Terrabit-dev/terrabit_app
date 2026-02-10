@@ -18,6 +18,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -75,66 +76,100 @@ import com.example.terrabit_app.utils.alertsErrosScreens
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewModel) {
-    // Observar variables del ViewModel
     val identificadorCorreccionSexo by viewModel.identificadorCorreccionSexo.observeAsState("")
     val sexoCorreccionSeleccionado by viewModel.sexoCorreccionSeleccionado.observeAsState("")
     val sexoCorreccionExpandido by viewModel.sexoCorreccionExpandido.observeAsState(false)
 
-    // Observar estado de registro para mostrar mensajes
     val correccionSexoExitosa by viewModel.correccionSexoExitosa.observeAsState(false)
     val mensajeError by viewModel.mensajeErrorCorreccionSexo.observeAsState("")
     val codiError by viewModel.codiError.observeAsState()
     val estadoCarga by viewModel.estadoCarga.observeAsState(false)
 
-    // Snackbar host state
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
+    var mostrarDialogoAviso by remember { mutableStateOf(false) }
+    var cantidadBorradores by remember { mutableStateOf(0) }
 
-    // Mensajes de respuestas
     val mensajeCorreccionSexoExitosa = stringResource(R.string.successful_message_correct_sex)
     val mensajeErrorCorreccionSexo = stringResource(R.string.error_message_correct_sex)
 
-    // Recursos con codigo
     val elementosConCodigos = ElementosConCodigos()
-
 
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    var mostrarDialogoRecuperacion by remember { mutableStateOf(false) }
 
-
-    // Inicializacion de Borrador y Carga
+    // ============================================
+    // INICIALIZACIÓN Y DETECCIÓN DE BORRADORES
+    // ============================================
     LaunchedEffect(Unit) {
         viewModel.initSharedPreferences(context)
 
-        // Verificar si hay borrador guardado
-        if (viewModel.tieneContenido()) {
-            // Ya hay datos cargados, no hacer nada
-        } else {
-            // Intentar cargar borrador existente
-            viewModel.cargarBorradorExistente()
+        val borradores = viewModel.obtenerBorradoresCorreccionSexo()
+        cantidadBorradores = borradores.size
 
-            // Si después de cargar hay contenido, mostrar diálogo
-            if (viewModel.tieneContenido()) {
-                mostrarDialogoRecuperacion = true
-            }
+        if (cantidadBorradores >= 2) {
+            mostrarDialogoAviso = true
         }
-
     }
 
+    // ============================================
+    // DIÁLOGO DE AVISO DE BORRADORES
+    // ============================================
+    if (mostrarDialogoAviso) {
+        AlertDialog(
+            onDismissRequest = { },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Description,
+                    contentDescription = null,
+                    tint = Color(0xFFFFA726),
+                    modifier = Modifier.size(48.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = "Borradores pendientes",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    color = Color(0xFF1E293B)
+                )
+            },
+            text = {
+                Text(
+                    text = "Tienes $cantidadBorradores borradores guardados de este formulario. Puedes verlos en la página de Borradores.\n\n¿Deseas crear uno nuevo?",
+                    fontSize = 16.sp,
+                    color = Color(0xFF475569),
+                    lineHeight = 24.sp
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        mostrarDialogoAviso = false
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF4A7C59)
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text("Crear nuevo", fontWeight = FontWeight.SemiBold)
+                }
+            },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(16.dp)
+        )
+    }
 
-    // Ciclo de Vida Deteccion
+    // ============================================
+    // DETECCIÓN DE CICLO DE VIDA (AUTOGUARDADO)
+    // ============================================
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
                 Lifecycle.Event.ON_PAUSE -> {
-                    // Usuario sale de la pantalla - GUARDAR AUTOMÁTICAMENTE
                     if (viewModel.tieneContenido()) {
                         viewModel.guardarBorradorAutomatico()
                     }
-                }
-                Lifecycle.Event.ON_STOP -> {
-                    // Pantalla ya no visible
                 }
                 else -> {}
             }
@@ -145,11 +180,28 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
         }
     }
 
+    LaunchedEffect(correccionSexoExitosa) {
+        if (correccionSexoExitosa) {
+            snackbarHostState.showSnackbar(
+                message = mensajeCorreccionSexoExitosa,
+                duration = SnackbarDuration.Short
+            )
+            viewModel.resetearEstadoCorreccionSexo()
+        }
+    }
 
-    // Mostrar mensaje para recuperar borrador
-    if (mostrarDialogoRecuperacion) {
+    LaunchedEffect(mensajeError, codiError) {
+        if (mensajeError.isNotEmpty() || codiError != null) {
+            mostrarDialogoError = true
+        }
+    }
+
+    if (mostrarDialogoError) {
         AlertDialog(
-            onDismissRequest = { },
+            onDismissRequest = {
+                mostrarDialogoError = false
+                viewModel.resetearEstadoCorreccionSexo()
+            },
             icon = {
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
@@ -160,84 +212,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
             },
             title = {
                 Text(
-                    text = "Borrador encontrado",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
-                    color = Color(0xFF1E293B)
-                )
-            },
-            text = {
-                Text(
-                    text = "Se encontró un formulario sin completar. ¿Deseas recuperarlo?",
-                    fontSize = 16.sp,
-                    color = Color(0xFF475569),
-                    lineHeight = 24.sp
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        mostrarDialogoRecuperacion = false
-                        // Los datos ya están cargados
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF4A7C59)
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text("Recuperar", fontWeight = FontWeight.SemiBold)
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        mostrarDialogoRecuperacion = false
-                        viewModel.eliminarBorradorAutomatico()
-                        viewModel.limpiarFormularioCorreccionSexo()
-                    }
-                ) {
-                    Text("Descartar", color = Color(0xFF64748B))
-                }
-            },
-            containerColor = Color.White,
-            shape = RoundedCornerShape(16.dp)
-        )
-    }
-
-    // Mostrar Snackbar cuando hay mensaje de éxito o error
-    LaunchedEffect(correccionSexoExitosa, mensajeError) {
-        if (correccionSexoExitosa) {
-            snackbarHostState.showSnackbar(
-                message = mensajeCorreccionSexoExitosa,
-                duration = SnackbarDuration.Short
-            )
-            viewModel.resetearEstadoCorreccionSexo()
-        }
-    }
-    // Mostrar diálogo cuando hay error
-    LaunchedEffect(mensajeError, codiError) {
-        if (mensajeError.isNotEmpty() || codiError != null) {
-            mostrarDialogoError = true
-        }
-    }
-    // Diálogo de Error
-    if (mostrarDialogoError) {
-        AlertDialog(
-            onDismissRequest = {
-                mostrarDialogoError = false
-                viewModel.resetearEstadoCorreccionSexo()
-            },
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack, // Usa un icono de error apropiado
-                    contentDescription = null,
-                    tint = Color(0xFF4A7C59),
-                    modifier = Modifier.size(48.dp)
-                )
-            },
-            title = {
-                Text(
-                    text =mensajeErrorCorreccionSexo,
+                    text = mensajeErrorCorreccionSexo,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
                     color = Color(0xFF1E293B)
@@ -271,13 +246,13 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
             shape = RoundedCornerShape(16.dp)
         )
     }
-    // Indicador de carga en pantalla completa
+
     if (estadoCarga) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Black.copy(alpha = 0.5f))
-                .clickable(enabled = false) { }, // Bloquear interacción
+                .clickable(enabled = false) { },
             contentAlignment = Alignment.Center
         ) {
             Card(
@@ -315,7 +290,6 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
         }
     }
     else {
-
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -344,7 +318,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                 SnackbarHost(hostState = snackbarHostState) { data ->
                     Snackbar(
                         snackbarData = data,
-                        containerColor = Color(0xFF4A7C59), // Verde para éxito
+                        containerColor = Color(0xFF4A7C59),
                         contentColor = Color.White,
                         shape = RoundedCornerShape(12.dp)
                     )
@@ -376,7 +350,6 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                             .padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
-                        // Identificador del Animal
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 stringResource(R.string.form_id_animal),
@@ -422,7 +395,6 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                             )
                         }
 
-                        // Sexo Correcto
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 stringResource(R.string.form_sex),
@@ -498,7 +470,6 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                     }
                 }
 
-                // Botón Corregir Sexo
                 Button(
                     onClick = { viewModel.corregirSexoAnimal() },
                     modifier = Modifier
