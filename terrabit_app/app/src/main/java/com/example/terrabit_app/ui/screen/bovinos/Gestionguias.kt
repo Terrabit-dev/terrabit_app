@@ -30,6 +30,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
@@ -650,7 +651,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                                     fontWeight = FontWeight.Normal
                                                 )
                                             },
-                                            onClick = { viewModel.seleccionarTemporal(opcion) },
+                                            onClick = { viewModel.seleccionarTemporal(opcion, codi) },
                                             contentPadding = PaddingValues(
                                                 horizontal = 16.dp,
                                                 vertical = 14.dp

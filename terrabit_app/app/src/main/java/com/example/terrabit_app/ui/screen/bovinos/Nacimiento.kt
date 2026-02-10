@@ -52,6 +52,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -72,7 +73,7 @@ import com.example.terrabit_app.data.network.Identificadores.Identificadores
 import com.example.terrabit_app.viewmodel.NacimientoViewmodel
 import kotlin.collections.emptyList
 import com.example.terrabit_app.R
-import com.example.terrabit_app.data.network.Identificadores.Identificadores
+
 import com.example.terrabit_app.ui.theme.BlueGrey
 import com.example.terrabit_app.ui.theme.DarkBlueGrey
 import com.example.terrabit_app.ui.theme.DarkWhiteBackground
@@ -84,8 +85,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.compose.material3.TextButton
-import com.example.terrabit_app.viewmodel.NacimientoViewmodel
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

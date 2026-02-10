@@ -74,6 +74,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
+import com.example.terrabit_app.data.network.moviminetos.modelos.Movimientos
 import com.example.terrabit_app.ui.theme.BlueGrey
 import com.example.terrabit_app.ui.theme.DarkBlueGrey
 import com.example.terrabit_app.ui.theme.DarkWhiteBackground
@@ -696,7 +697,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                     onDismissRequest = { viewModel.cerrarEstatArribadaMenu() },
                                     modifier = Modifier.background(Color.White)
                                 ) {
-                                   elementosConCodigos.EstadosLlegada().forEach { (estat, codigo) ->
+                                   elementosConCodigos.estadosLlegada().forEach { (estat, codigo) ->
                                         DropdownMenuItem(
                                             text = {
                                                 Text(
@@ -743,7 +744,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
                         Text(
-                            stringResource(R.string.form_movs_title_animals),
+                            stringResource(R.string.form_movs_title_transport),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = DarkBlueGrey
@@ -965,7 +966,6 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Card de Datos de animales transportados
                 // Card de Datos de animales transportados
                 Card(
                     modifier = Modifier
