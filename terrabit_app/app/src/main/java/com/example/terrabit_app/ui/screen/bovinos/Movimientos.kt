@@ -1,18 +1,8 @@
-package com.example.terrabit_app.ui.screen
+package com.example.terrabit_app.ui.screen.bovinos
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -22,74 +12,37 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.outlined.CameraAlt
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDefaults
-import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TimePicker
-import androidx.compose.material3.TimePickerDefaults
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberDatePickerState
-import androidx.compose.material3.rememberTimePickerState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
+import com.example.terrabit_app.viewmodel.MovimientosViewModel
 import com.example.terrabit_app.R
-import com.example.terrabit_app.data.network.moviminetos.modelos.Movimientos
-import com.example.terrabit_app.ui.theme.BlueGrey
-import com.example.terrabit_app.ui.theme.DarkBlueGrey
-import com.example.terrabit_app.ui.theme.DarkWhiteBackground
-import com.example.terrabit_app.ui.theme.MainGreen
-import com.example.terrabit_app.ui.theme.MainOrange
-import com.example.terrabit_app.ui.theme.WhiteBackground
 import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
-import kotlin.collections.forEachIndexed
-import com.example.terrabit_app.viewmodel.MovimientosViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
-    // Observar variables del ViewModel
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+
     val codiRemo by viewModel.codiRemo.observeAsState("")
     val dataArribada by viewModel.dataArribada.observeAsState("")
     val horaArribada by viewModel.horaArribada.observeAsState("")
@@ -103,33 +56,109 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
     val identificadorAnimal by viewModel.identificadorAnimal.observeAsState("")
     val estatArribada by viewModel.estatArribada.observeAsState("")
 
-    // Estados de expansión
     val codiAtesExpandido by viewModel.codiAtesExpandido.observeAsState(false)
     val mitjaTransportExpandido by viewModel.mitjaTransportExpandido.observeAsState(false)
     val estatArribadaExpandido by viewModel.estatArribadaExpandido.observeAsState(false)
 
-    // DatePicker y TimePicker
     val mostrarDatePickerArribada by viewModel.mostrarDatePickerArribada.observeAsState(false)
     val mostrarTimePickerArribada by viewModel.mostrarTimePickerArribada.observeAsState(false)
 
-    // Estados de registro
     val registroExitoso by viewModel.registroExitoso.observeAsState(false)
     val mensajeError by viewModel.mensajeError.observeAsState("")
     val estadoCarga by viewModel.cargandoMovimiento.observeAsState(false)
     val codiError by viewModel.codiError.observeAsState()
 
-
-    // Snackbar
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
+    var mostrarDialogoAviso by remember { mutableStateOf(false) }
+    var cantidadBorradores by remember { mutableStateOf(0) }
 
-    // Textos recurrentes
     val successMessage = stringResource(R.string.successful_message_confirm_movs)
 
-    // Elementos con codigos (Transporte, Estado de llegada)
     val elementosConCodigos = ElementosConCodigos()
 
-    // Efectos
+    // ============================================
+    // INICIALIZACIÓN Y DETECCIÓN DE BORRADORES
+    // ============================================
+    LaunchedEffect(Unit) {
+        viewModel.inicializarSharedPreferences(context)
+
+        val borradores = viewModel.obtenerBorradoresMovimiento()
+        cantidadBorradores = borradores.size
+
+        if (cantidadBorradores >= 2) {
+            mostrarDialogoAviso = true
+        }
+    }
+
+    // ============================================
+    // DIÁLOGO DE AVISO DE BORRADORES
+    // ============================================
+    if (mostrarDialogoAviso) {
+        AlertDialog(
+            onDismissRequest = { },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Description,
+                    contentDescription = null,
+                    tint = Color(0xFFFFA726),
+                    modifier = Modifier.size(48.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = "Borradores pendientes",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    color = Color(0xFF1E293B)
+                )
+            },
+            text = {
+                Text(
+                    text = "Tienes $cantidadBorradores borradores guardados de este formulario. Puedes verlos en la página de Borradores.\n\n¿Deseas crear uno nuevo?",
+                    fontSize = 16.sp,
+                    color = Color(0xFF475569),
+                    lineHeight = 24.sp
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        mostrarDialogoAviso = false
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFE28F41)
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text("Crear nuevo", fontWeight = FontWeight.SemiBold)
+                }
+            },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(16.dp)
+        )
+    }
+
+    // ============================================
+    // DETECCIÓN DE CICLO DE VIDA (AUTOGUARDADO)
+    // ============================================
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_PAUSE -> {
+                    if (viewModel.tieneContenido()) {
+                        viewModel.guardarBorradorAutomatico()
+                    }
+                }
+                else -> {}
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
     LaunchedEffect(registroExitoso) {
         if (registroExitoso) {
             snackbarHostState.showSnackbar(
@@ -146,7 +175,6 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
         }
     }
 
-    // Diálogo de Error
     if (mostrarDialogoError) {
         AlertDialog(
             onDismissRequest = {
@@ -157,7 +185,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
                     contentDescription = null,
-                    tint = MainOrange,
+                    tint = Color(0xFFE28F41),
                     modifier = Modifier.size(48.dp)
                 )
             },
@@ -166,7 +194,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                     text = stringResource(R.string.error_message_confirm_movs),
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
-                    color = DarkBlueGrey
+                    color = Color(0xFF1E293B)
                 )
             },
             text = {
@@ -175,7 +203,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                         alertsErrosScreens(codiError!!)
                     } else mensajeError,
                     fontSize = 16.sp,
-                    color = BlueGrey,
+                    color = Color(0xFF475569),
                     lineHeight = 24.sp
                 )
             },
@@ -186,7 +214,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                         viewModel.resetearEstadoRegistro()
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MainOrange
+                        containerColor = Color(0xFFE28F41)
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
@@ -198,7 +226,6 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
         )
     }
 
-    // DatePickerDialog
     if (mostrarDatePickerArribada) {
         val datePickerState = rememberDatePickerState()
         DatePickerDialog(
@@ -211,26 +238,25 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                         }
                     }
                 ) {
-                    Text(stringResource(R.string.accept_buttom), color = MainOrange)
+                    Text(stringResource(R.string.accept_buttom), color = Color(0xFFE28F41))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.ocultarDatePickerArribada() }) {
-                    Text(stringResource(R.string.cancel_buttom), color = BlueGrey)
+                    Text(stringResource(R.string.cancel_buttom), color = Color(0xFF64748B))
                 }
             }
         ) {
             DatePicker(
                 state = datePickerState,
                 colors = DatePickerDefaults.colors(
-                    selectedDayContainerColor = MainOrange,
-                    todayDateBorderColor = MainOrange
+                    selectedDayContainerColor = Color(0xFFE28F41),
+                    todayDateBorderColor = Color(0xFFE28F41)
                 )
             )
         }
     }
 
-    // TimePickerDialog
     if (mostrarTimePickerArribada) {
         val timePickerState = rememberTimePickerState()
         AlertDialog(
@@ -245,12 +271,12 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                         viewModel.ocultarTimePickerArribada()
                     }
                 ) {
-                    Text(stringResource(R.string.accept_buttom), color = MainOrange)
+                    Text(stringResource(R.string.accept_buttom), color = Color(0xFFE28F41))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.ocultarTimePickerArribada() }) {
-                    Text(stringResource(R.string.cancel_buttom), color = BlueGrey)
+                    Text(stringResource(R.string.cancel_buttom), color = Color(0xFF64748B))
                 }
             },
             text = {
@@ -258,14 +284,13 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                     state = timePickerState,
                     colors = TimePickerDefaults.colors(
                         clockDialSelectedContentColor = Color.White,
-                        selectorColor = MainOrange
+                        selectorColor = Color(0xFFE28F41)
                     )
                 )
             }
         )
     }
 
-    // Indicador de carga
     if (estadoCarga) {
         Box(
             modifier = Modifier
@@ -290,7 +315,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                     ) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(48.dp),
-                            color = MainOrange,
+                            color = Color(0xFFE28F41),
                             strokeWidth = 4.dp
                         )
                         Spacer(modifier = Modifier.height(12.dp))
@@ -298,7 +323,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                             stringResource(R.string.loading_processing),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
-                            color = BlueGrey
+                            color = Color(0xFF64748B)
                         )
                     }
                 }
@@ -323,7 +348,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MainOrange,
+                        containerColor = Color(0xFFE28F41),
                         titleContentColor = Color.White,
                         navigationIconContentColor = Color.White
                     )
@@ -333,13 +358,13 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                 SnackbarHost(hostState = snackbarHostState) { data ->
                     Snackbar(
                         snackbarData = data,
-                        containerColor = MainGreen,
+                        containerColor = Color(0xFF4A7C59),
                         contentColor = Color.White,
                         shape = RoundedCornerShape(12.dp)
                     )
                 }
             },
-            containerColor = WhiteBackground
+            containerColor = Color(0xFFF5F7FA)
         ) { padding ->
             Column(
                 modifier = Modifier
@@ -349,7 +374,6 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
             ) {
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Card principal - Datos Obligatorios
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -368,16 +392,15 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                             stringResource(R.string.form_movs_title_necessary),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            color = DarkBlueGrey
+                            color = Color(0xFF1E293B)
                         )
 
-                        // Código REMO
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 stringResource(R.string.form_codi_remo),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = DarkBlueGrey,
+                                color = Color(0xFF1E293B),
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -388,17 +411,17 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                 placeholder = {
                                     Text(
                                         stringResource(R.string.form_codi_remo_description),
-                                        color = BlueGrey
+                                        color = Color(0xFF94A3B8)
                                     )
                                 },
                                 singleLine = true,
                                 shape = MaterialTheme.shapes.medium,
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = MainOrange,
-                                    unfocusedBorderColor = DarkWhiteBackground,
-                                    focusedTextColor = DarkBlueGrey,
-                                    unfocusedTextColor = DarkBlueGrey,
-                                    cursorColor = MainOrange
+                                    focusedBorderColor = Color(0xFFE28F41),
+                                    unfocusedBorderColor = Color(0xFFCBD5E1),
+                                    focusedTextColor = Color(0xFF1E293B),
+                                    unfocusedTextColor = Color(0xFF1E293B),
+                                    cursorColor = Color(0xFFE28F41)
                                 ),
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Text,
@@ -407,7 +430,6 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                             )
                         }
 
-                        // Fecha y Hora de Arribada
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -417,7 +439,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                     stringResource(R.string.form_date_arrival),
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = DarkBlueGrey,
+                                    color = Color(0xFF1E293B),
                                     letterSpacing = 0.15.sp
                                 )
                                 Spacer(modifier = Modifier.height(10.dp))
@@ -433,24 +455,24 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                         placeholder = {
                                             Text(
                                                 stringResource(R.string.form_date_arrival_description),
-                                                color = BlueGrey
+                                                color = Color(0xFF94A3B8)
                                             )
                                         },
                                         leadingIcon = {
                                             Icon(
                                                 Icons.Default.DateRange,
                                                 contentDescription = stringResource(R.string.form_date_description),
-                                                tint = MainOrange
+                                                tint = Color(0xFFE28F41)
                                             )
                                         },
                                         readOnly = true,
                                         enabled = false,
                                         shape = MaterialTheme.shapes.medium,
                                         colors = OutlinedTextFieldDefaults.colors(
-                                            disabledTextColor = DarkBlueGrey,
-                                            disabledBorderColor = DarkWhiteBackground,
-                                            disabledLeadingIconColor = MainOrange,
-                                            disabledPlaceholderColor = BlueGrey
+                                            disabledTextColor = Color(0xFF1E293B),
+                                            disabledBorderColor = Color(0xFFCBD5E1),
+                                            disabledLeadingIconColor = Color(0xFFE28F41),
+                                            disabledPlaceholderColor = Color(0xFF94A3B8)
                                         ),
                                         singleLine = true
                                     )
@@ -462,7 +484,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                     stringResource(R.string.form_hour_arrival),
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = DarkBlueGrey,
+                                    color = Color(0xFF1E293B),
                                     letterSpacing = 0.15.sp
                                 )
                                 Spacer(modifier = Modifier.height(10.dp))
@@ -478,24 +500,24 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                         placeholder = {
                                             Text(
                                                 stringResource(R.string.form_hour_arrival_description),
-                                                color = BlueGrey
+                                                color = Color(0xFF94A3B8)
                                             )
                                         },
                                         leadingIcon = {
                                             Icon(
                                                 Icons.Default.Schedule,
                                                 contentDescription = stringResource(R.string.form_hour_arrival_description),
-                                                tint = MainOrange
+                                                tint = Color(0xFFE28F41)
                                             )
                                         },
                                         readOnly = true,
                                         enabled = false,
                                         shape = MaterialTheme.shapes.medium,
                                         colors = OutlinedTextFieldDefaults.colors(
-                                            disabledTextColor = DarkBlueGrey,
-                                            disabledBorderColor = DarkWhiteBackground,
-                                            disabledLeadingIconColor = MainOrange,
-                                            disabledPlaceholderColor = BlueGrey
+                                            disabledTextColor = Color(0xFF1E293B),
+                                            disabledBorderColor = Color(0xFFCBD5E1),
+                                            disabledLeadingIconColor = Color(0xFFE28F41),
+                                            disabledPlaceholderColor = Color(0xFF94A3B8)
                                         ),
                                         singleLine = true
                                     )
@@ -503,13 +525,12 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                             }
                         }
 
-                        // Código ATES
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 stringResource(R.string.form_codi_ates),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = DarkBlueGrey,
+                                color = Color(0xFF1E293B),
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -527,7 +548,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                     placeholder = {
                                         Text(
                                             stringResource(R.string.form_codi_ates_description),
-                                            color = BlueGrey
+                                            color = Color(0xFF94A3B8)
                                         )
                                     },
                                     trailingIcon = {
@@ -538,10 +559,10 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                     singleLine = true,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = MainOrange,
-                                        unfocusedBorderColor = DarkWhiteBackground,
-                                        focusedTextColor = DarkBlueGrey,
-                                        unfocusedTextColor = DarkBlueGrey
+                                        focusedBorderColor = Color(0xFFE28F41),
+                                        unfocusedBorderColor = Color(0xFFCBD5E1),
+                                        focusedTextColor = Color(0xFF1E293B),
+                                        unfocusedTextColor = Color(0xFF1E293B)
                                     )
                                 )
                                 ExposedDropdownMenu(
@@ -555,7 +576,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                                 Text(
                                                     "${ates.codigo} - ${ates.nombre}",
                                                     fontSize = 15.sp,
-                                                    color = DarkBlueGrey,
+                                                    color = Color(0xFF1E293B),
                                                     fontWeight = FontWeight.Normal
                                                 )
                                             },
@@ -570,13 +591,12 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                             }
                         }
 
-                        // Explotación Destino
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 stringResource(R.string.form_exploitation_destination),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = DarkBlueGrey,
+                                color = Color(0xFF1E293B),
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -587,148 +607,29 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                 placeholder = {
                                     Text(
                                         stringResource(R.string.form_exploitation_destination_description),
-                                        color = BlueGrey
+                                        color = Color(0xFF94A3B8)
                                     )
                                 },
                                 singleLine = true,
                                 shape = MaterialTheme.shapes.medium,
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = MainOrange,
-                                    unfocusedBorderColor = DarkWhiteBackground,
-                                    focusedTextColor = DarkBlueGrey,
-                                    unfocusedTextColor = DarkBlueGrey,
-                                    cursorColor = MainOrange
+                                    focusedBorderColor = Color(0xFFE28F41),
+                                    unfocusedBorderColor = Color(0xFFCBD5E1),
+                                    focusedTextColor = Color(0xFF1E293B),
+                                    unfocusedTextColor = Color(0xFF1E293B),
+                                    cursorColor = Color(0xFFE28F41)
                                 ),
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Text,
                                     imeAction = ImeAction.Next
                                 )
                             )
-                        }
-
-                        // Identificador del Animal
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                stringResource(R.string.form_id_animal),
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = DarkBlueGrey,
-                                letterSpacing = 0.15.sp
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            OutlinedTextField(
-                                value = identificadorAnimal,
-                                onValueChange = { viewModel.actualizarIdentificadorAnimal(it) },
-                                modifier = Modifier.fillMaxWidth(),
-                                placeholder = {
-                                    Text(
-                                        stringResource(R.string.form_id_animal_description),
-                                        color = BlueGrey
-                                    )
-                                },
-                                trailingIcon = {
-                                    IconButton(onClick = { /* Acción de cámara */ }) {
-                                        Icon(
-                                            Icons.Outlined.CameraAlt,
-                                            contentDescription = stringResource(R.string.form_id_animal_description),
-                                            tint = MainOrange
-                                        )
-                                    }
-                                },
-                                singleLine = true,
-                                shape = MaterialTheme.shapes.medium,
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = MainOrange,
-                                    unfocusedBorderColor = DarkWhiteBackground,
-                                    focusedTextColor = DarkBlueGrey,
-                                    unfocusedTextColor = DarkBlueGrey,
-                                    cursorColor = MainOrange
-                                ),
-                                keyboardOptions = KeyboardOptions(
-                                    keyboardType = KeyboardType.Text,
-                                    imeAction = ImeAction.Next
-                                )
-                            )
-                        }
-
-                        // Estado de Arribada
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                stringResource(R.string.form_state_arrival),
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = DarkBlueGrey,
-                                letterSpacing = 0.15.sp
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            ExposedDropdownMenuBox(
-                                expanded = estatArribadaExpandido,
-                                onExpandedChange = { viewModel.toggleEstatArribadaExpandido() }
-                            ) {
-                                OutlinedTextField(
-                                    value = estatArribada,
-                                    onValueChange = {},
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .menuAnchor(),
-                                    readOnly = true,
-                                    placeholder = {
-                                        Text(
-                                            stringResource(R.string.form_state_arrival_description),
-                                            color = BlueGrey
-                                        )
-                                    },
-                                    trailingIcon = {
-                                        ExposedDropdownMenuDefaults.TrailingIcon(
-                                            expanded = estatArribadaExpandido
-                                        )
-                                    },
-                                    singleLine = true,
-                                    shape = MaterialTheme.shapes.medium,
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = MainOrange,
-                                        unfocusedBorderColor = DarkWhiteBackground,
-                                        focusedTextColor = DarkBlueGrey,
-                                        unfocusedTextColor = DarkBlueGrey
-                                    )
-                                )
-                                ExposedDropdownMenu(
-                                    expanded = estatArribadaExpandido,
-                                    onDismissRequest = { viewModel.cerrarEstatArribadaMenu() },
-                                    modifier = Modifier.background(Color.White)
-                                ) {
-                                   elementosConCodigos.estadosLlegada().forEach { (estat, codigo) ->
-                                        DropdownMenuItem(
-                                            text = {
-                                                Text(
-                                                    estat,
-                                                    fontSize = 15.sp,
-                                                    color = DarkBlueGrey,
-                                                    fontWeight = FontWeight.Normal
-                                                )
-                                            },
-                                            onClick = { viewModel.seleccionarEstatArribada(estat, codigo) },
-                                            contentPadding = PaddingValues(
-                                                horizontal = 16.dp,
-                                                vertical = 14.dp
-                                            )
-                                        )
-                                        if (estat != viewModel.listaEstatArribada.last()) {
-                                            HorizontalDivider(
-                                                color = DarkWhiteBackground,
-                                                thickness = 1.dp
-                                            )
-                                        }
-                                    }
-                                }
-                            }
                         }
                     }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Card de Datos Opcionales
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -744,19 +645,18 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
                         Text(
-                            stringResource(R.string.form_movs_title_transport),
+                            stringResource(R.string.form_movs_title_animals),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            color = DarkBlueGrey
+                            color = Color(0xFF1E293B)
                         )
 
-                        // Medio de Transporte
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 stringResource(R.string.form_ways_transports),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = DarkBlueGrey,
+                                color = Color(0xFF1E293B),
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -774,7 +674,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                     placeholder = {
                                         Text(
                                             stringResource(R.string.form_ways_transports_description),
-                                            color = BlueGrey
+                                            color = Color(0xFF94A3B8)
                                         )
                                     },
                                     trailingIcon = {
@@ -785,10 +685,10 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                     singleLine = true,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = MainOrange,
-                                        unfocusedBorderColor = DarkWhiteBackground,
-                                        focusedTextColor = DarkBlueGrey,
-                                        unfocusedTextColor = DarkBlueGrey
+                                        focusedBorderColor = Color(0xFFE28F41),
+                                        unfocusedBorderColor = Color(0xFFCBD5E1),
+                                        focusedTextColor = Color(0xFF1E293B),
+                                        unfocusedTextColor = Color(0xFF1E293B)
                                     )
                                 )
                                 ExposedDropdownMenu(
@@ -802,7 +702,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                                 Text(
                                                     medio,
                                                     fontSize = 15.sp,
-                                                    color = DarkBlueGrey,
+                                                    color = Color(0xFF1E293B),
                                                     fontWeight = FontWeight.Normal
                                                 )
                                             },
@@ -812,19 +712,17 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                                 vertical = 14.dp
                                             )
                                         )
-
                                     }
                                 }
                             }
                         }
 
-                        // Matrícula
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 stringResource(R.string.form_matricule_transport),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = DarkBlueGrey,
+                                color = Color(0xFF1E293B),
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -835,17 +733,17 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                 placeholder = {
                                     Text(
                                         stringResource(R.string.form_matricule_transports_description),
-                                        color = BlueGrey
+                                        color = Color(0xFF94A3B8)
                                     )
                                 },
                                 singleLine = true,
                                 shape = MaterialTheme.shapes.medium,
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = MainOrange,
-                                    unfocusedBorderColor = DarkWhiteBackground,
-                                    focusedTextColor = DarkBlueGrey,
-                                    unfocusedTextColor = DarkBlueGrey,
-                                    cursorColor = MainOrange
+                                    focusedBorderColor = Color(0xFFE28F41),
+                                    unfocusedBorderColor = Color(0xFFCBD5E1),
+                                    focusedTextColor = Color(0xFF1E293B),
+                                    unfocusedTextColor = Color(0xFF1E293B),
+                                    cursorColor = Color(0xFFE28F41)
                                 ),
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Text,
@@ -854,13 +752,12 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                             )
                         }
 
-                        // Nombre Transportista
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 stringResource(R.string.form_name_transportits),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = DarkBlueGrey,
+                                color = Color(0xFF1E293B),
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -871,17 +768,17 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                 placeholder = {
                                     Text(
                                         stringResource(R.string.form_name_transportits_description),
-                                        color = BlueGrey
+                                        color = Color(0xFF94A3B8)
                                     )
                                 },
                                 singleLine = true,
                                 shape = MaterialTheme.shapes.medium,
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = MainOrange,
-                                    unfocusedBorderColor = DarkWhiteBackground,
-                                    focusedTextColor = DarkBlueGrey,
-                                    unfocusedTextColor = DarkBlueGrey,
-                                    cursorColor = MainOrange
+                                    focusedBorderColor = Color(0xFFE28F41),
+                                    unfocusedBorderColor = Color(0xFFCBD5E1),
+                                    focusedTextColor = Color(0xFF1E293B),
+                                    unfocusedTextColor = Color(0xFF1E293B),
+                                    cursorColor = Color(0xFFE28F41)
                                 ),
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Text,
@@ -890,13 +787,12 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                             )
                         }
 
-                        // NIF Conductor
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 stringResource(R.string.form_nif_driver),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = DarkBlueGrey,
+                                color = Color(0xFF1E293B),
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -907,17 +803,17 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                 placeholder = {
                                     Text(
                                         stringResource(R.string.form_nif_driver_description),
-                                        color = BlueGrey
+                                        color = Color(0xFF94A3B8)
                                     )
                                 },
                                 singleLine = true,
                                 shape = MaterialTheme.shapes.medium,
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = MainOrange,
-                                    unfocusedBorderColor = DarkWhiteBackground,
-                                    focusedTextColor = DarkBlueGrey,
-                                    unfocusedTextColor = DarkBlueGrey,
-                                    cursorColor = MainOrange
+                                    focusedBorderColor = Color(0xFFE28F41),
+                                    unfocusedBorderColor = Color(0xFFCBD5E1),
+                                    focusedTextColor = Color(0xFF1E293B),
+                                    unfocusedTextColor = Color(0xFF1E293B),
+                                    cursorColor = Color(0xFFE28F41)
                                 ),
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Text,
@@ -926,13 +822,12 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                             )
                         }
 
-                        // Nombre Conductor
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 stringResource(R.string.form_name_driver),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = DarkBlueGrey,
+                                color = Color(0xFF1E293B),
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -943,17 +838,17 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                 placeholder = {
                                     Text(
                                         stringResource(R.string.form_name_driver_description),
-                                        color = BlueGrey
+                                        color = Color(0xFF94A3B8)
                                     )
                                 },
                                 singleLine = true,
                                 shape = MaterialTheme.shapes.medium,
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = MainOrange,
-                                    unfocusedBorderColor = DarkWhiteBackground,
-                                    focusedTextColor = DarkBlueGrey,
-                                    unfocusedTextColor = DarkBlueGrey,
-                                    cursorColor = MainOrange
+                                    focusedBorderColor = Color(0xFFE28F41),
+                                    unfocusedBorderColor = Color(0xFFCBD5E1),
+                                    focusedTextColor = Color(0xFF1E293B),
+                                    unfocusedTextColor = Color(0xFF1E293B),
+                                    cursorColor = Color(0xFFE28F41)
                                 ),
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Text,
@@ -966,7 +861,6 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Card de Datos de animales transportados
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -981,7 +875,6 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                             .padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        // Header con botón de agregar
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -1012,7 +905,6 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                             }
                         }
 
-                        // Lista de animales
                         val animales by viewModel.listaAnimales.observeAsState(emptyList())
                         val estatExpandidoPorIndice by viewModel.estatArribadaExpandidoPorIndice.observeAsState(emptyMap())
                         val classCanalExpandidoPorIndice by viewModel.classCanalExpandidoPorIndice.observeAsState(emptyMap())
@@ -1020,7 +912,6 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                         val datePickerPorIndice by viewModel.mostrarDatePickerPorIndice.observeAsState(emptyMap())
 
                         animales.forEachIndexed { index, animal ->
-                            // DatePicker para este animal
                             if (datePickerPorIndice[index] == true) {
                                 val datePickerState = rememberDatePickerState()
                                 DatePickerDialog(
@@ -1066,7 +957,6 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                         .padding(16.dp),
                                     verticalArrangement = Arrangement.spacedBy(16.dp)
                                 ) {
-                                    // Header del animal con número y botón eliminar
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -1094,7 +984,6 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                         }
                                     }
 
-                                    // Identificador del Animal
                                     Column(modifier = Modifier.fillMaxWidth()) {
                                         Text(
                                             stringResource(R.string.form_id_animal),
@@ -1144,7 +1033,6 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                         )
                                     }
 
-                                    // Estado de Arribada
                                     Column(modifier = Modifier.fillMaxWidth()) {
                                         Text(
                                             stringResource(R.string.form_state_arrival),
@@ -1222,9 +1110,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                         }
                                     }
 
-                                    // Campos adicionales si el estado es "80 - Sacrificat"
                                     if (animal.estatArribada == "80") {
-                                        // Divider
                                         HorizontalDivider(
                                             color = Color(0xFFE2E8F0),
                                             thickness = 1.dp
@@ -1237,7 +1123,6 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                             color = Color(0xFFE28F41)
                                         )
 
-                                        // Fecha de Sacrificio/Muerte
                                         Column(modifier = Modifier.fillMaxWidth()) {
                                             Text(
                                                 stringResource(R.string.form_date_sacrifice),
@@ -1248,7 +1133,6 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                             )
                                             Spacer(modifier = Modifier.height(8.dp))
 
-                                            // El Box detecta el click para abrir el calendario
                                             Box(
                                                 modifier = Modifier
                                                     .fillMaxWidth()
@@ -1278,7 +1162,6 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                                     enabled = false,
                                                     shape = MaterialTheme.shapes.medium,
                                                     colors = OutlinedTextFieldDefaults.colors(
-                                                        // Colores para estado deshabilitado (para que se vea bien aunque enabled=false)
                                                         disabledTextColor = Color(0xFF1E293B),
                                                         disabledBorderColor = Color(0xFFCBD5E1),
                                                         disabledLeadingIconColor = Color(0xFFE28F41),
@@ -1290,7 +1173,6 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                             }
                                         }
 
-                                        // Peso de Canal
                                         Column(modifier = Modifier.fillMaxWidth()) {
                                             Text(
                                                 stringResource(R.string.form_weight_canal),
@@ -1330,7 +1212,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                                 )
                                             )
                                         }
-                                        // Clase de Canal
+
                                         Column(modifier = Modifier.fillMaxWidth()) {
                                             Text(
                                                 stringResource(R.string.form_class_canal),
@@ -1340,35 +1222,33 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                                 letterSpacing = 0.15.sp
                                             )
                                             Spacer(modifier = Modifier.height(8.dp))
-                                                OutlinedTextField(
-                                                    value = animal.classCanal?:"",
-                                                    onValueChange = {
-                                                        viewModel.actualizarClassCanal(index, it)
-                                                    },
-                                                    modifier = Modifier
-                                                        .fillMaxWidth(),
-                                                    placeholder = {
-                                                        Text(
-                                                            stringResource(R.string.form_class_canal_description),
-                                                            color = Color(0xFF94A3B8),
-                                                            fontSize = 14.sp
-                                                        )
-                                                    },
-                                                    singleLine = true,
-                                                    shape = MaterialTheme.shapes.medium,
-                                                    colors = OutlinedTextFieldDefaults.colors(
-                                                        focusedBorderColor = Color(0xFFE28F41),
-                                                        unfocusedBorderColor = Color(0xFFCBD5E1),
-                                                        focusedTextColor = Color(0xFF1E293B),
-                                                        unfocusedTextColor = Color(0xFF1E293B),
-                                                        focusedContainerColor = Color.White,
-                                                        unfocusedContainerColor = Color.White
+                                            OutlinedTextField(
+                                                value = animal.classCanal?:"",
+                                                onValueChange = {
+                                                    viewModel.actualizarClassCanal(index, it)
+                                                },
+                                                modifier = Modifier
+                                                    .fillMaxWidth(),
+                                                placeholder = {
+                                                    Text(
+                                                        stringResource(R.string.form_class_canal_description),
+                                                        color = Color(0xFF94A3B8),
+                                                        fontSize = 14.sp
                                                     )
+                                                },
+                                                singleLine = true,
+                                                shape = MaterialTheme.shapes.medium,
+                                                colors = OutlinedTextFieldDefaults.colors(
+                                                    focusedBorderColor = Color(0xFFE28F41),
+                                                    unfocusedBorderColor = Color(0xFFCBD5E1),
+                                                    focusedTextColor = Color(0xFF1E293B),
+                                                    unfocusedTextColor = Color(0xFF1E293B),
+                                                    focusedContainerColor = Color.White,
+                                                    unfocusedContainerColor = Color.White
                                                 )
-
+                                            )
                                         }
 
-                                        // Tipo de Presentación
                                         Column(modifier = Modifier.fillMaxWidth()) {
                                             Text(
                                                 stringResource(R.string.form_type_presentation),
@@ -1421,7 +1301,6 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                                     },
                                                     modifier = Modifier.background(Color.White)
                                                 ) {
-
                                                     elementosConCodigos.tiposPresentacion().forEach { (codigo, tipo) ->
                                                         DropdownMenuItem(
                                                             text = {
@@ -1448,7 +1327,6 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                                 }
                             }
 
-                            // Espaciador entre animales
                             if (index < animales.size - 1) {
                                 Spacer(modifier = Modifier.height(8.dp))
                             }
@@ -1456,7 +1334,6 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                     }
                 }
 
-                // Botón Confirmar Movimiento
                 Button(
                     onClick = { viewModel.confirmarMovimiento() },
                     modifier = Modifier
@@ -1465,8 +1342,8 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                         .height(56.dp),
                     enabled = !estadoCarga,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MainOrange,
-                        disabledContainerColor = DarkWhiteBackground
+                        containerColor = Color(0xFFE28F41),
+                        disabledContainerColor = Color(0xFFCBD5E1)
                     ),
                     shape = MaterialTheme.shapes.medium,
                     elevation = ButtonDefaults.buttonElevation(
