@@ -26,7 +26,12 @@ fun alertsErrosScreens(codigo: Int): String {
         16 to stringResource(R.string.form_error_arrival_time),
         17 to stringResource(R.string.form_error_ates_code),
         18 to stringResource(R.string.form_error_destination_farm),
-        19 to stringResource(R.string.form_error_arrival_status)
+        19 to stringResource(R.string.form_error_arrival_status),
+        20 to stringResource(R.string.form_error_origin_farm),
+        21 to stringResource(R.string.form_error_temporal),
+        22 to stringResource(R.string.form_error_exit_date),
+        23 to stringResource(R.string.form_error_exit_time),
+        24 to stringResource(R.string.form_error_mobilitat)
     )
 
     // Si el código existe en el mapa, lo devuelve.

@@ -1,4 +1,4 @@
-package com.example.terrabit_app.ui.screen
+package com.example.terrabit_app.ui.screen.bovinos
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,12 +23,14 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
@@ -69,6 +71,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -85,6 +88,9 @@ import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
 import com.example.terrabit_app.ui.theme.WhiteBackground
 import com.example.terrabit_app.viewmodel.GuiasViewModel
+import com.example.terrabit_app.R
+import com.example.terrabit_app.utils.ElementosConCodigos
+import com.example.terrabit_app.utils.alertsErrosScreens
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -92,7 +98,6 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    // Observar variables del ViewModel
     val explotacioOrigen by viewModel.explotacioOrigen.observeAsState("")
     val explotacioDestinacio by viewModel.explotacioDestinacio.observeAsState("")
     val temporal by viewModel.temporal.observeAsState("")
@@ -101,8 +106,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
     val dataArribada by viewModel.dataArribada.observeAsState("")
     val horaArribada by viewModel.horaArribada.observeAsState("")
     val mobilitat by viewModel.mobilitat.observeAsState("")
-    val pais by viewModel.pais.observeAsState("")
-    val codiExplotacio by viewModel.codiExplotacio.observeAsState("")
+
     val codiAtes by viewModel.codiAtes.observeAsState("")
     val nomTransportista by viewModel.nomTransportista.observeAsState("")
     val mitjaTransport by viewModel.mitjaTransport.observeAsState("")
@@ -126,23 +130,77 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
 
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
-    var mostrarDialogoRecuperacion by remember { mutableStateOf(false) }
+    var mostrarDialogoAviso by remember { mutableStateOf(false) }
+    var cantidadBorradores by remember { mutableStateOf(0) }
+
+    val codiError by viewModel.codiError.observeAsState()
+
+    val successMessage = stringResource(R.string.success_create_guide)
+    val datePlaceholder = stringResource(R.string.form_date_description)
+    val hourPlaceholder = stringResource(R.string.form_hour_arrival_description)
+
+    val elementosConCodigos = ElementosConCodigos()
 
     // ============================================
-    // INICIALIZACIÓN Y CARGA DE BORRADOR
+    // INICIALIZACIÓN Y DETECCIÓN DE BORRADORES
     // ============================================
     LaunchedEffect(Unit) {
         viewModel.inicializarSharedPreferences(context)
 
-        if (viewModel.tieneContenido()) {
-            // Ya hay datos cargados
-        } else {
-            viewModel.cargarBorradorExistente()
+        val borradores = viewModel.obtenerBorradoresGuia()
+        cantidadBorradores = borradores.size
 
-            if (viewModel.tieneContenido()) {
-                mostrarDialogoRecuperacion = true
-            }
+        if (cantidadBorradores >= 2) {
+            mostrarDialogoAviso = true
         }
+    }
+
+    // ============================================
+    // DIÁLOGO DE AVISO DE BORRADORES
+    // ============================================
+    if (mostrarDialogoAviso) {
+        AlertDialog(
+            onDismissRequest = { },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Description,
+                    contentDescription = null,
+                    tint = MainOrange,
+                    modifier = Modifier.size(48.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = "Borradores pendientes",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    color = DarkBlueGrey
+                )
+            },
+            text = {
+                Text(
+                    text = "Tienes $cantidadBorradores borradores guardados de este formulario. Puedes verlos en la página de Borradores.\n\n¿Deseas crear uno nuevo?",
+                    fontSize = 16.sp,
+                    color = BlueGrey,
+                    lineHeight = 24.sp
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        mostrarDialogoAviso = false
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFE28F41)
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text("Crear nuevo", fontWeight = FontWeight.SemiBold)
+                }
+            },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(16.dp)
+        )
     }
 
     // ============================================
@@ -167,82 +225,23 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
         }
     }
 
-    // ============================================
-    // DIÁLOGO DE RECUPERACIÓN DE BORRADOR
-    // ============================================
-    if (mostrarDialogoRecuperacion) {
-        AlertDialog(
-            onDismissRequest = { },
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = null,
-                    tint = MainOrange,
-                    modifier = Modifier.size(48.dp)
-                )
-            },
-            title = {
-                Text(
-                    text = "Borrador encontrado",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
-                    color = DarkBlueGrey
-                )
-            },
-            text = {
-                Text(
-                    text = "Se encontró un formulario sin completar. ¿Deseas recuperarlo?",
-                    fontSize = 16.sp,
-                    color = BlueGrey,
-                    lineHeight = 24.sp
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        mostrarDialogoRecuperacion = false
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MainOrange
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text("Recuperar", fontWeight = FontWeight.SemiBold)
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        mostrarDialogoRecuperacion = false
-                        viewModel.eliminarBorradorAutomatico()
-                        viewModel.limpiarFormulario()
-                    }
-                ) {
-                    Text("Descartar", color = BlueGrey)
-                }
-            },
-            containerColor = Color.White,
-            shape = RoundedCornerShape(16.dp)
-        )
-    }
-
     LaunchedEffect(registroExitoso) {
         if (registroExitoso) {
             snackbarHostState.showSnackbar(
-                message = "Guía creada exitosamente",
+                message = successMessage,
                 duration = SnackbarDuration.Short
             )
             viewModel.resetearEstadoRegistro()
         }
     }
 
-    LaunchedEffect(mensajeError) {
-        if (mensajeError.isNotEmpty()) {
+    LaunchedEffect(mensajeError, codiError) {
+        if (mensajeError.isNotEmpty() || codiError != null) {
             mostrarDialogoError = true
         }
     }
 
-    if (mostrarDialogoError && mensajeError.isNotEmpty()) {
+    if (mostrarDialogoError) {
         AlertDialog(
             onDismissRequest = {
                 mostrarDialogoError = false
@@ -258,7 +257,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
             },
             title = {
                 Text(
-                    text = "Error al Crear Guía",
+                    text = stringResource(R.string.error_create_guide),
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
                     color = DarkBlueGrey
@@ -266,7 +265,9 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
             },
             text = {
                 Text(
-                    text = mensajeError,
+                    text = if (codiError != null) {
+                        alertsErrosScreens(codiError!!)
+                    } else mensajeError,
                     fontSize = 16.sp,
                     color = BlueGrey,
                     lineHeight = 24.sp
@@ -283,7 +284,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text("Entendido", fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.error_buttom), fontWeight = FontWeight.SemiBold)
                 }
             },
             containerColor = Color.White,
@@ -303,12 +304,12 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                         }
                     }
                 ) {
-                    Text("Aceptar", color = MainOrange)
+                    Text(stringResource(R.string.accept_buttom), color = MainOrange)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.ocultarDatePickerSortida() }) {
-                    Text("Cancelar", color = BlueGrey)
+                    Text(stringResource(R.string.cancel_buttom), color = BlueGrey)
                 }
             }
         ) {
@@ -336,12 +337,12 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                         viewModel.ocultarTimePickerSortida()
                     }
                 ) {
-                    Text("Aceptar", color = MainOrange)
+                    Text(stringResource(R.string.accept_buttom), color = MainOrange)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.ocultarTimePickerSortida() }) {
-                    Text("Cancelar", color = BlueGrey)
+                    Text(stringResource(R.string.cancel_buttom), color = BlueGrey)
                 }
             },
             text = {
@@ -368,12 +369,12 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                         }
                     }
                 ) {
-                    Text("Aceptar", color = MainOrange)
+                    Text(stringResource(R.string.accept_buttom), color = MainOrange)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.ocultarDatePickerArribada() }) {
-                    Text("Cancelar", color = BlueGrey)
+                    Text(stringResource(R.string.cancel_buttom), color = BlueGrey)
                 }
             }
         ) {
@@ -401,12 +402,12 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                         viewModel.ocultarTimePickerArribada()
                     }
                 ) {
-                    Text("Aceptar", color = MainOrange)
+                    Text(stringResource(R.string.accept_buttom), color = MainOrange)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.ocultarTimePickerArribada() }) {
-                    Text("Cancelar", color = BlueGrey)
+                    Text(stringResource(R.string.cancel_buttom), color = BlueGrey)
                 }
             },
             text = {
@@ -466,7 +467,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                     title = {
                         Column {
                             Text(
-                                "Gestionar Guías",
+                                stringResource(R.string.name_manage_guides),
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.SemiBold
                             )
@@ -474,7 +475,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                     },
                     navigationIcon = {
                         IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                            Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -519,7 +520,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
                         Text(
-                            "Datos Obligatorios",
+                            stringResource(R.string.form_movs_title_necessary),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = DarkBlueGrey
@@ -527,7 +528,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
 
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "Explotación Origen *",
+                                stringResource(R.string.form_origin_exploitation),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = DarkBlueGrey,
@@ -540,7 +541,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                 modifier = Modifier.fillMaxWidth(),
                                 placeholder = {
                                     Text(
-                                        "Formato MO o REGA",
+                                        stringResource(R.string.form_format_mo_rega),
                                         color = BlueGrey
                                     )
                                 },
@@ -562,7 +563,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
 
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "Explotación Destino *",
+                                stringResource(R.string.form_exploitation_destination),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = DarkBlueGrey,
@@ -575,7 +576,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                 modifier = Modifier.fillMaxWidth(),
                                 placeholder = {
                                     Text(
-                                        "Formato MO o REGA",
+                                        stringResource(R.string.form_format_mo_rega),
                                         color = BlueGrey
                                     )
                                 },
@@ -597,7 +598,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
 
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "Temporal *",
+                                stringResource(R.string.form_temporal),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = DarkBlueGrey,
@@ -617,7 +618,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                     readOnly = true,
                                     placeholder = {
                                         Text(
-                                            "SI;NO",
+                                            stringResource(R.string.form_yes_no),
                                             color = BlueGrey
                                         )
                                     },
@@ -640,7 +641,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                     onDismissRequest = { viewModel.cerrarTemporalMenu() },
                                     modifier = Modifier.background(Color.White)
                                 ) {
-                                    viewModel.listaTemporalOpciones.forEach { opcion ->
+                                    elementosConCodigos.opcionesSiNo().forEach { (opcion, codi) ->
                                         DropdownMenuItem(
                                             text = {
                                                 Text(
@@ -650,18 +651,12 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                                     fontWeight = FontWeight.Normal
                                                 )
                                             },
-                                            onClick = { viewModel.seleccionarTemporal(opcion) },
+                                            onClick = { viewModel.seleccionarTemporal(opcion, codi) },
                                             contentPadding = PaddingValues(
                                                 horizontal = 16.dp,
                                                 vertical = 14.dp
                                             )
                                         )
-                                        if (opcion != viewModel.listaTemporalOpciones.last()) {
-                                            HorizontalDivider(
-                                                color = DarkWhiteBackground,
-                                                thickness = 1.dp
-                                            )
-                                        }
                                     }
                                 }
                             }
@@ -673,7 +668,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    "Fecha Sortida *",
+                                    stringResource(R.string.form_date_departure),
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = DarkBlueGrey,
@@ -691,14 +686,14 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                         modifier = Modifier.fillMaxWidth(),
                                         placeholder = {
                                             Text(
-                                                "Fecha",
+                                                datePlaceholder,
                                                 color = BlueGrey
                                             )
                                         },
                                         leadingIcon = {
                                             Icon(
                                                 Icons.Default.DateRange,
-                                                contentDescription = "Calendario",
+                                                contentDescription = datePlaceholder,
                                                 tint = MainOrange
                                             )
                                         },
@@ -718,7 +713,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
 
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    "Hora *",
+                                    stringResource(R.string.form_hour_arrival),
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = DarkBlueGrey,
@@ -736,14 +731,14 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                         modifier = Modifier.fillMaxWidth(),
                                         placeholder = {
                                             Text(
-                                                "Hora",
+                                                hourPlaceholder,
                                                 color = BlueGrey
                                             )
                                         },
                                         leadingIcon = {
                                             Icon(
                                                 Icons.Default.Schedule,
-                                                contentDescription = "Reloj",
+                                                contentDescription = hourPlaceholder,
                                                 tint = MainOrange
                                             )
                                         },
@@ -768,7 +763,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    "Fecha Arribada *",
+                                    stringResource(R.string.form_date_arrival),
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = DarkBlueGrey,
@@ -786,14 +781,14 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                         modifier = Modifier.fillMaxWidth(),
                                         placeholder = {
                                             Text(
-                                                "Fecha",
+                                                datePlaceholder,
                                                 color = BlueGrey
                                             )
                                         },
                                         leadingIcon = {
                                             Icon(
                                                 Icons.Default.DateRange,
-                                                contentDescription = "Calendario",
+                                                contentDescription = datePlaceholder,
                                                 tint = MainOrange
                                             )
                                         },
@@ -813,7 +808,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
 
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    "Hora *",
+                                    stringResource(R.string.form_hour_arrival),
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = DarkBlueGrey,
@@ -831,15 +826,15 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                         modifier = Modifier.fillMaxWidth(),
                                         placeholder = {
                                             Text(
-                                                "Hora",
+                                                hourPlaceholder,
                                                 color = BlueGrey
                                             )
                                         },
                                         leadingIcon = {
                                             Icon(
                                                 Icons.Default.Schedule,
-                                                contentDescription = "Reloj",
-                                                tint = MainOrange
+                                                contentDescription = hourPlaceholder,
+                                                tint =MainOrange
                                             )
                                         },
                                         readOnly = true,
@@ -859,7 +854,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
 
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "Guía per mobilitat *",
+                                stringResource(R.string.form_mobility_guide),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = DarkBlueGrey,
@@ -879,8 +874,8 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                     readOnly = true,
                                     placeholder = {
                                         Text(
-                                            "SI;NO",
-                                            color = BlueGrey
+                                            stringResource(R.string.form_yes_no),
+                                            color =BlueGrey
                                         )
                                     },
                                     trailingIcon = {
@@ -902,7 +897,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                     onDismissRequest = { viewModel.cerrarMobilitatMenu() },
                                     modifier = Modifier.background(Color.White)
                                 ) {
-                                    viewModel.listaMobilitatOpciones.forEach { opcion ->
+                                    elementosConCodigos.opcionesSiNo().forEach { (opcion, codi) ->
                                         DropdownMenuItem(
                                             text = {
                                                 Text(
@@ -912,92 +907,18 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                                     fontWeight = FontWeight.Normal
                                                 )
                                             },
-                                            onClick = { viewModel.seleccionarMobilitat(opcion) },
+                                            onClick = { viewModel.seleccionarMobilitat(opcion, codi) },
                                             contentPadding = PaddingValues(
                                                 horizontal = 16.dp,
                                                 vertical = 14.dp
                                             )
                                         )
-                                        if (opcion != viewModel.listaMobilitatOpciones.last()) {
-                                            HorizontalDivider(
-                                                color = DarkWhiteBackground,
-                                                thickness = 1.dp
-                                            )
-                                        }
                                     }
                                 }
                             }
                         }
 
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                "Codi país per guies amb destí PIF *",
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = DarkBlueGrey,
-                                letterSpacing = 0.15.sp
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            OutlinedTextField(
-                                value = pais,
-                                onValueChange = { viewModel.actualizarPais(it) },
-                                modifier = Modifier.fillMaxWidth(),
-                                placeholder = {
-                                    Text(
-                                        "Tipus explotació: Centre d'Inspecció",
-                                        color = BlueGrey
-                                    )
-                                },
-                                singleLine = true,
-                                shape = MaterialTheme.shapes.medium,
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = MainOrange,
-                                    unfocusedBorderColor = DarkWhiteBackground,
-                                    focusedTextColor = DarkBlueGrey,
-                                    unfocusedTextColor = DarkBlueGrey,
-                                    cursorColor = MainOrange
-                                ),
-                                keyboardOptions = KeyboardOptions(
-                                    keyboardType = KeyboardType.Text,
-                                    imeAction = ImeAction.Next
-                                )
-                            )
-                        }
-
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                "Codi explotació, per guies amb destí PIF",
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = DarkBlueGrey,
-                                letterSpacing = 0.15.sp
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            OutlinedTextField(
-                                value = codiExplotacio,
-                                onValueChange = { viewModel.actualizarCodiExplotacio(it) },
-                                modifier = Modifier.fillMaxWidth(),
-                                placeholder = {
-                                    Text(
-                                        "Obligatori si explotacioDestinacio és un tipus explotació",
-                                        color = BlueGrey
-                                    )
-                                },
-                                singleLine = true,
-                                shape = MaterialTheme.shapes.medium,
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = MainOrange,
-                                    unfocusedBorderColor = DarkWhiteBackground,
-                                    focusedTextColor = DarkBlueGrey,
-                                    unfocusedTextColor = DarkBlueGrey,
-                                    cursorColor = MainOrange
-                                ),
-                                keyboardOptions = KeyboardOptions(
-                                    keyboardType = KeyboardType.Text,
-                                    imeAction = ImeAction.Next
-                                )
-                            )
-                        }
+                        ParametrosCentroInspeccion(viewModel)
                     }
                 }
 
@@ -1018,7 +939,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
                         Text(
-                            "Datos Opcionales del Transporte",
+                            stringResource(R.string.form_movs_title_optionals),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = DarkBlueGrey
@@ -1026,7 +947,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
 
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "Código ATES Transportista",
+                                stringResource(R.string.form_codi_ates),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = DarkBlueGrey,
@@ -1039,7 +960,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                 modifier = Modifier.fillMaxWidth(),
                                 placeholder = {
                                     Text(
-                                        "Máximo 15 caracteres",
+                                        stringResource(R.string.form_ates_max_chars),
                                         color = BlueGrey
                                     )
                                 },
@@ -1061,7 +982,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
 
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "Nombre del Transportista",
+                                stringResource(R.string.form_name_transportits),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = DarkBlueGrey,
@@ -1074,7 +995,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                 modifier = Modifier.fillMaxWidth(),
                                 placeholder = {
                                     Text(
-                                        "Si existeix ATES a GTR no s'actualitzará",
+                                        stringResource(R.string.form_transport_name_warning),
                                         color = BlueGrey
                                     )
                                 },
@@ -1096,7 +1017,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
 
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "Medio de Transporte",
+                                stringResource(R.string.form_ways_transports),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = DarkBlueGrey,
@@ -1116,7 +1037,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                     readOnly = true,
                                     placeholder = {
                                         Text(
-                                            "Seleccionar medio",
+                                            stringResource(R.string.form_ways_transports_description),
                                             color = BlueGrey
                                         )
                                     },
@@ -1139,7 +1060,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                     onDismissRequest = { viewModel.cerrarMitjaTransportMenu() },
                                     modifier = Modifier.background(Color.White)
                                 ) {
-                                    viewModel.listaMitjaTransport.forEach { medio ->
+                                    elementosConCodigos.transporte().forEach { (medio, codi) ->
                                         DropdownMenuItem(
                                             text = {
                                                 Text(
@@ -1149,18 +1070,12 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                                     fontWeight = FontWeight.Normal
                                                 )
                                             },
-                                            onClick = { viewModel.seleccionarMitjaTransport(medio) },
+                                            onClick = { viewModel.seleccionarMitjaTransport(medio, codi) },
                                             contentPadding = PaddingValues(
                                                 horizontal = 16.dp,
                                                 vertical = 14.dp
                                             )
                                         )
-                                        if (medio != viewModel.listaMitjaTransport.last()) {
-                                            HorizontalDivider(
-                                                color = DarkWhiteBackground,
-                                                thickness = 1.dp
-                                            )
-                                        }
                                     }
                                 }
                             }
@@ -1168,7 +1083,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
 
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "Matrícula del Vehículo",
+                                stringResource(R.string.form_matricule_transport),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = DarkBlueGrey,
@@ -1181,7 +1096,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                 modifier = Modifier.fillMaxWidth(),
                                 placeholder = {
                                     Text(
-                                        "Ejemplo: 1234ABC",
+                                        stringResource(R.string.form_matricule_transports_description),
                                         color = BlueGrey
                                     )
                                 },
@@ -1203,7 +1118,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
 
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "NIF del Conductor",
+                                stringResource(R.string.form_nif_driver),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = DarkBlueGrey,
@@ -1216,7 +1131,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                 modifier = Modifier.fillMaxWidth(),
                                 placeholder = {
                                     Text(
-                                        "Ejemplo: 12345678A",
+                                        stringResource(R.string.form_nif_driver_description),
                                         color = BlueGrey
                                     )
                                 },
@@ -1238,7 +1153,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
 
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "Nombre del Conductor",
+                                stringResource(R.string.form_name_driver),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = DarkBlueGrey,
@@ -1251,7 +1166,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                 modifier = Modifier.fillMaxWidth(),
                                 placeholder = {
                                     Text(
-                                        "Nombre completo",
+                                        stringResource(R.string.form_name_driver_description),
                                         color = BlueGrey
                                     )
                                 },
@@ -1278,7 +1193,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    "Identificadores de los Animales",
+                                    stringResource(R.string.form_animal_identifiers),
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = DarkBlueGrey,
@@ -1290,7 +1205,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Add,
-                                        contentDescription = "Agregar identificador",
+                                        contentDescription = stringResource(R.string.content_desc_add_id),
                                         tint = MainOrange
                                     )
                                 }
@@ -1312,7 +1227,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                         modifier = Modifier.weight(1f),
                                         placeholder = {
                                             Text(
-                                                "Ejemplo: 1234567890LPOI",
+                                                stringResource(R.string.form_animal_id_example),
                                                 color = BlueGrey
                                             )
                                         },
@@ -1338,7 +1253,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                                         ) {
                                             Icon(
                                                 imageVector = Icons.Default.Close,
-                                                contentDescription = "Eliminar identificador",
+                                                contentDescription = stringResource(R.string.content_desc_remove_id),
                                                 tint = ErrorRed
                                             )
                                         }
@@ -1369,7 +1284,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                     )
                 ) {
                     Text(
-                        "Crear Guía",
+                        stringResource(R.string.btn_create_guide),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         letterSpacing = 0.5.sp
@@ -1377,6 +1292,105 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
+            }
+        }
+    }
+}
+
+@Composable
+fun ParametrosCentroInspeccion(viewModel: GuiasViewModel) {
+
+    val pais by viewModel.pais.observeAsState("")
+    val codiExplotacio by viewModel.codiExplotacio.observeAsState("")
+    val (isChecked, setChecked) = remember { mutableStateOf(false) }
+
+    Column(Modifier.fillMaxWidth()) {
+        Row(modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        )
+        {
+            Checkbox(
+                checked = isChecked,
+                onCheckedChange = { setChecked(it) }
+            )
+            Text("El destino es centro de inspección?",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFF1E293B),
+                letterSpacing = 0.15.sp
+            )
+        }
+
+        if (isChecked) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    stringResource(R.string.form_pif_country),
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF1E293B),
+                    letterSpacing = 0.15.sp
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                OutlinedTextField(
+                    value = pais,
+                    onValueChange = { viewModel.actualizarPais(it) },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = {
+                        Text(
+                            stringResource(R.string.form_pif_country_desc),
+                            color = Color(0xFF94A3B8)
+                        )
+                    },
+                    singleLine = true,
+                    shape = MaterialTheme.shapes.medium,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color(0xFFE28F41),
+                        unfocusedBorderColor = Color(0xFFCBD5E1),
+                        focusedTextColor = Color(0xFF1E293B),
+                        unfocusedTextColor = Color(0xFF1E293B),
+                        cursorColor = Color(0xFFE28F41)
+                    ),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Next
+                    )
+                )
+            }
+
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    stringResource(R.string.form_pif_exploitation),
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF1E293B),
+                    letterSpacing = 0.15.sp
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                OutlinedTextField(
+                    value = codiExplotacio,
+                    onValueChange = { viewModel.actualizarCodiExplotacio(it) },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = {
+                        Text(
+                            stringResource(R.string.form_pif_exploitation_desc),
+                            color = Color(0xFF94A3B8)
+                        )
+                    },
+                    singleLine = true,
+                    shape = MaterialTheme.shapes.medium,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color(0xFFE28F41),
+                        unfocusedBorderColor = Color(0xFFCBD5E1),
+                        focusedTextColor = Color(0xFF1E293B),
+                        unfocusedTextColor = Color(0xFF1E293B),
+                        cursorColor = Color(0xFFE28F41)
+                    ),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Next
+                    )
+                )
             }
         }
     }

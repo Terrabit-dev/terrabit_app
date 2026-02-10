@@ -1,4 +1,4 @@
-package com.example.terrabit_app.ui.screen
+package com.example.terrabit_app.ui.screen.bovinos
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,6 +21,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material3.AlertDialog
@@ -114,7 +115,8 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
 
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
-    var mostrarDialogoRecuperacion by remember { mutableStateOf(false) }
+    var mostrarDialogoAviso by remember { mutableStateOf(false) }
+    var cantidadBorradores by remember { mutableStateOf(0) }
 
     val mensajeRegistroExitoso = stringResource(R.string.successful_message_dead)
     val mensajeRegistroError = stringResource(R.string.error_message_dead)
@@ -123,20 +125,65 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
     val elementosConCodigos = ElementosConCodigos()
 
     // ============================================
-    // INICIALIZACIÓN Y CARGA DE BORRADOR
+    // INICIALIZACIÓN Y DETECCIÓN DE BORRADORES
     // ============================================
     LaunchedEffect(Unit) {
         viewModel.inicializarSharedPreferences(context)
 
-        if (viewModel.tieneContenido()) {
-            // Ya hay datos cargados
-        } else {
-            viewModel.cargarBorradorExistente()
+        val borradores = viewModel.obtenerBorradoresMuerte()
+        cantidadBorradores = borradores.size
 
-            if (viewModel.tieneContenido()) {
-                mostrarDialogoRecuperacion = true
-            }
+        if (cantidadBorradores >= 2) {
+            mostrarDialogoAviso = true
         }
+    }
+
+    // ============================================
+    // DIÁLOGO DE AVISO DE BORRADORES
+    // ============================================
+    if (mostrarDialogoAviso) {
+        AlertDialog(
+            onDismissRequest = { },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Description,
+                    contentDescription = null,
+                    tint = ErrorRed,
+                    modifier = Modifier.size(48.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = "Borradores pendientes",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    color = DarkBlueGrey
+                )
+            },
+            text = {
+                Text(
+                    text = "Tienes $cantidadBorradores borradores guardados de este formulario. Puedes verlos en la página de Borradores.\n\n¿Deseas crear uno nuevo?",
+                    fontSize = 16.sp,
+                    color = BlueGrey,
+                    lineHeight = 24.sp
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        mostrarDialogoAviso = false
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = ErrorRed
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text("Crear nuevo", fontWeight = FontWeight.SemiBold)
+                }
+            },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(16.dp)
+        )
     }
 
     // ============================================
@@ -159,65 +206,6 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
         }
-    }
-
-    // ============================================
-    // DIÁLOGO DE RECUPERACIÓN DE BORRADOR
-    // ============================================
-    if (mostrarDialogoRecuperacion) {
-        AlertDialog(
-            onDismissRequest = { },
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = null,
-                    tint = ErrorRed,
-                    modifier = Modifier.size(48.dp)
-                )
-            },
-            title = {
-                Text(
-                    text = "Borrador encontrado",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
-                    color = DarkBlueGrey
-                )
-            },
-            text = {
-                Text(
-                    text = "Se encontró un formulario sin completar. ¿Deseas recuperarlo?",
-                    fontSize = 16.sp,
-                    color = BlueGrey,
-                    lineHeight = 24.sp
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        mostrarDialogoRecuperacion = false
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = ErrorRed
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text("Recuperar", fontWeight = FontWeight.SemiBold)
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        mostrarDialogoRecuperacion = false
-                        viewModel.eliminarBorradorAutomatico()
-                        viewModel.limpiarFormularioMuerte()
-                    }
-                ) {
-                    Text("Descartar", color = BlueGrey)
-                }
-            },
-            containerColor = Color.White,
-            shape = RoundedCornerShape(16.dp)
-        )
     }
 
     LaunchedEffect(registroExitoso) {
@@ -466,7 +454,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                     onDismissRequest = { viewModel.cerrarTipoMuerteMenu() },
                                     modifier = Modifier.background(Color.White)
                                 ) {
-                                    elementosConCodigos.Muertes().forEach { (tipo, codigo) ->
+                                    elementosConCodigos.muertes().forEach { (tipo, codigo) ->
                                         DropdownMenuItem(
                                             text = {
                                                 Text(

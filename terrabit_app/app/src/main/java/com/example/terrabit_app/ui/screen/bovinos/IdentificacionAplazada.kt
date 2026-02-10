@@ -1,11 +1,10 @@
-package com.example.terrabit_app.ui.screen
+package com.example.terrabit_app.ui.screen.bovinos
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,6 +17,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -25,14 +26,13 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -44,6 +44,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -56,6 +57,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -64,7 +66,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.theme.BlueGrey
@@ -72,73 +73,103 @@ import com.example.terrabit_app.ui.theme.DarkBlueGrey
 import com.example.terrabit_app.ui.theme.DarkWhiteBackground
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.WhiteBackground
-import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
-import com.example.terrabit_app.viewmodel.CorrecionSexoViewModel
-
+import com.example.terrabit_app.viewmodel.IdentificacionAplazaViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewModel) {
-    // Observar variables del ViewModel
-    val identificadorCorreccionSexo by viewModel.identificadorCorreccionSexo.observeAsState("")
-    val sexoCorreccionSeleccionado by viewModel.sexoCorreccionSeleccionado.observeAsState("")
-    val sexoCorreccionExpandido by viewModel.sexoCorreccionExpandido.observeAsState(false)
-
-    // Observar estado de registro para mostrar mensajes
-    val correccionSexoExitosa by viewModel.correccionSexoExitosa.observeAsState(false)
-    val mensajeError by viewModel.mensajeErrorCorreccionSexo.observeAsState("")
-    val codiError by viewModel.codiError.observeAsState()
-    val estadoCarga by viewModel.estadoCarga.observeAsState(false)
-
-    // Snackbar host state
-    val snackbarHostState = remember { SnackbarHostState() }
-    var mostrarDialogoError by remember { mutableStateOf(false) }
-
-    // Mensajes de respuestas
-    val mensajeCorreccionSexoExitosa = stringResource(R.string.successful_message_correct_sex)
-    val mensajeErrorCorreccionSexo = stringResource(R.string.error_message_correct_sex)
-
-    // Recursos con codigo
-    val elementosConCodigos = ElementosConCodigos()
-
-
+fun IdentificacionApalzada(navController: NavController, viewModel: IdentificacionAplazaViewModel){
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    var mostrarDialogoRecuperacion by remember { mutableStateOf(false) }
 
+    val identificadorAnimal by viewModel.identificadorAnimal.observeAsState("")
+    val identifiacionExitosa by viewModel.identificacionExitosa.observeAsState(false)
+    val mensajeError by viewModel.mensajeErrorIdentificacion.observeAsState("")
+    val codiError by viewModel.codiError.observeAsState()
+    val estadoCarga by viewModel.estadoCarga.observeAsState(false)
+    val fechaIdentificacion by viewModel.fechaIdentificacion.observeAsState("")
+    val mostrarDatePickerIdentificadores by viewModel.mostrarDatePickerIdentificacion.observeAsState(false)
 
-    // Inicializacion de Borrador y Carga
+    val snackbarHostState = remember { SnackbarHostState() }
+    var mostrarDialogoError by remember { mutableStateOf(false) }
+    var mostrarDialogoAviso by remember { mutableStateOf(false) }
+    var cantidadBorradores by remember { mutableStateOf(0) }
+
+    val tituloExito = stringResource(id = R.string.successful_message_identification_postpone)
+    val titulloError = stringResource(id = R.string.error_message_identification_postpone)
+
+    // ============================================
+    // INICIALIZACIÓN Y DETECCIÓN DE BORRADORES
+    // ============================================
     LaunchedEffect(Unit) {
-        viewModel.initSharedPreferences(context)
+        viewModel.inicializarSharedPreferences(context)
 
-        // Verificar si hay borrador guardado
-        if (viewModel.tieneContenido()) {
-            // Ya hay datos cargados, no hacer nada
-        } else {
-            // Intentar cargar borrador existente
-            viewModel.cargarBorradorExistente()
+        val borradores = viewModel.obtenerBorradoresIdentificacionAplazada()
+        cantidadBorradores = borradores.size
 
-            // Si después de cargar hay contenido, mostrar diálogo
-            if (viewModel.tieneContenido()) {
-                mostrarDialogoRecuperacion = true
-            }
+        if (cantidadBorradores >= 2) {
+            mostrarDialogoAviso = true
         }
     }
 
+    // ============================================
+    // DIÁLOGO DE AVISO DE BORRADORES
+    // ============================================
+    if (mostrarDialogoAviso) {
+        AlertDialog(
+            onDismissRequest = { },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Description,
+                    contentDescription = null,
+                    tint = MainGreen,
+                    modifier = Modifier.size(48.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = "Borradores pendientes",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    color = DarkBlueGrey
+                )
+            },
+            text = {
+                Text(
+                    text = "Tienes $cantidadBorradores borradores guardados de este formulario. Puedes verlos en la página de Borradores.\n\n¿Deseas crear uno nuevo?",
+                    fontSize = 16.sp,
+                    color = BlueGrey,
+                    lineHeight = 24.sp
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        mostrarDialogoAviso = false
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MainGreen
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text("Crear nuevo", fontWeight = FontWeight.SemiBold)
+                }
+            },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(16.dp)
+        )
+    }
 
-    // Ciclo de Vida Deteccion
+    // ============================================
+    // DETECCIÓN DE CICLO DE VIDA (AUTOGUARDADO)
+    // ============================================
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
                 Lifecycle.Event.ON_PAUSE -> {
-                    // Usuario sale de la pantalla - GUARDAR AUTOMÁTICAMENTE
                     if (viewModel.tieneContenido()) {
                         viewModel.guardarBorradorAutomatico()
                     }
-                }
-                Lifecycle.Event.ON_STOP -> {
-                    // Pantalla ya no visible
                 }
                 else -> {}
             }
@@ -149,11 +180,28 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
         }
     }
 
+    LaunchedEffect(identifiacionExitosa) {
+        if (identifiacionExitosa) {
+            snackbarHostState.showSnackbar(
+                message = tituloExito,
+                duration = SnackbarDuration.Short
+            )
+            viewModel.resetearEstadoIdentificacion()
+        }
+    }
 
-    // Mostrar mensaje para recuperar borrador
-    if (mostrarDialogoRecuperacion) {
+    LaunchedEffect(mensajeError, codiError) {
+        if (mensajeError.isNotEmpty() || codiError != null) {
+            mostrarDialogoError = true
+        }
+    }
+
+    if (mostrarDialogoError) {
         AlertDialog(
-            onDismissRequest = { },
+            onDismissRequest = {
+                mostrarDialogoError = false
+                viewModel.resetearEstadoIdentificacion()
+            },
             icon = {
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
@@ -164,84 +212,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
             },
             title = {
                 Text(
-                    text = "Borrador encontrado",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
-                    color = DarkBlueGrey
-                )
-            },
-            text = {
-                Text(
-                    text = "Se encontró un formulario sin completar. ¿Deseas recuperarlo?",
-                    fontSize = 16.sp,
-                    color = BlueGrey,
-                    lineHeight = 24.sp
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        mostrarDialogoRecuperacion = false
-                        // Los datos ya están cargados
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MainGreen
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text("Recuperar", fontWeight = FontWeight.SemiBold)
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        mostrarDialogoRecuperacion = false
-                        viewModel.eliminarBorradorAutomatico()
-                        viewModel.limpiarFormularioCorreccionSexo()
-                    }
-                ) {
-                    Text("Descartar", color = BlueGrey)
-                }
-            },
-            containerColor = Color.White,
-            shape = RoundedCornerShape(16.dp)
-        )
-    }
-
-    // Mostrar Snackbar cuando hay mensaje de éxito o error
-    LaunchedEffect(correccionSexoExitosa, mensajeError) {
-        if (correccionSexoExitosa) {
-            snackbarHostState.showSnackbar(
-                message = mensajeCorreccionSexoExitosa,
-                duration = SnackbarDuration.Short
-            )
-            viewModel.resetearEstadoCorreccionSexo()
-        }
-    }
-    // Mostrar diálogo cuando hay error
-    LaunchedEffect(mensajeError, codiError) {
-        if (mensajeError.isNotEmpty() || codiError != null) {
-            mostrarDialogoError = true
-        }
-    }
-    // Diálogo de Error
-    if (mostrarDialogoError) {
-        AlertDialog(
-            onDismissRequest = {
-                mostrarDialogoError = false
-                viewModel.resetearEstadoCorreccionSexo()
-            },
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack, // Usa un icono de error apropiado
-                    contentDescription = null,
-                    tint = MainGreen,
-                    modifier = Modifier.size(48.dp)
-                )
-            },
-            title = {
-                Text(
-                    text =mensajeErrorCorreccionSexo,
+                    text = titulloError,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
                     color = DarkBlueGrey
@@ -261,7 +232,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                 Button(
                     onClick = {
                         mostrarDialogoError = false
-                        viewModel.resetearEstadoCorreccionSexo()
+                        viewModel.resetearEstadoIdentificacion()
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MainGreen
@@ -275,13 +246,44 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
             shape = RoundedCornerShape(16.dp)
         )
     }
-    // Indicador de carga en pantalla completa
+
+    if (mostrarDatePickerIdentificadores) {
+        val datePickerState = rememberDatePickerState()
+        DatePickerDialog(
+            onDismissRequest = { viewModel.ocultarDatePickerIdentificacion() },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            viewModel.seleccionarFechaIdentificacion(millis)
+                        }
+                    }
+                ) {
+                    Text(stringResource(R.string.accept_buttom), color = MainGreen)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.ocultarDatePickerIdentificacion() }) {
+                    Text(stringResource(R.string.cancel_buttom), color = BlueGrey)
+                }
+            }
+        ) {
+            DatePicker(
+                state = datePickerState,
+                colors = DatePickerDefaults.colors(
+                    selectedDayContainerColor = MainGreen,
+                    todayDateBorderColor = MainGreen
+                )
+            )
+        }
+    }
+
     if (estadoCarga) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Black.copy(alpha = 0.5f))
-                .clickable(enabled = false) { }, // Bloquear interacción
+                .clickable(enabled = false) { },
             contentAlignment = Alignment.Center
         ) {
             Card(
@@ -319,16 +321,21 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
         }
     }
     else {
-
         Scaffold(
             topBar = {
                 TopAppBar(
                     title = {
                         Column {
                             Text(
-                                stringResource(R.string.name_sex_correct),
+                                stringResource(R.string.name_identification_postpone),
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                stringResource(R.string.subtitle_identification_postpone),
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Normal,
+                                color = Color.White.copy(alpha = 0.9f)
                             )
                         }
                     },
@@ -348,7 +355,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                 SnackbarHost(hostState = snackbarHostState) { data ->
                     Snackbar(
                         snackbarData = data,
-                        containerColor = MainGreen, // Verde para éxito
+                        containerColor = MainGreen,
                         contentColor = Color.White,
                         shape = RoundedCornerShape(12.dp)
                     )
@@ -380,7 +387,6 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                             .padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
-                        // Identificador del Animal
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 stringResource(R.string.form_id_animal),
@@ -391,8 +397,8 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                             )
                             Spacer(modifier = Modifier.height(10.dp))
                             OutlinedTextField(
-                                value = identificadorCorreccionSexo,
-                                onValueChange = { viewModel.actualizarIdentificadorCorreccionSexo(it) },
+                                value = identificadorAnimal,
+                                onValueChange = { viewModel.actualizarIdentificadorAnimal(it) },
                                 modifier = Modifier.fillMaxWidth(),
                                 placeholder = {
                                     Text(
@@ -426,91 +432,63 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                             )
                         }
 
-                        // Sexo Correcto
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                stringResource(R.string.form_sex),
+                                stringResource(R.string.form_date_identification),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = DarkBlueGrey,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
-                            ExposedDropdownMenuBox(
-                                expanded = sexoCorreccionExpandido,
-                                onExpandedChange = { viewModel.toggleSexoCorreccionExpandido() }
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { viewModel.mostrarDatePickerIdentificacion() }
                             ) {
                                 OutlinedTextField(
-                                    value = sexoCorreccionSeleccionado,
+                                    value = fechaIdentificacion,
                                     onValueChange = {},
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .menuAnchor(),
-                                    readOnly = true,
+                                    modifier = Modifier.fillMaxWidth(),
                                     placeholder = {
                                         Text(
-                                            stringResource(R.string.form_sex_description),
+                                            stringResource(R.string.form_date_description),
                                             color = BlueGrey
                                         )
                                     },
-                                    trailingIcon = {
-                                        ExposedDropdownMenuDefaults.TrailingIcon(
-                                            expanded = sexoCorreccionExpandido
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = Icons.Default.DateRange,
+                                            contentDescription = "Calendario",
+                                            tint = MainGreen
                                         )
                                     },
-                                    singleLine = true,
+                                    readOnly = true,
+                                    enabled = false,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = MainGreen,
-                                        unfocusedBorderColor = DarkWhiteBackground,
-                                        focusedTextColor = DarkBlueGrey,
-                                        unfocusedTextColor = DarkBlueGrey
-                                    )
+                                        disabledTextColor = DarkBlueGrey,
+                                        disabledBorderColor = DarkWhiteBackground,
+                                        disabledLeadingIconColor = MainGreen,
+                                        disabledPlaceholderColor = BlueGrey
+                                    ),
+                                    singleLine = true
                                 )
-
-                                ExposedDropdownMenu(
-                                    expanded = sexoCorreccionExpandido,
-                                    onDismissRequest = { viewModel.cerrarSexoCorreccionMenu() },
-                                    modifier = Modifier.background(Color.White)
-                                ) {
-                                    elementosConCodigos.sexos().forEach { (sexo, codigo) ->
-                                        DropdownMenuItem(
-                                            text = {
-                                                Text(
-                                                    sexo,
-                                                    fontSize = 15.sp,
-                                                    color = DarkBlueGrey,
-                                                    fontWeight = FontWeight.Normal
-                                                )
-                                            },
-                                            onClick = { viewModel.seleccionarSexoCorreccion(sexo, codigo) },
-                                            contentPadding = PaddingValues(
-                                                horizontal = 16.dp,
-                                                vertical = 14.dp
-                                            ),
-                                            colors = MenuDefaults.itemColors(
-                                                textColor = DarkBlueGrey,
-                                                leadingIconColor = DarkBlueGrey,
-                                                trailingIconColor = DarkBlueGrey,
-                                                disabledTextColor = BlueGrey
-                                            )
-                                        )
-                                    }
-                                }
                             }
                         }
                     }
                 }
 
-                // Botón Corregir Sexo
                 Button(
-                    onClick = { viewModel.corregirSexoAnimal() },
+                    onClick = { viewModel.corregirIdentificacion() },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp, vertical = 24.dp)
                         .height(56.dp),
+                    enabled = !estadoCarga,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MainGreen
+                        containerColor = MainGreen,
+                        disabledContainerColor = DarkWhiteBackground
                     ),
                     shape = MaterialTheme.shapes.medium,
                     elevation = ButtonDefaults.buttonElevation(
@@ -519,7 +497,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                     )
                 ) {
                     Text(
-                        stringResource(R.string.buttom_form_correct_sex),
+                        stringResource(R.string.buttom_form_identification_postpone),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         letterSpacing = 0.5.sp

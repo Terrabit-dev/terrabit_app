@@ -8,12 +8,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.pantallas.*
-import com.example.terrabit_app.ui.screen.CorregirSexoBovi
-import com.example.terrabit_app.ui.screen.Fallecimiento
-import com.example.terrabit_app.ui.screen.GestionGuias
-import com.example.terrabit_app.ui.screen.IdentificacionApalzada
-import com.example.terrabit_app.ui.screen.Material
-import com.example.terrabit_app.ui.screen.Nacimiento
+import com.example.terrabit_app.ui.screen.bovinos.CorregirSexoBovi
+import com.example.terrabit_app.ui.screen.bovinos.Fallecimiento
+import com.example.terrabit_app.ui.screen.bovinos.GestionGuias
+import com.example.terrabit_app.ui.screen.bovinos.IdentificacionApalzada
+import com.example.terrabit_app.ui.screen.bovinos.ListarBovinos
+import com.example.terrabit_app.ui.screen.bovinos.Material
+import com.example.terrabit_app.ui.screen.bovinos.Nacimiento
 import com.example.terrabit_app.ui.screen.Login
 import com.example.terrabit_app.ui.screen.Movimientos
 import com.example.terrabit_app.ui.screen.porcinos.EntradasPorcinos
@@ -24,12 +25,12 @@ import com.example.terrabit_app.viewmodel.CorrecionSexoViewModel
 import com.example.terrabit_app.viewmodel.DrawerViewModel
 import com.example.terrabit_app.viewmodel.GuiasViewModel
 import com.example.terrabit_app.viewmodel.IdentificacionAplazaViewModel
+import com.example.terrabit_app.viewmodel.ListarBovinosViewModel
 import com.example.terrabit_app.viewmodel.MainViewmodel
 import com.example.terrabit_app.viewmodel.MaterialViewModel
 import com.example.terrabit_app.viewmodel.MovimientosViewModel
 import com.example.terrabit_app.viewmodel.NacimientoViewmodel
 import com.example.terrabit_app.viewmodel.ViewModelMuerteBovi
-import okhttp3.Route
 
 @Composable
 fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel ) {
@@ -55,6 +56,11 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel ) {
         }
 
         // Pantallas de categorías (intermedias)
+
+        composable(Routes.ListarBovinos.route) {
+            val viewmodel : ListarBovinosViewModel = viewModel()
+            ListarBovinos(navController = navController, viewmodel)
+        }
         composable(Routes.GestionBovinos.route) {
             GestionBovinos(navController = navController)
         }
