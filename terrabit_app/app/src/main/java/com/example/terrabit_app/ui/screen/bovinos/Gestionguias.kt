@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -96,7 +97,6 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    // Observar variables del ViewModel
     val explotacioOrigen by viewModel.explotacioOrigen.observeAsState("")
     val explotacioDestinacio by viewModel.explotacioDestinacio.observeAsState("")
     val temporal by viewModel.temporal.observeAsState("")
@@ -129,36 +129,77 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
 
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
-    var mostrarDialogoRecuperacion by remember { mutableStateOf(false) }
-    var mostrarParametrosOpcionales by remember { mutableStateOf(false) } // para mostrar campo de codi pais y codi explotacion
-    var mostrarIdentificadores by remember { mutableStateOf(false) } // para mostrar campo agregar indentificadores
+    var mostrarDialogoAviso by remember { mutableStateOf(false) }
+    var cantidadBorradores by remember { mutableStateOf(0) }
 
-    //codigo gestion mensajes de error
     val codiError by viewModel.codiError.observeAsState()
 
-    // Recursos de String recurrentes
     val successMessage = stringResource(R.string.success_create_guide)
     val datePlaceholder = stringResource(R.string.form_date_description)
     val hourPlaceholder = stringResource(R.string.form_hour_arrival_description)
 
-    // Elementos con codigos
     val elementosConCodigos = ElementosConCodigos()
 
     // ============================================
-    // INICIALIZACIÓN Y CARGA DE BORRADOR
+    // INICIALIZACIÓN Y DETECCIÓN DE BORRADORES
     // ============================================
     LaunchedEffect(Unit) {
         viewModel.inicializarSharedPreferences(context)
 
-        if (viewModel.tieneContenido()) {
-            // Ya hay datos cargados
-        } else {
-            viewModel.cargarBorradorExistente()
+        val borradores = viewModel.obtenerBorradoresGuia()
+        cantidadBorradores = borradores.size
 
-            if (viewModel.tieneContenido()) {
-                mostrarDialogoRecuperacion = true
-            }
+        if (cantidadBorradores >= 2) {
+            mostrarDialogoAviso = true
         }
+    }
+
+    // ============================================
+    // DIÁLOGO DE AVISO DE BORRADORES
+    // ============================================
+    if (mostrarDialogoAviso) {
+        AlertDialog(
+            onDismissRequest = { },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Description,
+                    contentDescription = null,
+                    tint = MainOrange,
+                    modifier = Modifier.size(48.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = "Borradores pendientes",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    color = DarkBlueGrey
+                )
+            },
+            text = {
+                Text(
+                    text = "Tienes $cantidadBorradores borradores guardados de este formulario. Puedes verlos en la página de Borradores.\n\n¿Deseas crear uno nuevo?",
+                    fontSize = 16.sp,
+                    color = BlueGrey,
+                    lineHeight = 24.sp
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        mostrarDialogoAviso = false
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFE28F41)
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text("Crear nuevo", fontWeight = FontWeight.SemiBold)
+                }
+            },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(16.dp)
+        )
     }
 
     // ============================================
@@ -181,65 +222,6 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
         }
-    }
-
-    // ============================================
-    // DIÁLOGO DE RECUPERACIÓN DE BORRADOR
-    // ============================================
-    if (mostrarDialogoRecuperacion) {
-        AlertDialog(
-            onDismissRequest = { },
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = null,
-                    tint = MainOrange,
-                    modifier = Modifier.size(48.dp)
-                )
-            },
-            title = {
-                Text(
-                    text = stringResource(R.string.title_draft_found),
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
-                    color = DarkBlueGrey
-                )
-            },
-            text = {
-                Text(
-                    text = stringResource(R.string.msg_draft_found),
-                    fontSize = 16.sp,
-                    color = BlueGrey,
-                    lineHeight = 24.sp
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        mostrarDialogoRecuperacion = false
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MainOrange
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(stringResource(R.string.btn_recover), fontWeight = FontWeight.SemiBold)
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        mostrarDialogoRecuperacion = false
-                        viewModel.eliminarBorradorAutomatico()
-                        viewModel.limpiarFormulario()
-                    }
-                ) {
-                    Text("Descartar", color = Color(0xFF64748B))
-                }
-            },
-            containerColor = Color.White,
-            shape = RoundedCornerShape(16.dp)
-        )
     }
 
     LaunchedEffect(registroExitoso) {
@@ -730,7 +712,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
 
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    stringResource(R.string.form_hour_arrival), // Reutilizando la etiqueta "Hora *"
+                                    stringResource(R.string.form_hour_arrival),
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = DarkBlueGrey,
@@ -1338,7 +1320,7 @@ fun ParametrosCentroInspeccion(viewModel: GuiasViewModel) {
                 letterSpacing = 0.15.sp
             )
         }
-        // Si el checkbox es true, el código de abajo se "dibuja"
+
         if (isChecked) {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(

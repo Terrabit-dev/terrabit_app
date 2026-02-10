@@ -21,23 +21,25 @@ import java.util.Locale
 class CorrecionSexoViewModel: ViewModel() {
 
     private val repositorio = Repositorio()
-
     private lateinit var sharedPreferencesManager: SharedPreferencesManager
-    // ============================================
-    // SECCIÓN: Autoguardado
-    // ============================================
+
+    // ID único para la sesión actual del formulario
+    private var borradorSesionId: String = ""
 
     fun initSharedPreferences(context: Context){
         sharedPreferencesManager = SharedPreferencesManager(context)
+
+        // Generar nuevo ID de sesión si no existe
+        if (borradorSesionId.isEmpty()) {
+            borradorSesionId = "correccion_sexo_auto_${System.currentTimeMillis()}"
+        }
     }
 
-    //Deteccion si el form tiene datos
     fun tieneContenido(): Boolean{
         return !_identificadorCorreccionSexo.value.isNullOrEmpty()||
                 !_sexoCorreccionSeleccionado.value.isNullOrEmpty()
     }
 
-    // Funcion guardar auto el Formulario
     fun guardarBorradorAutomatico(){
         if (!tieneContenido()){
             Log.d("Autoguardado CorrecionSexo", "No hay contenido para guardar")
@@ -47,98 +49,107 @@ class CorrecionSexoViewModel: ViewModel() {
         try{
             val datosCorregirSexo = mapOf(
                 "identificador" to _identificadorCorreccionSexo.value,
-                "sexoSeleccionado" to _sexoCorreccionSeleccionado.value
+                "sexoSeleccionado" to _sexoCorreccionSeleccionado.value,
+                "codigoSexo" to codigoSexo
             )
 
-            //Buscar si ya existe un borrador anterior
+            // Buscar si ya existe este borrador específico de la sesión actual
             val borradorExistente = sharedPreferencesManager.obtenerBorradores()
-                .find { it.tipo == "CORREGIR_SEXO" && it.estado == "BORRADOR_AUTO" }
-
+                .find { it.id == borradorSesionId }
 
             val borrador = if (borradorExistente != null){
-                //Actualizar borrador existente
+                // Actualizar borrador de esta sesión
                 borradorExistente.copy(
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
                     datos = Gson().toJson(datosCorregirSexo)
                 )
             } else {
-                // Creacion nuevo borrador
+                // Crear nuevo borrador con ID de sesión
                 Borrador(
-                    id = "corregir_sexo_auto${System.currentTimeMillis()}",
-                    tipo = "CORREGIR_SEXO",
+                    id = borradorSesionId,
+                    tipo = "CORRECCION_SEXO",
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
                     datos = Gson().toJson(datosCorregirSexo),
                     estado = "BORRADOR_AUTO"
                 )
             }
+
             sharedPreferencesManager.guardarBorrador(borrador)
-            Log.d("Autoguardado Correcion Sexo", "Borrador guardado automáticamente")
+            Log.d("Autoguardado Correcion Sexo", "Borrador guardado: $borradorSesionId")
         }catch (e: Exception){
             Log.e("Error Autoguardado Correcion Sexo", "Error al guardar: ${e.message}", e)
         }
     }
 
-
-    //Cargar Borrador Existente
     fun cargarBorradorExistente(){
         try {
             val borradores = sharedPreferencesManager.obtenerBorradores()
-            val borradorCorreccionSexo = borradores.find {
-                it.tipo == "CORREGIR_SEXO" && it.estado == "BORRADOR_AUTO"
+
+            // Buscar cualquier borrador de tipo CORRECCION_SEXO con estado BORRADOR_AUTO
+            val borradoresCorreccionSexo = borradores.filter {
+                it.tipo == "CORRECCION_SEXO" && it.estado == "BORRADOR_AUTO"
             }
 
-            if (borradorCorreccionSexo != null) {
-                val gson = Gson()
-                val datos: Map<String, Any?> = gson.fromJson(
-                    borradorCorreccionSexo.datos,
-                    object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
-                )
+            if (borradoresCorreccionSexo.isNotEmpty()) {
+                // Tomar el más reciente (último guardado)
+                val borradorCorreccionSexo = borradoresCorreccionSexo.maxByOrNull {
+                    it.id.substringAfter("correccion_sexo_auto_").toLongOrNull() ?: 0L
+                }
 
-                // Restaurar datos
-                _identificadorCorreccionSexo.value = datos["identificador"] as? String ?: ""
-                _sexoCorreccionSeleccionado.value = datos["sexoSeleccionado"] as? String ?: ""
+                if (borradorCorreccionSexo != null) {
+                    // Asignar este ID a la sesión actual
+                    borradorSesionId = borradorCorreccionSexo.id
 
-                Log.d("Cargar Borrador", "Borrador de corrección de sexo cargado")
+                    val gson = Gson()
+                    val datos: Map<String, Any?> = gson.fromJson(
+                        borradorCorreccionSexo.datos,
+                        object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
+                    )
+
+                    // Restaurar datos
+                    _identificadorCorreccionSexo.value = datos["identificador"] as? String ?: ""
+                    _sexoCorreccionSeleccionado.value = datos["sexoSeleccionado"] as? String ?: ""
+                    codigoSexo = datos["codigoSexo"] as? String ?: ""
+
+                    Log.d("Cargar Borrador", "Borrador cargado: $borradorSesionId")
+                }
             }
         } catch (e: Exception) {
             Log.e("Error Cargar Borrador", "Error al cargar: ${e.message}", e)
         }
     }
 
-    // Eliminar Borrador Existente
     fun eliminarBorradorAutomatico(){
         try {
-            val borradores = sharedPreferencesManager.obtenerBorradores()
-            val borradorCorreccionSexo = borradores.find {
-                it.tipo == "CORREGIR_SEXO" && it.estado == "BORRADOR_AUTO"
-            }
-
-            if (borradorCorreccionSexo != null) {
-                sharedPreferencesManager.eliminarBorrador(borradorCorreccionSexo.id)
-                Log.d("Eliminar Borrador", "Borrador automático eliminado")
+            if (borradorSesionId.isNotEmpty()) {
+                sharedPreferencesManager.eliminarBorrador(borradorSesionId)
+                Log.d("Eliminar Borrador", "Borrador eliminado: $borradorSesionId")
+                borradorSesionId = "" // Resetear el ID de sesión
             }
         } catch (e: Exception) {
             Log.e("Error Eliminar Borrador", "Error: ${e.message}", e)
         }
     }
 
+    fun obtenerBorradoresCorreccionSexo(): List<Borrador> {
+        return try {
+            sharedPreferencesManager.obtenerBorradores()
+                .filter { it.tipo == "CORRECCION_SEXO" && it.estado == "BORRADOR_AUTO" }
+        } catch (e: Exception) {
+            Log.e("Error", "Error al obtener borradores: ${e.message}", e)
+            emptyList()
+        }
+    }
 
-    // ============================================
-    // SECCIÓN: CORRECCIÓN DE SEXO
-    // ============================================
-
-    // Estados del formulario de corrección de sexo
     private val _identificadorCorreccionSexo = MutableLiveData("")
     val identificadorCorreccionSexo = _identificadorCorreccionSexo
 
     private val _sexoCorreccionSeleccionado = MutableLiveData("")
     val sexoCorreccionSeleccionado = _sexoCorreccionSeleccionado
 
-    // Estados de expansión de menús desplegables
     private val _sexoCorreccionExpandido = MutableLiveData(false)
     val sexoCorreccionExpandido = _sexoCorreccionExpandido
 
-    // Estados para feedback del registro
     private val _correccionSexoExitosa = MutableLiveData<Boolean>()
     val correccionSexoExitosa = _correccionSexoExitosa
 
@@ -148,15 +159,12 @@ class CorrecionSexoViewModel: ViewModel() {
     private val _codiError = MutableLiveData<Int?>()
     val codiError = _codiError
 
-
     private val _estadoCarga = MutableLiveData(false)
     val estadoCarga = _estadoCarga
 
-    // Lista de opciones de sexo (AGREGADO)
     val listaSexos = listOf("Macho", "Hembra")
     private var codigoSexo = ""
 
-    // Funciones para actualizar los campos
     fun actualizarIdentificadorCorreccionSexo(nuevoId: String) {
         _identificadorCorreccionSexo.value = nuevoId
     }
@@ -167,7 +175,6 @@ class CorrecionSexoViewModel: ViewModel() {
         _sexoCorreccionExpandido.value = false
     }
 
-    // Funciones para controlar la expansión de menús
     fun toggleSexoCorreccionExpandido() {
         _sexoCorreccionExpandido.value = !(_sexoCorreccionExpandido.value ?: false)
     }
@@ -176,27 +183,20 @@ class CorrecionSexoViewModel: ViewModel() {
         _sexoCorreccionExpandido.value = false
     }
 
-    // Función para validar el formulario
     fun esFormularioCorreccionSexoValido(): Boolean {
         val identificadorValido = !_identificadorCorreccionSexo.value.isNullOrEmpty()
         val sexoValido = !_sexoCorreccionSeleccionado.value.isNullOrEmpty()
         return identificadorValido && sexoValido
     }
 
-    // Función para corregir el sexo del animal
     fun corregirSexoAnimal() {
-        // Resetear mensaje de error
         _codiError.value = null
 
-        // Validar que todos los campos requeridos estén completos
         if (!esFormularioCorreccionSexoValido()) {
             val mensajeError = when {
-                _identificadorCorreccionSexo.value.isNullOrEmpty() ->
-                    12
-                _sexoCorreccionSeleccionado.value.isNullOrEmpty() ->
-                    4
-                else ->
-                    0
+                _identificadorCorreccionSexo.value.isNullOrEmpty() -> 12
+                _sexoCorreccionSeleccionado.value.isNullOrEmpty() -> 4
+                else -> 0
             }
             _codiError.value = mensajeError
             Log.e("Validación Corrección Sexo", "Formulario no válido: $mensajeError")
@@ -206,9 +206,6 @@ class CorrecionSexoViewModel: ViewModel() {
         viewModelScope.launch {
             _estadoCarga.value = true
             try {
-
-
-                // Crear objeto de petición
                 val request = PetModicarAnimal(
                     identificador = _identificadorCorreccionSexo.value ?: "",
                     nif = "S0800608B",
@@ -216,47 +213,34 @@ class CorrecionSexoViewModel: ViewModel() {
                     sexe = codigoSexo
                 )
 
-                Log.d("Corrección Sexo", "Enviando petición a la API...")
                 Log.d("Corrección Sexo", "Request: $request")
 
-                // Llamar a la API
                 val response = repositorio.putMoficarAnimal(request)
 
-                // Procesar respuesta
                 withContext(Dispatchers.Main) {
                     _estadoCarga.value = false
                     when {
-                        // Caso 1: HTTP 200 OK
                         response.isSuccessful && response.body() != null -> {
                             val body = response.body()!!
-                            // Verificar si es respuesta exitosa (codi = "0")
                             if (body.codi == "0" || body.descripcio == "OK") {
                                 _correccionSexoExitosa.value = true
                                 _mensajeErrorCorreccionSexo.value = ""
 
                                 Log.d("Corrección Sexo", "Sexo corregido exitosamente")
 
-                                // ELIMINAR BORRADOR AUTOMÁTICO AL ENVIAR EXITOSAMENTE
                                 eliminarBorradorAutomatico()
-
-                                // Limpiar formulario después de corregir exitosamente
                                 limpiarFormularioCorreccionSexo()
-                            }
-                            // Caso inesperado
-                            else {
+                            } else {
                                 _correccionSexoExitosa.value = false
                                 _mensajeErrorCorreccionSexo.value = "Respuesta inesperada del servidor: [${body.codi}] ${body.descripcio}"
                                 Log.w("Corrección Sexo", "Respuesta inesperada: [${body.codi}] ${body.descripcio}")
                             }
                         }
-
-                        // Caso 2: HTTP Error (4xx, 5xx)
                         !response.isSuccessful -> {
                             val errorBody = response.errorBody()?.string()
                             if (errorBody != null) {
                                 try {
                                     val errorObj = Gson().fromJson(errorBody, RespuestaUnificada::class.java)
-                                    // Cogemos la descripción del primer error, o un mensaje por defecto si está vacía
                                     _mensajeErrorCorreccionSexo.value = errorObj.errors?.firstOrNull()?.descripcio
                                         ?: "Error desconocido del servidor"
                                 } catch (e: Exception) {
@@ -268,8 +252,6 @@ class CorrecionSexoViewModel: ViewModel() {
                                 Log.e("Error Corrección Sexo", "Body: $errorBody")
                             }
                         }
-
-                        // Caso 3: Respuesta exitosa pero sin body
                         else -> {
                             _correccionSexoExitosa.value = false
                             _mensajeErrorCorreccionSexo.value = "Error: Respuesta vacía del servidor"
@@ -303,15 +285,18 @@ class CorrecionSexoViewModel: ViewModel() {
         }
     }
 
-    // Función para limpiar el formulario
     fun limpiarFormularioCorreccionSexo() {
         _identificadorCorreccionSexo.value = ""
         _sexoCorreccionSeleccionado.value = ""
+        codigoSexo = ""
+
+        // Generar nuevo ID de sesión para el próximo formulario
+        borradorSesionId = ""
     }
 
-    // Función para resetear el estado de registro
     fun resetearEstadoCorreccionSexo() {
         _correccionSexoExitosa.value = false
         _mensajeErrorCorreccionSexo.value = ""
+        _codiError.value = null
     }
 }

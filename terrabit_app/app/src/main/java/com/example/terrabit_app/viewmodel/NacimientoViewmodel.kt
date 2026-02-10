@@ -2,11 +2,9 @@ package com.example.terrabit_app.viewmodel
 
 import android.content.Context
 import android.util.Log
-import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.terrabit_app.R
 import com.example.terrabit_app.data.Borrador
 import com.example.terrabit_app.data.SharedPreferencesManager
 import com.example.terrabit_app.data.network.Repositorio
@@ -26,17 +24,19 @@ import java.util.Locale
 
 class NacimientoViewmodel : ViewModel() {
 
-    // Instancia del repositorio
     private val repositorio = Repositorio()
-
     private lateinit var sharedPreferencesManager: SharedPreferencesManager
 
-    // ============================================
-    // SECCIÓN: AUTOGUARDADO
-    // ============================================
+    // ID único para la sesión actual del formulario
+    private var borradorSesionId: String = ""
 
     fun inicializarSharedPreferences(context: Context) {
         sharedPreferencesManager = SharedPreferencesManager(context)
+
+        // Generar nuevo ID de sesión si no existe
+        if (borradorSesionId.isEmpty()) {
+            borradorSesionId = "nacimiento_auto_${System.currentTimeMillis()}"
+        }
     }
 
     fun tieneContenido(): Boolean {
@@ -63,20 +63,26 @@ class NacimientoViewmodel : ViewModel() {
                 "fechaIdentificacion" to _fechaIdentificacion.value,
                 "sexoSeleccionado" to _sexoSeleccionado.value,
                 "razaSeleccionada" to _razaSeleccionada.value,
-                "aptitudSeleccionada" to _aptitudSeleccionada.value
+                "aptitudSeleccionada" to _aptitudSeleccionada.value,
+                "codigoRaza" to _codigoRaza.value,
+                "sexoApiSeleccionado" to sexoApiSeleccionado,
+                "codigoAptitud" to codigoAptitud
             )
 
+            // Buscar si ya existe este borrador específico de la sesión actual
             val borradorExistente = sharedPreferencesManager.obtenerBorradores()
-                .find { it.tipo == "NACIMIENTO" && it.estado == "BORRADOR_AUTO" }
+                .find { it.id == borradorSesionId }
 
             val borrador = if (borradorExistente != null) {
+                // Actualizar borrador de esta sesión
                 borradorExistente.copy(
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
                     datos = Gson().toJson(datosNacimiento)
                 )
             } else {
+                // Crear nuevo borrador con ID de sesión
                 Borrador(
-                    id = "nacimiento_auto_${System.currentTimeMillis()}",
+                    id = borradorSesionId,
                     tipo = "NACIMIENTO",
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
                     datos = Gson().toJson(datosNacimiento),
@@ -85,7 +91,7 @@ class NacimientoViewmodel : ViewModel() {
             }
 
             sharedPreferencesManager.guardarBorrador(borrador)
-            Log.d("Autoguardado Nacimiento", "Borrador guardado automáticamente")
+            Log.d("Autoguardado Nacimiento", "Borrador guardado: $borradorSesionId")
         } catch (e: Exception) {
             Log.e("Error Autoguardado Nacimiento", "Error al guardar: ${e.message}", e)
         }
@@ -94,26 +100,41 @@ class NacimientoViewmodel : ViewModel() {
     fun cargarBorradorExistente() {
         try {
             val borradores = sharedPreferencesManager.obtenerBorradores()
-            val borradorNacimiento = borradores.find {
+
+            // Buscar cualquier borrador de tipo NACIMIENTO con estado BORRADOR_AUTO
+            val borradoresNacimiento = borradores.filter {
                 it.tipo == "NACIMIENTO" && it.estado == "BORRADOR_AUTO"
             }
 
-            if (borradorNacimiento != null) {
-                val gson = Gson()
-                val datos: Map<String, Any?> = gson.fromJson(
-                    borradorNacimiento.datos,
-                    object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
-                )
+            if (borradoresNacimiento.isNotEmpty()) {
+                // Tomar el más reciente (último guardado)
+                val borradorNacimiento = borradoresNacimiento.maxByOrNull {
+                    it.id.substringAfter("nacimiento_auto_").toLongOrNull() ?: 0L
+                }
 
-                _idMadre.value = datos["idMadre"] as? String ?: ""
-                _idCria.value = datos["idCria"] as? String ?: ""
-                _fechaNacimiento.value = datos["fechaNacimiento"] as? String ?: ""
-                _fechaIdentificacion.value = datos["fechaIdentificacion"] as? String ?: ""
-                _sexoSeleccionado.value = datos["sexoSeleccionado"] as? String ?: ""
-                _razaSeleccionada.value = datos["razaSeleccionada"] as? String ?: ""
-                _aptitudSeleccionada.value = datos["aptitudSeleccionada"] as? String ?: ""
+                if (borradorNacimiento != null) {
+                    // Asignar este ID a la sesión actual
+                    borradorSesionId = borradorNacimiento.id
 
-                Log.d("Cargar Borrador", "Borrador de nacimiento cargado")
+                    val gson = Gson()
+                    val datos: Map<String, Any?> = gson.fromJson(
+                        borradorNacimiento.datos,
+                        object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
+                    )
+
+                    _idMadre.value = datos["idMadre"] as? String ?: ""
+                    _idCria.value = datos["idCria"] as? String ?: ""
+                    _fechaNacimiento.value = datos["fechaNacimiento"] as? String ?: ""
+                    _fechaIdentificacion.value = datos["fechaIdentificacion"] as? String ?: ""
+                    _sexoSeleccionado.value = datos["sexoSeleccionado"] as? String ?: ""
+                    _razaSeleccionada.value = datos["razaSeleccionada"] as? String ?: ""
+                    _aptitudSeleccionada.value = datos["aptitudSeleccionada"] as? String ?: ""
+                    _codigoRaza.value = datos["codigoRaza"] as? String ?: ""
+                    sexoApiSeleccionado = datos["sexoApiSeleccionado"] as? String ?: "0"
+                    codigoAptitud = datos["codigoAptitud"] as? String ?: "0"
+
+                    Log.d("Cargar Borrador", "Borrador cargado: $borradorSesionId")
+                }
             }
         } catch (e: Exception) {
             Log.e("Error Cargar Borrador", "Error al cargar: ${e.message}", e)
@@ -122,23 +143,26 @@ class NacimientoViewmodel : ViewModel() {
 
     fun eliminarBorradorAutomatico() {
         try {
-            val borradores = sharedPreferencesManager.obtenerBorradores()
-            val borradorNacimiento = borradores.find {
-                it.tipo == "NACIMIENTO" && it.estado == "BORRADOR_AUTO"
-            }
-
-            if (borradorNacimiento != null) {
-                sharedPreferencesManager.eliminarBorrador(borradorNacimiento.id)
-                Log.d("Eliminar Borrador", "Borrador automático eliminado")
+            if (borradorSesionId.isNotEmpty()) {
+                sharedPreferencesManager.eliminarBorrador(borradorSesionId)
+                Log.d("Eliminar Borrador", "Borrador eliminado: $borradorSesionId")
+                borradorSesionId = "" // Resetear el ID de sesión
             }
         } catch (e: Exception) {
             Log.e("Error Eliminar Borrador", "Error: ${e.message}", e)
         }
     }
 
-    // ============================================
-    // SECCIÓN: IDENTIFICADORES
-    // ============================================
+    fun obtenerBorradoresNacimiento(): List<Borrador> {
+        return try {
+            sharedPreferencesManager.obtenerBorradores()
+                .filter { it.tipo == "NACIMIENTO" && it.estado == "BORRADOR_AUTO" }
+        } catch (e: Exception) {
+            Log.e("Error", "Error al obtener borradores: ${e.message}", e)
+            emptyList()
+        }
+    }
+
     private val _identificadores = MutableLiveData<Identificadores>()
     val identificadores = _identificadores
 
@@ -155,11 +179,6 @@ class NacimientoViewmodel : ViewModel() {
         }
     }
 
-    // ============================================
-    // SECCIÓN: NACIMIENTO
-    // ============================================
-
-    // Estados del formulario de nacimiento
     private val _idMadre = MutableLiveData("")
     val idMadre = _idMadre
 
@@ -186,7 +205,6 @@ class NacimientoViewmodel : ViewModel() {
     private val _aptitudSeleccionada = MutableLiveData("")
     val aptitudSeleccionada = _aptitudSeleccionada
 
-    // Estados de expansión de menús desplegables - Nacimiento
     private val _sexoExpandido = MutableLiveData(false)
     val sexoExpandido = _sexoExpandido
 
@@ -196,14 +214,12 @@ class NacimientoViewmodel : ViewModel() {
     private val _aptitudExpandida = MutableLiveData(false)
     val aptitudExpandida = _aptitudExpandida
 
-    // Estado para mostrar el DatePicker - Nacimiento
     private val _mostrarDatePicker = MutableLiveData(false)
     val mostrarDatePicker = _mostrarDatePicker
 
     private val _mostrarDatePickerIdentificacion = MutableLiveData(false)
     val mostrarDatePickerIdentificacion = _mostrarDatePickerIdentificacion
 
-    // Estados para feedback del registro - Nacimiento
     private val _registroExitoso = MutableLiveData<Boolean>()
     val registroExitoso = _registroExitoso
 
@@ -213,14 +229,10 @@ class NacimientoViewmodel : ViewModel() {
     private val _codiError = MutableLiveData<Int?>()
     val codiError = _codiError
 
-    // Estado de carga - NUEVO
     private val _cargandoNacimiento = MutableLiveData(false)
     val cargandoNacimiento = _cargandoNacimiento
 
-    // Data class para Razas
     data class Razas(val codigo: String, val nombre: String)
-
-    // Listas de opciones - Nacimiento
 
     val razasBovinas = listOf(
         Razas("1111", "Holstein (Frisona)"),
@@ -234,7 +246,6 @@ class NacimientoViewmodel : ViewModel() {
     )
     val listaAptitudes = listOf("Carne", "Leche", "Doble propósito")
 
-    // Funciones para actualizar los campos - Nacimiento
     fun actualizarIdMadre(nuevoId: String) {
         _idMadre.value = nuevoId
     }
@@ -265,7 +276,6 @@ class NacimientoViewmodel : ViewModel() {
         _aptitudExpandida.value = false
     }
 
-    // Funciones para controlar la expansión de menús - Nacimiento
     fun toggleSexoExpandido() {
         _sexoExpandido.value = !(_sexoExpandido.value ?: false)
     }
@@ -290,7 +300,6 @@ class NacimientoViewmodel : ViewModel() {
         _aptitudExpandida.value = false
     }
 
-    // Funciones para controlar el DatePicker - Nacimiento
     fun mostrarDatePicker() {
         _mostrarDatePicker.value = true
     }
@@ -299,7 +308,6 @@ class NacimientoViewmodel : ViewModel() {
         _mostrarDatePicker.value = false
     }
 
-    // Funciones para controlar el DatePicker - Identificacion
     fun mostrarDatePickerIdentificacion() {
         _mostrarDatePickerIdentificacion.value = true
     }
@@ -308,7 +316,6 @@ class NacimientoViewmodel : ViewModel() {
         _mostrarDatePickerIdentificacion.value = false
     }
 
-    // Funcion selecionar fecha - Nacimiento
     fun seleccionarFecha(fechaMillis: Long) {
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = fechaMillis
@@ -320,7 +327,6 @@ class NacimientoViewmodel : ViewModel() {
         _mostrarDatePicker.value = false
     }
 
-    // Funcion selecionar fecha - Identificacion
     fun seleccionarFechaIdentificacion(fechaMillis: Long) {
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = fechaMillis
@@ -332,7 +338,6 @@ class NacimientoViewmodel : ViewModel() {
         _mostrarDatePickerIdentificacion.value = false
     }
 
-    // Función para validar el formulario - Nacimiento
     fun esFormularioNacimientoValido(): Boolean {
         val idMadreValido = !_idMadre.value.isNullOrEmpty()
         val idCriaValido = !_idCria.value.isNullOrEmpty()
@@ -345,27 +350,18 @@ class NacimientoViewmodel : ViewModel() {
                 sexoValido && razaValida && aptitudValida
     }
 
-    // Función para registrar un nacimiento con gestión mejorada de errores
     fun registrarNacimiento() {
-        // Resetear mensaje de error
         _codiError.value = null
-        // Validar que todos los campos requeridos estén completos
+
         if (!esFormularioNacimientoValido()) {
             val mensajeError = when {
-                _idMadre.value.isNullOrEmpty() ->
-                    1
-                _idCria.value.isNullOrEmpty() ->
-                    2
-                _fechaNacimiento.value.isNullOrEmpty() ->
-                    3
-                _sexoSeleccionado.value.isNullOrEmpty() ->
-                    4
-                _razaSeleccionada.value.isNullOrEmpty() ->
-                    5
-                _aptitudSeleccionada.value.isNullOrEmpty() ->
-                    6
-                else ->
-                    0
+                _idMadre.value.isNullOrEmpty() -> 1
+                _idCria.value.isNullOrEmpty() -> 2
+                _fechaNacimiento.value.isNullOrEmpty() -> 3
+                _sexoSeleccionado.value.isNullOrEmpty() -> 4
+                _razaSeleccionada.value.isNullOrEmpty() -> 5
+                _aptitudSeleccionada.value.isNullOrEmpty() -> 6
+                else -> 0
             }
             _codiError.value = mensajeError
             Log.e("Validación Nacimiento", "Error: $mensajeError")
@@ -373,17 +369,12 @@ class NacimientoViewmodel : ViewModel() {
         }
 
         viewModelScope.launch {
-            // Activar indicador de carga
             _cargandoNacimiento.postValue(true)
 
             try {
-                // Convertir fechas a formato API (yyyymmdd)
                 val fechaNacimientoAPI = DateUtils.convertirFechaAFormatoAPI(_fechaNacimiento.value ?: "")
                 val fechaIdentificacionAPI = DateUtils.convertirFechaAFormatoAPI(_fechaIdentificacion.value ?: "")
 
-
-
-                // Crear objeto de petición
                 val request = RegistroNacimientoBovi(
                     nif = "S0800608B",
                     passwordMobilitat = "L1855m58",
@@ -397,41 +388,30 @@ class NacimientoViewmodel : ViewModel() {
                 )
                 Log.d("Registro Nacimiento", "Request: $request")
 
-                // Llamar a la API
                 val response = repositorio.putRegistrarNacimiento(request)
 
-                // Procesar respuesta
                 withContext(Dispatchers.Main) {
-                    // Desactivar indicador de carga
                     _cargandoNacimiento.value = false
 
                     when {
-                        // Caso: HTTP 200 OK
                         response.isSuccessful && response.body() != null -> {
                             val body = response.body()!!
 
-                            // Verificar si es respuesta exitosa (codi = "0")
                             if (body.codi == "0" || body.descripcio == "OK") {
                                 _registroExitoso.value = true
                                 _mensajeError.value = ""
 
                                 Log.d("Registro Nacimiento", "Nacimiento reportado exitosamente")
-                                Log.d("Registro Nacimiento", "Respuesta: [${body.codi}] ${body.descripcio}")
 
-                                // ELIMINAR BORRADOR AUTOMÁTICO AL ENVIAR EXITOSAMENTE
                                 eliminarBorradorAutomatico()
-
-                                // Limpiar formulario después de registrar exitosamente
                                 limpiarFormularioNacimiento()
                             }
                         }
-                        // Caso 2: HTTP Error (4xx, 5xx)
                         !response.isSuccessful -> {
                             val errorBody = response.errorBody()?.string()
                             if (errorBody != null) {
                                 try {
                                     val errorObj = Gson().fromJson(errorBody, RespuestaUnificada::class.java)
-                                    // Cogemos la descripción del primer error, o un mensaje por defecto si está vacía
                                     _mensajeError.value = errorObj.errors?.firstOrNull()?.descripcio
                                         ?: "Error desconocido del servidor"
                                 } catch (e: Exception) {
@@ -440,13 +420,7 @@ class NacimientoViewmodel : ViewModel() {
                             }
                             _registroExitoso.value = false
                             Log.e("Error Registro Nacimiento", "HTTP ${response.code()}")
-                            Log.e("Error Registro Nacimiento", "Mensaje: ${response.message()}")
-                            if (errorBody != null) {
-                                Log.e("Error Registro Nacimiento", "Body: $errorBody")
-                            }
                         }
-
-                        // Caso 3: Respuesta exitosa pero sin body
                         else -> {
                             _registroExitoso.value = false
                             _mensajeError.value = "Error: Respuesta vacía del servidor"
@@ -455,7 +429,6 @@ class NacimientoViewmodel : ViewModel() {
                     }
                 }
             } catch (e: java.net.SocketTimeoutException) {
-                // Manejo específico de timeout
                 withContext(Dispatchers.Main) {
                     _cargandoNacimiento.value = false
                     _registroExitoso.value = false
@@ -463,7 +436,6 @@ class NacimientoViewmodel : ViewModel() {
                     Log.e("Error Registro Nacimiento", "Timeout: ${e.message}", e)
                 }
             } catch (e: java.io.IOException) {
-                // Error de red
                 withContext(Dispatchers.Main) {
                     _cargandoNacimiento.value = false
                     _registroExitoso.value = false
@@ -471,7 +443,6 @@ class NacimientoViewmodel : ViewModel() {
                     Log.e("Error Registro Nacimiento", "Error de red: ${e.message}", e)
                 }
             } catch (e: Exception) {
-                // Otros errores
                 withContext(Dispatchers.Main) {
                     _cargandoNacimiento.value = false
                     _registroExitoso.value = false
@@ -483,7 +454,6 @@ class NacimientoViewmodel : ViewModel() {
         }
     }
 
-    // Función para limpiar el formulario - Nacimiento
     fun limpiarFormularioNacimiento() {
         _idMadre.value = ""
         _idCria.value = ""
@@ -493,23 +463,23 @@ class NacimientoViewmodel : ViewModel() {
         _razaSeleccionada.value = ""
         _codigoRaza.value = ""
         _aptitudSeleccionada.value = ""
+        sexoApiSeleccionado = "0"
+        codigoAptitud = "0"
+
+        // Generar nuevo ID de sesión para el próximo formulario
+        borradorSesionId = ""
     }
 
-    // Función para resetear el estado de registro
     fun resetearEstadoRegistro() {
         _registroExitoso.value = false
         _mensajeError.value = ""
+        _codiError.value = null
     }
 
-    // Función para validar formato de identificador
     fun validarIdentificador(id: String): Boolean {
         return id.length >= 5
     }
 
-
-
-
-    // Convierte una fecha de formato "yyyymmdd" a "dd/MM/yyyy"
     private fun convertirFechaDesdeAPI(fechaAPI: String): String {
         return try {
             if (fechaAPI.length == 8) {

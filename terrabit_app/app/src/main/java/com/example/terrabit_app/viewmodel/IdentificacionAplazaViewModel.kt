@@ -23,21 +23,23 @@ class IdentificacionAplazaViewModel : ViewModel() {
     private val repositorio = Repositorio()
     private lateinit var sharedPreferencesManager: SharedPreferencesManager
 
-    // ============================================
-    // SECCIÓN: AUTOGUARDADO
-    // ============================================
+    // ID único para la sesión actual del formulario
+    private var borradorSesionId: String = ""
 
     fun inicializarSharedPreferences(context: Context) {
         sharedPreferencesManager = SharedPreferencesManager(context)
+
+        // Generar nuevo ID de sesión si no existe
+        if (borradorSesionId.isEmpty()) {
+            borradorSesionId = "identificacion_aplazada_auto_${System.currentTimeMillis()}"
+        }
     }
 
-    // Detecta si el formulario tiene datos
     fun tieneContenido(): Boolean {
         return !_identificadorAnimal.value.isNullOrEmpty() ||
                 !_fechaIdentificacion.value.isNullOrEmpty()
     }
 
-    // Guarda automáticamente el formulario
     fun guardarBorradorAutomatico() {
         if (!tieneContenido()) {
             Log.d("Autoguardado Identificación", "No hay contenido para guardar")
@@ -50,20 +52,20 @@ class IdentificacionAplazaViewModel : ViewModel() {
                 "fechaIdentificacion" to _fechaIdentificacion.value
             )
 
-            // Buscar si ya existe un borrador de identificación aplazada
+            // Buscar si ya existe este borrador específico de la sesión actual
             val borradorExistente = sharedPreferencesManager.obtenerBorradores()
-                .find { it.tipo == "IDENTIFICACION_APLAZADA" && it.estado == "BORRADOR_AUTO" }
+                .find { it.id == borradorSesionId }
 
             val borrador = if (borradorExistente != null) {
-                // Actualizar borrador existente
+                // Actualizar borrador de esta sesión
                 borradorExistente.copy(
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
                     datos = Gson().toJson(datosIdentificacion)
                 )
             } else {
-                // Crear nuevo borrador
+                // Crear nuevo borrador con ID de sesión
                 Borrador(
-                    id = "identificacion_aplazada_auto_${System.currentTimeMillis()}",
+                    id = borradorSesionId,
                     tipo = "IDENTIFICACION_APLAZADA",
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
                     datos = Gson().toJson(datosIdentificacion),
@@ -72,58 +74,70 @@ class IdentificacionAplazaViewModel : ViewModel() {
             }
 
             sharedPreferencesManager.guardarBorrador(borrador)
-            Log.d("Autoguardado Identificación", "Borrador guardado automáticamente")
+            Log.d("Autoguardado Identificación", "Borrador guardado: $borradorSesionId")
         } catch (e: Exception) {
             Log.e("Error Autoguardado Identificación", "Error al guardar: ${e.message}", e)
         }
     }
 
-    // Cargar borrador existente
     fun cargarBorradorExistente() {
         try {
             val borradores = sharedPreferencesManager.obtenerBorradores()
-            val borradorIdentificacion = borradores.find {
+
+            // Buscar cualquier borrador de tipo IDENTIFICACION_APLAZADA con estado BORRADOR_AUTO
+            val borradoresIdentificacion = borradores.filter {
                 it.tipo == "IDENTIFICACION_APLAZADA" && it.estado == "BORRADOR_AUTO"
             }
 
-            if (borradorIdentificacion != null) {
-                val gson = Gson()
-                val datos: Map<String, Any?> = gson.fromJson(
-                    borradorIdentificacion.datos,
-                    object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
-                )
+            if (borradoresIdentificacion.isNotEmpty()) {
+                // Tomar el más reciente (último guardado)
+                val borradorIdentificacion = borradoresIdentificacion.maxByOrNull {
+                    it.id.substringAfter("identificacion_aplazada_auto_").toLongOrNull() ?: 0L
+                }
 
-                // Restaurar datos
-                _identificadorAnimal.value = datos["identificador"] as? String ?: ""
-                _fechaIdentificacion.value = datos["fechaIdentificacion"] as? String ?: ""
+                if (borradorIdentificacion != null) {
+                    // Asignar este ID a la sesión actual
+                    borradorSesionId = borradorIdentificacion.id
 
-                Log.d("Cargar Borrador", "Borrador de identificación aplazada cargado")
+                    val gson = Gson()
+                    val datos: Map<String, Any?> = gson.fromJson(
+                        borradorIdentificacion.datos,
+                        object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
+                    )
+
+                    // Restaurar datos
+                    _identificadorAnimal.value = datos["identificador"] as? String ?: ""
+                    _fechaIdentificacion.value = datos["fechaIdentificacion"] as? String ?: ""
+
+                    Log.d("Cargar Borrador", "Borrador cargado: $borradorSesionId")
+                }
             }
         } catch (e: Exception) {
             Log.e("Error Cargar Borrador", "Error al cargar: ${e.message}", e)
         }
     }
 
-    // Eliminar borrador al enviar exitosamente
     fun eliminarBorradorAutomatico() {
         try {
-            val borradores = sharedPreferencesManager.obtenerBorradores()
-            val borradorIdentificacion = borradores.find {
-                it.tipo == "IDENTIFICACION_APLAZADA" && it.estado == "BORRADOR_AUTO"
-            }
-
-            if (borradorIdentificacion != null) {
-                sharedPreferencesManager.eliminarBorrador(borradorIdentificacion.id)
-                Log.d("Eliminar Borrador", "Borrador automático eliminado")
+            if (borradorSesionId.isNotEmpty()) {
+                sharedPreferencesManager.eliminarBorrador(borradorSesionId)
+                Log.d("Eliminar Borrador", "Borrador eliminado: $borradorSesionId")
+                borradorSesionId = "" // Resetear el ID de sesión
             }
         } catch (e: Exception) {
             Log.e("Error Eliminar Borrador", "Error: ${e.message}", e)
         }
     }
 
-    // ============================================
-    // SECCIÓN: IDENTIFICACIÓN APLAZADA
-    // ============================================
+    fun obtenerBorradoresIdentificacionAplazada(): List<Borrador> {
+        return try {
+            sharedPreferencesManager.obtenerBorradores()
+                .filter { it.tipo == "IDENTIFICACION_APLAZADA" && it.estado == "BORRADOR_AUTO" }
+        } catch (e: Exception) {
+            Log.e("Error", "Error al obtener borradores: ${e.message}", e)
+            emptyList()
+        }
+    }
 
     private val _identificadorAnimal = MutableLiveData("")
     val identificadorAnimal = _identificadorAnimal
@@ -136,7 +150,6 @@ class IdentificacionAplazaViewModel : ViewModel() {
 
     private val _identificacionExitosa = MutableLiveData<Boolean>()
     val identificacionExitosa = _identificacionExitosa
-
 
     private val _mensajeErrorIdentificacion = MutableLiveData<String>()
     val mensajeErrorIdentificacion = _mensajeErrorIdentificacion
@@ -177,17 +190,13 @@ class IdentificacionAplazaViewModel : ViewModel() {
     }
 
     fun corregirIdentificacion() {
-        // Mostrar mensaje de error
         _codiError.value = null
-        if (!esFormularioIdentificacionValido()) {
 
+        if (!esFormularioIdentificacionValido()) {
             val mensajeError = when {
-                _identificadorAnimal.value.isNullOrEmpty() ->
-                    12
-                _fechaIdentificacion.value.isNullOrEmpty() ->
-                    13
-                else ->
-                   0
+                _identificadorAnimal.value.isNullOrEmpty() -> 12
+                _fechaIdentificacion.value.isNullOrEmpty() -> 13
+                else -> 0
             }
             _codiError.value = mensajeError
             Log.e("Validación de identificacion", "Error: $mensajeError")
@@ -206,7 +215,6 @@ class IdentificacionAplazaViewModel : ViewModel() {
                     dataIdentificacio = fechaIdentificacionAPI
                 )
 
-                Log.d("Corrección Identificacion", "Enviando petición a la API...")
                 Log.d("Corrección Identificacion", "Request: $request")
 
                 val response = repositorio.putIdentificacionPendiente(request)
@@ -222,9 +230,7 @@ class IdentificacionAplazaViewModel : ViewModel() {
 
                                 Log.d("Corrección Identificacion", "Identificación corregida exitosamente")
 
-                                // ELIMINAR BORRADOR AUTOMÁTICO AL ENVIAR EXITOSAMENTE
                                 eliminarBorradorAutomatico()
-
                                 limpiarFormulario()
                             } else {
                                 _identificacionExitosa.value = false
@@ -284,10 +290,14 @@ class IdentificacionAplazaViewModel : ViewModel() {
     fun limpiarFormulario() {
         _identificadorAnimal.value = ""
         _fechaIdentificacion.value = ""
+
+        // Generar nuevo ID de sesión para el próximo formulario
+        borradorSesionId = ""
     }
 
     fun resetearEstadoIdentificacion() {
         _identificacionExitosa.value = false
         _mensajeErrorIdentificacion.value = ""
+        _codiError.value = null
     }
 }

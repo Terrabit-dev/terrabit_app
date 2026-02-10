@@ -18,6 +18,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -81,7 +82,6 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    // Observar variables del ViewModel
     val identificadorAnimal by viewModel.identificadorAnimal.observeAsState("")
     val identifiacionExitosa by viewModel.identificacionExitosa.observeAsState(false)
     val mensajeError by viewModel.mensajeErrorIdentificacion.observeAsState("")
@@ -92,29 +92,72 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
 
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
-    var mostrarDialogoRecuperacion by remember { mutableStateOf(false) }
+    var mostrarDialogoAviso by remember { mutableStateOf(false) }
+    var cantidadBorradores by remember { mutableStateOf(0) }
 
     val tituloExito = stringResource(id = R.string.successful_message_identification_postpone)
     val titulloError = stringResource(id = R.string.error_message_identification_postpone)
 
     // ============================================
-    // INICIALIZACIÓN Y CARGA DE BORRADOR
+    // INICIALIZACIÓN Y DETECCIÓN DE BORRADORES
     // ============================================
     LaunchedEffect(Unit) {
         viewModel.inicializarSharedPreferences(context)
 
-        // Verificar si hay borrador guardado
-        if (viewModel.tieneContenido()) {
-            // Ya hay datos cargados, no hacer nada
-        } else {
-            // Intentar cargar borrador existente
-            viewModel.cargarBorradorExistente()
+        val borradores = viewModel.obtenerBorradoresIdentificacionAplazada()
+        cantidadBorradores = borradores.size
 
-            // Si después de cargar hay contenido, mostrar diálogo
-            if (viewModel.tieneContenido()) {
-                mostrarDialogoRecuperacion = true
-            }
+        if (cantidadBorradores >= 2) {
+            mostrarDialogoAviso = true
         }
+    }
+
+    // ============================================
+    // DIÁLOGO DE AVISO DE BORRADORES
+    // ============================================
+    if (mostrarDialogoAviso) {
+        AlertDialog(
+            onDismissRequest = { },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Description,
+                    contentDescription = null,
+                    tint = MainGreen,
+                    modifier = Modifier.size(48.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = "Borradores pendientes",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    color = DarkBlueGrey
+                )
+            },
+            text = {
+                Text(
+                    text = "Tienes $cantidadBorradores borradores guardados de este formulario. Puedes verlos en la página de Borradores.\n\n¿Deseas crear uno nuevo?",
+                    fontSize = 16.sp,
+                    color = BlueGrey,
+                    lineHeight = 24.sp
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        mostrarDialogoAviso = false
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MainGreen
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text("Crear nuevo", fontWeight = FontWeight.SemiBold)
+                }
+            },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(16.dp)
+        )
     }
 
     // ============================================
@@ -124,13 +167,9 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
                 Lifecycle.Event.ON_PAUSE -> {
-                    // Usuario sale de la pantalla - GUARDAR AUTOMÁTICAMENTE
                     if (viewModel.tieneContenido()) {
                         viewModel.guardarBorradorAutomatico()
                     }
-                }
-                Lifecycle.Event.ON_STOP -> {
-                    // Pantalla ya no visible
                 }
                 else -> {}
             }
@@ -141,67 +180,6 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
         }
     }
 
-    // ============================================
-    // DIÁLOGO DE RECUPERACIÓN DE BORRADOR
-    // ============================================
-    if (mostrarDialogoRecuperacion) {
-        AlertDialog(
-            onDismissRequest = { },
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = null,
-                    tint = MainGreen,
-                    modifier = Modifier.size(48.dp)
-                )
-            },
-            title = {
-                Text(
-                    text = "Borrador encontrado",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
-                    color = DarkBlueGrey
-                )
-            },
-            text = {
-                Text(
-                    text = "Se encontró un formulario sin completar. ¿Deseas recuperarlo?",
-                    fontSize = 16.sp,
-                    color = BlueGrey,
-                    lineHeight = 24.sp
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        mostrarDialogoRecuperacion = false
-                        // Los datos ya están cargados
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MainGreen
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text("Recuperar", fontWeight = FontWeight.SemiBold)
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        mostrarDialogoRecuperacion = false
-                        viewModel.eliminarBorradorAutomatico()
-                        viewModel.limpiarFormulario()
-                    }
-                ) {
-                    Text("Descartar", color = BlueGrey)
-                }
-            },
-            containerColor = Color.White,
-            shape = RoundedCornerShape(16.dp)
-        )
-    }
-
-    // Mostrar Snackbar cuando hay mensaje de éxito
     LaunchedEffect(identifiacionExitosa) {
         if (identifiacionExitosa) {
             snackbarHostState.showSnackbar(
@@ -212,14 +190,12 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
         }
     }
 
-    // Mostrar diálogo cuando hay error
     LaunchedEffect(mensajeError, codiError) {
         if (mensajeError.isNotEmpty() || codiError != null) {
             mostrarDialogoError = true
         }
     }
 
-    // Diálogo de Error
     if (mostrarDialogoError) {
         AlertDialog(
             onDismissRequest = {
@@ -302,7 +278,6 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
         }
     }
 
-    // Indicador de carga en pantalla completa
     if (estadoCarga) {
         Box(
             modifier = Modifier
@@ -412,7 +387,6 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                             .padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
-                        // Identificador del Animal
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 stringResource(R.string.form_id_animal),
@@ -458,7 +432,6 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                             )
                         }
 
-                        // Fecha de Identificación
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 stringResource(R.string.form_date_identification),
@@ -506,7 +479,6 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                     }
                 }
 
-                // Botón Corregir Identificacion
                 Button(
                     onClick = { viewModel.corregirIdentificacion() },
                     modifier = Modifier

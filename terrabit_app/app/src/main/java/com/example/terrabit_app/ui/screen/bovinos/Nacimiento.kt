@@ -19,6 +19,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -81,7 +82,6 @@ import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.runtime.DisposableEffect
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.compose.material3.TextButton
@@ -90,7 +90,6 @@ import com.example.terrabit_app.viewmodel.NacimientoViewmodel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
-    // Observar todas las variables del ViewModel
     val idMadre by viewModel.idMadre.observeAsState("")
     val idCria by viewModel.idCria.observeAsState("")
     val fechaNacimiento by viewModel.fechaNacimiento.observeAsState("")
@@ -104,74 +103,100 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
     val fechaIdentificacion by viewModel.fechaIdentificacion.observeAsState("")
     val mostrarDatePickerIdentificadores by viewModel.mostrarDatePickerIdentificacion.observeAsState(false)
 
-    // Observar identificadores
     val identificadores: Identificadores by viewModel.identificadores.observeAsState(
         Identificadores(emptyList())
     )
 
-    // Observar estado de registro para mostrar mensajes
     val registroExitoso by viewModel.registroExitoso.observeAsState(false)
     val mensajeError by viewModel.mensajeError.observeAsState("")
     val codiError by viewModel.codiError.observeAsState()
     val estadoCarga by viewModel.cargandoNacimiento.observeAsState(false)
 
-    // Snackbar host state
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
+    var mostrarDialogoAviso by remember { mutableStateOf(false) }
+    var cantidadBorradores by remember { mutableStateOf(0) }
 
-    // mensajes de respuesta
     val mensajeRegistroExitoso = stringResource(R.string.successful_message_born)
     val mensajeRegistroError = stringResource(R.string.error_message_born)
-    // Recursos con codigo
     val elementosConCodigos = ElementosConCodigos()
 
-    //Variables Borrador
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    var mostrarDialogoRecuperacion by remember { mutableStateOf(false) }
 
-    // Mostrar Snackbar cuando hay éxito
-    LaunchedEffect(registroExitoso) {
-        if (registroExitoso) {
-            snackbarHostState.showSnackbar(
-                message = mensajeRegistroExitoso,
-                duration = SnackbarDuration.Short
-            )
-            viewModel.resetearEstadoRegistro()
-        }
-    }
-
-    // Carga de Borrador
+    // ============================================
+    // INICIALIZACIÓN Y DETECCIÓN DE BORRADORES
+    // ============================================
     LaunchedEffect(Unit) {
         viewModel.inicializarSharedPreferences(context)
+        viewModel.getIdentificadores("S0800608B", "L1855m58", "1410AK")
 
-        // Verificar si hay borrador guardado
-        if (viewModel.tieneContenido()) {
-            // Ya hay datos cargados, no hacer nada
-        } else {
-            // Intentar cargar borrador existente
-            viewModel.cargarBorradorExistente()
+        val borradores = viewModel.obtenerBorradoresNacimiento()
+        cantidadBorradores = borradores.size
 
-            // Si después de cargar hay contenido, mostrar diálogo
-            if (viewModel.tieneContenido()) {
-                mostrarDialogoRecuperacion = true
-            }
+        if (cantidadBorradores >= 2) {
+            mostrarDialogoAviso = true
         }
-
     }
 
-    // Autoguardado + deteccion de cierre de pantalla
+    // ============================================
+    // DIÁLOGO DE AVISO DE BORRADORES
+    // ============================================
+    if (mostrarDialogoAviso) {
+        AlertDialog(
+            onDismissRequest = { },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Description,
+                    contentDescription = null,
+                    tint = Color(0xFFFFA726),
+                    modifier = Modifier.size(48.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = "Borradores pendientes",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    color = Color(0xFF1E293B)
+                )
+            },
+            text = {
+                Text(
+                    text = "Tienes $cantidadBorradores borradores guardados de este formulario. Puedes verlos en la página de Borradores.\n\n¿Deseas crear uno nuevo?",
+                    fontSize = 16.sp,
+                    color = Color(0xFF475569),
+                    lineHeight = 24.sp
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        mostrarDialogoAviso = false
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF4A7C59)
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text("Crear nuevo", fontWeight = FontWeight.SemiBold)
+                }
+            },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(16.dp)
+        )
+    }
+
+    // ============================================
+    // DETECCIÓN DE CICLO DE VIDA (AUTOGUARDADO)
+    // ============================================
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
                 Lifecycle.Event.ON_PAUSE -> {
-                    // Usuario sale de la pantalla - GUARDAR AUTOMÁTICAMENTE
                     if (viewModel.tieneContenido()) {
                         viewModel.guardarBorradorAutomatico()
                     }
-                }
-                Lifecycle.Event.ON_STOP -> {
-                    // Pantalla ya no visible
                 }
                 else -> {}
             }
@@ -184,72 +209,22 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
         }
     }
 
-    // Mensaje de Recuperar borrador anterior.
-    if (mostrarDialogoRecuperacion) {
-        AlertDialog(
-            onDismissRequest = { },
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = null,
-                    tint = Color(0xFF4A7C59),
-                    modifier = Modifier.size(48.dp)
-                )
-            },
-            title = {
-                Text(
-                    text = "Borrador encontrado",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
-                    color = Color(0xFF1E293B)
-                )
-            },
-            text = {
-                Text(
-                    text = "Se encontró un formulario sin completar. ¿Deseas recuperarlo?",
-                    fontSize = 16.sp,
-                    color = Color(0xFF475569),
-                    lineHeight = 24.sp
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        mostrarDialogoRecuperacion = false
-                        // Los datos ya están cargados
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF4A7C59)
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text("Recuperar", fontWeight = FontWeight.SemiBold)
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        mostrarDialogoRecuperacion = false
-                        viewModel.eliminarBorradorAutomatico()
-                        viewModel.limpiarFormularioNacimiento()
-                    }
-                ) {
-                    Text("Descartar", color = Color(0xFF64748B))
-                }
-            },
-            containerColor = Color.White,
-            shape = RoundedCornerShape(16.dp)
-        )
+    LaunchedEffect(registroExitoso) {
+        if (registroExitoso) {
+            snackbarHostState.showSnackbar(
+                message = mensajeRegistroExitoso,
+                duration = SnackbarDuration.Short
+            )
+            viewModel.resetearEstadoRegistro()
+        }
     }
 
-    // Mostrar diálogo cuando hay error
     LaunchedEffect(mensajeError, codiError) {
         if (mensajeError.isNotEmpty() || codiError != null) {
             mostrarDialogoError = true
         }
     }
 
-    // Diálogo de Error
     if (mostrarDialogoError) {
         AlertDialog(
             onDismissRequest = {
@@ -258,7 +233,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
             },
             icon = {
                 Icon(
-                    imageVector = Icons.Default.ArrowBack, // Usa un icono de error apropiado
+                    imageVector = Icons.Default.ArrowBack,
                     contentDescription = null,
                     tint = MainGreen,
                     modifier = Modifier.size(48.dp)
@@ -301,12 +276,6 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
         )
     }
 
-    // Obtener identificadores al cargar la pantalla
-    LaunchedEffect(Unit) {
-        viewModel.getIdentificadores("S0800608B", "L1855m58", "1410AK")
-    }
-
-    // DatePickerDialog para fecha de nacimiento
     if (mostrarDatePicker) {
         val datePickerState = rememberDatePickerState()
         DatePickerDialog(
@@ -338,7 +307,6 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
         }
     }
 
-    // DatePickerDialog para fecha de identificación
     if (mostrarDatePickerIdentificadores) {
         val datePickerState = rememberDatePickerState()
         DatePickerDialog(
@@ -370,13 +338,12 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
         }
     }
 
-    // Indicador de carga en pantalla completa
     if (estadoCarga) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Black.copy(alpha = 0.5f))
-                .clickable(enabled = false) { }, // Bloquear interacción
+                .clickable(enabled = false) { },
             contentAlignment = Alignment.Center
         ) {
             Card(
@@ -474,7 +441,6 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                             .padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
-                        // ID Madre
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 stringResource(R.string.form_id_mother),
@@ -520,7 +486,6 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                             )
                         }
 
-                        // ID Cría
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 stringResource(R.string.form_id_breeding),
@@ -567,7 +532,6 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                             )
                         }
 
-                        // Fecha de Nacimiento
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 stringResource(R.string.form_birthdate),
@@ -613,7 +577,6 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                             }
                         }
 
-                        // Fecha de Identificación
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 stringResource(R.string.form_date_identification),
@@ -729,13 +692,10 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                             )
                                         )
                                     }
-
-
                                 }
                             }
                         }
 
-                        // Raza
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 stringResource(R.string.form_raze),
@@ -816,7 +776,6 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                             }
                         }
 
-                        // Aptitud
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 stringResource(R.string.form_aptitude),
@@ -899,14 +858,13 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                     }
                 }
 
-                // Botón Registrar - Deshabilitado mientras carga
                 Button(
                     onClick = { viewModel.registrarNacimiento() },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp, vertical = 24.dp)
                         .height(56.dp),
-                    enabled = !estadoCarga, // Deshabilitar mientras carga
+                    enabled = !estadoCarga,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MainGreen,
                         disabledContainerColor = DarkWhiteBackground
