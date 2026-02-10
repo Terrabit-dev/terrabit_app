@@ -50,8 +50,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
     val dataArribada by viewModel.dataArribada.observeAsState("")
     val horaArribada by viewModel.horaArribada.observeAsState("")
     val mobilitat by viewModel.mobilitat.observeAsState("")
-    val pais by viewModel.pais.observeAsState("")
-    val codiExplotacio by viewModel.codiExplotacio.observeAsState("")
+
     val codiAtes by viewModel.codiAtes.observeAsState("")
     val nomTransportista by viewModel.nomTransportista.observeAsState("")
     val mitjaTransport by viewModel.mitjaTransport.observeAsState("")
@@ -76,6 +75,8 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
     var mostrarDialogoRecuperacion by remember { mutableStateOf(false) }
+    var mostrarParametrosOpcionales by remember { mutableStateOf(false) } // para mostrar campo de codi pais y codi explotacion
+    var mostrarIdentificadores by remember { mutableStateOf(false) } // para mostrar campo agregar indentificadores
 
     //codigo gestion mensajes de error
     val codiError by viewModel.codiError.observeAsState()
@@ -879,75 +880,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                             }
                         }
 
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                stringResource(R.string.form_pif_country),
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1E293B),
-                                letterSpacing = 0.15.sp
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            OutlinedTextField(
-                                value = pais,
-                                onValueChange = { viewModel.actualizarPais(it) },
-                                modifier = Modifier.fillMaxWidth(),
-                                placeholder = {
-                                    Text(
-                                        stringResource(R.string.form_pif_country_desc),
-                                        color = Color(0xFF94A3B8)
-                                    )
-                                },
-                                singleLine = true,
-                                shape = MaterialTheme.shapes.medium,
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = Color(0xFFE28F41),
-                                    unfocusedBorderColor = Color(0xFFCBD5E1),
-                                    focusedTextColor = Color(0xFF1E293B),
-                                    unfocusedTextColor = Color(0xFF1E293B),
-                                    cursorColor = Color(0xFFE28F41)
-                                ),
-                                keyboardOptions = KeyboardOptions(
-                                    keyboardType = KeyboardType.Text,
-                                    imeAction = ImeAction.Next
-                                )
-                            )
-                        }
-
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                stringResource(R.string.form_pif_exploitation),
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1E293B),
-                                letterSpacing = 0.15.sp
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            OutlinedTextField(
-                                value = codiExplotacio,
-                                onValueChange = { viewModel.actualizarCodiExplotacio(it) },
-                                modifier = Modifier.fillMaxWidth(),
-                                placeholder = {
-                                    Text(
-                                        stringResource(R.string.form_pif_exploitation_desc),
-                                        color = Color(0xFF94A3B8)
-                                    )
-                                },
-                                singleLine = true,
-                                shape = MaterialTheme.shapes.medium,
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = Color(0xFFE28F41),
-                                    unfocusedBorderColor = Color(0xFFCBD5E1),
-                                    focusedTextColor = Color(0xFF1E293B),
-                                    unfocusedTextColor = Color(0xFF1E293B),
-                                    cursorColor = Color(0xFFE28F41)
-                                ),
-                                keyboardOptions = KeyboardOptions(
-                                    keyboardType = KeyboardType.Text,
-                                    imeAction = ImeAction.Next
-                                )
-                            )
-                        }
+                        ParametrosCentroInspeccion(viewModel)
                     }
                 }
 
@@ -1321,6 +1254,105 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
+            }
+        }
+    }
+}
+
+@Composable
+fun ParametrosCentroInspeccion(viewModel: GuiasViewModel) {
+
+    val pais by viewModel.pais.observeAsState("")
+    val codiExplotacio by viewModel.codiExplotacio.observeAsState("")
+    val (isChecked, setChecked) = remember { mutableStateOf(false) }
+
+    Column(Modifier.fillMaxWidth()) {
+        Row(modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        )
+        {
+            Checkbox(
+                checked = isChecked,
+                onCheckedChange = { setChecked(it) }
+            )
+            Text("El destino es centro de inspección?",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFF1E293B),
+                letterSpacing = 0.15.sp
+            )
+        }
+        // Si el checkbox es true, el código de abajo se "dibuja"
+        if (isChecked) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    stringResource(R.string.form_pif_country),
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF1E293B),
+                    letterSpacing = 0.15.sp
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                OutlinedTextField(
+                    value = pais,
+                    onValueChange = { viewModel.actualizarPais(it) },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = {
+                        Text(
+                            stringResource(R.string.form_pif_country_desc),
+                            color = Color(0xFF94A3B8)
+                        )
+                    },
+                    singleLine = true,
+                    shape = MaterialTheme.shapes.medium,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color(0xFFE28F41),
+                        unfocusedBorderColor = Color(0xFFCBD5E1),
+                        focusedTextColor = Color(0xFF1E293B),
+                        unfocusedTextColor = Color(0xFF1E293B),
+                        cursorColor = Color(0xFFE28F41)
+                    ),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Next
+                    )
+                )
+            }
+
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    stringResource(R.string.form_pif_exploitation),
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF1E293B),
+                    letterSpacing = 0.15.sp
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                OutlinedTextField(
+                    value = codiExplotacio,
+                    onValueChange = { viewModel.actualizarCodiExplotacio(it) },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = {
+                        Text(
+                            stringResource(R.string.form_pif_exploitation_desc),
+                            color = Color(0xFF94A3B8)
+                        )
+                    },
+                    singleLine = true,
+                    shape = MaterialTheme.shapes.medium,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color(0xFFE28F41),
+                        unfocusedBorderColor = Color(0xFFCBD5E1),
+                        focusedTextColor = Color(0xFF1E293B),
+                        unfocusedTextColor = Color(0xFF1E293B),
+                        cursorColor = Color(0xFFE28F41)
+                    ),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Next
+                    )
+                )
             }
         }
     }

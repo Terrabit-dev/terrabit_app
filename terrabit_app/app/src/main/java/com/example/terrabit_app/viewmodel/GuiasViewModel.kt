@@ -541,7 +541,7 @@ class GuiasViewModel : ViewModel() {
                     codiExplotacio = _codiExplotacio.value?.ifEmpty { null },
                     codiAtes = _codiAtes.value?.ifEmpty { null },
                     nomTransportista = _nomTransportista.value?.ifEmpty { null },
-                    mitjaTransport = codigoMedio.ifEmpty { null },
+                    mitjaTransport = codiTransport.ifEmpty { null },
                     matricula = _matricula.value?.ifEmpty { null },
                     nifConductor = _nifConductor.value?.ifEmpty { null },
                     nomConductor = _nomConductor.value?.ifEmpty { null },
@@ -592,11 +592,15 @@ class GuiasViewModel : ViewModel() {
                             }
                             _registroExitoso.value = false
                             Log.e("Error Guía", "HTTP ${response.code()}: ${response.message()}")
+                            if (errorBody != null) {
+                                Log.e("Error Registro Nacimiento", "Body: $errorBody")
+                            }
                         }
                         else -> {
                             _registroExitoso.value = false
                             _mensajeError.value = "Error: Respuesta vacía del servidor"
                             Log.e("Error Guía", "Respuesta vacía del servidor")
+
                         }
                     }
                 }
