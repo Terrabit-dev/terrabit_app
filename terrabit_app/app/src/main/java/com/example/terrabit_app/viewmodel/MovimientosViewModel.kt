@@ -96,6 +96,7 @@ class MovimientosViewModel : ViewModel() {
                     id = borradorSesionId,
                     tipo = "MOVIMIENTO",
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
                     datos = Gson().toJson(datosMovimiento),
                     estado = "BORRADOR_AUTO"
                 )

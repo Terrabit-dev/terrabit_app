@@ -21,9 +21,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.ChildCare
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Edit
@@ -33,6 +36,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -47,6 +51,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -65,6 +70,7 @@ import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
 import com.example.terrabit_app.ui.theme.WhiteBackground
 import com.example.terrabit_app.viewmodel.BorradorViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun BorradoresScreen(
@@ -72,19 +78,14 @@ fun BorradoresScreen(
     onMenuClick: () -> Unit
 ) {
     val borradores by viewModel.borradores.observeAsState(emptyList())
-    var borradoresFiltered by remember { mutableStateOf<List<Borrador>>(emptyList()) }
-    var filtroSeleccionado by remember { mutableStateOf("Todos") }
+    val borradoresFiltered by viewModel.borradoresFiltrados.observeAsState(emptyList())
+    val textoBusqueda by viewModel.textoBusqueda.observeAsState("")
 
-    // Actualizar filtros cuando cambian los borradores
-    LaunchedEffect(borradores) {
-        borradoresFiltered = when (filtroSeleccionado) {
-            "Muerte" -> borradores.filter { it.tipo == "MUERTE" }
-            "Material" -> borradores.filter { it.tipo == "MATERIAL" }
-            "Nacimiento" -> borradores.filter { it.tipo == "NACIMIENTO" }
-            "Corrección Sexo" -> borradores.filter { it.tipo == "CORRECCION_SEXO" }
-            "ID Aplazada" -> borradores.filter { it.tipo == "IDENTIFICACION_APLAZADA" }
-            else -> borradores
-        }
+    var mostrarDialogoEliminarTodos by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+        viewModel.cargarBorradores()
     }
 
     Column(
@@ -94,32 +95,19 @@ fun BorradoresScreen(
     ) {
         HeaderBorradores(
             totalBorradores = borradores.size,
-            onMenuClick = onMenuClick
+            onMenuClick = onMenuClick,
+            onEliminarTodos = { mostrarDialogoEliminarTodos = true }
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Filtros
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp)
-                .horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            ChipFiltro(
-                texto = "Todos (${borradores.size})",
-                seleccionado = filtroSeleccionado == "Todos",
-                onClick = {
-                    filtroSeleccionado = "Todos"
-                    borradoresFiltered = borradores
-                }
-            )
-        }
+        BarraBusqueda(
+            texto = textoBusqueda,
+            onTextoChange = { viewModel.actualizarBusqueda(it) }
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Lista de borradores
         if (borradoresFiltered.isEmpty()) {
             Box(
                 modifier = Modifier
@@ -138,7 +126,7 @@ fun BorradoresScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        "No hay borradores guardados",
+                        "No hay Resultados :O",
                         fontSize = 16.sp,
                         color = BlueGrey
                     )
@@ -154,9 +142,6 @@ fun BorradoresScreen(
                 items(borradoresFiltered) { borrador ->
                     TarjetaBorrador(
                         borrador = borrador,
-                        onReintentarClick = {
-                            // TODO: Implementar reintento
-                        },
                         onEliminarClick = {
                             viewModel.eliminarBorrador(borrador.id)
                         }
@@ -169,14 +154,30 @@ fun BorradoresScreen(
             }
         }
     }
+
+    DialogoConfirmacion(
+        mostrar = mostrarDialogoEliminarTodos,
+        titulo = "Eliminar todos los borradores",
+        mensaje = "¿Estás seguro de que deseas eliminar todos los borradores? Esta acción no se puede deshacer.",
+        onConfirmar = {
+            scope.launch {
+                viewModel.eliminarTodosBorradores()
+                mostrarDialogoEliminarTodos = false
+            }
+
+        },
+        onCancelar = { mostrarDialogoEliminarTodos = false }
+    )
 }
 
 @Composable
 fun HeaderBorradores(
     totalBorradores: Int,
-    onMenuClick: () -> Unit
+    onMenuClick: () -> Unit,
+    onEliminarTodos: () -> Unit
 ) {
-    var expanded by remember { mutableStateOf(false) }
+    var expandedConfig by remember { mutableStateOf(false) }
+    var expandedOpciones by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -190,13 +191,11 @@ fun HeaderBorradores(
                 .fillMaxSize()
                 .padding(20.dp)
         ) {
-            // Barra superior con menú y configuración
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Botón de menú
                 IconButton(
                     onClick = onMenuClick,
                     modifier = Modifier
@@ -216,9 +215,8 @@ fun HeaderBorradores(
                 Box(
                     contentAlignment = Alignment.Center
                 ) {
-                    // Botón de configuración
                     IconButton(
-                        onClick = { expanded = true },
+                        onClick = { expandedConfig = true },
                         modifier = Modifier
                             .size(40.dp)
                             .background(
@@ -233,15 +231,14 @@ fun HeaderBorradores(
                         )
                     }
 
-                    // Menú Desplegable
                     DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
+                        expanded = expandedConfig,
+                        onDismissRequest = { expandedConfig = false }
                     ) {
                         DropdownMenuItem(
                             text = { Text("Castellano") },
                             onClick = {
-                                expanded = false
+                                expandedConfig = false
                                 cambiarIdioma("es")
                             }
                         )
@@ -249,7 +246,7 @@ fun HeaderBorradores(
                         DropdownMenuItem(
                             text = { Text("Català") },
                             onClick = {
-                                expanded = false
+                                expandedConfig = false
                                 cambiarIdioma("ca")
                             }
                         )
@@ -259,7 +256,6 @@ fun HeaderBorradores(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Texto de bienvenida
             Text(
                 "Borradores",
                 fontSize = 32.sp,
@@ -269,31 +265,123 @@ fun HeaderBorradores(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Badge con total de borradores
-            Surface(
-                color = Color.White.copy(alpha = 0.2f),
-                shape = RoundedCornerShape(20.dp)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                Surface(
+                    color = Color.White.copy(alpha = 0.2f),
+                    shape = RoundedCornerShape(20.dp)
                 ) {
-                    Icon(
-                        Icons.Default.Description,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        "$totalBorradores guardados",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color.White
-                    )
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Description,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            "$totalBorradores guardados",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.White
+                        )
+                    }
+                }
+
+                Box {
+                    IconButton(
+                        onClick = { expandedOpciones = true },
+                        modifier = Modifier
+                            .size(32.dp)
+                            .background(
+                                color = Color.White.copy(alpha = 0.2f),
+                                shape = CircleShape
+                            )
+                    ) {
+                        Icon(
+                            Icons.Default.MoreVert,
+                            contentDescription = "Opciones",
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    DropdownMenu(
+                        expanded = expandedOpciones,
+                        onDismissRequest = { expandedOpciones = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        Icons.Default.Delete,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(20.dp),
+                                        tint = ErrorRed
+                                    )
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Text("Eliminar todos", color = ErrorRed)
+                                }
+                            },
+                            onClick = {
+                                expandedOpciones = false
+                                onEliminarTodos()
+                            }
+                        )
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun DialogoConfirmacion(
+    mostrar: Boolean,
+    titulo: String,
+    mensaje: String,
+    onConfirmar: () -> Unit,
+    onCancelar: () -> Unit
+) {
+    if (mostrar) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = onCancelar,
+            title = {
+                Text(
+                    titulo,
+                    fontWeight = FontWeight.Bold,
+                    color = DarkBlueGrey
+                )
+            },
+            text = {
+                Text(
+                    mensaje,
+                    color = BlueGrey
+                )
+            },
+            confirmButton = {
+                androidx.compose.material3.TextButton(
+                    onClick = onConfirmar
+                ) {
+                    Text("Confirmar", color = ErrorRed, fontWeight = FontWeight.SemiBold)
+                }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(
+                    onClick = onCancelar
+                ) {
+                    Text("Cancelar", color = BlueGrey)
+                }
+            },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(16.dp)
+        )
     }
 }
 
@@ -322,14 +410,58 @@ fun ChipFiltro(
 }
 
 @Composable
+fun BarraBusqueda(
+    texto: String,
+    onTextoChange: (String) -> Unit
+) {
+    androidx.compose.material3.OutlinedTextField(
+        value = texto,
+        onValueChange = onTextoChange,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp),
+        placeholder = {
+            Text(
+                "Buscar borradores...",
+                color = BlueGrey
+            )
+        },
+        leadingIcon = {
+            Icon(
+                Icons.Default.Search,
+                contentDescription = null,
+                tint = BlueGrey
+            )
+        },
+        trailingIcon = {
+            if (texto.isNotEmpty()) {
+                IconButton(onClick = { onTextoChange("") }) {
+                    Icon(
+                        Icons.Default.Clear,
+                        contentDescription = "Limpiar",
+                        tint = BlueGrey
+                    )
+                }
+            }
+        },
+        singleLine = true,
+        shape = RoundedCornerShape(12.dp),
+        colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = MainGreen,
+            unfocusedBorderColor = BlueGrey.copy(alpha = 0.3f),
+            focusedContainerColor = Color.White,
+            unfocusedContainerColor = Color.White
+        )
+    )
+}
+
+@Composable
 fun TarjetaBorrador(
     borrador: Borrador,
-    onReintentarClick: () -> Unit,
     onEliminarClick: () -> Unit
 ) {
     var mostrarMenu by remember { mutableStateOf(false) }
 
-    // Función para obtener el nombre legible del tipo
     fun obtenerNombreTipo(tipo: String): String {
         return when (tipo) {
             "MUERTE" -> "Muerte"
@@ -341,7 +473,6 @@ fun TarjetaBorrador(
         }
     }
 
-    // Función para obtener el estado legible
     fun obtenerEstadoLegible(estado: String): String {
         return when (estado) {
             "BORRADOR_AUTO" -> "Guardado"
@@ -368,7 +499,6 @@ fun TarjetaBorrador(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Avatar con icono del tipo
             Surface(
                 shape = RoundedCornerShape(12.dp),
                 color = when (borrador.tipo) {
@@ -387,9 +517,9 @@ fun TarjetaBorrador(
                 ) {
                     Icon(
                         imageVector = when (borrador.tipo) {
-                            "MUERTE" -> Icons.Default.Warning
+                            "MUERTE" -> Icons.Default.Clear
                             "MATERIAL" -> Icons.Default.ShoppingCart
-                            "NACIMIENTO" -> Icons.Default.ChildCare
+                            "NACIMIENTO" -> Icons.Default.Add
                             "CORRECCION_SEXO" -> Icons.Default.Edit
                             "IDENTIFICACION_APLAZADA" -> Icons.Default.Badge
                             else -> Icons.Default.Description
@@ -410,14 +540,12 @@ fun TarjetaBorrador(
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // Información
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight(),
                 verticalArrangement = Arrangement.Center
             ) {
-                // Título y estado en la misma línea
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -436,7 +564,6 @@ fun TarjetaBorrador(
 
                     Spacer(modifier = Modifier.width(8.dp))
 
-                    // Badge de estado
                     Surface(
                         color = when (borrador.estado) {
                             "ENVIANDO" -> MainOrange.copy(alpha = 0.15f)
@@ -466,7 +593,6 @@ fun TarjetaBorrador(
 
                 Spacer(modifier = Modifier.height(6.dp))
 
-                // Fecha
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -484,10 +610,27 @@ fun TarjetaBorrador(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Icon(
+                        Icons.Default.AccessTime,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp),
+                        tint = BlueGrey
+                    )
+
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        borrador.hora ?: "Sin hora",
+                        fontSize = 14.sp,
+                        color = BlueGrey,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
             }
 
-            // Botón de menú
             Box {
                 IconButton(
                     onClick = { mostrarMenu = true },
@@ -505,25 +648,6 @@ fun TarjetaBorrador(
                     expanded = mostrarMenu,
                     onDismissRequest = { mostrarMenu = false }
                 ) {
-                    DropdownMenuItem(
-                        text = {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    Icons.Default.Refresh,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(20.dp),
-                                    tint = MainGreen
-                                )
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Text("Reintentar envío")
-                            }
-                        },
-                        onClick = {
-                            mostrarMenu = false
-                            onReintentarClick()
-                        }
-                    )
-
                     DropdownMenuItem(
                         text = {
                             Row(verticalAlignment = Alignment.CenterVertically) {

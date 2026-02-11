@@ -103,6 +103,7 @@ class GuiasViewModel : ViewModel() {
                     id = borradorSesionId,
                     tipo = "GUIA",
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
                     datos = Gson().toJson(datosGuia),
                     estado = "BORRADOR_AUTO"
                 )

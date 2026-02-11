@@ -85,6 +85,7 @@ class NacimientoViewmodel : ViewModel() {
                     id = borradorSesionId,
                     tipo = "NACIMIENTO",
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
                     datos = Gson().toJson(datosNacimiento),
                     estado = "BORRADOR_AUTO"
                 )

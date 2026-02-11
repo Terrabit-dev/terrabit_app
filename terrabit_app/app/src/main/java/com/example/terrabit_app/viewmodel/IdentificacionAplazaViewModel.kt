@@ -68,6 +68,7 @@ class IdentificacionAplazaViewModel : ViewModel() {
                     id = borradorSesionId,
                     tipo = "IDENTIFICACION_APLAZADA",
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
                     datos = Gson().toJson(datosIdentificacion),
                     estado = "BORRADOR_AUTO"
                 )

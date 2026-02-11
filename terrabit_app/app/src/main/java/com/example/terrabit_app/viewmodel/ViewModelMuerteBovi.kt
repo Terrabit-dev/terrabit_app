@@ -79,6 +79,7 @@ class ViewModelMuerteBovi : ViewModel() {
                     id = borradorSesionId,
                     tipo = "MUERTE",
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
                     datos = Gson().toJson(datosMuerte),
                     estado = "BORRADOR_AUTO"
                 )

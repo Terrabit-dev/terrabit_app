@@ -69,6 +69,7 @@ class CorrecionSexoViewModel: ViewModel() {
                     id = borradorSesionId,
                     tipo = "CORRECCION_SEXO",
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
                     datos = Gson().toJson(datosCorregirSexo),
                     estado = "BORRADOR_AUTO"
                 )
