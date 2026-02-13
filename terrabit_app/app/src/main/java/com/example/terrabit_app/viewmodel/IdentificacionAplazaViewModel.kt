@@ -20,7 +20,7 @@ import java.util.*
 
 class IdentificacionAplazaViewModel : ViewModel() {
 
-    private val repositorio = Repositorio()
+    private lateinit var repositorio: Repositorio
     private lateinit var sharedPreferencesManager: SharedPreferencesManager
 
     // ID único para la sesión actual del formulario

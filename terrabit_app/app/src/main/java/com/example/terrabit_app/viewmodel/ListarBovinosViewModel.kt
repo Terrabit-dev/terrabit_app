@@ -1,16 +1,17 @@
 package com.example.terrabit_app.viewmodel
 
+import android.app.Application
 import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.lista_bovinos.Animal
 import kotlinx.coroutines.launch
 
-class ListarBovinosViewModel : ViewModel() {
+class ListarBovinosViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repositorio = Repositorio()
+    private val repositorio = Repositorio(application)
 
     private val _listaBovinos = MutableLiveData<List<Animal>>()
     val listaBovinos = _listaBovinos
@@ -56,56 +57,33 @@ class ListarBovinosViewModel : ViewModel() {
             _error.value = null
 
             try {
-                Log.d("ListarBovinos", "Iniciando petición...")
-                Log.d("ListarBovinos", "NIF: $nif")
-                Log.d("ListarBovinos", "Password: $password")
-                Log.d("ListarBovinos", "TipusVinculacio: $tipusVinculacio")
-                Log.d("ListarBovinos", "Explotacio: $explotacio")
-
                 val response = repositorio.getListaBovinos(nif, password, tipusVinculacio, explotacio)
 
-                Log.d("ListarBovinos", "Response code: ${response.code()}")
-                Log.d("ListarBovinos", "Response successful: ${response.isSuccessful}")
-                Log.d("ListarBovinos", "Response body: ${response.body()}")
+                Log.d("PARSEO", "Response code: ${response.code()}")
 
-                if (response.isSuccessful && response.body() != null) {
-                    val body = response.body()!!
-                    Log.d("ListarBovinos", "Body codi: ${body.codi}")
-                    Log.d("ListarBovinos", "Body identificadors: ${body.identificadors}")
+                if (response.isSuccessful) {
+                    val body = response.body()
 
-                    if (body.codi == "OK") {
-                        val lista = body.identificadors ?: emptyList()
-                        _listaBovinos.value = lista
-                        _listaFiltrada.value = lista
-                        Log.d("ListarBovinos", "Bovinos cargados exitosamente: ${lista.size} animales")
+                    Log.d("PARSEO", "Body: $body")
+                    Log.d("PARSEO", "Codi: ${body?.codi}")
+                    Log.d("PARSEO", "Identificadors size: ${body?.identificadors?.size}")
 
-                        // Mostrar primeros 3 para debug
-                        lista.take(3).forEach {
-                            Log.d("ListarBovinos", "Animal: ${it.identificador}")
-                        }
+                    if (body != null && !body.identificadors.isNullOrEmpty()) {
+                        _listaBovinos.value = body.identificadors
+                        _listaFiltrada.value = body.identificadors
+                        Log.d("PARSEO", "✅ Lista cargada: ${body.identificadors.size} bovinos")
                     } else {
-                        _error.value = "Error del servidor: ${body.codi}"
-                        Log.e("ListarBovinos", "Error codi: ${body.codi}")
+                        _error.value = "Lista vacía"
+                        Log.e("PARSEO", "❌ Lista vacía o null")
                     }
                 } else {
-                    val errorBody = response.errorBody()?.string()
-                    _error.value = "Error HTTP ${response.code()}"
-                    Log.e("ListarBovinos", "Error HTTP: ${response.code()}")
-                    Log.e("ListarBovinos", "Error body: $errorBody")
+                    _error.value = "Error ${response.code()}"
                 }
-            } catch (e: java.net.SocketTimeoutException) {
-                _error.value = "Tiempo de espera agotado"
-                Log.e("ListarBovinos", "Timeout: ${e.message}", e)
-            } catch (e: java.io.IOException) {
-                _error.value = "Error de conexión: ${e.message}"
-                Log.e("ListarBovinos", "IOException: ${e.message}", e)
             } catch (e: Exception) {
+                Log.e("PARSEO", "Error: ${e.message}", e)
                 _error.value = "Error: ${e.message}"
-                Log.e("ListarBovinos", "Exception: ${e.message}", e)
-                e.printStackTrace()
             } finally {
                 _cargando.value = false
-                Log.d("ListarBovinos", "Petición finalizada")
             }
         }
     }

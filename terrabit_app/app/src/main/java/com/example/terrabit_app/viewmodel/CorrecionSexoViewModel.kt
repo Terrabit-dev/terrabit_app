@@ -65,7 +65,7 @@ class CorrecionSexoViewModel: ViewModel() {
                     nif = "S0800608B",
                     password = "L1855m58",
                     tipusVinculacio = "1",
-                    explotacio = "W1900104", // Reemplaza con tu explotación
+                    explotacio = "1410AK", // Reemplaza con tu explotación
                     forceRefresh = false
                 )
 

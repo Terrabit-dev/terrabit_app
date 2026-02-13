@@ -16,7 +16,7 @@ import kotlinx.coroutines.withContext
 import java.util.*
 
 class MainViewmodel : ViewModel() {
-    private val repositorio = Repositorio()
+    private lateinit var repositorio: Repositorio
 
     // ============================================
     // SECCIÓN: IDENTIFICADORES

@@ -20,6 +20,7 @@ import com.example.terrabit_app.data.network.respuestas.ResBasica
 import com.example.terrabit_app.data.network.respuestas.ResConfirmacionMovi
 import com.example.terrabit_app.data.network.respuestas.ResModificarGuia
 import com.example.terrabit_app.data.network.respuestas.RespuestaUnificada
+import okhttp3.logging.HttpLoggingInterceptor
 
 import okhttp3.OkHttpClient
 import retrofit2.Response
@@ -122,8 +123,14 @@ interface ApiInterface {
         val BASE_URL = "https://preproduccio.aplicacions.agricultura.gencat.cat/gtr/"
 
         fun create(): ApiInterface {
+
+            val logging = HttpLoggingInterceptor().apply {
+                level = HttpLoggingInterceptor.Level.BODY
+            }
+
             // Configurar timeouts más largos
             val client = OkHttpClient.Builder()
+                .addInterceptor(logging)
                 .connectTimeout(60, TimeUnit.SECONDS)  // Timeout de conexión: 60 segundos
                 .readTimeout(60, TimeUnit.SECONDS)     // Timeout de lectura: 60 segundos
                 .writeTimeout(60, TimeUnit.SECONDS)    // Timeout de escritura: 60 segundos

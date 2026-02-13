@@ -55,7 +55,7 @@ class Repositorio(context: Context) {
             // Obtener desde API y guardar en caché
             val response = apiInterface.getListaBovinos(nif, password, tipusVinculacio, explotacio)
 
-            if (response.isSuccessful && response.body()?.codi == "0") {
+            if (response.isSuccessful && !response.body()?.identificadors.isNullOrEmpty()) {
                 val animales = response.body()?.identificadors ?: emptyList()
 
                 // Guardar en Room

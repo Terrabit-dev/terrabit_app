@@ -76,6 +76,8 @@ import com.example.terrabit_app.ui.theme.WhiteBackground
 import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
 import com.example.terrabit_app.viewmodel.CorrecionSexoViewModel
+import com.example.terrabit_app.ui.screen.bovinos.components.AutoCompleteBovinoField
+import com.example.terrabit_app.ui.screen.bovinos.components.useDebounce
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -367,17 +369,12 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                             )
                             Spacer(modifier = Modifier.height(10.dp))
 
-
-
                             // Debouncing para búsqueda
-                            com.example.terrabit_app.ui.screen.bovinos.components.useDebounce(
-                                identificadorCorreccionSexo,
-                                delayMillis = 300L
-                            ) { query ->
+                            useDebounce(identificadorCorreccionSexo, delayMillis = 300L) { query ->
                                 viewModel.searchBovinos(query)
                             }
 
-                            com.example.terrabit_app.ui.screen.bovinos.components.AutoCompleteBovinoField(
+                            AutoCompleteBovinoField(
                                 value = identificadorCorreccionSexo,
                                 onValueChange = { viewModel.actualizarIdentificadorCorreccionSexo(it) },
                                 suggestions = suggestionsBovinos,

@@ -35,12 +35,16 @@ fun AutoCompleteBovinoField(
     var expanded by remember { mutableStateOf(false) }
     val keyboardController = LocalSoftwareKeyboardController.current
 
+    // ✅ AÑADIDO: Auto-expandir cuando hay sugerencias
+    LaunchedEffect(suggestions, value) {
+        expanded = value.isNotBlank() && suggestions.isNotEmpty()
+    }
+
     Column(modifier = modifier) {
         OutlinedTextField(
             value = value,
             onValueChange = {
                 onValueChange(it)
-                expanded = it.isNotBlank() && suggestions.isNotEmpty()
             },
             label = { Text(label) },
             placeholder = { Text(placeholder) },
@@ -64,7 +68,13 @@ fun AutoCompleteBovinoField(
                     }
                 }
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            // ✅ AÑADIDO: Estilo mejorado
+            shape = RoundedCornerShape(8.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline
+            )
         )
 
         AnimatedVisibility(visible = expanded && suggestions.isNotEmpty()) {
@@ -74,7 +84,9 @@ fun AutoCompleteBovinoField(
                     .heightIn(max = 300.dp)
                     .padding(top = 4.dp),
                 shape = RoundedCornerShape(8.dp),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                // ✅ AÑADIDO: Elevación para mejor visual
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
                 LazyColumn(
                     modifier = Modifier.fillMaxWidth()
@@ -139,7 +151,6 @@ private fun getSexoText(sexe: String): String {
     }
 }
 
-// HOOK PARA DEBOUNCING
 @Composable
 fun <T> useDebounce(
     value: T,
