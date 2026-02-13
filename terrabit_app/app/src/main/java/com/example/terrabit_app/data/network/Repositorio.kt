@@ -1,19 +1,29 @@
 package com.example.terrabit_app.data.network
 
+import android.content.Context
+import com.example.terrabit_app.data.local.database.AppDatabase
+import com.example.terrabit_app.data.local.database.toAnimal
+import com.example.terrabit_app.data.local.database.toEntity
 import com.example.terrabit_app.data.network.animales.PetIdentificacion
 import com.example.terrabit_app.data.network.animales.PetModicarAnimal
 import com.example.terrabit_app.data.network.animales.RegistroMuerteBovi
 import com.example.terrabit_app.data.network.animales.RegistroNacimientoBovi
 import com.example.terrabit_app.data.network.guias.PeticionAltaGuia
 import com.example.terrabit_app.data.network.guias.PeticionModificarGuia
+import com.example.terrabit_app.data.network.lista_bovinos.Animal
 import com.example.terrabit_app.data.network.material.PetSolicitudDuplicado
 import com.example.terrabit_app.data.network.material.PetSolicitudMaterial
 import com.example.terrabit_app.data.network.moviminetos.modelos.PetConfirmacionMovi
 import com.example.terrabit_app.data.network.moviminetos.modelos.PetModificacioMovi
 import com.example.terrabit_app.data.network.moviminetos.modelos.PetRegistroIntercanvi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
-class Repositorio {
+class Repositorio(context: Context) {
     val apiInterface = ApiInterface.create()
+    private val bovinoDao = AppDatabase.getDatabase(context).bovinoDao()
+
+    private val CACHE_EXPIRATION_MS = 24 * 60 * 60 * 1000L // 24 horas
 
     suspend fun getIdentificadoresDisponibles(
         nif: String,
@@ -27,6 +37,53 @@ class Repositorio {
         tipusVinculacio: String,
         explotacio: String
     ) = apiInterface.getListaBovinos(nif, password, tipusVinculacio, explotacio)
+
+    // Obtener bovinos con caché
+    suspend fun getBovinosWithCache(
+        nif: String,
+        password: String,
+        tipusVinculacio: String,
+        explotacio: String,
+        forceRefresh: Boolean = false
+    ): List<Animal> = withContext(Dispatchers.IO) {
+        val cacheValid = !forceRefresh && isCacheValid()
+
+        if (cacheValid) {
+            // Devolver desde caché
+            bovinoDao.getAllBovinos().map { it.toAnimal() }
+        } else {
+            // Obtener desde API y guardar en caché
+            val response = apiInterface.getListaBovinos(nif, password, tipusVinculacio, explotacio)
+
+            if (response.isSuccessful && response.body()?.codi == "0") {
+                val animales = response.body()?.identificadors ?: emptyList()
+
+                // Guardar en Room
+                bovinoDao.deleteAll()
+                bovinoDao.insertAll(animales.map { it.toEntity() })
+
+                animales
+            } else {
+                // Si falla API, intentar devolver caché antigua
+                bovinoDao.getAllBovinos().map { it.toAnimal() }
+            }
+        }
+    }
+
+    // Buscar bovinos en caché
+    suspend fun searchBovinosLocal(query: String): List<Animal> = withContext(Dispatchers.IO) {
+        if (query.isBlank()) {
+            emptyList()
+        } else {
+            bovinoDao.searchBovinos(query).map { it.toAnimal() }
+        }
+    }
+
+    private suspend fun isCacheValid(): Boolean {
+        val lastUpdate = bovinoDao.getLastUpdateTime() ?: return false
+        val currentTime = System.currentTimeMillis()
+        return (currentTime - lastUpdate) < CACHE_EXPIRATION_MS
+    }
 
     suspend fun getDescargaGuiasMobilitat(
         nif: String,
@@ -45,6 +102,7 @@ class Repositorio {
 
     suspend fun putRegistrarMuerte(request: RegistroMuerteBovi) =
         apiInterface.putRegistrarMuerte(request)
+
     suspend fun putRegistrarNacimiento(request: RegistroNacimientoBovi) =
         apiInterface.putRegistrarNacimiento(request)
 
@@ -56,7 +114,6 @@ class Repositorio {
 
     suspend fun putModificarGuia(request: PeticionModificarGuia) =
         apiInterface.putModificarGuia(request)
-
 
     suspend fun putConfirmarMovi(request: PetConfirmacionMovi) =
         apiInterface.putConfirmarMovi(request)
@@ -75,5 +132,4 @@ class Repositorio {
 
     suspend fun putSolicitudMaterial(request: PetSolicitudMaterial) =
         apiInterface.putSolicitudMaterial(request)
-
 }
