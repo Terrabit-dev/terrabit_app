@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.terrabit_app.data.network.lista_bovinos.Animal
+import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.viewmodel.ListarBovinosViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,7 +47,7 @@ fun ListarBovinos(navController: NavController, viewModel: ListarBovinosViewMode
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { navController.navigate(Routes.HomeBovinos.route) }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
                     }
                 },
