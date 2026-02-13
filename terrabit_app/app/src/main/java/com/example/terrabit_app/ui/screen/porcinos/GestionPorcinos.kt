@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.theme.Blue
 import com.example.terrabit_app.ui.theme.MainOrange
 import com.example.terrabit_app.ui.theme.WhiteBackground
@@ -43,7 +44,7 @@ fun GestionPorcinos(navController: NavController) {
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { navController.navigate(Routes.HomePorcinos.route) }) {
                         Icon(
                             Icons.Default.ArrowBack,
                             contentDescription = "Volver",
