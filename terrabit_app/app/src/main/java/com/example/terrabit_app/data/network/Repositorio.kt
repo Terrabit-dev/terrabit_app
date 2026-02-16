@@ -142,4 +142,14 @@ class Repositorio(context: Context) {
 
 
 
+    suspend fun getDescargaGuiasMobilitatPorcions(
+        nif: String,
+        passwordMobilitat: String,
+        codiMo: String,
+        codiRega: String,
+        dataSortida: String
+    ) = apiInterface.getGuiesMobilitatPorcinos(nif, passwordMobilitat, codiMo, codiRega, dataSortida)
+
+    suspend fun putModificarGuiaPorcinos(request: PeticionModificarGuiaPorcinos) =
+        apiInterface.putModificarGuiaPorcinos(request)
 }
