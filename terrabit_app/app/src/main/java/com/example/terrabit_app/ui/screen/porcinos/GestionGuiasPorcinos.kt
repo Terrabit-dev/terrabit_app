@@ -19,10 +19,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.theme.Blue
 import com.example.terrabit_app.ui.theme.MainOrange
 
@@ -32,10 +34,10 @@ fun GestionGuiasPorcinos(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Gestionar Guías") },
+                title = { Text(text = stringResource(R.string.title_porcinos_gestion_guias)) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
