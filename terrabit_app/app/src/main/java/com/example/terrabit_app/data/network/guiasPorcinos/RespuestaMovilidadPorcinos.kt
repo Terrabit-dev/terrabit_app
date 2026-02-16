@@ -5,6 +5,11 @@ data class RespuestaMovilidadPorcinos(
     val resultat: List<ErrorItem>? = null
 )
 
+data class ResModificarGuiaPorcinos(
+    val codi: String,
+    val descripcio: String
+)
+
 data class ErrorItem(
     val codi: String,
     val descripcio: String
