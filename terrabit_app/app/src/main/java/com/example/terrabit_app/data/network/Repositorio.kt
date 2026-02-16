@@ -6,7 +6,7 @@ import com.example.terrabit_app.data.network.animales.RegistroMuerteBovi
 import com.example.terrabit_app.data.network.animales.RegistroNacimientoBovi
 import com.example.terrabit_app.data.network.guias.PeticionAltaGuia
 import com.example.terrabit_app.data.network.guias.PeticionModificarGuia
-import com.example.terrabit_app.data.network.guias.guiasPorcinos.PeticionMovilidadPorci
+import com.example.terrabit_app.data.network.guiasPorcinos.PeticionMovilidadPorci
 import com.example.terrabit_app.data.network.material.PetSolicitudDuplicado
 import com.example.terrabit_app.data.network.material.PetSolicitudMaterial
 import com.example.terrabit_app.data.network.moviminetos.modelos.PetConfirmacionMovi
