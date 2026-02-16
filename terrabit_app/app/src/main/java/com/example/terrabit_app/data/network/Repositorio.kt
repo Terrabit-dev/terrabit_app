@@ -10,6 +10,7 @@ import com.example.terrabit_app.data.network.animales.RegistroMuerteBovi
 import com.example.terrabit_app.data.network.animales.RegistroNacimientoBovi
 import com.example.terrabit_app.data.network.guias.PeticionAltaGuia
 import com.example.terrabit_app.data.network.guias.PeticionModificarGuia
+import com.example.terrabit_app.data.network.guiasPorcinos.CrearGuiaMobilitatPorcinos
 import com.example.terrabit_app.data.network.guiasPorcinos.GuiaMobilitatPorcinos
 import com.example.terrabit_app.data.network.guiasPorcinos.PeticionModificarGuiaPorcinos
 import com.example.terrabit_app.data.network.material.PetSolicitudDuplicado
@@ -135,7 +136,7 @@ class Repositorio {
         apiInterface.putSolicitudMaterial(request)
 
     //Porcinos
-    suspend fun putMovilidadPorcinos(request: GuiaMobilitatPorcinos) =
+    suspend fun putMovilidadPorcinos(request: CrearGuiaMobilitatPorcinos) =
         apiInterface.putMovilidadPorcinos(request)
 
     suspend fun getDescargaGuiasMobilitatPorcions(

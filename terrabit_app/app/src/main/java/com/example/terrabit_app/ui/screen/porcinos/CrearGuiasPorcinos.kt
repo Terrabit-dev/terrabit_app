@@ -49,6 +49,7 @@ import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -67,6 +68,7 @@ import com.example.terrabit_app.ui.theme.MainOrange
 import com.example.terrabit_app.ui.theme.WhiteBackground
 import com.example.terrabit_app.utils.porcinos.ElementosConCodigosPorcinos
 import com.example.terrabit_app.viewmodel.porcinos.CrearGuiaPorcinosViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,7 +77,7 @@ fun GestionPorcinos(
     viewModel: CrearGuiaPorcinosViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-
+    val scope = rememberCoroutineScope()
     val elementosConCodigos = ElementosConCodigosPorcinos()
 
     // DatePickerDialog para fecha de salida
@@ -793,7 +795,11 @@ fun GestionPorcinos(
 
                     // Botón Registrar
                     Button(
-                        onClick = { viewModel.crearGuia() },
+                        onClick = {
+                            scope.launch {
+                                viewModel.crearGuia()
+                            }
+                          },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(20.dp)
