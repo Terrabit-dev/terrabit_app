@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -19,6 +20,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -40,6 +42,7 @@ import androidx.navigation.NavController
 import com.example.terrabit_app.data.network.guiasPorcinos.GuiaMobilitatPorcinos
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
+import com.example.terrabit_app.ui.theme.MintCreamGreen
 import com.example.terrabit_app.viewmodel.porcinos.EditarGuiasViewModel
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -49,7 +52,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun GestionGuiasPorcinos(
     navController: NavController,
-    viewModel: EditarGuiasViewModel = viewModel()
+    viewModel: EditarGuiasViewModel = viewModel() // Revisar
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -95,7 +98,7 @@ fun GestionGuiasPorcinos(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Crear y Confirmar Guías") },
+                title = { Text("Editar y Confirmar Guías") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
@@ -115,6 +118,7 @@ fun GestionGuiasPorcinos(
                 .padding(padding)
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(/*uiState.listaGuiasPorcinos*/ listaPrueba) { guia ->
                 GuiaCard(guia)
@@ -129,47 +133,43 @@ fun GuiaCard(guia: GuiaMobilitatPorcinos) {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
-        Box(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+        Box(modifier = Modifier.fillMaxSize().padding(8.dp)) {
             Column(
-                modifier = Modifier.fillMaxHeight(),
+                modifier = Modifier.fillMaxHeight().padding(4.dp),
                 verticalArrangement = Arrangement.SpaceEvenly
             ) {
-                Text(
-                    text = guia.remo,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp
-                )
-                Text(
-                    text = guia.moDesti,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp
-                )
-                Row(
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                Column {
                     Text(
-                        text = "Fecha Salida: " + formatearFecha(guia.dataSortida),
-                        fontSize = 18.sp
+                        text = guia.remo,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp
                     )
                     Text(
-                        text = "Fecha Llegada: " + formatearFecha(guia.dataArribada),
+                        text = guia.moDesti,
+                        fontWeight = FontWeight.Bold,
                         fontSize = 18.sp
                     )
                 }
+                Column {
+                    Text(
+                        text = "Fecha Salida: " + formatearFecha(guia.dataSortida),
+                        fontSize = 16.sp
+                    )
+                    Text(
+                        text = "Fecha Llegada: " + formatearFecha(guia.dataArribada),
+                        fontSize = 16.sp
+                    )
+                }
             }
-            Text(
-                modifier = Modifier.align(Alignment.TopEnd),
-                text = "Num: $guia.nombreAnimals"
-            )
             Row(
                 modifier = Modifier.align(Alignment.BottomEnd),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                IconButton(
+                FilledIconButton(
                     onClick = {TODO()},
+                    shape = RoundedCornerShape(8.dp),
                     colors = IconButtonDefaults.iconButtonColors(
                         containerColor = MainOrange
                     )
@@ -180,8 +180,9 @@ fun GuiaCard(guia: GuiaMobilitatPorcinos) {
                         tint = Color.White
                     )
                 }
-                IconButton(
+                FilledIconButton(
                     onClick = {TODO()},
+                    shape = RoundedCornerShape(8.dp),
                     colors = IconButtonDefaults.iconButtonColors(
                         containerColor = MainGreen
                     )

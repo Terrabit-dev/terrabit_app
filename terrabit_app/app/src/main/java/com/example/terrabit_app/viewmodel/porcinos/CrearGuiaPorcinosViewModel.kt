@@ -2,16 +2,16 @@ package com.example.terrabit_app.viewmodel.porcinos
 
 import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.ViewModel
-import com.example.terrabit_app.ui.screen.porcinos.GestionPorcinosUiState
+import com.example.terrabit_app.ui.screen.porcinos.CrearGuiasPorcinosUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import java.util.Calendar
 
-class GestionGuiaViewModel: ViewModel() {
-    private val _uiState = MutableStateFlow(GestionPorcinosUiState())
-    val uiState : StateFlow<GestionPorcinosUiState> = _uiState.asStateFlow()
+class CrearGuiaPorcinosViewModel: ViewModel() {
+    private val _uiState = MutableStateFlow(CrearGuiasPorcinosUiState())
+    val uiState : StateFlow<CrearGuiasPorcinosUiState> = _uiState.asStateFlow()
 
     private var categoriaApiSeleccionada: String = "0"
     private var medioTransporteApiSeleccionada: String = "0"
@@ -74,6 +74,24 @@ class GestionGuiaViewModel: ViewModel() {
         }
     }
 
+    fun mostrarTimePickerSalida() {
+        _uiState.update { currentState ->
+            currentState.copy(mostrarTimePickerSalida = true)
+        }
+    }
+
+    fun ocultarTimePickerSalida() {
+        _uiState.update { currentState ->
+            currentState.copy(mostrarTimePickerSalida = false)
+        }
+    }
+
+    fun actualizarHoraSalida(hora: String, minutos: String) {
+        _uiState.update { currentState ->
+            currentState.copy(horaSalida = String.format("%02d:%02d", hora.toInt(), minutos.toInt()))
+        }
+    }
+
     fun seleccionarFechaSalida(fechaMillis: Long) {
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = fechaMillis
@@ -98,6 +116,24 @@ class GestionGuiaViewModel: ViewModel() {
     fun ocultarDatePickerLlegada() {
         _uiState.update { currentState ->
             currentState.copy(mostrarDatePickerLlegada = false)
+        }
+    }
+
+    fun mostrarTimePickerLlegada() {
+        _uiState.update { currentState ->
+            currentState.copy(mostrarTimePickerLlegada = true)
+        }
+    }
+
+    fun ocultarTimePickerLlegada() {
+        _uiState.update { currentState ->
+            currentState.copy(mostrarTimePickerLlegada = false)
+        }
+    }
+
+    fun actualizarHoraLlegada(hora: String, minutos: String) {
+        _uiState.update { currentState ->
+            currentState.copy(horaLlegada = String.format("%02d:%02d", hora.toInt(), minutos.toInt()))
         }
     }
 
@@ -163,7 +199,7 @@ class GestionGuiaViewModel: ViewModel() {
     }
 
     fun crearGuia() {
-        _uiState.update { GestionPorcinosUiState() }
+        _uiState.update { CrearGuiasPorcinosUiState() }
         /*TODO*/
     }
 }

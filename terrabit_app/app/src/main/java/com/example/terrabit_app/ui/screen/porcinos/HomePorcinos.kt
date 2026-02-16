@@ -314,7 +314,7 @@ fun DrawerContentPorcinos(
                         color = BlueGrey
                     )
                     Text(
-                        text = stringResource(R.string.app_copyright),
+                        text = "© 2026 Terrabit",
                         fontSize = 10.sp,
                         color = BlueGrey,
                         modifier = Modifier.padding(top = 4.dp)

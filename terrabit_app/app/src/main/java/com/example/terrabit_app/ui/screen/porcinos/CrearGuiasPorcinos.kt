@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,6 +18,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -37,9 +40,12 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -60,13 +66,13 @@ import com.example.terrabit_app.ui.theme.DarkWhiteBackground
 import com.example.terrabit_app.ui.theme.MainOrange
 import com.example.terrabit_app.ui.theme.WhiteBackground
 import com.example.terrabit_app.utils.porcinos.ElementosConCodigosPorcinos
-import com.example.terrabit_app.viewmodel.porcinos.GestionGuiaViewModel
+import com.example.terrabit_app.viewmodel.porcinos.CrearGuiaPorcinosViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GestionPorcinos(
     navController: NavController,
-    viewModel: GestionGuiaViewModel = viewModel()
+    viewModel: CrearGuiaPorcinosViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -104,6 +110,41 @@ fun GestionPorcinos(
         }
     }
 
+    // TimePickerDialog para fecha de salida
+    if (uiState.mostrarTimePickerSalida) {
+        val timePickerState = rememberTimePickerState()
+        AlertDialog(
+            onDismissRequest = { viewModel.ocultarTimePickerSalida() },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.actualizarHoraSalida(
+                            timePickerState.hour.toString(),
+                            timePickerState.minute.toString()
+                        )
+                        viewModel.ocultarTimePickerSalida()
+                    }
+                ) {
+                    Text(stringResource(R.string.accept_buttom), color = MainOrange)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.ocultarTimePickerSalida() }) {
+                    Text(stringResource(R.string.cancel_buttom), color = BlueGrey)
+                }
+            },
+            text = {
+                TimePicker(
+                    state = timePickerState,
+                    colors = TimePickerDefaults.colors(
+                        clockDialSelectedContentColor = Color.White,
+                        selectorColor = MainOrange
+                    )
+                )
+            }
+        )
+    }
+
     // DatePickerDialog para fecha de llegada
     if (uiState.mostrarDatePickerLlegada) {
         val datePickerState = rememberDatePickerState()
@@ -135,7 +176,42 @@ fun GestionPorcinos(
             )
         }
     }
-    
+
+    // TimePickerDialog para fecha de llegada
+    if (uiState.mostrarTimePickerLlegada) {
+        val timePickerState = rememberTimePickerState()
+        AlertDialog(
+            onDismissRequest = { viewModel.ocultarTimePickerLlegada() },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.actualizarHoraLlegada(
+                            timePickerState.hour.toString(),
+                            timePickerState.minute.toString()
+                        )
+                        viewModel.ocultarTimePickerLlegada()
+                    }
+                ) {
+                    Text(stringResource(R.string.accept_buttom), color = MainOrange)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.ocultarTimePickerLlegada() }) {
+                    Text(stringResource(R.string.cancel_buttom), color = BlueGrey)
+                }
+            },
+            text = {
+                TimePicker(
+                    state = timePickerState,
+                    colors = TimePickerDefaults.colors(
+                        clockDialSelectedContentColor = Color.White,
+                        selectorColor = MainOrange
+                    )
+                )
+            }
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -337,7 +413,7 @@ fun GestionPorcinos(
                     }
 
                     // Fecha de Salida
-                    Column(modifier = Modifier.fillMaxWidth()) {
+                    /*Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
                             text = stringResource(R.string.form_porcinos_fecha_salida),
                             fontSize = 15.sp,
@@ -380,10 +456,105 @@ fun GestionPorcinos(
                                 singleLine = true
                             )
                         }
+                    }*/
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                stringResource(R.string.form_date_departure),
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = DarkBlueGrey,
+                                letterSpacing = 0.15.sp
+                            )
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { viewModel.mostrarDatePickerSalida() }
+                            ) {
+                                OutlinedTextField(
+                                    value = uiState.fechaSalida,
+                                    onValueChange = {},
+                                    modifier = Modifier.fillMaxWidth(),
+                                    placeholder = {
+                                        Text(
+                                            stringResource(R.string.form_porcinos_descr_fechaS),
+                                            color = BlueGrey
+                                        )
+                                    },
+                                    leadingIcon = {
+                                        Icon(
+                                            Icons.Default.DateRange,
+                                            contentDescription = stringResource(R.string.form_porcinos_descr_fechaS),
+                                            tint = MainOrange
+                                        )
+                                    },
+                                    readOnly = true,
+                                    enabled = false,
+                                    shape = MaterialTheme.shapes.medium,
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        disabledTextColor = DarkBlueGrey,
+                                        disabledBorderColor = DarkWhiteBackground,
+                                        disabledLeadingIconColor = MainOrange,
+                                        disabledPlaceholderColor = BlueGrey
+                                    ),
+                                    singleLine = true
+                                )
+                            }
+                        }
+
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                stringResource(R.string.form_hour_arrival),
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = DarkBlueGrey,
+                                letterSpacing = 0.15.sp
+                            )
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { viewModel.mostrarTimePickerSalida() }
+                            ) {
+                                OutlinedTextField(
+                                    value = uiState.horaSalida,
+                                    onValueChange = {},
+                                    modifier = Modifier.fillMaxWidth(),
+                                    placeholder = {
+                                        Text(
+                                            text = stringResource(R.string.form_hour_arrival_description),
+                                            color = BlueGrey
+                                        )
+                                    },
+                                    leadingIcon = {
+                                        Icon(
+                                            Icons.Default.Schedule,
+                                            contentDescription = stringResource(R.string.form_hour_arrival_description),
+                                            tint = MainOrange
+                                        )
+                                    },
+                                    readOnly = true,
+                                    enabled = false,
+                                    shape = MaterialTheme.shapes.medium,
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        disabledTextColor = DarkBlueGrey,
+                                        disabledBorderColor = DarkWhiteBackground,
+                                        disabledLeadingIconColor = MainOrange,
+                                        disabledPlaceholderColor = BlueGrey
+                                    ),
+                                    singleLine = true
+                                )
+                            }
+                        }
                     }
 
                     // Fecha de Llegada
-                    Column(modifier = Modifier.fillMaxWidth()) {
+                    /*Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
                             text = stringResource(R.string.form_porcinos_fecha_llegada),
                             fontSize = 15.sp,
@@ -425,6 +596,101 @@ fun GestionPorcinos(
                                 ),
                                 singleLine = true
                             )
+                        }
+                    }*/
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                stringResource(R.string.form_date_arrival),
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = DarkBlueGrey,
+                                letterSpacing = 0.15.sp
+                            )
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { viewModel.mostrarTimePickerLlegada() }
+                            ) {
+                                OutlinedTextField(
+                                    value = uiState.fechaLlegada,
+                                    onValueChange = {},
+                                    modifier = Modifier.fillMaxWidth(),
+                                    placeholder = {
+                                        Text(
+                                            stringResource(R.string.form_porcinos_descr_fechaLl),
+                                            color = BlueGrey
+                                        )
+                                    },
+                                    leadingIcon = {
+                                        Icon(
+                                            Icons.Default.DateRange,
+                                            contentDescription = stringResource(R.string.form_porcinos_descr_fechaLl),
+                                            tint = MainOrange
+                                        )
+                                    },
+                                    readOnly = true,
+                                    enabled = false,
+                                    shape = MaterialTheme.shapes.medium,
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        disabledTextColor = DarkBlueGrey,
+                                        disabledBorderColor = DarkWhiteBackground,
+                                        disabledLeadingIconColor = MainOrange,
+                                        disabledPlaceholderColor = BlueGrey
+                                    ),
+                                    singleLine = true
+                                )
+                            }
+                        }
+
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                stringResource(R.string.form_hour_arrival),
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = DarkBlueGrey,
+                                letterSpacing = 0.15.sp
+                            )
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { viewModel.mostrarTimePickerLlegada() }
+                            ) {
+                                OutlinedTextField(
+                                    value = uiState.horaLlegada,
+                                    onValueChange = {},
+                                    modifier = Modifier.fillMaxWidth(),
+                                    placeholder = {
+                                        Text(
+                                            stringResource(R.string.form_hour_arrival_description),
+                                            color = BlueGrey
+                                        )
+                                    },
+                                    leadingIcon = {
+                                        Icon(
+                                            Icons.Default.Schedule,
+                                            contentDescription = stringResource(R.string.form_hour_arrival_description),
+                                            tint =MainOrange
+                                        )
+                                    },
+                                    readOnly = true,
+                                    enabled = false,
+                                    shape = MaterialTheme.shapes.medium,
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        disabledTextColor = DarkBlueGrey,
+                                        disabledBorderColor = DarkWhiteBackground,
+                                        disabledLeadingIconColor = MainOrange,
+                                        disabledPlaceholderColor = BlueGrey
+                                    ),
+                                    singleLine = true
+                                )
+                            }
                         }
                     }
 
