@@ -11,6 +11,7 @@ import com.example.terrabit_app.data.network.animales.RegistroNacimientoBovi
 import com.example.terrabit_app.data.network.guias.PeticionAltaGuia
 import com.example.terrabit_app.data.network.guias.PeticionModificarGuia
 import com.example.terrabit_app.data.network.lista_bovinos.Animal
+import com.example.terrabit_app.data.network.guias.guiasPorcinos.PeticionMovilidadPorci
 import com.example.terrabit_app.data.network.material.PetSolicitudDuplicado
 import com.example.terrabit_app.data.network.material.PetSolicitudMaterial
 import com.example.terrabit_app.data.network.moviminetos.modelos.PetConfirmacionMovi
@@ -102,7 +103,6 @@ class Repositorio(context: Context) {
 
     suspend fun putRegistrarMuerte(request: RegistroMuerteBovi) =
         apiInterface.putRegistrarMuerte(request)
-
     suspend fun putRegistrarNacimiento(request: RegistroNacimientoBovi) =
         apiInterface.putRegistrarNacimiento(request)
 
@@ -114,6 +114,7 @@ class Repositorio(context: Context) {
 
     suspend fun putModificarGuia(request: PeticionModificarGuia) =
         apiInterface.putModificarGuia(request)
+
 
     suspend fun putConfirmarMovi(request: PetConfirmacionMovi) =
         apiInterface.putConfirmarMovi(request)
@@ -132,4 +133,11 @@ class Repositorio(context: Context) {
 
     suspend fun putSolicitudMaterial(request: PetSolicitudMaterial) =
         apiInterface.putSolicitudMaterial(request)
+
+
+    //Porcinos
+    suspend fun putMovilidadPorcinos(request: PeticionMovilidadPorci) =
+        apiInterface.putMovilidadPorcinos(request)
+
+
 }
