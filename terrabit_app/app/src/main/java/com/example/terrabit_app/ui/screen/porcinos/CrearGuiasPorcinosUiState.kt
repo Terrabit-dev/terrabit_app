@@ -1,6 +1,6 @@
 package com.example.terrabit_app.ui.screen.porcinos
 
-data class GestionPorcinosUiState(
+data class CrearGuiasPorcinosUiState(
     var explotacion: String = "",
     var categoriaExpandido: Boolean = false,
     var categoriaSeleccionada: String = "",
@@ -8,8 +8,12 @@ data class GestionPorcinosUiState(
     var numAnimales: String = "",
     var fechaSalida: String = "",
     var fechaLlegada: String = "",
+    var horaSalida: String = "",
+    var horaLlegada: String = "",
     var mostrarDatePickerSalida: Boolean = false,
+    var mostrarTimePickerSalida: Boolean = false,
     var mostrarDatePickerLlegada: Boolean = false,
+    var mostrarTimePickerLlegada: Boolean = false,
     var codigoSIR: String = "",
     var medioTransporteExpandido: Boolean = false,
     var medioTransporteSeleccionado: String = "",

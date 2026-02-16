@@ -255,4 +255,5 @@
     <string name="form_porcinos_descr_matricula">Introducir Matrícula</string>
     <string name="form_porcinos_nifCond">NIF del Conductor</string>
     <string name="form_porcinos_descr_nifCond">Introducir NIF del conductor</string>
+    <string name="app_copyright">Terrabit©</string>
 </resources>

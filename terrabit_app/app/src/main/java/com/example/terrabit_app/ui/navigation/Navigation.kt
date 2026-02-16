@@ -1,12 +1,13 @@
-package com.example.terrabit_app.navegacion
+package com.example.terrabit_app.ui.navigation
 
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.pantallas.*
 import com.example.terrabit_app.ui.screen.bovinos.CorregirSexoBovi
 import com.example.terrabit_app.ui.screen.bovinos.Fallecimiento
@@ -31,7 +32,9 @@ import com.example.terrabit_app.viewmodel.MaterialViewModel
 import com.example.terrabit_app.viewmodel.MovimientosViewModel
 import com.example.terrabit_app.viewmodel.NacimientoViewmodel
 import com.example.terrabit_app.viewmodel.ViewModelMuerteBovi
+import com.example.terrabit_app.viewmodel.porcinos.EditarGuiasViewModel
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel ) {
     val navController = rememberNavController()
@@ -122,9 +125,12 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel ) {
         }
 
         // Pantallas porcinos
-        // Pantallas Porcinos
         composable(Routes.GestionGuiasPorcinos.route) {
-            GestionGuiasPorcinos(navController = navController)
+            val editarGuias: EditarGuiasViewModel = viewModel()
+            GestionGuiasPorcinos(
+                navController = navController,
+                editarGuias
+            )
         }
 
         composable(Routes.EntradasPorcinos.route) {
