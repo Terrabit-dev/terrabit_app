@@ -14,7 +14,7 @@ import com.example.terrabit_app.data.network.guias.PeticionAltaGuia
 import com.example.terrabit_app.data.network.guias.PeticionModificarGuia
 import com.example.terrabit_app.data.network.animales.RegistroMuerteBovi
 import com.example.terrabit_app.data.network.animales.RegistroNacimientoBovi
-import com.example.terrabit_app.data.network.guiasPorcinos.RespuestaMovilidadPorcinos
+import com.example.terrabit_app.data.network.lista_bovinos.ListaBovinos
 import com.example.terrabit_app.data.network.respuestas.ResAltaGuia
 import com.example.terrabit_app.data.network.respuestas.ResBasica
 import com.example.terrabit_app.data.network.respuestas.ResConfirmacionMovi
@@ -23,6 +23,7 @@ import com.example.terrabit_app.data.network.respuestas.RespuestaUnificada
 import com.example.terrabit_app.data.network.guiasPorcinos.GuiaMobilitatPorcinos
 import com.example.terrabit_app.data.network.guiasPorcinos.PeticionModificarGuiaPorcinos
 import com.example.terrabit_app.data.network.guiasPorcinos.ResModificarGuiaPorcinos
+import com.example.terrabit_app.data.network.guiasPorcinos.RespuestaMovilidadPorcinos
 
 import okhttp3.OkHttpClient
 import retrofit2.Response
@@ -121,6 +122,7 @@ interface ApiInterface {
     suspend fun putSolicitudMaterial(
         @Body request: PetSolicitudMaterial
     ): Response<ResBasica>
+
 
     //PORCINOS
 
