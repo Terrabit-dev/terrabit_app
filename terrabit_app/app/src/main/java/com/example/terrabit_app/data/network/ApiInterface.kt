@@ -14,6 +14,8 @@ import com.example.terrabit_app.data.network.guias.PeticionAltaGuia
 import com.example.terrabit_app.data.network.guias.PeticionModificarGuia
 import com.example.terrabit_app.data.network.animales.RegistroMuerteBovi
 import com.example.terrabit_app.data.network.animales.RegistroNacimientoBovi
+import com.example.terrabit_app.data.network.guias.guiasPorcinos.PeticionMovilidadPorci
+import com.example.terrabit_app.data.network.guias.guiasPorcinos.RespuestaMovilidadPorcinos
 import com.example.terrabit_app.data.network.respuestas.ResAltaGuia
 import com.example.terrabit_app.data.network.respuestas.ResBasica
 import com.example.terrabit_app.data.network.respuestas.ResConfirmacionMovi
@@ -109,6 +111,16 @@ interface ApiInterface {
     suspend fun putSolicitudMaterial(
         @Body request: PetSolicitudMaterial
     ): Response<ResBasica>
+
+
+    //PORCINOS
+
+    @PUT("WSAltaguies/AppJava/WSAltaGuia/")
+    suspend fun putMovilidadPorcinos(
+        @Body request: PeticionMovilidadPorci
+    ): Response<RespuestaMovilidadPorcinos>
+
+
     companion object {
         val BASE_URL = "https://preproduccio.aplicacions.agricultura.gencat.cat/gtr/"
 

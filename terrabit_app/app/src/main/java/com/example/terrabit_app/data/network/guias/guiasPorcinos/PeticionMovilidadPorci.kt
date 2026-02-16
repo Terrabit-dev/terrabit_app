@@ -1,7 +1,6 @@
 package com.example.terrabit_app.data.network.guias.guiasPorcinos
 
-data class PeticioMobilitatPorci(
-
+data class PeticionMovilidadPorci(
     val nif: String,
     val password: String,
     val tipusEspecie: String = "02", // Porcí
