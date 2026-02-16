@@ -14,13 +14,16 @@ import com.example.terrabit_app.data.network.guias.PeticionAltaGuia
 import com.example.terrabit_app.data.network.guias.PeticionModificarGuia
 import com.example.terrabit_app.data.network.animales.RegistroMuerteBovi
 import com.example.terrabit_app.data.network.animales.RegistroNacimientoBovi
-import com.example.terrabit_app.data.network.guiasPorcinos.PeticionMovilidadPorci
-import com.example.terrabit_app.data.network.guiasPorcinos.RespuestaMovilidadPorcinos
+import com.example.terrabit_app.data.network.lista_bovinos.ListaBovinos
 import com.example.terrabit_app.data.network.respuestas.ResAltaGuia
 import com.example.terrabit_app.data.network.respuestas.ResBasica
 import com.example.terrabit_app.data.network.respuestas.ResConfirmacionMovi
 import com.example.terrabit_app.data.network.respuestas.ResModificarGuia
 import com.example.terrabit_app.data.network.respuestas.RespuestaUnificada
+import com.example.terrabit_app.data.network.guiasPorcinos.GuiaMobilitatPorcinos
+import com.example.terrabit_app.data.network.guiasPorcinos.PeticionModificarGuiaPorcinos
+import com.example.terrabit_app.data.network.guiasPorcinos.ResModificarGuiaPorcinos
+import com.example.terrabit_app.data.network.guiasPorcinos.RespuestaMovilidadPorcinos
 
 import okhttp3.OkHttpClient
 import retrofit2.Response
@@ -33,6 +36,14 @@ import retrofit2.http.Query
 import java.util.concurrent.TimeUnit
 
 interface ApiInterface {
+
+    @GET("WSEnregistramentIDT/AppJava/WSConsultaAnimals/")
+    suspend fun getListaBovinos(
+        @Query("nif") nif: String,
+        @Query("password") password: String,
+        @Query("tipusVinculacio") tipusVinculacio: String,
+        @Query("explotacio") explotacio: String
+    ): Response<ListaBovinos>
     @GET("WSBovi/AppJava/Bovi/WSIdentificadorsDisponibles/")
     suspend fun getIdentificadoresDisponibles(
         @Query("nif") nif: String,
@@ -112,13 +123,26 @@ interface ApiInterface {
         @Body request: PetSolicitudMaterial
     ): Response<ResBasica>
 
-
     //PORCINOS
 
     @PUT("WSAltaguies/AppJava/WSAltaGuia/")
     suspend fun putMovilidadPorcinos(
-        @Body request: Gi
+        @Body request: GuiaMobilitatPorcinos
     ): Response<RespuestaMovilidadPorcinos>
+
+    @GET("WSMobilitat/AppJava/WSCarregaGuiesMobilitat/")
+    suspend fun getGuiesMobilitatPorcinos(
+        @Query("nif") nif: String,
+        @Query("password") password: String,
+        @Query("codiMo") codiMo: String,
+        @Query("codiRega") codiRega: String,
+        @Query("dataSortida") dataSortida: String?
+    ): Response<GuiaMobilitatPorcinos>
+
+    @PUT("WSMobilitat/AppJava/WSModificarGuiasMovilitat/")
+    suspend fun putModificarGuiaPorcinos(
+        @Body request: PeticionModificarGuiaPorcinos
+    ): Response<ResModificarGuiaPorcinos>
 
 
     companion object {
