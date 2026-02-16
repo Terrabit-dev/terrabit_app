@@ -1,9 +1,13 @@
 package com.example.terrabit_app.viewmodel.porcinos
 
+import android.content.Context
 import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.ViewModel
+import com.example.terrabit_app.data.network.Repositorio
+import com.example.terrabit_app.data.network.guiasPorcinos.CrearGuiaMobilitatPorcinos
 import com.example.terrabit_app.data.network.guiasPorcinos.GuiaMobilitatPorcinos
 import com.example.terrabit_app.ui.screen.porcinos.CrearGuiasPorcinosUiState
+import com.example.terrabit_app.utils.UserPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -12,10 +16,19 @@ import java.util.Calendar
 
 class CrearGuiaPorcinosViewModel: ViewModel() {
     private val _uiState = MutableStateFlow(CrearGuiasPorcinosUiState())
-    val uiState : StateFlow<CrearGuiasPorcinosUiState> = _uiState.asStateFlow()
+    val uiState: StateFlow<CrearGuiasPorcinosUiState> = _uiState.asStateFlow()
+
+    private val repositorio = Repositorio()
+
+    private lateinit var userPreferences: UserPreferences
 
     private var categoriaApiSeleccionada: String = "0"
     private var medioTransporteApiSeleccionada: String = "0"
+
+    fun inicializarUserPreferences(context: Context) {
+        userPreferences = UserPreferences(context)
+    }
+
     fun actualizarExplotacion(nuevaExplotacion: String) {
         if (nuevaExplotacion.length <= 14) {
             _uiState.update { currentState ->
@@ -89,7 +102,13 @@ class CrearGuiaPorcinosViewModel: ViewModel() {
 
     fun actualizarHoraSalida(hora: String, minutos: String) {
         _uiState.update { currentState ->
-            currentState.copy(horaSalida = String.format("%02d:%02d", hora.toInt(), minutos.toInt()))
+            currentState.copy(
+                horaSalida = String.format(
+                    "%02d:%02d",
+                    hora.toInt(),
+                    minutos.toInt()
+                )
+            )
         }
     }
 
@@ -134,7 +153,13 @@ class CrearGuiaPorcinosViewModel: ViewModel() {
 
     fun actualizarHoraLlegada(hora: String, minutos: String) {
         _uiState.update { currentState ->
-            currentState.copy(horaLlegada = String.format("%02d:%02d", hora.toInt(), minutos.toInt()))
+            currentState.copy(
+                horaLlegada = String.format(
+                    "%02d:%02d",
+                    hora.toInt(),
+                    minutos.toInt()
+                )
+            )
         }
     }
 
@@ -199,9 +224,54 @@ class CrearGuiaPorcinosViewModel: ViewModel() {
         }
     }
 
-    fun crearGuia() {
+    suspend fun crearGuia() {
+        val nif: String? = userPreferences.getNif()
+        val password: String? = userPreferences.getPassword()
+        val codiMoOrign: String? = userPreferences.getCodiMO()
+
+        val currentUiState = _uiState.value
+
+        val fechaSalida = convertirFechaHoraAFormatoAPI(
+            currentUiState.fechaSalida,
+            currentUiState.horaSalida
+        ).toLong()
+        val fechaLlegada = convertirFechaHoraAFormatoAPI(
+            currentUiState.fechaLlegada,
+            currentUiState.horaLlegada
+        ).toLong()
+
+        val guia = CrearGuiaMobilitatPorcinos(
+            nif = nif,
+            password = password,
+            moOrigen = codiMoOrign,
+            moDesti = currentUiState.explotacion,
+            categoria = currentUiState.categoriaApiSeleccionada,
+            nombreAnimals = currentUiState.numAnimales.toInt(),
+            dataSortida = fechaSalida,
+            dataArribada = fechaLlegada,
+            codiSir = currentUiState.codigoSIR,
+            medioTransporte = currentUiState.medioTransporteApiSeleccionado,
+            matricula = currentUiState.matricula,
+            nifConductor = currentUiState.nifConductor
+        )
+
+        repositorio.putMovilidadPorcinos(guia)
+
         _uiState.update { CrearGuiasPorcinosUiState() }
         /*TODO*/
+    }
+
+    private fun convertirFechaHoraAFormatoAPI(fecha: String, hora: String): String {
+        val partesFecha = fecha.split("/")
+        val fechaLimpia = if (partesFecha.size == 3) {
+            "${partesFecha[2]}${partesFecha[1]}${partesFecha[0]}"
+        } else {
+            "00000000" // Valor por defecto en caso de error
+        }
+        
+        val horaLimpia = hora.replace(":", "")
+
+        return fechaLimpia + horaLimpia
     }
 
     fun rellenarCampos(guia: GuiaMobilitatPorcinos) {
