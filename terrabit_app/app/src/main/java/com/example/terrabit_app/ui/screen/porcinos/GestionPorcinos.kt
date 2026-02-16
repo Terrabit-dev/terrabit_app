@@ -142,7 +142,7 @@ fun GestionPorcinos(
                 title = {
                     Column {
                         Text(
-                            "Crear guía",
+                            "Crear Guía",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.SemiBold
                         )
