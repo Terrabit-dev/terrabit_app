@@ -1,8 +1,6 @@
 package com.example.terrabit_app.data.network.guiasPorcinos
 
-import com.google.gson.annotations.SerializedName
-
-data class GuiaMobilitat(
+data class GuiaMobilitatPorcinos(
     val moOrigen: String,
     val remo: String,
     val moDesti: String,

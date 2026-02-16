@@ -117,7 +117,7 @@ interface ApiInterface {
 
     @PUT("WSAltaguies/AppJava/WSAltaGuia/")
     suspend fun putMovilidadPorcinos(
-        @Body request: PeticionMovilidadPorci
+        @Body request: Gi
     ): Response<RespuestaMovilidadPorcinos>
 
 
