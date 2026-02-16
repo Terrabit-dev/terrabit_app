@@ -26,22 +26,22 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.theme.Blue
-import com.example.terrabit_app.ui.theme.MainGreen
+import com.example.terrabit_app.ui.theme.MainOrange
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EntradasPorcinos(navController: NavController) {
+fun GestionGuiasPorcinos(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(text = stringResource(R.string.title_porcinos_gestion_guias)) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MainGreen,
+                    containerColor = MainOrange,
                     titleContentColor = Color.White,
                     navigationIconContentColor = Color.White
                 )
@@ -57,14 +57,14 @@ fun EntradasPorcinos(navController: NavController) {
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = stringResource(R.string.name_confirmar_entradas),
+                "Gestionar Guías Porcinas",
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
                 color = Blue
             )
             Spacer(modifier = Modifier.height(24.dp))
             Text(
-                "Interfaz de gestión de entradas aparecerá aquí",
+                "Interfaz de gestión de guías aparecerá aquí",
                 fontSize = 14.sp,
                 color = Color.Gray
             )

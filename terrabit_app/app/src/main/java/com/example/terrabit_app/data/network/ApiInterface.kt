@@ -14,7 +14,7 @@ import com.example.terrabit_app.data.network.guias.PeticionAltaGuia
 import com.example.terrabit_app.data.network.guias.PeticionModificarGuia
 import com.example.terrabit_app.data.network.animales.RegistroMuerteBovi
 import com.example.terrabit_app.data.network.animales.RegistroNacimientoBovi
-import com.example.terrabit_app.data.network.guiasPorcinos.GuiaMobilitatPorcinos
+import com.example.terrabit_app.data.network.guiasPorcinos.PeticionMovilidadPorci
 import com.example.terrabit_app.data.network.guiasPorcinos.RespuestaMovilidadPorcinos
 import com.example.terrabit_app.data.network.respuestas.ResAltaGuia
 import com.example.terrabit_app.data.network.respuestas.ResBasica
@@ -117,7 +117,7 @@ interface ApiInterface {
 
     @PUT("WSAltaguies/AppJava/WSAltaGuia/")
     suspend fun putMovilidadPorcinos(
-        @Body request: GuiaMobilitatPorcinos
+        @Body request: Gi
     ): Response<RespuestaMovilidadPorcinos>
 
 

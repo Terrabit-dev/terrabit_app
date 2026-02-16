@@ -7,6 +7,7 @@ import com.example.terrabit_app.data.network.animales.RegistroNacimientoBovi
 import com.example.terrabit_app.data.network.guias.PeticionAltaGuia
 import com.example.terrabit_app.data.network.guias.PeticionModificarGuia
 import com.example.terrabit_app.data.network.guiasPorcinos.GuiaMobilitatPorcinos
+import com.example.terrabit_app.data.network.guiasPorcinos.PeticionModificarGuiaPorcinos
 import com.example.terrabit_app.data.network.material.PetSolicitudDuplicado
 import com.example.terrabit_app.data.network.material.PetSolicitudMaterial
 import com.example.terrabit_app.data.network.moviminetos.modelos.PetConfirmacionMovi
@@ -21,6 +22,13 @@ class Repositorio {
         passwordMobilitat: String,
         codiMO: String
     ) = apiInterface.getIdentificadoresDisponibles(nif, passwordMobilitat, codiMO)
+
+    suspend fun getListaBovinos(
+        nif: String,
+        password: String,
+        tipusVinculacio: String,
+        explotacio: String
+    ) = apiInterface.getListaBovinos(nif, password, tipusVinculacio, explotacio)
 
     suspend fun getDescargaGuiasMobilitat(
         nif: String,
@@ -70,10 +78,18 @@ class Repositorio {
     suspend fun putSolicitudMaterial(request: PetSolicitudMaterial) =
         apiInterface.putSolicitudMaterial(request)
 
-
     //Porcinos
     suspend fun putMovilidadPorcinos(request: GuiaMobilitatPorcinos) =
         apiInterface.putMovilidadPorcinos(request)
 
+    suspend fun getDescargaGuiasMobilitatPorcions(
+        nif: String,
+        passwordMobilitat: String,
+        codiMo: String,
+        codiRega: String,
+        dataSortida: String
+    ) = apiInterface.getGuiesMobilitatPorcinos(nif, passwordMobilitat, codiMo, codiRega, dataSortida)
 
+    suspend fun putModificarGuiaPorcinos(request: PeticionModificarGuiaPorcinos) =
+        apiInterface.putModificarGuiaPorcinos(request)
 }
