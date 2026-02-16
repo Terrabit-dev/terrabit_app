@@ -25,7 +25,7 @@ class ElementosConCodigos {
         return aptitudes
     }
     @Composable
-    fun Muertes(): Map<String, String>{
+    fun muertes(): Map<String, String>{
         val listaTiposMuerte = mapOf<String, String>(
             stringResource(R.string.form_type_dead_dead) to "01",
             stringResource(R.string.form_type_dead_abort) to "02"
@@ -34,7 +34,7 @@ class ElementosConCodigos {
     }
 
     @Composable
-    fun Transporte(): Map<String, String> {
+    fun transporte(): Map<String, String> {
         val listaTransporte = mapOf<String, String>(
             stringResource(R.string.option_truck) to "04",
             stringResource(R.string.option_boat) to "05",
@@ -47,14 +47,37 @@ class ElementosConCodigos {
     }
 
     @Composable
-    fun EstadosLlegada(): Map<String, String> {
+    fun estadosLlegada(): Map<String, String> {
         val listaEstadosLlegada = mapOf<String, String>(
-            stringResource(R.string.option_arrival) to "92",
-            stringResource(R.string.option_death_transport) to "93",
-            stringResource(R.string.option_death_stable) to "94",
-            stringResource(R.string.option_sacrificed) to "80"
+            "92" to stringResource(R.string.option_arrival),
+            "93" to stringResource(R.string.option_death_transport),
+            "94" to stringResource(R.string.option_death_stable),
+            "80" to stringResource(R.string.option_sacrificed)
         )
         return listaEstadosLlegada
+    }
+
+    @Composable
+    fun opcionesSiNo(): Map<String, String>{
+        val listaOpciones= mapOf<String, String>(
+            stringResource(R.string.option_yes) to "SI",
+            stringResource(R.string.option_no) to "NO"
+        )
+        return listaOpciones
+    }
+
+
+    @Composable
+    fun tiposPresentacion(): Map<String, String>{
+        val listaTiposPresentacion = mapOf<String, String>(
+            "1" to "I",
+            "2" to "IIA",
+            "3" to "IIB",
+            "4" to "IIIA",
+            "5" to "IIIB"
+        )
+        return listaTiposPresentacion
+
     }
 
 }

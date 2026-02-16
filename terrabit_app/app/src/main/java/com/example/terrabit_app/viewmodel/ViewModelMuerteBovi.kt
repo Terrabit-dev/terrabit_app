@@ -23,15 +23,18 @@ class ViewModelMuerteBovi : ViewModel() {
     private val repositorio = Repositorio()
     private lateinit var sharedPreferencesManager: SharedPreferencesManager
 
-    // ============================================
-    // SECCIÓN: AUTOGUARDADO
-    // ============================================
+    // ID único para la sesión actual del formulario
+    private var borradorSesionId: String = ""
 
     fun inicializarSharedPreferences(context: Context) {
         sharedPreferencesManager = SharedPreferencesManager(context)
+
+        // Generar nuevo ID de sesión si no existe
+        if (borradorSesionId.isEmpty()) {
+            borradorSesionId = "muerte_auto_${System.currentTimeMillis()}"
+        }
     }
 
-    // Detecta si el formulario tiene datos
     fun tieneContenido(): Boolean {
         return !_tipoMuerte.value.isNullOrEmpty() ||
                 !_identificadorMuerte.value.isNullOrEmpty() ||
@@ -42,7 +45,6 @@ class ViewModelMuerteBovi : ViewModel() {
                 !_coordenadaY.value.isNullOrEmpty()
     }
 
-    // Guarda automáticamente el formulario
     fun guardarBorradorAutomatico() {
         if (!tieneContenido()) {
             Log.d("Autoguardado Muerte", "No hay contenido para guardar")
@@ -61,20 +63,20 @@ class ViewModelMuerteBovi : ViewModel() {
                 "coordenadaY" to _coordenadaY.value
             )
 
-            // Buscar si ya existe un borrador de muerte
+            // Buscar si ya existe este borrador específico de la sesión actual
             val borradorExistente = sharedPreferencesManager.obtenerBorradores()
-                .find { it.tipo == "MUERTE" && it.estado == "BORRADOR_AUTO" }
+                .find { it.id == borradorSesionId }
 
             val borrador = if (borradorExistente != null) {
-                // Actualizar borrador existente
+                // Actualizar borrador de esta sesión
                 borradorExistente.copy(
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
                     datos = Gson().toJson(datosMuerte)
                 )
             } else {
-                // Crear nuevo borrador
+                // Crear nuevo borrador con ID de sesión
                 Borrador(
-                    id = "muerte_auto_${System.currentTimeMillis()}",
+                    id = borradorSesionId,
                     tipo = "MUERTE",
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
                     datos = Gson().toJson(datosMuerte),
@@ -83,64 +85,66 @@ class ViewModelMuerteBovi : ViewModel() {
             }
 
             sharedPreferencesManager.guardarBorrador(borrador)
-            Log.d("Autoguardado Muerte", "Borrador guardado automáticamente")
+            Log.d("Autoguardado Muerte", "Borrador guardado: $borradorSesionId")
         } catch (e: Exception) {
             Log.e("Error Autoguardado Muerte", "Error al guardar: ${e.message}", e)
         }
     }
 
-    // Cargar borrador existente
     fun cargarBorradorExistente() {
         try {
             val borradores = sharedPreferencesManager.obtenerBorradores()
-            val borradorMuerte = borradores.find {
+
+            // Buscar cualquier borrador de tipo MUERTE con estado BORRADOR_AUTO
+            val borradoresMuerte = borradores.filter {
                 it.tipo == "MUERTE" && it.estado == "BORRADOR_AUTO"
             }
 
-            if (borradorMuerte != null) {
-                val gson = Gson()
-                val datos: Map<String, Any?> = gson.fromJson(
-                    borradorMuerte.datos,
-                    object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
-                )
+            if (borradoresMuerte.isNotEmpty()) {
+                // Tomar el más reciente (último guardado)
+                val borradorMuerte = borradoresMuerte.maxByOrNull {
+                    it.id.substringAfter("muerte_auto_").toLongOrNull() ?: 0L
+                }
 
-                // Restaurar datos
-                _tipoMuerte.value = datos["tipo"] as? String ?: ""
-                _codigoTipoMuerte.value = datos["codigoTipo"] as? String ?: ""
-                _identificadorMuerte.value = datos["identificador"] as? String ?: ""
-                _fechaMuerte.value = datos["fecha"] as? String ?: ""
-                _mesesGestacion.value = datos["mesesGestacion"] as? String ?: ""
-                _cadaverInaccesible.value = datos["cadaverInaccesible"] as? Boolean ?: false
-                _coordenadaX.value = datos["coordenadaX"] as? String ?: ""
-                _coordenadaY.value = datos["coordenadaY"] as? String ?: ""
+                if (borradorMuerte != null) {
+                    // Asignar este ID a la sesión actual
+                    borradorSesionId = borradorMuerte.id
 
-                Log.d("Cargar Borrador", "Borrador de muerte cargado")
+                    val gson = Gson()
+                    val datos: Map<String, Any?> = gson.fromJson(
+                        borradorMuerte.datos,
+                        object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
+                    )
+
+                    // Restaurar datos
+                    _tipoMuerte.value = datos["tipo"] as? String ?: ""
+                    _codigoTipoMuerte.value = datos["codigoTipo"] as? String ?: ""
+                    _identificadorMuerte.value = datos["identificador"] as? String ?: ""
+                    _fechaMuerte.value = datos["fecha"] as? String ?: ""
+                    _mesesGestacion.value = datos["mesesGestacion"] as? String ?: ""
+                    _cadaverInaccesible.value = datos["cadaverInaccesible"] as? Boolean ?: false
+                    _coordenadaX.value = datos["coordenadaX"] as? String ?: ""
+                    _coordenadaY.value = datos["coordenadaY"] as? String ?: ""
+
+                    Log.d("Cargar Borrador", "Borrador cargado: $borradorSesionId")
+                }
             }
         } catch (e: Exception) {
             Log.e("Error Cargar Borrador", "Error al cargar: ${e.message}", e)
         }
     }
 
-    // Eliminar borrador al enviar exitosamente
     fun eliminarBorradorAutomatico() {
         try {
-            val borradores = sharedPreferencesManager.obtenerBorradores()
-            val borradorMuerte = borradores.find {
-                it.tipo == "MUERTE" && it.estado == "BORRADOR_AUTO"
-            }
-
-            if (borradorMuerte != null) {
-                sharedPreferencesManager.eliminarBorrador(borradorMuerte.id)
-                Log.d("Eliminar Borrador", "Borrador automático eliminado")
+            if (borradorSesionId.isNotEmpty()) {
+                sharedPreferencesManager.eliminarBorrador(borradorSesionId)
+                Log.d("Eliminar Borrador", "Borrador eliminado: $borradorSesionId")
+                borradorSesionId = "" // Resetear el ID de sesión
             }
         } catch (e: Exception) {
             Log.e("Error Eliminar Borrador", "Error: ${e.message}", e)
         }
     }
-
-    // ============================================
-    // SECCIÓN: FALLECIMIENTO / MUERTE
-    // ============================================
 
     private val _tipoMuerte = MutableLiveData("")
     val tipoMuerte = _tipoMuerte
@@ -284,8 +288,21 @@ class ViewModelMuerteBovi : ViewModel() {
         _cadaverInaccesible.value = false
         _coordenadaX.value = ""
         _coordenadaY.value = ""
+
+        // Generar nuevo ID de sesión para el próximo formulario
+        borradorSesionId = ""
     }
 
+
+    fun obtenerBorradoresMuerte(): List<Borrador> {
+        return try {
+            sharedPreferencesManager.obtenerBorradores()
+                .filter { it.tipo == "MUERTE" && it.estado == "BORRADOR_AUTO" }
+        } catch (e: Exception) {
+            Log.e("Error", "Error al obtener borradores: ${e.message}", e)
+            emptyList()
+        }
+    }
     fun resetearEstadoRegistroMuerte() {
         _registroMuerteExitoso.value = false
         _mensajeErrorMuerte.value = ""
@@ -351,9 +368,7 @@ class ViewModelMuerteBovi : ViewModel() {
 
                                 Log.d("Registro Muerte", "Muerte reportada exitosamente")
 
-                                // ELIMINAR BORRADOR AUTOMÁTICO AL ENVIAR EXITOSAMENTE
                                 eliminarBorradorAutomatico()
-
                                 limpiarFormularioMuerte()
                             } else {
                                 _registroMuerteExitoso.value = false

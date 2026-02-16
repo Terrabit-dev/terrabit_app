@@ -56,6 +56,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -249,7 +250,7 @@ fun Login(
 fun LoginCard(
     viewModel: LoginViewModel,
     loginState: LoginState,
-    uriHandler: androidx.compose.ui.platform.UriHandler
+    uriHandler: UriHandler
 ) {
     val savedNif by viewModel.savedNif.collectAsState()
     val savedPassword by viewModel.savedPassword.collectAsState()

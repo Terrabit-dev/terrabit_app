@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Drafts
 import androidx.compose.material.icons.filled.EmojiNature
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.LocalShipping
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
@@ -190,6 +191,16 @@ fun HomeContent(
                 .padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+
+            // Tarjeta Listado de Bovinos
+            TarjetaMenu(
+                icono = Icons.Default.List,
+                titulo = stringResource(R.string.list_bovinos),
+                descripcion = stringResource(R.string.list_bovinos_subtitle),
+                colorFondo = Color(0xFFE28F41),
+                onClick = { navController.navigate(Routes.ListarBovinos.route)}
+
+            )
             // Tarjeta Gestión de Bovinos
             TarjetaMenu(
                 icono = Icons.Default.Agriculture,
