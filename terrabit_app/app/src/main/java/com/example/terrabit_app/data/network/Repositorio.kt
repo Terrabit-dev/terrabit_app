@@ -10,9 +10,6 @@ import com.example.terrabit_app.data.network.animales.RegistroMuerteBovi
 import com.example.terrabit_app.data.network.animales.RegistroNacimientoBovi
 import com.example.terrabit_app.data.network.guias.PeticionAltaGuia
 import com.example.terrabit_app.data.network.guias.PeticionModificarGuia
-import com.example.terrabit_app.data.network.guiasPorcinos.PeticionMovilidadPorci
-import com.example.terrabit_app.data.network.lista_bovinos.Animal
-import com.example.terrabit_app.data.network.guias.guiasPorcinos.PeticionMovilidadPorci
 import com.example.terrabit_app.data.network.material.PetSolicitudDuplicado
 import com.example.terrabit_app.data.network.material.PetSolicitudMaterial
 import com.example.terrabit_app.data.network.moviminetos.modelos.PetConfirmacionMovi
@@ -21,7 +18,7 @@ import com.example.terrabit_app.data.network.moviminetos.modelos.PetRegistroInte
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class Repositorio(context: Context) {
+class Repositorio {
     val apiInterface = ApiInterface.create()
     private val bovinoDao = AppDatabase.getDatabase(context).bovinoDao()
 
@@ -135,22 +132,11 @@ class Repositorio(context: Context) {
     suspend fun putSolicitudMaterial(request: PetSolicitudMaterial) =
         apiInterface.putSolicitudMaterial(request)
 
-
     //Porcinos
-    suspend fun putMovilidadPorcinos(request: PeticionMovilidadPorci) =
+    suspend fun putMovilidadPorcinos(request: GuiaMobilitatPorcinos) =
         apiInterface.putMovilidadPorcinos(request)
 
 
-
-    suspend fun getDescargaGuiasMobilitatPorcions(
-        nif: String,
-        passwordMobilitat: String,
-        codiMo: String,
-        codiRega: String,
-        dataSortida: String
-    ) = apiInterface.getGuiesMobilitatPorcinos(nif, passwordMobilitat, codiMo, codiRega, dataSortida)
-
     suspend fun putModificarGuiaPorcinos(request: PeticionModificarGuiaPorcinos) =
         apiInterface.putModificarGuiaPorcinos(request)
-
 }
