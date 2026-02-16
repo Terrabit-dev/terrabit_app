@@ -23,6 +23,13 @@ class Repositorio {
         codiMO: String
     ) = apiInterface.getIdentificadoresDisponibles(nif, passwordMobilitat, codiMO)
 
+    suspend fun getListaBovinos(
+        nif: String,
+        password: String,
+        tipusVinculacio: String,
+        explotacio: String
+    ) = apiInterface.getListaBovinos(nif, password, tipusVinculacio, explotacio)
+
     suspend fun getDescargaGuiasMobilitat(
         nif: String,
         passwordMobilitat: String,
