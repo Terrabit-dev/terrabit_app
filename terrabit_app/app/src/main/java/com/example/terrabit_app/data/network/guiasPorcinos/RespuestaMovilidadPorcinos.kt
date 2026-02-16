@@ -1,4 +1,4 @@
-package com.example.terrabit_app.data.network.guias.guiasPorcinos
+package com.example.terrabit_app.data.network.guiasPorcinos
 
 data class RespuestaMovilidadPorcinos(
     val descripcio: List<String>? = null,
