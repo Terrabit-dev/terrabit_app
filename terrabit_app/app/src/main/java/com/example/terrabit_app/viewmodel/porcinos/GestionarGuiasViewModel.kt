@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-class EditarGuiasViewModel : ViewModel() {
+class GestionarGuiasViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(GestionarGuiasPorcinosUiState())
     val uiState : StateFlow<GestionarGuiasPorcinosUiState> = _uiState.asStateFlow()
 

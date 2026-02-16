@@ -2,6 +2,7 @@ package com.example.terrabit_app.viewmodel.porcinos
 
 import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.ViewModel
+import com.example.terrabit_app.data.network.guiasPorcinos.GuiaMobilitatPorcinos
 import com.example.terrabit_app.ui.screen.porcinos.CrearGuiasPorcinosUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -201,5 +202,38 @@ class CrearGuiaPorcinosViewModel: ViewModel() {
     fun crearGuia() {
         _uiState.update { CrearGuiasPorcinosUiState() }
         /*TODO*/
+    }
+
+    fun rellenarCampos(guia: GuiaMobilitatPorcinos) {
+        val fechaSalida = guia.dataSortida.toString().let {
+            "${it.substring(6, 8)}/${it.substring(4, 6)}/${it.substring(0, 4)}"
+        }
+        val fechaLlegada = guia.dataArribada.toString().let {
+            "${it.substring(6, 8)}/${it.substring(4, 6)}/${it.substring(0, 4)}"
+        }
+        val horaSalida = guia.dataSortida.toString().let {
+            "${it.substring(8, 10)}:${it.substring(10, 12)}"
+        }
+        val horaLlegada = guia.dataArribada.toString().let {
+            "${it.substring(8, 10)}:${it.substring(10, 12)}"
+        }
+
+        _uiState.update { currentState ->
+            currentState.copy(
+                explotacion = guia.moDesti,
+                categoriaSeleccionada = guia.categoria,
+                numAnimales = guia.nombreAnimals.toString(),
+                fechaSalida = fechaSalida,
+                fechaLlegada = fechaLlegada,
+                horaSalida = horaSalida,
+                horaLlegada = horaLlegada,
+                matricula= guia.vehicle.toString(),
+                nifConductor = guia.responsable.toString()
+            )
+        }
+    }
+
+    fun editarYConfirmarGuia() {
+        TODO()
     }
 }

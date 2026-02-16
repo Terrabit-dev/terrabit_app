@@ -4,6 +4,7 @@ package com.example.terrabit_app.ui.navigation
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -32,7 +33,8 @@ import com.example.terrabit_app.viewmodel.MaterialViewModel
 import com.example.terrabit_app.viewmodel.MovimientosViewModel
 import com.example.terrabit_app.viewmodel.NacimientoViewmodel
 import com.example.terrabit_app.viewmodel.ViewModelMuerteBovi
-import com.example.terrabit_app.viewmodel.porcinos.EditarGuiasViewModel
+import com.example.terrabit_app.viewmodel.porcinos.CrearGuiaPorcinosViewModel
+import com.example.terrabit_app.viewmodel.porcinos.GestionarGuiasViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -126,15 +128,23 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel ) {
 
         // Pantallas porcinos
         composable(Routes.GestionGuiasPorcinos.route) {
-            val editarGuias: EditarGuiasViewModel = viewModel()
+            val gestionarGuiasViewModel: GestionarGuiasViewModel = viewModel()
             GestionGuiasPorcinos(
                 navController = navController,
-                editarGuias
+                gestionarGuiasViewModel
             )
         }
 
         composable(Routes.EntradasPorcinos.route) {
             EntradasPorcinos(navController = navController)
+        }
+
+        composable(Routes.EditarGuiaPorcinos.route) {
+            val editarGuiasViewModel: CrearGuiaPorcinosViewModel = viewModel()
+            EditarGuiaPorcinos(
+                navController,
+                editarGuiasViewModel
+            )
         }
     }
 }
