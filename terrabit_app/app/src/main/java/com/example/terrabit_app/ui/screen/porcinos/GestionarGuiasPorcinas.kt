@@ -37,13 +37,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.data.network.guiasPorcinos.GuiaMobilitatPorcinos
+import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
-import com.example.terrabit_app.ui.theme.MintCreamGreen
-import com.example.terrabit_app.viewmodel.porcinos.EditarGuiasViewModel
+import com.example.terrabit_app.viewmodel.porcinos.CrearGuiaPorcinosViewModel
+import com.example.terrabit_app.viewmodel.porcinos.GestionarGuiasViewModel
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -51,24 +53,13 @@ import java.time.format.DateTimeFormatter
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GestionGuiasPorcinos(
-    navController: NavController,
-    viewModel: EditarGuiasViewModel = viewModel() // Revisar
-) {
-    val uiState by viewModel.uiState.collectAsState()
+        navController: NavController,
+        viewModelGestionarGuias: GestionarGuiasViewModel = viewModel(),
+        viewModelCrearGuias: CrearGuiaPorcinosViewModel = viewModel()
+    ) {
+    val uiStateGestionGuias by viewModelGestionarGuias.uiState.collectAsState()
 
-    val listaPrueba: List<GuiaMobilitatPorcinos> = listOf(
-        GuiaMobilitatPorcinos(
-            moOrigen = "Explotació Can Porquet",
-            remo = "ES0801234567", // Código REGA Barcelona
-            moDesti = "Escorxador Comarcal BCN",
-            categoria = "Porcí de Engreix",
-            nombreAnimals = 150,
-            transportista = "Trans-Porcí S.L.",
-            responsable = "Joan Vila",
-            vehicle = "1234-LGP",
-            dataSortida = 202602160800L,   // 16/02/2026 08:00
-            dataArribada = 202602161030L    // 16/02/2026 10:30
-        ),
+    val lista: List<GuiaMobilitatPorcinos> = listOf(
         GuiaMobilitatPorcinos(
             moOrigen = "Granja El Prat",
             remo = "ES0809876543",
@@ -80,21 +71,9 @@ fun GestionGuiasPorcinos(
             vehicle = "5678-KBC",
             dataSortida = 202602170700L,   // 17/02/2026 07:00
             dataArribada = 202602170915L    // 17/02/2026 09:15
-        ),
-        GuiaMobilitatPorcinos(
-            moOrigen = "Finca Sant Boi",
-            remo = "ES0804455667",
-            moDesti = "Planta de Processament Vallès",
-            categoria = "Porcí d'Engreix",
-            nombreAnimals = 210,
-            transportista = "Trans-Carn S.A.",
-            responsable = "Albert Roca",
-            vehicle = "9900-BBC",
-            dataSortida = 202602182200L,   // 18/02/2026 22:00
-            dataArribada = 202602190130L    // 19/02/2026 01:30 (Día siguiente)
         )
     )
-    
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -120,16 +99,30 @@ fun GestionGuiasPorcinos(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(/*uiState.listaGuiasPorcinos*/ listaPrueba) { guia ->
-                GuiaCard(guia)
-            }
+//            if (uiStateGestionGuias.listaGuiasPorcinos.isEmpty()) {
+//                item {
+//                    Text(
+//                        "No hay guías para editar o confirmar",
+//                        fontSize = 14.sp,
+//                        color = Color.Gray
+//                    )
+//                }
+//            } else {
+                items(/*uiStateGestionGuias.listaGuiasPorcinos*/lista) { guia ->
+                    GuiaCard(navController, guia, viewModelCrearGuias)
+                }
+//            }
         }
     }
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun GuiaCard(guia: GuiaMobilitatPorcinos) {
+fun GuiaCard(
+    navController: NavController,
+    guia: GuiaMobilitatPorcinos,
+    viewModelCrearGuias: CrearGuiaPorcinosViewModel = viewModel()
+) {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -168,7 +161,10 @@ fun GuiaCard(guia: GuiaMobilitatPorcinos) {
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 FilledIconButton(
-                    onClick = {TODO()},
+                    onClick = {
+                        viewModelCrearGuias.rellenarCampos(guia)
+                        navController.navigate(Routes.EditarGuiaPorcinos.route)
+                    },
                     shape = RoundedCornerShape(8.dp),
                     colors = IconButtonDefaults.iconButtonColors(
                         containerColor = MainOrange

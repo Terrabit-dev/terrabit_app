@@ -413,51 +413,6 @@ fun GestionPorcinos(
                     }
 
                     // Fecha de Salida
-                    /*Column(modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            text = stringResource(R.string.form_porcinos_fecha_salida),
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = DarkBlueGrey,
-                            letterSpacing = 0.15.sp
-                        )
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { viewModel.mostrarDatePickerSalida() }
-                        ) {
-                            OutlinedTextField(
-                                value = uiState.fechaSalida,
-                                onValueChange = {},
-                                modifier = Modifier.fillMaxWidth(),
-                                placeholder = {
-                                    Text(
-                                        text = stringResource(R.string.form_porcinos_descr_fechaS),
-                                        color = BlueGrey
-                                    )
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        Icons.Default.DateRange,
-                                        contentDescription = stringResource(R.string.content_description_calendario),
-                                        tint = MainOrange
-                                    )
-                                },
-                                readOnly = true,
-                                enabled = false,
-                                shape = MaterialTheme.shapes.medium,
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    disabledTextColor = DarkBlueGrey,
-                                    disabledBorderColor = DarkWhiteBackground,
-                                    disabledLeadingIconColor = MainOrange,
-                                    disabledPlaceholderColor = BlueGrey
-                                ),
-                                singleLine = true
-                            )
-                        }
-                    }*/
-
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -554,52 +509,7 @@ fun GestionPorcinos(
                     }
 
                     // Fecha de Llegada
-                    /*Column(modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            text = stringResource(R.string.form_porcinos_fecha_llegada),
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = DarkBlueGrey,
-                            letterSpacing = 0.15.sp
-                        )
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { viewModel.mostrarDatePickerLlegada() }
-                        ) {
-                            OutlinedTextField(
-                                value = uiState.fechaLlegada,
-                                onValueChange = {},
-                                modifier = Modifier.fillMaxWidth(),
-                                placeholder = {
-                                    Text(
-                                        text = stringResource(R.string.form_porcinos_descr_fechaLl),
-                                        color = BlueGrey
-                                    )
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        Icons.Default.DateRange,
-                                        contentDescription = stringResource(R.string.content_description_calendario),
-                                        tint = MainOrange
-                                    )
-                                },
-                                readOnly = true,
-                                enabled = false,
-                                shape = MaterialTheme.shapes.medium,
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    disabledTextColor = DarkBlueGrey,
-                                    disabledBorderColor = DarkWhiteBackground,
-                                    disabledLeadingIconColor = MainOrange,
-                                    disabledPlaceholderColor = BlueGrey
-                                ),
-                                singleLine = true
-                            )
-                        }
-                    }*/
-
-                    Row(
+                                        Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
