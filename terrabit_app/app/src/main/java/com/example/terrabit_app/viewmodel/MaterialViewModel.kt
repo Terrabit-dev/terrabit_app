@@ -1,6 +1,8 @@
 package com.example.terrabit_app.viewmodel
 
+import android.app.Application
 import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,10 +13,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class MaterialViewModel : ViewModel() {
+class MaterialViewModel(application: Application) : AndroidViewModel(application) {
 
     // Instancia del repositorio
-    private lateinit var repositorio: Repositorio
+    private var repositorio = Repositorio(application)
 
     // ============================================
     // SECCIÓN: SOLICITUD DE MATERIAL
