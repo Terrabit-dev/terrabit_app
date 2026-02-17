@@ -85,6 +85,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import com.example.terrabit_app.ui.navigation.Routes
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -129,8 +130,6 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
     // ============================================
     LaunchedEffect(Unit) {
         viewModel.inicializarSharedPreferences(context)
-        viewModel.getIdentificadores("S0800608B", "L1855m58", "1410AK")
-
         val borradores = viewModel.obtenerBorradoresNacimiento()
         cantidadBorradores = borradores.size
 
@@ -394,7 +393,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                         }
                     },
                     navigationIcon = {
-                        IconButton(onClick = { navController.popBackStack() }) {
+                        IconButton(onClick = { navController.navigate(Routes.GestionBovinos.route) }) {
                             Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
                         }
                     },

@@ -13,6 +13,7 @@ import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.animales.PetIdentificacion
 import com.example.terrabit_app.data.network.respuestas.RespuestaUnificada
 import com.example.terrabit_app.utils.DateUtils
+import com.example.terrabit_app.utils.UserPreferences
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -27,6 +28,13 @@ class IdentificacionAplazaViewModel (application: Application): AndroidViewModel
 
     // ID único para la sesión actual del formulario
     private var borradorSesionId: String = ""
+
+    // Instanciar UserPreferences directamente con la Application
+    private val userPreferences = UserPreferences(application)
+
+    // Leer las credenciales del login guardadas automáticamente
+    val nif = userPreferences.getNif() ?: ""
+    val password = userPreferences.getPassword() ?: ""
 
     fun inicializarSharedPreferences(context: Context) {
         sharedPreferencesManager = SharedPreferencesManager(context)
@@ -213,8 +221,8 @@ class IdentificacionAplazaViewModel (application: Application): AndroidViewModel
 
                 val request = PetIdentificacion(
                     identificador = _identificadorAnimal.value ?: "",
-                    nif = "S0800608B",
-                    passwordMobilitat = "L1855m58",
+                    nif = nif,
+                    passwordMobilitat = password,
                     dataIdentificacio = fechaIdentificacionAPI
                 )
 

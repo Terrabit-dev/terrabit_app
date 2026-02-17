@@ -13,6 +13,7 @@ import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.animales.PetModicarAnimal
 import com.example.terrabit_app.data.network.lista_bovinos.Animal
 import com.example.terrabit_app.data.network.respuestas.RespuestaUnificada
+import com.example.terrabit_app.utils.UserPreferences
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -41,6 +42,15 @@ class CorrecionSexoViewModel(application: Application): AndroidViewModel(applica
     private val _bovinosCargados = MutableLiveData(false)
     val bovinosCargados = _bovinosCargados
 
+    // Instanciar UserPreferences directamente con la Application
+    private val userPreferences = UserPreferences(application)
+
+    // Leer las credenciales del login guardadas automáticamente
+    val nif = userPreferences.getNif() ?: ""
+    val password = userPreferences.getPassword() ?: ""
+    val codiMo = userPreferences.getCodiMO() ?: ""
+
+
     fun initSharedPreferences(context: Context){
         repositorio = Repositorio(context)
         sharedPreferencesManager = SharedPreferencesManager(context)
@@ -64,10 +74,10 @@ class CorrecionSexoViewModel(application: Application): AndroidViewModel(applica
 
                 // Reemplaza con tus credenciales reales o desde SharedPreferences
                 repositorio.getBovinosWithCache(
-                    nif = "S0800608B",
-                    password = "L1855m58",
+                    nif = nif,
+                    password = password,
                     tipusVinculacio = "1",
-                    explotacio = "1410AK", // Reemplaza con tu explotación
+                    explotacio = codiMo,
                     forceRefresh = false
                 )
 
@@ -279,8 +289,8 @@ class CorrecionSexoViewModel(application: Application): AndroidViewModel(applica
             try {
                 val request = PetModicarAnimal(
                     identificador = _identificadorCorreccionSexo.value ?: "",
-                    nif = "S0800608B",
-                    passwordMobilitat = "L1855m58",
+                    nif = nif,
+                    passwordMobilitat = password,
                     sexe = codigoSexo
                 )
 

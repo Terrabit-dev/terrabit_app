@@ -77,6 +77,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
+import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.theme.BlueGrey
 import com.example.terrabit_app.ui.theme.DarkBlueGrey
 import com.example.terrabit_app.ui.theme.DarkOrange
@@ -360,7 +361,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                         }
                     },
                     navigationIcon = {
-                        IconButton(onClick = { navController.popBackStack() }) {
+                        IconButton(onClick = { navController.navigate(Routes.GestionBovinos.route) }) {
                             Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
                         }
                     },

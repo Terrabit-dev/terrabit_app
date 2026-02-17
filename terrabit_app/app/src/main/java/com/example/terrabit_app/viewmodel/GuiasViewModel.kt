@@ -12,6 +12,7 @@ import com.example.terrabit_app.data.SharedPreferencesManager
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.guias.PeticionAltaGuia
 import com.example.terrabit_app.data.network.respuestas.ResAltaGuia
+import com.example.terrabit_app.utils.UserPreferences
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.launch
@@ -29,6 +30,15 @@ class GuiasViewModel (application: Application): AndroidViewModel(application) {
 
     // ID único para la sesión actual del formulario
     private var borradorSesionId: String = ""
+
+    // Instanciar UserPreferences directamente con la Application
+    private val userPreferences = UserPreferences(application)
+
+    // Leer las credenciales del login guardadas automáticamente
+    val nif = userPreferences.getNif() ?: ""
+    val password = userPreferences.getPassword() ?: ""
+    val codiMo = userPreferences.getCodiMO() ?: ""
+
 
     fun inicializarSharedPreferences(context: Context) {
         sharedPreferencesManager = SharedPreferencesManager(context)
@@ -521,8 +531,8 @@ class GuiasViewModel (application: Application): AndroidViewModel(application) {
                     ?.takeIf { it.isNotEmpty() }
 
                 val request = PeticionAltaGuia(
-                    nif = "S0800608B",
-                    passwordMobilitat = "L1855m58",
+                    nif = nif,
+                    passwordMobilitat = password,
                     especie = "01",
                     explotacioOrigen = _explotacioOrigen.value ?: "",
                     explotacioDestinacio = _explotacioDestinacio.value ?: "",

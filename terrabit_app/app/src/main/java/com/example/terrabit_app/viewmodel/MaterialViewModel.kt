@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.material.PetSolicitudMaterial
 import com.example.terrabit_app.data.network.material.Unitat
+import com.example.terrabit_app.utils.UserPreferences
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -99,6 +100,13 @@ class MaterialViewModel(application: Application) : AndroidViewModel(application
     data class EmpresaSubministradora(val nif: String, val nombre: String)
     data class OficinaComarcal(val codigo: String, val nombre: String)
     data class TipoMaterial(val codigo: String, val nombre: String)
+
+    // Instanciar UserPreferences directamente con la Application
+    private val userPreferences = UserPreferences(application)
+
+    // Leer las credenciales del login guardadas automáticamente
+    val nif = userPreferences.getNif() ?: ""
+    val password = userPreferences.getPassword() ?: ""
 
     // Listas de opciones - Material
     val listaEmpresas = listOf(
@@ -341,8 +349,8 @@ class MaterialViewModel(application: Application) : AndroidViewModel(application
                 )
 
                 val request = PetSolicitudMaterial(
-                    nif = "S0800608B",
-                    passwordMobilitat = "L1855m58",
+                    nif = nif,
+                    passwordMobilitat = password,
                     especie = "01",
                     empresaSubministradora = _codigoEmpresa.value ?: "",
                     tipusEnviament = codigoTipoEnvio,

@@ -14,6 +14,7 @@ import com.example.terrabit_app.data.network.Identificadores.Identificadores
 import com.example.terrabit_app.data.network.animales.RegistroNacimientoBovi
 import com.example.terrabit_app.data.network.respuestas.RespuestaUnificada
 import com.example.terrabit_app.utils.DateUtils
+import com.example.terrabit_app.utils.UserPreferences
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -31,6 +32,13 @@ class NacimientoViewmodel (application: Application): AndroidViewModel(applicati
 
     // ID único para la sesión actual del formulario
     private var borradorSesionId: String = ""
+
+    // Instanciar UserPreferences directamente con la Application
+    private val userPreferences = UserPreferences(application)
+
+    // Leer las credenciales del login guardadas automáticamente
+    val nif = userPreferences.getNif() ?: ""
+    val password = userPreferences.getPassword() ?: ""
 
     fun inicializarSharedPreferences(context: Context) {
         sharedPreferencesManager = SharedPreferencesManager(context)
@@ -379,8 +387,8 @@ class NacimientoViewmodel (application: Application): AndroidViewModel(applicati
                 val fechaIdentificacionAPI = DateUtils.convertirFechaAFormatoAPI(_fechaIdentificacion.value ?: "")
 
                 val request = RegistroNacimientoBovi(
-                    nif = "S0800608B",
-                    passwordMobilitat = "L1855m58",
+                    nif = nif,
+                    passwordMobilitat = password,
                     identificador = _idCria.value ?: "",
                     identificadorMare = _idMadre.value ?: "",
                     dataNaixement = fechaNacimientoAPI,

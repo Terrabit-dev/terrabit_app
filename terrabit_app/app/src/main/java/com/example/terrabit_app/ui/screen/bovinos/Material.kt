@@ -58,6 +58,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.theme.BlueGrey
 import com.example.terrabit_app.ui.theme.DarkBlueGrey
 import com.example.terrabit_app.ui.theme.DarkWhiteBackground
@@ -226,7 +227,7 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                         }
                     },
                     navigationIcon = {
-                        IconButton(onClick = { navController.popBackStack() }) {
+                        IconButton(onClick = { navController.navigate(Routes.MaterialCategoria.route) }) {
                             Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
                         }
                     },

@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.lista_bovinos.Animal
+import com.example.terrabit_app.utils.UserPreferences
 import kotlinx.coroutines.launch
 
 class ListarBovinosViewModel(application: Application) : AndroidViewModel(application) {
@@ -28,6 +29,14 @@ class ListarBovinosViewModel(application: Application) : AndroidViewModel(applic
     private val _busqueda = MutableLiveData("")
     val busqueda = _busqueda
 
+    // Instanciar UserPreferences directamente con la Application
+    private val userPreferences = UserPreferences(application)
+
+    // Leer las credenciales del login guardadas automáticamente
+    val nif = userPreferences.getNif() ?: ""
+    val password = userPreferences.getPassword() ?: ""
+    val codiMo = userPreferences.getCodiMO() ?: ""
+
     fun actualizarBusqueda(texto: String) {
         _busqueda.value = texto
         filtrarBovinos(texto)
@@ -46,12 +55,11 @@ class ListarBovinosViewModel(application: Application) : AndroidViewModel(applic
         }
     }
 
-    fun cargarBovinos(
-        nif: String = "S0800608B",
-        password: String = "L1855m58",
-        tipusVinculacio: String = "1",
-        explotacio: String = "1410AK"
-    ) {
+    fun cargarBovinos() {
+        val nif: String = nif
+        val password: String = password
+        val tipusVinculacio: String = "1"
+        val explotacio: String = codiMo
         viewModelScope.launch {
             _cargando.value = true
             _error.value = null

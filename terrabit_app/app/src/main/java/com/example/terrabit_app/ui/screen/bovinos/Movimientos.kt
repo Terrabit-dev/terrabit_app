@@ -34,6 +34,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
 import com.example.terrabit_app.viewmodel.MovimientosViewModel
 import com.example.terrabit_app.R
+import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
 
@@ -343,7 +344,7 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
                         }
                     },
                     navigationIcon = {
-                        IconButton(onClick = { navController.popBackStack() }) {
+                        IconButton(onClick = { navController.navigate(Routes.GuiasMovimientos.route)}) {
                             Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
                         }
                     },

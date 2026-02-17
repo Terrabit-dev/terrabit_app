@@ -14,6 +14,7 @@ import com.example.terrabit_app.data.network.moviminetos.modelos.Movimientos
 import com.example.terrabit_app.data.network.moviminetos.modelos.PetConfirmacionMovi
 import com.example.terrabit_app.data.network.respuestas.RespuestaUnificada
 import com.example.terrabit_app.utils.DateUtils.convertirFechaAFormatoAPI
+import com.example.terrabit_app.utils.UserPreferences
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.CoroutineScope
@@ -29,6 +30,14 @@ class MovimientosViewModel(application: Application) : AndroidViewModel(applicat
 
     private var repositorio = Repositorio(application)
     private lateinit var sharedPreferencesManager: SharedPreferencesManager
+
+    // Instanciar UserPreferences directamente con la Application
+    private val userPreferences = UserPreferences(application)
+
+    // Leer las credenciales del login guardadas automáticamente
+    val nif = userPreferences.getNif() ?: ""
+    val password = userPreferences.getPassword() ?: ""
+    val codiMO = userPreferences.getCodiMO() ?: ""
 
     // ID único para la sesión actual del formulario
     private var borradorSesionId: String = ""
@@ -704,8 +713,8 @@ class MovimientosViewModel(application: Application) : AndroidViewModel(applicat
                 }
 
                 val request = PetConfirmacionMovi(
-                    nif = "S0800608B",
-                    passwordMobilitat = "L1855m58",
+                    nif = nif,
+                    passwordMobilitat = password,
                     especie = "01",
                     codiRemo = _codiRemo.value ?: "",
                     dataArribada = fechaHoraArribadaAPI,

@@ -89,6 +89,7 @@ import com.example.terrabit_app.ui.theme.MainOrange
 import com.example.terrabit_app.ui.theme.WhiteBackground
 import com.example.terrabit_app.viewmodel.GuiasViewModel
 import com.example.terrabit_app.R
+import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
 
@@ -474,7 +475,7 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
                         }
                     },
                     navigationIcon = {
-                        IconButton(onClick = { navController.popBackStack() }) {
+                        IconButton(onClick = { navController.navigate(Routes.GuiasMovimientos.route) }) {
                             Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
                         }
                     },
