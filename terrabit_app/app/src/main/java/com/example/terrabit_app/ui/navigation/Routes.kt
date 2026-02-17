@@ -27,8 +27,14 @@ sealed class Routes(val route: String) {
     object Fallecimiento : Routes("report_death?borradorId={borradorId}") {
         fun conBorrador(id: String) = "report_death?borradorId=$id"
     }
-    object GestionGuias : Routes("manage_guides")
-    object Movimientos : Routes("confirm_movements")
+    object GestionGuias : Routes("manage_guides?borradorId={borradorId}") {
+        fun conBorrador(id: String) = "manage_guides?borradorId=$id"
+    }
+
+    object Movimientos : Routes("confirm_movements?borradorId={borradorId}") {
+        fun conBorrador(id: String) = "confirm_movements?borradorId=$id"
+    }
+
     object Material : Routes("request_material")
     object Login : Routes("login")
     object CorregirBovino : Routes("modificar_animal?borradorId={borradorId}") {

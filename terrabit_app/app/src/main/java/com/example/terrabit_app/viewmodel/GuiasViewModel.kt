@@ -5,7 +5,6 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.Borrador
 import com.example.terrabit_app.data.SharedPreferencesManager
@@ -128,66 +127,48 @@ class GuiasViewModel (application: Application): AndroidViewModel(application) {
         }
     }
 
-    fun cargarBorradorExistente() {
+    fun cargarBorradorPorId(id: String) {
         try {
-            val borradores = sharedPreferencesManager.obtenerBorradores()
+            val borrador = sharedPreferencesManager.obtenerBorradores()
+                .find { it.id == id } ?: return
 
-            // Buscar cualquier borrador de tipo GUIA con estado BORRADOR_AUTO
-            val borradoresGuia = borradores.filter {
-                it.tipo == "GUIA" && it.estado == "BORRADOR_AUTO"
-            }
+            borradorSesionId = borrador.id
 
-            if (borradoresGuia.isNotEmpty()) {
-                // Tomar el más reciente (último guardado)
-                val borradorGuia = borradoresGuia.maxByOrNull {
-                    it.id.substringAfter("guia_auto_").toLongOrNull() ?: 0L
-                }
+            val datos: Map<String, Any?> = Gson().fromJson(
+                borrador.datos,
+                object : TypeToken<Map<String, Any?>>() {}.type
+            )
 
-                if (borradorGuia != null) {
-                    // Asignar este ID a la sesión actual
-                    borradorSesionId = borradorGuia.id
+            _explotacioOrigen.value = datos["explotacioOrigen"] as? String ?: ""
+            _explotacioDestinacio.value = datos["explotacioDestinacio"] as? String ?: ""
+            _temporal.value = datos["temporal"] as? String ?: ""
+            _dataSortida.value = datos["dataSortida"] as? String ?: ""
+            _horaSortida.value = datos["horaSortida"] as? String ?: ""
+            _dataArribada.value = datos["dataArribada"] as? String ?: ""
+            _horaArribada.value = datos["horaArribada"] as? String ?: ""
+            _mobilitat.value = datos["mobilitat"] as? String ?: ""
+            _pais.value = datos["pais"] as? String ?: ""
+            _codiExplotacio.value = datos["codiExplotacio"] as? String ?: ""
+            _codiAtes.value = datos["codiAtes"] as? String ?: ""
+            _nomTransportista.value = datos["nomTransportista"] as? String ?: ""
+            _mitjaTransport.value = datos["mitjaTransport"] as? String ?: ""
+            _matricula.value = datos["matricula"] as? String ?: ""
+            _nifConductor.value = datos["nifConductor"] as? String ?: ""
+            _nomConductor.value = datos["nomConductor"] as? String ?: ""
+            codiTemporal = datos["codiTemporal"] as? String ?: ""
+            codiGuiaMobilidad = datos["codiGuiaMobilidad"] as? String ?: ""
+            codiTransport = datos["codiTransport"] as? String ?: ""
 
-                    val gson = Gson()
-                    val datos: Map<String, Any?> = gson.fromJson(
-                        borradorGuia.datos,
-                        object : TypeToken<Map<String, Any?>>() {}.type
-                    )
+            @Suppress("UNCHECKED_CAST")
+            val identificadoresList = datos["identificadors"] as? List<String>
+            _identificadors.value = identificadoresList ?: listOf("")
 
-                    // Restaurar datos
-                    _explotacioOrigen.value = datos["explotacioOrigen"] as? String ?: ""
-                    _explotacioDestinacio.value = datos["explotacioDestinacio"] as? String ?: ""
-                    _temporal.value = datos["temporal"] as? String ?: ""
-                    _dataSortida.value = datos["dataSortida"] as? String ?: ""
-                    _horaSortida.value = datos["horaSortida"] as? String ?: ""
-                    _dataArribada.value = datos["dataArribada"] as? String ?: ""
-                    _horaArribada.value = datos["horaArribada"] as? String ?: ""
-                    _mobilitat.value = datos["mobilitat"] as? String ?: ""
-                    _pais.value = datos["pais"] as? String ?: ""
-                    _codiExplotacio.value = datos["codiExplotacio"] as? String ?: ""
-                    _codiAtes.value = datos["codiAtes"] as? String ?: ""
-                    _nomTransportista.value = datos["nomTransportista"] as? String ?: ""
-                    _mitjaTransport.value = datos["mitjaTransport"] as? String ?: ""
-                    _matricula.value = datos["matricula"] as? String ?: ""
-                    _nifConductor.value = datos["nifConductor"] as? String ?: ""
-                    _nomConductor.value = datos["nomConductor"] as? String ?: ""
-
-                    // Restaurar códigos
-                    codiTemporal = datos["codiTemporal"] as? String ?: ""
-                    codiGuiaMobilidad = datos["codiGuiaMobilidad"] as? String ?: ""
-                    codiTransport = datos["codiTransport"] as? String ?: ""
-
-                    // Restaurar lista de identificadores
-                    @Suppress("UNCHECKED_CAST")
-                    val identificadoresList = datos["identificadors"] as? List<String>
-                    _identificadors.value = identificadoresList ?: listOf("")
-
-                    Log.d("Cargar Borrador", "Borrador cargado: $borradorSesionId")
-                }
-            }
+            Log.d("GuiasVM", "Borrador cargado por ID: $id")
         } catch (e: Exception) {
-            Log.e("Error Cargar Borrador", "Error al cargar: ${e.message}", e)
+            Log.e("GuiasVM", "Error al cargar borrador por ID: ${e.message}", e)
         }
     }
+
 
     fun eliminarBorradorAutomatico() {
         try {

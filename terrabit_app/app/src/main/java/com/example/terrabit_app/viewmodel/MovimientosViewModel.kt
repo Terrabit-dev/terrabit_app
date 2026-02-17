@@ -5,7 +5,6 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import com.example.terrabit_app.data.Borrador
 import com.example.terrabit_app.data.SharedPreferencesManager
 import com.example.terrabit_app.data.network.Repositorio
@@ -120,83 +119,65 @@ class MovimientosViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
 
-    fun cargarBorradorExistente() {
+    fun cargarBorradorPorId(id: String) {
         try {
-            val borradores = sharedPreferencesManager.obtenerBorradores()
+            val borrador = sharedPreferencesManager.obtenerBorradores()
+                .find { it.id == id } ?: return
 
-            // Buscar cualquier borrador de tipo MOVIMIENTO con estado BORRADOR_AUTO
-            val borradoresMovimiento = borradores.filter {
-                it.tipo == "MOVIMIENTO" && it.estado == "BORRADOR_AUTO"
-            }
+            borradorSesionId = borrador.id
 
-            if (borradoresMovimiento.isNotEmpty()) {
-                // Tomar el más reciente (último guardado)
-                val borradorMovimiento = borradoresMovimiento.maxByOrNull {
-                    it.id.substringAfter("movimiento_auto_").toLongOrNull() ?: 0L
+            val datos: Map<String, Any?> = Gson().fromJson(
+                borrador.datos,
+                object : TypeToken<Map<String, Any?>>() {}.type
+            )
+
+            _codiRemo.value = datos["codiRemo"] as? String ?: ""
+            _dataArribada.value = datos["dataArribada"] as? String ?: ""
+            _horaArribada.value = datos["horaArribada"] as? String ?: ""
+            _codiAtes.value = datos["codiAtes"] as? String ?: ""
+            _nomTransportista.value = datos["nomTransportista"] as? String ?: ""
+            _matricula.value = datos["matricula"] as? String ?: ""
+            _mitjaTransport.value = datos["mitjaTransport"] as? String ?: ""
+            _nifConductor.value = datos["nifConductor"] as? String ?: ""
+            _nomConductor.value = datos["nomConductor"] as? String ?: ""
+            _explotacioDestinacio.value = datos["explotacioDestinacio"] as? String ?: ""
+            _codiTransport.value = datos["codiTransport"] as? String ?: ""
+
+            val listaAnimalesJson = datos["listaAnimales"] as? List<*>
+            if (listaAnimalesJson != null) {
+                val listaRestaurada = listaAnimalesJson.mapNotNull { item ->
+                    try {
+                        val itemMap = item as? Map<*, *>
+                        IdenMovimiento(
+                            identificador = itemMap?.get("identificador") as? String ?: "",
+                            estatArribada = itemMap?.get("estatArribada") as? String,
+                            classCanal = itemMap?.get("classCanal") as? String,
+                            dataSacrMort = itemMap?.get("dataSacrMort") as? String,
+                            pesCanal = itemMap?.get("pesCanal") as? String,
+                            tipusPresentacio = itemMap?.get("tipusPresentacio") as? String
+                        )
+                    } catch (e: Exception) { null }
                 }
-
-                if (borradorMovimiento != null) {
-                    // Asignar este ID a la sesión actual
-                    borradorSesionId = borradorMovimiento.id
-
-                    val gson = Gson()
-                    val datos: Map<String, Any?> = gson.fromJson(
-                        borradorMovimiento.datos,
-                        object : TypeToken<Map<String, Any?>>() {}.type
+                _listaAnimales.value = listaRestaurada.ifEmpty {
+                    listOf(
+                        IdenMovimiento(
+                            identificador = "",
+                            estatArribada = null,
+                            classCanal = null,
+                            dataSacrMort = null,
+                            pesCanal = null,
+                            tipusPresentacio = null
+                        )
                     )
-
-                    // Restaurar datos
-                    _codiRemo.value = datos["codiRemo"] as? String ?: ""
-                    _dataArribada.value = datos["dataArribada"] as? String ?: ""
-                    _horaArribada.value = datos["horaArribada"] as? String ?: ""
-                    _codiAtes.value = datos["codiAtes"] as? String ?: ""
-                    _nomTransportista.value = datos["nomTransportista"] as? String ?: ""
-                    _matricula.value = datos["matricula"] as? String ?: ""
-                    _mitjaTransport.value = datos["mitjaTransport"] as? String ?: ""
-                    _nifConductor.value = datos["nifConductor"] as? String ?: ""
-                    _nomConductor.value = datos["nomConductor"] as? String ?: ""
-                    _explotacioDestinacio.value = datos["explotacioDestinacio"] as? String ?: ""
-                    _codiTransport.value = datos["codiTransport"] as? String ?: ""
-
-                    // Restaurar lista de animales
-                    val listaAnimalesJson = datos["listaAnimales"] as? List<*>
-                    if (listaAnimalesJson != null) {
-                        val listaAnimalesRestaurada = listaAnimalesJson.mapNotNull { item ->
-                            try {
-                                val itemMap = item as? Map<*, *>
-                                IdenMovimiento(
-                                    identificador = itemMap?.get("identificador") as? String ?: "",
-                                    estatArribada = itemMap?.get("estatArribada") as? String ?: "",
-                                    classCanal = itemMap?.get("classCanal") as? String,
-                                    dataSacrMort = itemMap?.get("dataSacrMort") as? String,
-                                    pesCanal = itemMap?.get("pesCanal") as? String,
-                                    tipusPresentacio = itemMap?.get("tipusPresentacio") as? String
-                                )
-                            } catch (e: Exception) {
-                                null
-                            }
-                        }
-                        _listaAnimales.value = listaAnimalesRestaurada.ifEmpty {
-                            listOf(
-                                IdenMovimiento(
-                                    identificador = "",
-                                    estatArribada = "",
-                                    classCanal = null,
-                                    dataSacrMort = null,
-                                    pesCanal = null,
-                                    tipusPresentacio = null
-                                )
-                            )
-                        }
-                    }
-
-                    Log.d("Cargar Borrador", "Borrador cargado: $borradorSesionId")
                 }
             }
+
+            Log.d("MovimientosVM", "Borrador cargado por ID: $id")
         } catch (e: Exception) {
-            Log.e("Error Cargar Borrador", "Error al cargar: ${e.message}", e)
+            Log.e("MovimientosVM", "Error al cargar borrador por ID: ${e.message}", e)
         }
     }
+
 
     fun eliminarBorradorAutomatico() {
         try {
@@ -656,7 +637,7 @@ class MovimientosViewModel(application: Application) : AndroidViewModel(applicat
         val listaAnimales = _listaAnimales.value ?: emptyList()
         val animalesValidos = listaAnimales.all { animal ->
             val identificadorValido = animal.identificador.isNotEmpty()
-            val estatValido = animal.estatArribada.isNotEmpty()
+            val estatValido = animal.estatArribada?.isNotEmpty()
 
             val camposAdicionales = if (animal.estatArribada == "80") {
                 !animal.dataSacrMort.isNullOrEmpty() &&
@@ -665,7 +646,7 @@ class MovimientosViewModel(application: Application) : AndroidViewModel(applicat
                         !animal.tipusPresentacio.isNullOrEmpty()
             } else true
 
-            identificadorValido && estatValido && camposAdicionales
+            identificadorValido && estatValido == true && camposAdicionales
         }
 
         return codiRemoValido && dataArribadaValida && horaArribadaValida &&
@@ -822,7 +803,7 @@ class MovimientosViewModel(application: Application) : AndroidViewModel(applicat
         _listaAnimales.value = listOf(
             IdenMovimiento(
                 identificador = "",
-                estatArribada = "",
+                estatArribada = null,
                 classCanal = null,
                 dataSacrMort = null,
                 pesCanal = null,

@@ -40,7 +40,7 @@ import com.example.terrabit_app.utils.alertsErrosScreens
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
+fun Movimientos(navController: NavController, viewModel: MovimientosViewModel, borradorId: String = "") {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -84,9 +84,13 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel) {
     LaunchedEffect(Unit) {
         viewModel.inicializarSharedPreferences(context)
 
+        if (borradorId.isNotEmpty()) {
+            viewModel.cargarBorradorPorId(borradorId)
+            return@LaunchedEffect
+        }
+
         val borradores = viewModel.obtenerBorradoresMovimiento()
         cantidadBorradores = borradores.size
-
         if (cantidadBorradores >= 2) {
             mostrarDialogoAviso = true
         }

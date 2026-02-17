@@ -153,6 +153,8 @@ fun BorradoresScreen(
                                     "MUERTE" -> Routes.Fallecimiento.conBorrador(borrador.id)
                                     "NACIMIENTO" -> Routes.Nacimiento.conBorrador(borrador.id)
                                     "IDENTIFICACION_APLAZADA" -> Routes.IdentificacionAplazada.conBorrador(borrador.id)
+                                    "GUIA" -> Routes.GestionGuias.conBorrador(borrador.id)
+                                    "MOVIMIENTO" -> Routes.Movimientos.conBorrador(borrador.id)
                                     else -> return@TarjetaBorrador
                                 }
                             )

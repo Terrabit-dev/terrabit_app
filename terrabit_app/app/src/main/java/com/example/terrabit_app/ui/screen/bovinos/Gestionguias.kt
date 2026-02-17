@@ -95,7 +95,7 @@ import com.example.terrabit_app.utils.alertsErrosScreens
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
+fun GestionGuias(navController: NavController, viewModel: GuiasViewModel, borradorId: String = "") {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -148,9 +148,13 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel) {
     LaunchedEffect(Unit) {
         viewModel.inicializarSharedPreferences(context)
 
+        if (borradorId.isNotEmpty()) {
+            viewModel.cargarBorradorPorId(borradorId)
+            return@LaunchedEffect
+        }
+
         val borradores = viewModel.obtenerBorradoresGuia()
         cantidadBorradores = borradores.size
-
         if (cantidadBorradores >= 2) {
             mostrarDialogoAviso = true
         }

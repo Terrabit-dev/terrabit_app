@@ -137,14 +137,30 @@ fun NavigationDrawer(
             Fallecimiento(navController = navController, muertes, borradorId)
         }
 
-        composable(Routes.GestionGuias.route) {
+        composable(
+            route = Routes.GestionGuias.route,
+            arguments = listOf(navArgument("borradorId") {
+                type = NavType.StringType
+                defaultValue = ""
+                nullable = true
+            })
+        ) { backStackEntry ->
             val guiasViewModel: GuiasViewModel = viewModel()
-            GestionGuias(navController = navController, guiasViewModel)
+            val borradorId = backStackEntry.arguments?.getString("borradorId") ?: ""
+            GestionGuias(navController = navController, guiasViewModel, borradorId)
         }
 
-        composable(Routes.Movimientos.route) {
+        composable(
+            route = Routes.Movimientos.route,
+            arguments = listOf(navArgument("borradorId") {
+                type = NavType.StringType
+                defaultValue = ""
+                nullable = true
+            })
+        ) { backStackEntry ->
             val moviViewModel: MovimientosViewModel = viewModel()
-            Movimientos(navController = navController, moviViewModel)
+            val borradorId = backStackEntry.arguments?.getString("borradorId") ?: ""
+            Movimientos(navController = navController, moviViewModel, borradorId)
         }
 
         composable(Routes.Material.route) {
