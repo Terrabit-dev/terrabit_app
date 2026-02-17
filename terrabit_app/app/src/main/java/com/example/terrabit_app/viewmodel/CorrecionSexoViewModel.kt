@@ -1,7 +1,9 @@
 package com.example.terrabit_app.viewmodel
 
+import android.app.Application
 import android.content.Context
 import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -19,16 +21,16 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class CorrecionSexoViewModel: ViewModel() {
+class CorrecionSexoViewModel(application: Application): AndroidViewModel(application) {
 
-    private lateinit var repositorio: Repositorio
+    private  var repositorio = Repositorio(application)
     private lateinit var sharedPreferencesManager: SharedPreferencesManager
 
     // ID único para la sesión actual del formulario
     private var borradorSesionId: String = ""
 
     // ============================================
-    // NUEVOS ESTADOS PARA AUTOCOMPLETADO
+    //  ESTADOS PARA AUTOCOMPLETADO
     // ============================================
     private val _suggestionsBovinos = MutableLiveData<List<Animal>>(emptyList())
     val suggestionsBovinos = _suggestionsBovinos

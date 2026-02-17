@@ -1,7 +1,9 @@
 package com.example.terrabit_app.viewmodel
 
+import android.app.Application
 import android.content.Context
 import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.terrabit_app.data.Borrador
@@ -23,9 +25,9 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
-class MovimientosViewModel : ViewModel() {
+class MovimientosViewModel(application: Application) : AndroidViewModel(application) {
 
-    private lateinit var repositorio: Repositorio
+    private var repositorio = Repositorio(application)
     private lateinit var sharedPreferencesManager: SharedPreferencesManager
 
     // ID único para la sesión actual del formulario

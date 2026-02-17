@@ -7,10 +7,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.Borrador
 import com.example.terrabit_app.data.SharedPreferencesManager
-import com.google.gson.Gson
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.*
+
 
 class BorradorViewModel : ViewModel() {
 
@@ -32,9 +30,26 @@ class BorradorViewModel : ViewModel() {
     fun cargarBorradores() {
         viewModelScope.launch {
             try {
+                if (!::sharedPreferencesManager.isInitialized) {
+                    Log.e("BorradorViewModel", "SharedPreferencesManager no inicializado")
+                    _borradores.postValue(emptyList())
+                    _borradoresFiltrados.postValue(emptyList())
+                    return@launch
+                }
                 val listaBorradores = sharedPreferencesManager.obtenerBorradores()
                 _borradores.postValue(listaBorradores)
-                filtrarBorradores(_textoBusqueda.value ?: "")
+
+                val texto = _textoBusqueda.value ?: ""
+                if (texto.isBlank()) {
+                    _borradoresFiltrados.postValue(listaBorradores)
+                } else {
+                    _borradoresFiltrados.postValue(listaBorradores.filter { borrador ->
+                        obtenerNombreTipo(borrador.tipo).contains(texto, ignoreCase = true) ||
+                                borrador.fecha.contains(texto, ignoreCase = true) ||
+                                (borrador.hora ?: "").contains(texto, ignoreCase = true) ||
+                                obtenerEstadoLegible(borrador.estado).contains(texto, ignoreCase = true)
+                    })
+                }
             } catch (e: Exception) {
                 Log.e("Error Borradores", "Error al cargar: ${e.message}", e)
                 _borradores.postValue(emptyList())
@@ -110,12 +125,4 @@ class BorradorViewModel : ViewModel() {
         }
     }
 
-    fun obtenerBorrador(id: String): Borrador? {
-        return try {
-            sharedPreferencesManager.obtenerBorradores().find { it.id == id }
-        } catch (e: Exception) {
-            Log.e("Error Borrador", "Error al obtener borrador: ${e.message}", e)
-            null
-        }
-    }
 }
