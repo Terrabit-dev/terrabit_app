@@ -102,6 +102,34 @@ class ViewModelMuerteBovi (application: Application) : AndroidViewModel(applicat
         }
     }
 
+
+    fun cargarBorradorPorId(id: String) {
+        try {
+            val borrador = sharedPreferencesManager.obtenerBorradores()
+                .find { it.id == id } ?: return
+
+            borradorSesionId = borrador.id
+
+            val datos: Map<String, Any?> = Gson().fromJson(
+                borrador.datos,
+                object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
+            )
+
+            _tipoMuerte.value = datos["tipo"] as? String ?: ""
+            _codigoTipoMuerte.value = datos["codigoTipo"] as? String ?: ""
+            _identificadorMuerte.value = datos["identificador"] as? String ?: ""
+            _fechaMuerte.value = datos["fecha"] as? String ?: ""
+            _mesesGestacion.value = datos["mesesGestacion"] as? String ?: ""
+            _cadaverInaccesible.value = datos["cadaverInaccesible"] as? Boolean ?: false
+            _coordenadaX.value = datos["coordenadaX"] as? String ?: ""
+            _coordenadaY.value = datos["coordenadaY"] as? String ?: ""
+
+            Log.d("MuerteVM", "Borrador cargado por ID: $id")
+        } catch (e: Exception) {
+            Log.e("MuerteVM", "Error al cargar borrador por ID: ${e.message}", e)
+        }
+    }
+
     fun cargarBorradorExistente() {
         try {
             val borradores = sharedPreferencesManager.obtenerBorradores()

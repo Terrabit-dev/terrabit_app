@@ -79,11 +79,12 @@ import com.example.terrabit_app.utils.alertsErrosScreens
 import com.example.terrabit_app.viewmodel.CorrecionSexoViewModel
 import com.example.terrabit_app.ui.screen.bovinos.components.AutoCompleteBovinoField
 import com.example.terrabit_app.ui.screen.bovinos.components.useDebounce
+import com.example.terrabit_app.viewmodel.BorradorViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewModel) {
+fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewModel, borradorId: String = "") {
     val identificadorCorreccionSexo by viewModel.identificadorCorreccionSexo.observeAsState("")
     val sexoCorreccionSeleccionado by viewModel.sexoCorreccionSeleccionado.observeAsState("")
     val sexoCorreccionExpandido by viewModel.sexoCorreccionExpandido.observeAsState(false)
@@ -114,9 +115,13 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
     LaunchedEffect(Unit) {
         viewModel.initSharedPreferences(context)
 
+        if (borradorId.isNotEmpty()) {
+            viewModel.cargarBorradorPorId(borradorId)
+            return@LaunchedEffect
+        }
+
         val borradores = viewModel.obtenerBorradoresCorreccionSexo()
         cantidadBorradores = borradores.size
-
         if (cantidadBorradores >= 2) {
             mostrarDialogoAviso = true
         }

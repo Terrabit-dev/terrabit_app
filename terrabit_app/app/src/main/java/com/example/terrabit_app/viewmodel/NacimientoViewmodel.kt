@@ -5,7 +5,6 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.Borrador
 import com.example.terrabit_app.data.SharedPreferencesManager
@@ -25,13 +24,13 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
-class NacimientoViewmodel (application: Application): AndroidViewModel(application) {
+class NacimientoViewmodel(application: Application) : AndroidViewModel(application) {
 
     private val repositorio = Repositorio(application)
     private lateinit var sharedPreferencesManager: SharedPreferencesManager
 
-    // ID único para la sesión actual del formulario
     private var borradorSesionId: String = ""
+    private var editandoBorrador: Boolean = false
 
     // Instanciar UserPreferences directamente con la Application
     private val userPreferences = UserPreferences(application)
@@ -42,8 +41,6 @@ class NacimientoViewmodel (application: Application): AndroidViewModel(applicati
 
     fun inicializarSharedPreferences(context: Context) {
         sharedPreferencesManager = SharedPreferencesManager(context)
-
-        // Generar nuevo ID de sesión si no existe
         if (borradorSesionId.isEmpty()) {
             borradorSesionId = "nacimiento_auto_${System.currentTimeMillis()}"
         }
@@ -79,18 +76,15 @@ class NacimientoViewmodel (application: Application): AndroidViewModel(applicati
                 "codigoAptitud" to codigoAptitud
             )
 
-            // Buscar si ya existe este borrador específico de la sesión actual
             val borradorExistente = sharedPreferencesManager.obtenerBorradores()
                 .find { it.id == borradorSesionId }
 
             val borrador = if (borradorExistente != null) {
-                // Actualizar borrador de esta sesión
                 borradorExistente.copy(
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
                     datos = Gson().toJson(datosNacimiento)
                 )
             } else {
-                // Crear nuevo borrador con ID de sesión
                 Borrador(
                     id = borradorSesionId,
                     tipo = "NACIMIENTO",
@@ -108,27 +102,52 @@ class NacimientoViewmodel (application: Application): AndroidViewModel(applicati
         }
     }
 
+    fun cargarBorradorPorId(id: String) {
+        try {
+            val borrador = sharedPreferencesManager.obtenerBorradores()
+                .find { it.id == id } ?: return
+
+            editandoBorrador = true
+            borradorSesionId = borrador.id
+
+            val datos: Map<String, Any?> = Gson().fromJson(
+                borrador.datos,
+                object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
+            )
+
+            _idMadre.value = datos["idMadre"] as? String ?: ""
+            _idCria.value = datos["idCria"] as? String ?: ""
+            _fechaNacimiento.value = datos["fechaNacimiento"] as? String ?: ""
+            _fechaIdentificacion.value = datos["fechaIdentificacion"] as? String ?: ""
+            _sexoSeleccionado.value = datos["sexoSeleccionado"] as? String ?: ""
+            _razaSeleccionada.value = datos["razaSeleccionada"] as? String ?: ""
+            _aptitudSeleccionada.value = datos["aptitudSeleccionada"] as? String ?: ""
+            _codigoRaza.value = datos["codigoRaza"] as? String ?: ""
+            sexoApiSeleccionado = datos["sexoApiSeleccionado"] as? String ?: "0"
+            codigoAptitud = datos["codigoAptitud"] as? String ?: "0"
+
+            Log.d("NacimientoVM", "Borrador cargado por ID: $id")
+        } catch (e: Exception) {
+            Log.e("NacimientoVM", "Error al cargar borrador por ID: ${e.message}", e)
+        }
+    }
+
     fun cargarBorradorExistente() {
         try {
             val borradores = sharedPreferencesManager.obtenerBorradores()
-
-            // Buscar cualquier borrador de tipo NACIMIENTO con estado BORRADOR_AUTO
             val borradoresNacimiento = borradores.filter {
                 it.tipo == "NACIMIENTO" && it.estado == "BORRADOR_AUTO"
             }
 
             if (borradoresNacimiento.isNotEmpty()) {
-                // Tomar el más reciente (último guardado)
                 val borradorNacimiento = borradoresNacimiento.maxByOrNull {
                     it.id.substringAfter("nacimiento_auto_").toLongOrNull() ?: 0L
                 }
 
                 if (borradorNacimiento != null) {
-                    // Asignar este ID a la sesión actual
                     borradorSesionId = borradorNacimiento.id
 
-                    val gson = Gson()
-                    val datos: Map<String, Any?> = gson.fromJson(
+                    val datos: Map<String, Any?> = Gson().fromJson(
                         borradorNacimiento.datos,
                         object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
                     )
@@ -157,7 +176,7 @@ class NacimientoViewmodel (application: Application): AndroidViewModel(applicati
             if (borradorSesionId.isNotEmpty()) {
                 sharedPreferencesManager.eliminarBorrador(borradorSesionId)
                 Log.d("Eliminar Borrador", "Borrador eliminado: $borradorSesionId")
-                borradorSesionId = "" // Resetear el ID de sesión
+                borradorSesionId = ""
             }
         } catch (e: Exception) {
             Log.e("Error Eliminar Borrador", "Error: ${e.message}", e)
@@ -257,17 +276,9 @@ class NacimientoViewmodel (application: Application): AndroidViewModel(applicati
     )
     val listaAptitudes = listOf("Carne", "Leche", "Doble propósito")
 
-    fun actualizarIdMadre(nuevoId: String) {
-        _idMadre.value = nuevoId
-    }
-
-    fun actualizarIdCria(nuevoId: String) {
-        _idCria.value = nuevoId
-    }
-
-    fun actualizarFechaNacimiento(nuevaFecha: String) {
-        _fechaNacimiento.value = nuevaFecha
-    }
+    fun actualizarIdMadre(nuevoId: String) { _idMadre.value = nuevoId }
+    fun actualizarIdCria(nuevoId: String) { _idCria.value = nuevoId }
+    fun actualizarFechaNacimiento(nuevaFecha: String) { _fechaNacimiento.value = nuevaFecha }
 
     fun seleccionarSexo(sexo: String, codigo: String) {
         _sexoSeleccionado.value = sexo
@@ -287,78 +298,48 @@ class NacimientoViewmodel (application: Application): AndroidViewModel(applicati
         _aptitudExpandida.value = false
     }
 
-    fun toggleSexoExpandido() {
-        _sexoExpandido.value = !(_sexoExpandido.value ?: false)
-    }
-
-    fun toggleRazaExpandida() {
-        _razaExpandida.value = !(_razaExpandida.value ?: false)
-    }
-
-    fun toggleAptitudExpandida() {
-        _aptitudExpandida.value = !(_aptitudExpandida.value ?: false)
-    }
-
-    fun cerrarSexoMenu() {
-        _sexoExpandido.value = false
-    }
-
-    fun cerrarRazaMenu() {
-        _razaExpandida.value = false
-    }
-
-    fun cerrarAptitudMenu() {
-        _aptitudExpandida.value = false
-    }
-
-    fun mostrarDatePicker() {
-        _mostrarDatePicker.value = true
-    }
-
-    fun ocultarDatePicker() {
-        _mostrarDatePicker.value = false
-    }
-
-    fun mostrarDatePickerIdentificacion() {
-        _mostrarDatePickerIdentificacion.value = true
-    }
-
-    fun ocultarDatePickerIdentificacion() {
-        _mostrarDatePickerIdentificacion.value = false
-    }
+    fun toggleSexoExpandido() { _sexoExpandido.value = !(_sexoExpandido.value ?: false) }
+    fun toggleRazaExpandida() { _razaExpandida.value = !(_razaExpandida.value ?: false) }
+    fun toggleAptitudExpandida() { _aptitudExpandida.value = !(_aptitudExpandida.value ?: false) }
+    fun cerrarSexoMenu() { _sexoExpandido.value = false }
+    fun cerrarRazaMenu() { _razaExpandida.value = false }
+    fun cerrarAptitudMenu() { _aptitudExpandida.value = false }
+    fun mostrarDatePicker() { _mostrarDatePicker.value = true }
+    fun ocultarDatePicker() { _mostrarDatePicker.value = false }
+    fun mostrarDatePickerIdentificacion() { _mostrarDatePickerIdentificacion.value = true }
+    fun ocultarDatePickerIdentificacion() { _mostrarDatePickerIdentificacion.value = false }
 
     fun seleccionarFecha(fechaMillis: Long) {
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = fechaMillis
-        val dia = calendar.get(Calendar.DAY_OF_MONTH)
-        val mes = calendar.get(Calendar.MONTH) + 1
-        val anio = calendar.get(Calendar.YEAR)
-
-        _fechaNacimiento.value = String.format("%02d/%02d/%04d", dia, mes, anio)
+        _fechaNacimiento.value = String.format(
+            "%02d/%02d/%04d",
+            calendar.get(Calendar.DAY_OF_MONTH),
+            calendar.get(Calendar.MONTH) + 1,
+            calendar.get(Calendar.YEAR)
+        )
         _mostrarDatePicker.value = false
     }
 
     fun seleccionarFechaIdentificacion(fechaMillis: Long) {
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = fechaMillis
-        val dia = calendar.get(Calendar.DAY_OF_MONTH)
-        val mes = calendar.get(Calendar.MONTH) + 1
-        val anio = calendar.get(Calendar.YEAR)
-
-        _fechaIdentificacion.value = String.format("%02d/%02d/%04d", dia, mes, anio)
+        _fechaIdentificacion.value = String.format(
+            "%02d/%02d/%04d",
+            calendar.get(Calendar.DAY_OF_MONTH),
+            calendar.get(Calendar.MONTH) + 1,
+            calendar.get(Calendar.YEAR)
+        )
         _mostrarDatePickerIdentificacion.value = false
     }
 
     fun esFormularioNacimientoValido(): Boolean {
-        val idMadreValido = !_idMadre.value.isNullOrEmpty()
-        val idCriaValido = !_idCria.value.isNullOrEmpty()
-        val fechaNacimientoValida = !_fechaNacimiento.value.isNullOrEmpty()
-        val sexoValido = !_sexoSeleccionado.value.isNullOrEmpty()
-        val razaValida = !_razaSeleccionada.value.isNullOrEmpty()
-        val aptitudValida = !_aptitudSeleccionada.value.isNullOrEmpty()
-
-        return idMadreValido && idCriaValido && fechaNacimientoValida &&
-                sexoValido && razaValida && aptitudValida
+        return !_idMadre.value.isNullOrEmpty() &&
+                !_idCria.value.isNullOrEmpty() &&
+                !_fechaNacimiento.value.isNullOrEmpty() &&
+                !_sexoSeleccionado.value.isNullOrEmpty() &&
+                !_razaSeleccionada.value.isNullOrEmpty() &&
+                !_aptitudSeleccionada.value.isNullOrEmpty()
     }
 
     fun registrarNacimiento() {
@@ -375,45 +356,34 @@ class NacimientoViewmodel (application: Application): AndroidViewModel(applicati
                 else -> 0
             }
             _codiError.value = mensajeError
-            Log.e("Validación Nacimiento", "Error: $mensajeError")
             return
         }
 
         viewModelScope.launch {
             _cargandoNacimiento.postValue(true)
-
             try {
-                val fechaNacimientoAPI = DateUtils.convertirFechaAFormatoAPI(_fechaNacimiento.value ?: "")
-                val fechaIdentificacionAPI = DateUtils.convertirFechaAFormatoAPI(_fechaIdentificacion.value ?: "")
-
                 val request = RegistroNacimientoBovi(
                     nif = nif,
                     passwordMobilitat = password,
                     identificador = _idCria.value ?: "",
                     identificadorMare = _idMadre.value ?: "",
-                    dataNaixement = fechaNacimientoAPI,
-                    dataIdentificacio = fechaIdentificacionAPI,
+                    dataNaixement = DateUtils.convertirFechaAFormatoAPI(_fechaNacimiento.value ?: ""),
+                    dataIdentificacio = DateUtils.convertirFechaAFormatoAPI(_fechaIdentificacion.value ?: ""),
                     sexe = sexoApiSeleccionado,
                     raca = _codigoRaza.value ?: "",
                     aptitud = codigoAptitud
                 )
-                Log.d("Registro Nacimiento", "Request: $request")
 
                 val response = repositorio.putRegistrarNacimiento(request)
 
                 withContext(Dispatchers.Main) {
                     _cargandoNacimiento.value = false
-
                     when {
                         response.isSuccessful && response.body() != null -> {
                             val body = response.body()!!
-
                             if (body.codi == "0" || body.descripcio == "OK") {
                                 _registroExitoso.value = true
                                 _mensajeError.value = ""
-
-                                Log.d("Registro Nacimiento", "Nacimiento reportado exitosamente")
-
                                 eliminarBorradorAutomatico()
                                 limpiarFormularioNacimiento()
                             }
@@ -423,19 +393,16 @@ class NacimientoViewmodel (application: Application): AndroidViewModel(applicati
                             if (errorBody != null) {
                                 try {
                                     val errorObj = Gson().fromJson(errorBody, RespuestaUnificada::class.java)
-                                    _mensajeError.value = errorObj.errors?.firstOrNull()?.descripcio
-                                        ?: "Error desconocido del servidor"
+                                    _mensajeError.value = errorObj.errors?.firstOrNull()?.descripcio ?: "Error desconocido del servidor"
                                 } catch (e: Exception) {
                                     _mensajeError.value = "Error al procesar respuesta"
                                 }
                             }
                             _registroExitoso.value = false
-                            Log.e("Error Registro Nacimiento", "HTTP ${response.code()}")
                         }
                         else -> {
                             _registroExitoso.value = false
                             _mensajeError.value = "Error: Respuesta vacía del servidor"
-                            Log.e("Error Registro Nacimiento", "Respuesta vacía del servidor")
                         }
                     }
                 }
@@ -444,21 +411,18 @@ class NacimientoViewmodel (application: Application): AndroidViewModel(applicati
                     _cargandoNacimiento.value = false
                     _registroExitoso.value = false
                     _mensajeError.value = "Tiempo de espera agotado. La operación puede haberse completado, por favor verifique."
-                    Log.e("Error Registro Nacimiento", "Timeout: ${e.message}", e)
                 }
             } catch (e: java.io.IOException) {
                 withContext(Dispatchers.Main) {
                     _cargandoNacimiento.value = false
                     _registroExitoso.value = false
                     _mensajeError.value = "Error de conexión. Verifique su conexión a internet."
-                    Log.e("Error Registro Nacimiento", "Error de red: ${e.message}", e)
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     _cargandoNacimiento.value = false
                     _registroExitoso.value = false
                     _mensajeError.value = "Error inesperado: ${e.message ?: "Error desconocido"}"
-                    Log.e("Error Registro Nacimiento", "Error general: ${e.message}", e)
                     e.printStackTrace()
                 }
             }
@@ -476,9 +440,8 @@ class NacimientoViewmodel (application: Application): AndroidViewModel(applicati
         _aptitudSeleccionada.value = ""
         sexoApiSeleccionado = "0"
         codigoAptitud = "0"
-
-        // Generar nuevo ID de sesión para el próximo formulario
         borradorSesionId = ""
+        editandoBorrador = false
     }
 
     fun resetearEstadoRegistro() {
@@ -487,23 +450,5 @@ class NacimientoViewmodel (application: Application): AndroidViewModel(applicati
         _codiError.value = null
     }
 
-    fun validarIdentificador(id: String): Boolean {
-        return id.length >= 5
-    }
-
-    private fun convertirFechaDesdeAPI(fechaAPI: String): String {
-        return try {
-            if (fechaAPI.length == 8) {
-                val anio = fechaAPI.substring(0, 4)
-                val mes = fechaAPI.substring(4, 6)
-                val dia = fechaAPI.substring(6, 8)
-                "$dia/$mes/$anio"
-            } else {
-                ""
-            }
-        } catch (e: Exception) {
-            Log.e("Error conversión fecha", e.message ?: "Error desconocido")
-            ""
-        }
-    }
+    fun validarIdentificador(id: String): Boolean = id.length >= 5
 }

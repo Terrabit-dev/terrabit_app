@@ -92,6 +92,28 @@ class CorrecionSexoViewModel(application: Application): AndroidViewModel(applica
         }
     }
 
+    fun cargarBorradorPorId(id: String) {
+        try {
+            val borrador = sharedPreferencesManager.obtenerBorradores()
+                .find { it.id == id } ?: return
+
+            borradorSesionId = borrador.id
+
+            val datos: Map<String, Any?> = Gson().fromJson(
+                borrador.datos,
+                object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
+            )
+
+            _identificadorCorreccionSexo.value = datos["identificador"] as? String ?: ""
+            _sexoCorreccionSeleccionado.value = datos["sexoSeleccionado"] as? String ?: ""
+            codigoSexo = datos["codigoSexo"] as? String ?: ""
+
+            Log.d("CorrecionSexoVM", "Borrador cargado por ID: $id")
+        } catch (e: Exception) {
+            Log.e("CorrecionSexoVM", "Error al cargar borrador por ID: ${e.message}", e)
+        }
+    }
+
     // ============================================
     // FUNCIÓN PARA BUSCAR BOVINOS (AUTOCOMPLETADO)
     // ============================================

@@ -86,11 +86,14 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.example.terrabit_app.ui.navigation.Routes
+import com.example.terrabit_app.viewmodel.BorradorViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
+fun Nacimiento(navController: NavController,
+               viewModel: NacimientoViewmodel,
+               borradorId: String = "") {
     val idMadre by viewModel.idMadre.observeAsState("")
     val idCria by viewModel.idCria.observeAsState("")
     val fechaNacimiento by viewModel.fechaNacimiento.observeAsState("")
@@ -130,6 +133,13 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
     // ============================================
     LaunchedEffect(Unit) {
         viewModel.inicializarSharedPreferences(context)
+        viewModel.getIdentificadores("S0800608B", "L1855m58", "1410AK")
+
+        if (borradorId.isNotEmpty()) {
+            viewModel.cargarBorradorPorId(borradorId)
+            return@LaunchedEffect
+        }
+
         val borradores = viewModel.obtenerBorradoresNacimiento()
         cantidadBorradores = borradores.size
 

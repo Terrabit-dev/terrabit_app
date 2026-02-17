@@ -79,7 +79,7 @@ import com.example.terrabit_app.viewmodel.IdentificacionAplazaViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun IdentificacionApalzada(navController: NavController, viewModel: IdentificacionAplazaViewModel){
+fun IdentificacionApalzada(navController: NavController, viewModel: IdentificacionAplazaViewModel, borradorId: String = ""){
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 

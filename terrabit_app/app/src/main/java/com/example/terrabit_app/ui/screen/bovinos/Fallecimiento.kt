@@ -89,11 +89,12 @@ import com.example.terrabit_app.ui.theme.WhiteBackground
 import com.example.terrabit_app.ui.theme.Yellow
 import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
+import com.example.terrabit_app.viewmodel.BorradorViewModel
 import com.example.terrabit_app.viewmodel.ViewModelMuerteBovi
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) {
+fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi, borradorId: String = "") {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -125,15 +126,20 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
     // Recursos con codigo
     val elementosConCodigos = ElementosConCodigos()
 
+
     // ============================================
     // INICIALIZACIÓN Y DETECCIÓN DE BORRADORES
     // ============================================
     LaunchedEffect(Unit) {
         viewModel.inicializarSharedPreferences(context)
 
+        if (borradorId.isNotEmpty()) {
+            viewModel.cargarBorradorPorId(borradorId)
+            return@LaunchedEffect
+        }
+
         val borradores = viewModel.obtenerBorradoresMuerte()
         cantidadBorradores = borradores.size
-
         if (cantidadBorradores >= 2) {
             mostrarDialogoAviso = true
         }

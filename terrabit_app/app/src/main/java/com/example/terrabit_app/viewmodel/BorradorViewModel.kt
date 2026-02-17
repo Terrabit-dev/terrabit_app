@@ -27,6 +27,9 @@ class BorradorViewModel : ViewModel() {
     private val _borradoresFiltrados = MutableLiveData<List<Borrador>>()
     val borradoresFiltrados = _borradoresFiltrados
 
+    private val _borradorIdParaEditar = MutableLiveData<String?>(null)
+    val borradorIdParaEditar = _borradorIdParaEditar
+
     fun cargarBorradores() {
         viewModelScope.launch {
             try {
@@ -108,6 +111,15 @@ class BorradorViewModel : ViewModel() {
                 Log.e("Error Borrador", "Error al eliminar: ${e.message}", e)
             }
         }
+    }
+
+
+    fun seleccionarBorradorParaEditar(id: String) {
+        _borradorIdParaEditar.value = id
+    }
+
+    fun limpiarBorradorParaEditar() {
+        _borradorIdParaEditar.value = null
     }
 
     suspend fun eliminarTodosBorradores() {

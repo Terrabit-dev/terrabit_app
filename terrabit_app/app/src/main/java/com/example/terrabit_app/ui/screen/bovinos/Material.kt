@@ -69,7 +69,7 @@ import com.example.terrabit_app.viewmodel.MaterialViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Material(navController: NavController, viewModel: MaterialViewModel) {
+fun Material(navController: NavController, viewModel: MaterialViewModel, ) {
     // Observar variables del ViewModel
     val empresaSubministradora by viewModel.empresaSubministradora.observeAsState("")
     val tipoEnviamiento by viewModel.tipoEnviamiento.observeAsState("")

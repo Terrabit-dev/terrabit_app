@@ -3,8 +3,10 @@ package com.example.terrabit_app.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.example.terrabit_app.ui.pantallas.BorradoresScreen
 import com.example.terrabit_app.ui.pantallas.GestionBovinos
 import com.example.terrabit_app.ui.screen.porcinos.GestionPorcinos
@@ -70,7 +72,8 @@ fun NavigationDrawer(
             val borradorViewModel: BorradorViewModel = viewModel()
             BorradoresScreen(
                 viewModel = borradorViewModel,
-                onMenuClick = onMenuClick
+                onMenuClick = onMenuClick,
+                navController = navController
             )
         }
 
@@ -108,14 +111,30 @@ fun NavigationDrawer(
         }
 
         // Pantallas de acciones específicas
-        composable(Routes.Nacimiento.route) {
+        composable(
+            route = Routes.Nacimiento.route,
+            arguments = listOf(navArgument("borradorId") {
+                type = NavType.StringType
+                defaultValue = ""
+                nullable = true
+            })
+        ) { backStackEntry ->
             val nacimientos: NacimientoViewmodel = viewModel()
-            Nacimiento(navController = navController, nacimientos)
+            val borradorId = backStackEntry.arguments?.getString("borradorId") ?: ""
+            Nacimiento(navController = navController, nacimientos, borradorId)
         }
 
-        composable(Routes.Fallecimiento.route) {
+        composable(
+            route = Routes.Fallecimiento.route,
+            arguments = listOf(navArgument("borradorId") {
+                type = NavType.StringType
+                defaultValue = ""
+                nullable = true
+            })
+        ) { backStackEntry ->
             val muertes: ViewModelMuerteBovi = viewModel()
-            Fallecimiento(navController = navController, muertes)
+            val borradorId = backStackEntry.arguments?.getString("borradorId") ?: ""
+            Fallecimiento(navController = navController, muertes, borradorId)
         }
 
         composable(Routes.GestionGuias.route) {
@@ -133,14 +152,30 @@ fun NavigationDrawer(
             Material(navController = navController, materialV)
         }
 
-        composable(Routes.CorregirBovino.route) {
+        composable(
+            route = Routes.CorregirBovino.route,
+            arguments = listOf(navArgument("borradorId") {
+                type = NavType.StringType
+                defaultValue = ""
+                nullable = true
+            })
+        ) { backStackEntry ->
             val corregirSexo: CorrecionSexoViewModel = viewModel()
-            CorregirSexoBovi(navController, corregirSexo)
+            val borradorId = backStackEntry.arguments?.getString("borradorId") ?: ""
+            CorregirSexoBovi(navController, corregirSexo, borradorId)
         }
 
-        composable(Routes.IdentificacionAplazada.route) {
+        composable(
+            route = Routes.IdentificacionAplazada.route,
+            arguments = listOf(navArgument("borradorId") {
+                type = NavType.StringType
+                defaultValue = ""
+                nullable = true
+            })
+        ) { backStackEntry ->
             val identificacion: IdentificacionAplazaViewModel = viewModel()
-            IdentificacionApalzada(navController, identificacion)
+            val borradorId = backStackEntry.arguments?.getString("borradorId") ?: ""
+            IdentificacionApalzada(navController, identificacion, borradorId)
         }
 
         // Pantallas Porcinos

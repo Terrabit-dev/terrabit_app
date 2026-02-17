@@ -58,6 +58,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.terrabit_app.data.Borrador
+import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.screen.bovinos.cambiarIdioma
 import com.example.terrabit_app.ui.theme.Blue
 import com.example.terrabit_app.ui.theme.BlueGrey
@@ -72,7 +73,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun BorradoresScreen(
     viewModel: BorradorViewModel,
-    onMenuClick: () -> Unit
+    onMenuClick: () -> Unit,
+    navController: androidx.navigation.NavController
 ) {
     val borradores by viewModel.borradores.observeAsState(emptyList())
     val borradoresFiltered by viewModel.borradoresFiltrados.observeAsState(emptyList())
@@ -143,6 +145,17 @@ fun BorradoresScreen(
                         borrador = borrador,
                         onEliminarClick = {
                             viewModel.eliminarBorrador(borrador.id)
+                        },
+                        onEditarClick = {
+                            navController.navigate(
+                                when (borrador.tipo) {
+                                    "CORRECCION_SEXO" -> Routes.CorregirBovino.conBorrador(borrador.id)
+                                    "MUERTE" -> Routes.Fallecimiento.conBorrador(borrador.id)
+                                    "NACIMIENTO" -> Routes.Nacimiento.conBorrador(borrador.id)
+                                    "IDENTIFICACION_APLAZADA" -> Routes.IdentificacionAplazada.conBorrador(borrador.id)
+                                    else -> return@TarjetaBorrador
+                                }
+                            )
                         }
                     )
                 }
@@ -457,7 +470,8 @@ fun BarraBusqueda(
 @Composable
 fun TarjetaBorrador(
     borrador: Borrador,
-    onEliminarClick: () -> Unit
+    onEliminarClick: () -> Unit,
+    onEditarClick: () -> Unit
 ) {
     var mostrarMenu by remember { mutableStateOf(false) }
 
@@ -647,6 +661,24 @@ fun TarjetaBorrador(
                     expanded = mostrarMenu,
                     onDismissRequest = { mostrarMenu = false }
                 ) {
+                    DropdownMenuItem(
+                        text = {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    Icons.Default.Edit,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp),
+                                    tint = DarkBlueGrey
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text("Editar", color = DarkBlueGrey)
+                            }
+                        },
+                        onClick = {
+                            mostrarMenu = false
+                            onEditarClick()
+                        }
+                    )
                     DropdownMenuItem(
                         text = {
                             Row(verticalAlignment = Alignment.CenterVertically) {
