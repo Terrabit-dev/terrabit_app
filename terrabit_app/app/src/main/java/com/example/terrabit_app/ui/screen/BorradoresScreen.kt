@@ -29,15 +29,18 @@ import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -57,6 +60,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.terrabit_app.data.Borrador
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.screen.bovinos.cambiarIdioma
@@ -74,7 +78,7 @@ import kotlinx.coroutines.launch
 fun BorradoresScreen(
     viewModel: BorradorViewModel,
     onMenuClick: () -> Unit,
-    navController: androidx.navigation.NavController
+    navController: NavController
 ) {
     val borradores by viewModel.borradores.observeAsState(emptyList())
     val borradoresFiltered by viewModel.borradoresFiltrados.observeAsState(emptyList())
@@ -89,63 +93,64 @@ fun BorradoresScreen(
         viewModel.cargarBorradores()
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(WhiteBackground)
-    ) {
-        HeaderBorradores(
-            totalBorradores = borradores.size,
-            onMenuClick = onMenuClick,
-            onEliminarTodos = { mostrarDialogoEliminarTodos = true }
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        BarraBusqueda(
-            texto = textoBusqueda,
-            onTextoChange = { viewModel.actualizarBusqueda(it) }
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        if (borradoresFiltered.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(20.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Icon(
-                        Icons.Default.Description,
-                        contentDescription = null,
-                        modifier = Modifier.size(64.dp),
-                        tint = BlueGrey
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        "No hay Resultados :O",
-                        fontSize = 16.sp,
-                        color = BlueGrey
-                    )
-                }
+    Scaffold(
+        containerColor = WhiteBackground
+    ) { padding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
+            verticalArrangement = Arrangement.spacedBy(0.dp)
+        ) {
+            item {
+                HeaderBorradores(
+                    totalBorradores = borradores.size,
+                    onMenuClick = onMenuClick,
+                    onEliminarTodos = { mostrarDialogoEliminarTodos = true }
+                )
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 20.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
+
+            item {
+                Spacer(modifier = Modifier.height(24.dp))
+                BarraBusqueda(
+                    texto = textoBusqueda,
+                    onTextoChange = { viewModel.actualizarBusqueda(it) }
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            if (borradoresFiltered.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp)
+                            .padding(top = 48.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                Icons.Default.Description,
+                                contentDescription = null,
+                                modifier = Modifier.size(64.dp),
+                                tint = BlueGrey
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                "No hay Resultados :O",
+                                fontSize = 16.sp,
+                                color = BlueGrey
+                            )
+                        }
+                    }
+                }
+            } else {
                 items(borradoresFiltered) { borrador ->
                     TarjetaBorrador(
                         borrador = borrador,
-                        onEliminarClick = {
-                            viewModel.eliminarBorrador(borrador.id)
-                        },
+                        onEliminarClick = { viewModel.eliminarBorrador(borrador.id) },
                         onEditarClick = {
                             navController.navigate(
                                 when (borrador.tipo) {
@@ -158,8 +163,10 @@ fun BorradoresScreen(
                                     else -> return@TarjetaBorrador
                                 }
                             )
-                        }
+                        },
+                        modifier = Modifier.padding(horizontal = 20.dp)
                     )
+                    Spacer(modifier = Modifier.height(12.dp))
                 }
 
                 item {
@@ -178,7 +185,6 @@ fun BorradoresScreen(
                 viewModel.eliminarTodosBorradores()
                 mostrarDialogoEliminarTodos = false
             }
-
         },
         onCancelar = { mostrarDialogoEliminarTodos = false }
     )
@@ -226,9 +232,7 @@ fun HeaderBorradores(
                     )
                 }
 
-                Box(
-                    contentAlignment = Alignment.Center
-                ) {
+                Box(contentAlignment = Alignment.Center) {
                     IconButton(
                         onClick = { expandedConfig = true },
                         modifier = Modifier
@@ -256,7 +260,6 @@ fun HeaderBorradores(
                                 cambiarIdioma("es")
                             }
                         )
-
                         DropdownMenuItem(
                             text = { Text("Català") },
                             onClick = {
@@ -367,29 +370,18 @@ fun DialogoConfirmacion(
         androidx.compose.material3.AlertDialog(
             onDismissRequest = onCancelar,
             title = {
-                Text(
-                    titulo,
-                    fontWeight = FontWeight.Bold,
-                    color = DarkBlueGrey
-                )
+                Text(titulo, fontWeight = FontWeight.Bold, color = DarkBlueGrey)
             },
             text = {
-                Text(
-                    mensaje,
-                    color = BlueGrey
-                )
+                Text(mensaje, color = BlueGrey)
             },
             confirmButton = {
-                androidx.compose.material3.TextButton(
-                    onClick = onConfirmar
-                ) {
+                androidx.compose.material3.TextButton(onClick = onConfirmar) {
                     Text("Confirmar", color = ErrorRed, fontWeight = FontWeight.SemiBold)
                 }
             },
             dismissButton = {
-                androidx.compose.material3.TextButton(
-                    onClick = onCancelar
-                ) {
+                androidx.compose.material3.TextButton(onClick = onCancelar) {
                     Text("Cancelar", color = BlueGrey)
                 }
             },
@@ -428,39 +420,28 @@ fun BarraBusqueda(
     texto: String,
     onTextoChange: (String) -> Unit
 ) {
-    androidx.compose.material3.OutlinedTextField(
+    OutlinedTextField(
         value = texto,
         onValueChange = onTextoChange,
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp),
         placeholder = {
-            Text(
-                "Buscar borradores...",
-                color = BlueGrey
-            )
+            Text("Buscar borradores...", color = BlueGrey)
         },
         leadingIcon = {
-            Icon(
-                Icons.Default.Search,
-                contentDescription = null,
-                tint = BlueGrey
-            )
+            Icon(Icons.Default.Search, contentDescription = null, tint = BlueGrey)
         },
         trailingIcon = {
             if (texto.isNotEmpty()) {
                 IconButton(onClick = { onTextoChange("") }) {
-                    Icon(
-                        Icons.Default.Clear,
-                        contentDescription = "Limpiar",
-                        tint = BlueGrey
-                    )
+                    Icon(Icons.Default.Clear, contentDescription = "Limpiar", tint = BlueGrey)
                 }
             }
         },
         singleLine = true,
         shape = RoundedCornerShape(12.dp),
-        colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+        colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = MainGreen,
             unfocusedBorderColor = BlueGrey.copy(alpha = 0.3f),
             focusedContainerColor = Color.White,
@@ -473,7 +454,8 @@ fun BarraBusqueda(
 fun TarjetaBorrador(
     borrador: Borrador,
     onEliminarClick: () -> Unit,
-    onEditarClick: () -> Unit
+    onEditarClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     var mostrarMenu by remember { mutableStateOf(false) }
 
@@ -499,12 +481,10 @@ fun TarjetaBorrador(
     }
 
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .height(96.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        ),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
         shape = RoundedCornerShape(16.dp)
     ) {
@@ -608,9 +588,7 @@ fun TarjetaBorrador(
 
                 Spacer(modifier = Modifier.height(6.dp))
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         Icons.Default.CalendarToday,
                         contentDescription = null,
@@ -634,7 +612,6 @@ fun TarjetaBorrador(
                         modifier = Modifier.size(14.dp),
                         tint = BlueGrey
                     )
-
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         borrador.hora ?: "Sin hora",
@@ -670,10 +647,10 @@ fun TarjetaBorrador(
                                     Icons.Default.Edit,
                                     contentDescription = null,
                                     modifier = Modifier.size(20.dp),
-                                    tint = DarkBlueGrey
+                                    tint = Blue
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
-                                Text("Editar", color = DarkBlueGrey)
+                                Text("Editar", color = Blue)
                             }
                         },
                         onClick = {
