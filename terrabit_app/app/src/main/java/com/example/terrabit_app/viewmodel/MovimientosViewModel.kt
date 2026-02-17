@@ -25,7 +25,7 @@ import java.util.Locale
 
 class MovimientosViewModel : ViewModel() {
 
-    private val repositorio = Repositorio()
+    private lateinit var repositorio: Repositorio
     private lateinit var sharedPreferencesManager: SharedPreferencesManager
 
     // ID único para la sesión actual del formulario
@@ -96,6 +96,7 @@ class MovimientosViewModel : ViewModel() {
                     id = borradorSesionId,
                     tipo = "MOVIMIENTO",
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
                     datos = Gson().toJson(datosMovimiento),
                     estado = "BORRADOR_AUTO"
                 )

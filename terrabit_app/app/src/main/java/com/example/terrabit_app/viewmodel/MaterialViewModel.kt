@@ -14,7 +14,7 @@ import kotlinx.coroutines.withContext
 class MaterialViewModel : ViewModel() {
 
     // Instancia del repositorio
-    private val repositorio = Repositorio()
+    private lateinit var repositorio: Repositorio
 
     // ============================================
     // SECCIÓN: SOLICITUD DE MATERIAL

@@ -20,7 +20,7 @@ import java.util.*
 
 class IdentificacionAplazaViewModel : ViewModel() {
 
-    private val repositorio = Repositorio()
+    private lateinit var repositorio: Repositorio
     private lateinit var sharedPreferencesManager: SharedPreferencesManager
 
     // ID único para la sesión actual del formulario
@@ -68,6 +68,7 @@ class IdentificacionAplazaViewModel : ViewModel() {
                     id = borradorSesionId,
                     tipo = "IDENTIFICACION_APLAZADA",
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
                     datos = Gson().toJson(datosIdentificacion),
                     estado = "BORRADOR_AUTO"
                 )

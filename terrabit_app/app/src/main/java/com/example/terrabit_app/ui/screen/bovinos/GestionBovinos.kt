@@ -53,7 +53,7 @@ fun GestionBovinos(navController: NavController) {
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { navController.navigate(Routes.HomeBovinos.route) }) {
                         Icon(
                             Icons.Default.ArrowBack,
                             contentDescription = "Volver",

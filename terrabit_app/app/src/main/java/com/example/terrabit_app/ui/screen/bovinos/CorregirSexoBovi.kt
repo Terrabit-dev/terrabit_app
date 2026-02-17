@@ -76,6 +76,8 @@ import com.example.terrabit_app.ui.theme.WhiteBackground
 import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
 import com.example.terrabit_app.viewmodel.CorrecionSexoViewModel
+import com.example.terrabit_app.ui.screen.bovinos.components.AutoCompleteBovinoField
+import com.example.terrabit_app.ui.screen.bovinos.components.useDebounce
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -89,6 +91,8 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
     val mensajeError by viewModel.mensajeErrorCorreccionSexo.observeAsState("")
     val codiError by viewModel.codiError.observeAsState()
     val estadoCarga by viewModel.estadoCarga.observeAsState(false)
+    val suggestionsBovinos by viewModel.suggestionsBovinos.observeAsState(emptyList())
+    val isLoadingBovinos by viewModel.isLoadingBovinos.observeAsState(false)
 
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
@@ -364,39 +368,21 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
-                            OutlinedTextField(
+
+                            // Debouncing para búsqueda
+                            useDebounce(identificadorCorreccionSexo, delayMillis = 300L) { query ->
+                                viewModel.searchBovinos(query)
+                            }
+
+                            AutoCompleteBovinoField(
                                 value = identificadorCorreccionSexo,
                                 onValueChange = { viewModel.actualizarIdentificadorCorreccionSexo(it) },
-                                modifier = Modifier.fillMaxWidth(),
-                                placeholder = {
-                                    Text(
-                                        stringResource(R.string.form_id_animal_description),
-                                        color = BlueGrey
-                                    )
-                                },
-                                trailingIcon = {
-                                    IconButton(onClick = { /* Acción de cámara */ }) {
-                                        Icon(
-                                            Icons.Outlined.CameraAlt,
-                                            contentDescription = "Escanear",
-                                            tint = MainGreen
-                                        )
-                                    }
-                                },
-                                singleLine = true,
-                                shape = MaterialTheme.shapes.medium,
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = MainGreen,
-                                    unfocusedBorderColor = DarkWhiteBackground,
-                                    focusedTextColor = DarkBlueGrey,
-                                    unfocusedTextColor = DarkBlueGrey,
-                                    cursorColor = MainGreen
-                                ),
-                                keyboardOptions = KeyboardOptions(
-                                    keyboardType = KeyboardType.Text,
-                                    imeAction = ImeAction.Next,
-                                    autoCorrect = false
-                                )
+                                suggestions = suggestionsBovinos,
+                                onAnimalSelected = { viewModel.onBovinoSelected(it) },
+                                isLoading = isLoadingBovinos,
+                                label = stringResource(R.string.form_id_animal),
+                                placeholder = stringResource(R.string.form_id_animal_description),
+                                modifier = Modifier.fillMaxWidth()
                             )
                         }
 

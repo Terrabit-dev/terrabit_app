@@ -22,7 +22,7 @@ import java.util.Locale
 
 class GuiasViewModel : ViewModel() {
 
-    private val repositorio = Repositorio()
+    private lateinit var repositorio: Repositorio
     private lateinit var sharedPreferencesManager: SharedPreferencesManager
 
     // ID único para la sesión actual del formulario
@@ -103,6 +103,7 @@ class GuiasViewModel : ViewModel() {
                     id = borradorSesionId,
                     tipo = "GUIA",
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
                     datos = Gson().toJson(datosGuia),
                     estado = "BORRADOR_AUTO"
                 )

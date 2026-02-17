@@ -18,7 +18,7 @@ sealed class LoginState {
 }
 
 class LoginViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository = Repositorio()
+    private val repository = Repositorio(application)
     private val userPreferences = UserPreferences(application)
 
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)

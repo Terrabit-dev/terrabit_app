@@ -1,7 +1,9 @@
 package com.example.terrabit_app.viewmodel
 
+import android.app.Application
 import android.content.Context
 import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -22,9 +24,9 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
-class NacimientoViewmodel : ViewModel() {
+class NacimientoViewmodel (application: Application): AndroidViewModel(application) {
 
-    private val repositorio = Repositorio()
+    private val repositorio = Repositorio(application)
     private lateinit var sharedPreferencesManager: SharedPreferencesManager
 
     // ID único para la sesión actual del formulario
@@ -85,6 +87,7 @@ class NacimientoViewmodel : ViewModel() {
                     id = borradorSesionId,
                     tipo = "NACIMIENTO",
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
                     datos = Gson().toJson(datosNacimiento),
                     estado = "BORRADOR_AUTO"
                 )

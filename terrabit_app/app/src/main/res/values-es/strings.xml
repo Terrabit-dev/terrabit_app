@@ -5,6 +5,7 @@
     <string name="drawer_subtitle">Gestión Ganadera</string>
     <string name="drawer_explained">Tipo de Animal</string>
     <string name="bovinos_name">Bovinos</string>
+    <string name="draft_name">Borradores</string>
     <string name="porcionos_name">Porcinos</string>
 
     <string name="title_home">¡Bienvenido/a!</string>

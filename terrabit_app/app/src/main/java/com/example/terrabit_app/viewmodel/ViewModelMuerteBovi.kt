@@ -20,7 +20,7 @@ import java.util.*
 
 class ViewModelMuerteBovi : ViewModel() {
 
-    private val repositorio = Repositorio()
+    private lateinit var repositorio: Repositorio
     private lateinit var sharedPreferencesManager: SharedPreferencesManager
 
     // ID único para la sesión actual del formulario
@@ -79,6 +79,7 @@ class ViewModelMuerteBovi : ViewModel() {
                     id = borradorSesionId,
                     tipo = "MUERTE",
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
                     datos = Gson().toJson(datosMuerte),
                     estado = "BORRADOR_AUTO"
                 )
