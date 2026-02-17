@@ -7,7 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.terrabit_app.ui.pantallas.BorradoresScreen
 import com.example.terrabit_app.ui.pantallas.GestionBovinos
-import com.example.terrabit_app.ui.pantallas.GestionPorcinos
+import com.example.terrabit_app.ui.screen.porcinos.GestionPorcinos
 import com.example.terrabit_app.ui.pantallas.GuiasMovimientos
 import com.example.terrabit_app.ui.pantallas.GuiasMovimientosPorcinos
 import com.example.terrabit_app.ui.pantallas.MaterialCategoria

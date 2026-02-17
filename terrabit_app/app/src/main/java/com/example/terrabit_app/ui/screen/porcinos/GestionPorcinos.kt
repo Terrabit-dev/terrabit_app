@@ -1,4 +1,4 @@
-package com.example.terrabit_app.ui.pantallas
+package com.example.terrabit_app.ui.screen.porcinos
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
