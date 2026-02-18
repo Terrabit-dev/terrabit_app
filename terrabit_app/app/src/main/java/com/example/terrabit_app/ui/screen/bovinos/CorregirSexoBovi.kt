@@ -127,53 +127,6 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
         }
     }
 
-    // ============================================
-    // DIÁLOGO DE AVISO DE BORRADORES
-    // ============================================
-    if (mostrarDialogoAviso) {
-        AlertDialog(
-            onDismissRequest = { },
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.Description,
-                    contentDescription = null,
-                    tint = MainGreen,
-                    modifier = Modifier.size(48.dp)
-                )
-            },
-            title = {
-                Text(
-                    text = "Borradores pendientes",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
-                    color = DarkBlueGrey
-                )
-            },
-            text = {
-                Text(
-                    text = "Tienes $cantidadBorradores borradores guardados de este formulario. Puedes verlos en la página de Borradores.\n\n¿Deseas crear uno nuevo?",
-                    fontSize = 16.sp,
-                    color = BlueGrey,
-                    lineHeight = 24.sp
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        mostrarDialogoAviso = false
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MainGreen
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text("Crear nuevo", fontWeight = FontWeight.SemiBold)
-                }
-            },
-            containerColor = Color.White,
-            shape = RoundedCornerShape(16.dp)
-        )
-    }
 
     // ============================================
     // DETECCIÓN DE CICLO DE VIDA (AUTOGUARDADO)

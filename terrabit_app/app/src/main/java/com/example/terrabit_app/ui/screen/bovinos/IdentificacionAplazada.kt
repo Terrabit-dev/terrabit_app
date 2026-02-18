@@ -76,6 +76,8 @@ import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.WhiteBackground
 import com.example.terrabit_app.utils.alertsErrosScreens
 import com.example.terrabit_app.viewmodel.IdentificacionAplazaViewModel
+import com.example.terrabit_app.ui.screen.bovinos.components.AutoCompleteBovinoField
+import com.example.terrabit_app.ui.screen.bovinos.components.useDebounce
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -93,73 +95,27 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
 
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
-    var mostrarDialogoAviso by remember { mutableStateOf(false) }
-    var cantidadBorradores by remember { mutableStateOf(0) }
 
     val tituloExito = stringResource(id = R.string.successful_message_identification_postpone)
     val titulloError = stringResource(id = R.string.error_message_identification_postpone)
 
+    // Debouncing para búsqueda
+    val suggestionsBovinos by viewModel.suggestionsBovinos.observeAsState(emptyList())
+    val isLoadingBovinos by viewModel.isLoadingBovinos.observeAsState(false)
+
     // ============================================
     // INICIALIZACIÓN Y DETECCIÓN DE BORRADORES
     // ============================================
+
     LaunchedEffect(Unit) {
         viewModel.inicializarSharedPreferences(context)
 
-        val borradores = viewModel.obtenerBorradoresIdentificacionAplazada()
-        cantidadBorradores = borradores.size
-
-        if (cantidadBorradores >= 2) {
-            mostrarDialogoAviso = true
+        if (borradorId.isNotEmpty()) {
+            viewModel.cargarBorradorPorId(borradorId)
+            return@LaunchedEffect
         }
     }
 
-    // ============================================
-    // DIÁLOGO DE AVISO DE BORRADORES
-    // ============================================
-    if (mostrarDialogoAviso) {
-        AlertDialog(
-            onDismissRequest = { },
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.Description,
-                    contentDescription = null,
-                    tint = MainGreen,
-                    modifier = Modifier.size(48.dp)
-                )
-            },
-            title = {
-                Text(
-                    text = "Borradores pendientes",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
-                    color = DarkBlueGrey
-                )
-            },
-            text = {
-                Text(
-                    text = "Tienes $cantidadBorradores borradores guardados de este formulario. Puedes verlos en la página de Borradores.\n\n¿Deseas crear uno nuevo?",
-                    fontSize = 16.sp,
-                    color = BlueGrey,
-                    lineHeight = 24.sp
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        mostrarDialogoAviso = false
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MainGreen
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text("Crear nuevo", fontWeight = FontWeight.SemiBold)
-                }
-            },
-            containerColor = Color.White,
-            shape = RoundedCornerShape(16.dp)
-        )
-    }
 
     // ============================================
     // DETECCIÓN DE CICLO DE VIDA (AUTOGUARDADO)
@@ -397,39 +353,21 @@ fun IdentificacionApalzada(navController: NavController, viewModel: Identificaci
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
-                            OutlinedTextField(
+
+
+                            useDebounce(identificadorAnimal, delayMillis = 300L) { query ->
+                                viewModel.searchBovinos(query)
+                            }
+
+                            AutoCompleteBovinoField(
                                 value = identificadorAnimal,
                                 onValueChange = { viewModel.actualizarIdentificadorAnimal(it) },
-                                modifier = Modifier.fillMaxWidth(),
-                                placeholder = {
-                                    Text(
-                                        stringResource(R.string.form_id_animal_description),
-                                        color = BlueGrey
-                                    )
-                                },
-                                trailingIcon = {
-                                    IconButton(onClick = { /* Acción de cámara */ }) {
-                                        Icon(
-                                            Icons.Outlined.CameraAlt,
-                                            contentDescription = "Escanear",
-                                            tint = MainGreen
-                                        )
-                                    }
-                                },
-                                singleLine = true,
-                                shape = MaterialTheme.shapes.medium,
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = MainGreen,
-                                    unfocusedBorderColor = DarkWhiteBackground,
-                                    focusedTextColor = DarkBlueGrey,
-                                    unfocusedTextColor = DarkBlueGrey,
-                                    cursorColor = MainGreen
-                                ),
-                                keyboardOptions = KeyboardOptions(
-                                    keyboardType = KeyboardType.Text,
-                                    imeAction = ImeAction.Next,
-                                    autoCorrect = false
-                                )
+                                suggestions = suggestionsBovinos,
+                                onAnimalSelected = { viewModel.onBovinoSelected(it) },
+                                isLoading = isLoadingBovinos,
+                                label = stringResource(R.string.form_id_animal),
+                                placeholder = stringResource(R.string.form_id_animal_description),
+                                modifier = Modifier.fillMaxWidth()
                             )
                         }
 
