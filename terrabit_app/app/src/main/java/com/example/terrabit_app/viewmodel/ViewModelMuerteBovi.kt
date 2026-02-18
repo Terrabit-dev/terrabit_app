@@ -5,12 +5,12 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.Borrador
 import com.example.terrabit_app.data.SharedPreferencesManager
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.animales.RegistroMuerteBovi
+import com.example.terrabit_app.data.network.lista_bovinos.Animal
 import com.example.terrabit_app.data.network.respuestas.RespuestaUnificada
 import com.example.terrabit_app.utils.DateUtils
 import com.example.terrabit_app.utils.UserPreferences
@@ -26,23 +26,91 @@ class ViewModelMuerteBovi (application: Application) : AndroidViewModel(applicat
     private var repositorio = Repositorio(application)
     private lateinit var sharedPreferencesManager: SharedPreferencesManager
 
-    // ID único para la sesión actual del formulario
     private var borradorSesionId: String = ""
 
-    // Instanciar UserPreferences directamente con la Application
     private val userPreferences = UserPreferences(application)
 
-    // Leer las credenciales del login guardadas automáticamente
     val nif = userPreferences.getNif() ?: ""
     val password = userPreferences.getPassword() ?: ""
+    val codiMo = userPreferences.getCodiMO() ?: ""
+
+    // ============================================
+    // ESTADOS PARA AUTOCOMPLETADO
+    // ============================================
+    private val _suggestionsBovinos = MutableLiveData<List<Animal>>(emptyList())
+    val suggestionsBovinos = _suggestionsBovinos
+
+    private val _isLoadingBovinos = MutableLiveData(false)
+    val isLoadingBovinos = _isLoadingBovinos
+
+    private val _bovinosCargados = MutableLiveData(false)
+    val bovinosCargados = _bovinosCargados
 
     fun inicializarSharedPreferences(context: Context) {
         sharedPreferencesManager = SharedPreferencesManager(context)
 
-        // Generar nuevo ID de sesión si no existe
         if (borradorSesionId.isEmpty()) {
             borradorSesionId = "muerte_auto_${System.currentTimeMillis()}"
         }
+
+        cargarBovinosEnCache()
+    }
+
+    // ============================================
+    // FUNCIÓN PARA CARGAR BOVINOS EN CACHÉ
+    // ============================================
+    private fun cargarBovinosEnCache() {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                _isLoadingBovinos.postValue(true)
+
+                repositorio.getBovinosWithCache(
+                    nif = nif,
+                    password = password,
+                    tipusVinculacio = "1",
+                    explotacio = codiMo,
+                    forceRefresh = false
+                )
+
+                _bovinosCargados.postValue(true)
+                _isLoadingBovinos.postValue(false)
+                Log.d("MuerteVM", "Bovinos cargados en caché")
+            } catch (e: Exception) {
+                _isLoadingBovinos.postValue(false)
+                _bovinosCargados.postValue(false)
+                Log.e("MuerteVM", "Error al cargar bovinos: ${e.message}", e)
+            }
+        }
+    }
+
+    // ============================================
+    // FUNCIÓN PARA BUSCAR BOVINOS (AUTOCOMPLETADO)
+    // ============================================
+    fun searchBovinos(query: String) {
+        if (query.isBlank()) {
+            _suggestionsBovinos.value = emptyList()
+            return
+        }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val resultados = repositorio.searchBovinosLocal(query)
+                _suggestionsBovinos.postValue(resultados)
+                Log.d("MuerteVM", "Búsqueda: '$query' - ${resultados.size} resultados")
+            } catch (e: Exception) {
+                _suggestionsBovinos.postValue(emptyList())
+                Log.e("MuerteVM", "Error en búsqueda: ${e.message}", e)
+            }
+        }
+    }
+
+    // ============================================
+    // FUNCIÓN AL SELECCIONAR BOVINO
+    // ============================================
+    fun onBovinoSelected(animal: Animal) {
+        _identificadorMuerte.value = animal.identificador
+        _suggestionsBovinos.value = emptyList()
+        Log.d("MuerteVM", "Bovino seleccionado: ${animal.identificador}")
     }
 
     fun tieneContenido(): Boolean {
@@ -73,18 +141,15 @@ class ViewModelMuerteBovi (application: Application) : AndroidViewModel(applicat
                 "coordenadaY" to _coordenadaY.value
             )
 
-            // Buscar si ya existe este borrador específico de la sesión actual
             val borradorExistente = sharedPreferencesManager.obtenerBorradores()
                 .find { it.id == borradorSesionId }
 
             val borrador = if (borradorExistente != null) {
-                // Actualizar borrador de esta sesión
                 borradorExistente.copy(
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
                     datos = Gson().toJson(datosMuerte)
                 )
             } else {
-                // Crear nuevo borrador con ID de sesión
                 Borrador(
                     id = borradorSesionId,
                     tipo = "MUERTE",
@@ -101,7 +166,6 @@ class ViewModelMuerteBovi (application: Application) : AndroidViewModel(applicat
             Log.e("Error Autoguardado Muerte", "Error al guardar: ${e.message}", e)
         }
     }
-
 
     fun cargarBorradorPorId(id: String) {
         try {
@@ -130,58 +194,25 @@ class ViewModelMuerteBovi (application: Application) : AndroidViewModel(applicat
         }
     }
 
-    fun cargarBorradorExistente() {
-        try {
-            val borradores = sharedPreferencesManager.obtenerBorradores()
-
-            // Buscar cualquier borrador de tipo MUERTE con estado BORRADOR_AUTO
-            val borradoresMuerte = borradores.filter {
-                it.tipo == "MUERTE" && it.estado == "BORRADOR_AUTO"
-            }
-
-            if (borradoresMuerte.isNotEmpty()) {
-                // Tomar el más reciente (último guardado)
-                val borradorMuerte = borradoresMuerte.maxByOrNull {
-                    it.id.substringAfter("muerte_auto_").toLongOrNull() ?: 0L
-                }
-
-                if (borradorMuerte != null) {
-                    // Asignar este ID a la sesión actual
-                    borradorSesionId = borradorMuerte.id
-
-                    val gson = Gson()
-                    val datos: Map<String, Any?> = gson.fromJson(
-                        borradorMuerte.datos,
-                        object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
-                    )
-
-                    // Restaurar datos
-                    _tipoMuerte.value = datos["tipo"] as? String ?: ""
-                    _codigoTipoMuerte.value = datos["codigoTipo"] as? String ?: ""
-                    _identificadorMuerte.value = datos["identificador"] as? String ?: ""
-                    _fechaMuerte.value = datos["fecha"] as? String ?: ""
-                    _mesesGestacion.value = datos["mesesGestacion"] as? String ?: ""
-                    _cadaverInaccesible.value = datos["cadaverInaccesible"] as? Boolean ?: false
-                    _coordenadaX.value = datos["coordenadaX"] as? String ?: ""
-                    _coordenadaY.value = datos["coordenadaY"] as? String ?: ""
-
-                    Log.d("Cargar Borrador", "Borrador cargado: $borradorSesionId")
-                }
-            }
-        } catch (e: Exception) {
-            Log.e("Error Cargar Borrador", "Error al cargar: ${e.message}", e)
-        }
-    }
-
     fun eliminarBorradorAutomatico() {
         try {
             if (borradorSesionId.isNotEmpty()) {
                 sharedPreferencesManager.eliminarBorrador(borradorSesionId)
                 Log.d("Eliminar Borrador", "Borrador eliminado: $borradorSesionId")
-                borradorSesionId = "" // Resetear el ID de sesión
+                borradorSesionId = ""
             }
         } catch (e: Exception) {
             Log.e("Error Eliminar Borrador", "Error: ${e.message}", e)
+        }
+    }
+
+    fun obtenerBorradoresMuerte(): List<Borrador> {
+        return try {
+            sharedPreferencesManager.obtenerBorradores()
+                .filter { it.tipo == "MUERTE" && it.estado == "BORRADOR_AUTO" }
+        } catch (e: Exception) {
+            Log.e("Error", "Error al obtener borradores: ${e.message}", e)
+            emptyList()
         }
     }
 
@@ -328,20 +359,9 @@ class ViewModelMuerteBovi (application: Application) : AndroidViewModel(applicat
         _coordenadaX.value = ""
         _coordenadaY.value = ""
 
-        // Generar nuevo ID de sesión para el próximo formulario
         borradorSesionId = ""
     }
 
-
-    fun obtenerBorradoresMuerte(): List<Borrador> {
-        return try {
-            sharedPreferencesManager.obtenerBorradores()
-                .filter { it.tipo == "MUERTE" && it.estado == "BORRADOR_AUTO" }
-        } catch (e: Exception) {
-            Log.e("Error", "Error al obtener borradores: ${e.message}", e)
-            emptyList()
-        }
-    }
     fun resetearEstadoRegistroMuerte() {
         _registroMuerteExitoso.value = false
         _mensajeErrorMuerte.value = ""
