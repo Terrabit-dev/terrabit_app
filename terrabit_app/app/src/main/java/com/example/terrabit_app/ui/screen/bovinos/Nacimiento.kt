@@ -73,7 +73,6 @@ import com.example.terrabit_app.data.network.Identificadores.Identificadores
 import com.example.terrabit_app.viewmodel.NacimientoViewmodel
 import kotlin.collections.emptyList
 import com.example.terrabit_app.R
-
 import com.example.terrabit_app.ui.theme.BlueGrey
 import com.example.terrabit_app.ui.theme.DarkBlueGrey
 import com.example.terrabit_app.ui.theme.DarkWhiteBackground
@@ -87,7 +86,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.viewmodel.BorradorViewModel
-
+import com.example.terrabit_app.ui.screen.bovinos.components.AutoCompleteBovinoField
+import com.example.terrabit_app.ui.screen.bovinos.components.useDebounce
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -118,8 +118,6 @@ fun Nacimiento(navController: NavController,
 
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
-    var mostrarDialogoAviso by remember { mutableStateOf(false) }
-    var cantidadBorradores by remember { mutableStateOf(0) }
 
     val mensajeRegistroExitoso = stringResource(R.string.successful_message_born)
     val mensajeRegistroError = stringResource(R.string.error_message_born)
@@ -137,62 +135,9 @@ fun Nacimiento(navController: NavController,
             viewModel.cargarBorradorPorId(borradorId)
             return@LaunchedEffect
         }
-
         val borradores = viewModel.obtenerBorradoresNacimiento()
-        cantidadBorradores = borradores.size
-
-        if (cantidadBorradores >= 2) {
-            mostrarDialogoAviso = true
-        }
     }
 
-    // ============================================
-    // DIÁLOGO DE AVISO DE BORRADORES
-    // ============================================
-    if (mostrarDialogoAviso) {
-        AlertDialog(
-            onDismissRequest = { },
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.Description,
-                    contentDescription = null,
-                    tint = Color(0xFFFFA726),
-                    modifier = Modifier.size(48.dp)
-                )
-            },
-            title = {
-                Text(
-                    text = "Borradores pendientes",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
-                    color = Color(0xFF1E293B)
-                )
-            },
-            text = {
-                Text(
-                    text = "Tienes $cantidadBorradores borradores guardados de este formulario. Puedes verlos en la página de Borradores.\n\n¿Deseas crear uno nuevo?",
-                    fontSize = 16.sp,
-                    color = Color(0xFF475569),
-                    lineHeight = 24.sp
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        mostrarDialogoAviso = false
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF4A7C59)
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text("Crear nuevo", fontWeight = FontWeight.SemiBold)
-                }
-            },
-            containerColor = Color.White,
-            shape = RoundedCornerShape(16.dp)
-        )
-    }
 
     // ============================================
     // DETECCIÓN DE CICLO DE VIDA (AUTOGUARDADO)
@@ -457,39 +402,23 @@ fun Nacimiento(navController: NavController,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
-                            OutlinedTextField(
+
+                            val suggestionsBovinos by viewModel.suggestionsBovinos.observeAsState(emptyList())
+                            val isLoadingBovinos by viewModel.isLoadingBovinos.observeAsState(false)
+
+                            useDebounce(idMadre, delayMillis = 300L) { query ->
+                                viewModel.searchBovinos(query)
+                            }
+
+                            AutoCompleteBovinoField(
                                 value = idMadre,
                                 onValueChange = { viewModel.actualizarIdMadre(it) },
-                                modifier = Modifier.fillMaxWidth(),
-                                placeholder = {
-                                    Text(
-                                        stringResource(R.string.form_mother_description),
-                                        color = BlueGrey
-                                    )
-                                },
-                                trailingIcon = {
-                                    IconButton(onClick = { /* Acción de cámara */ }) {
-                                        Icon(
-                                            Icons.Outlined.CameraAlt,
-                                            contentDescription = "Escanear",
-                                            tint = MainGreen
-                                        )
-                                    }
-                                },
-                                singleLine = true,
-                                shape = MaterialTheme.shapes.medium,
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = MainGreen,
-                                    unfocusedBorderColor = DarkWhiteBackground,
-                                    focusedTextColor = DarkBlueGrey,
-                                    unfocusedTextColor = DarkBlueGrey,
-                                    cursorColor = MainGreen
-                                ),
-                                keyboardOptions = KeyboardOptions(
-                                    keyboardType = KeyboardType.Text,
-                                    imeAction = ImeAction.Next,
-                                    autoCorrect = false
-                                )
+                                suggestions = suggestionsBovinos,
+                                onAnimalSelected = { viewModel.onBovinoSelected(it) },
+                                isLoading = isLoadingBovinos,
+                                label = stringResource(R.string.form_id_mother),
+                                placeholder = stringResource(R.string.form_mother_description),
+                                modifier = Modifier.fillMaxWidth()
                             )
                         }
 

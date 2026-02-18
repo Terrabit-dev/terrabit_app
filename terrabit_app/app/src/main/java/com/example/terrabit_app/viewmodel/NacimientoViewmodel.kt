@@ -11,6 +11,7 @@ import com.example.terrabit_app.data.SharedPreferencesManager
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.Identificadores.Identificadores
 import com.example.terrabit_app.data.network.animales.RegistroNacimientoBovi
+import com.example.terrabit_app.data.network.lista_bovinos.Animal
 import com.example.terrabit_app.data.network.respuestas.RespuestaUnificada
 import com.example.terrabit_app.utils.DateUtils
 import com.example.terrabit_app.utils.UserPreferences
@@ -32,18 +33,88 @@ class NacimientoViewmodel(application: Application) : AndroidViewModel(applicati
     private var borradorSesionId: String = ""
     private var editandoBorrador: Boolean = false
 
-    // Instanciar UserPreferences directamente con la Application
     private val userPreferences = UserPreferences(application)
 
-    // Leer las credenciales del login guardadas automáticamente
     val nif = userPreferences.getNif() ?: ""
     val password = userPreferences.getPassword() ?: ""
+    val codiMo = userPreferences.getCodiMO() ?: ""
+
+    // ============================================
+    // ESTADOS PARA AUTOCOMPLETADO
+    // ============================================
+    private val _suggestionsBovinos = MutableLiveData<List<Animal>>(emptyList())
+    val suggestionsBovinos = _suggestionsBovinos
+
+    private val _isLoadingBovinos = MutableLiveData(false)
+    val isLoadingBovinos = _isLoadingBovinos
+
+    private val _bovinosCargados = MutableLiveData(false)
+    val bovinosCargados = _bovinosCargados
 
     fun inicializarSharedPreferences(context: Context) {
         sharedPreferencesManager = SharedPreferencesManager(context)
         if (borradorSesionId.isEmpty()) {
             borradorSesionId = "nacimiento_auto_${System.currentTimeMillis()}"
         }
+
+        cargarBovinosEnCache()
+    }
+
+    // ============================================
+    // FUNCIÓN PARA CARGAR BOVINOS EN CACHÉ
+    // ============================================
+    private fun cargarBovinosEnCache() {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                _isLoadingBovinos.postValue(true)
+
+                repositorio.getBovinosWithCache(
+                    nif = nif,
+                    password = password,
+                    tipusVinculacio = "1",
+                    explotacio = codiMo,
+                    forceRefresh = false
+                )
+
+                _bovinosCargados.postValue(true)
+                _isLoadingBovinos.postValue(false)
+                Log.d("NacimientoVM", "Bovinos cargados en caché")
+            } catch (e: Exception) {
+                _isLoadingBovinos.postValue(false)
+                _bovinosCargados.postValue(false)
+                Log.e("NacimientoVM", "Error al cargar bovinos: ${e.message}", e)
+            }
+        }
+    }
+
+    // ============================================
+    // FUNCIÓN PARA BUSCAR BOVINOS (AUTOCOMPLETADO)
+    // ============================================
+    fun searchBovinos(query: String) {
+        if (query.isBlank()) {
+            _suggestionsBovinos.value = emptyList()
+            return
+        }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val resultados = repositorio.searchBovinosLocal(query)
+                _suggestionsBovinos.postValue(resultados)
+                Log.d("NacimientoVM", "Búsqueda: '$query' - ${resultados.size} resultados")
+            } catch (e: Exception) {
+                _suggestionsBovinos.postValue(emptyList())
+                Log.e("NacimientoVM", "Error en búsqueda: ${e.message}", e)
+            }
+        }
+    }
+
+    // ============================================
+    // FUNCIÓN AL SELECCIONAR BOVINO
+    // ============================================
+    fun onBovinoSelected(animal: Animal) {
+        _idMadre.value = animal.identificador
+        _suggestionsBovinos.value = emptyList()
+        Log.d("NacimientoVM", "Bovino seleccionado: ${animal.identificador}")
     }
 
     fun tieneContenido(): Boolean {
@@ -129,45 +200,6 @@ class NacimientoViewmodel(application: Application) : AndroidViewModel(applicati
             Log.d("NacimientoVM", "Borrador cargado por ID: $id")
         } catch (e: Exception) {
             Log.e("NacimientoVM", "Error al cargar borrador por ID: ${e.message}", e)
-        }
-    }
-
-    fun cargarBorradorExistente() {
-        try {
-            val borradores = sharedPreferencesManager.obtenerBorradores()
-            val borradoresNacimiento = borradores.filter {
-                it.tipo == "NACIMIENTO" && it.estado == "BORRADOR_AUTO"
-            }
-
-            if (borradoresNacimiento.isNotEmpty()) {
-                val borradorNacimiento = borradoresNacimiento.maxByOrNull {
-                    it.id.substringAfter("nacimiento_auto_").toLongOrNull() ?: 0L
-                }
-
-                if (borradorNacimiento != null) {
-                    borradorSesionId = borradorNacimiento.id
-
-                    val datos: Map<String, Any?> = Gson().fromJson(
-                        borradorNacimiento.datos,
-                        object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
-                    )
-
-                    _idMadre.value = datos["idMadre"] as? String ?: ""
-                    _idCria.value = datos["idCria"] as? String ?: ""
-                    _fechaNacimiento.value = datos["fechaNacimiento"] as? String ?: ""
-                    _fechaIdentificacion.value = datos["fechaIdentificacion"] as? String ?: ""
-                    _sexoSeleccionado.value = datos["sexoSeleccionado"] as? String ?: ""
-                    _razaSeleccionada.value = datos["razaSeleccionada"] as? String ?: ""
-                    _aptitudSeleccionada.value = datos["aptitudSeleccionada"] as? String ?: ""
-                    _codigoRaza.value = datos["codigoRaza"] as? String ?: ""
-                    sexoApiSeleccionado = datos["sexoApiSeleccionado"] as? String ?: "0"
-                    codigoAptitud = datos["codigoAptitud"] as? String ?: "0"
-
-                    Log.d("Cargar Borrador", "Borrador cargado: $borradorSesionId")
-                }
-            }
-        } catch (e: Exception) {
-            Log.e("Error Cargar Borrador", "Error al cargar: ${e.message}", e)
         }
     }
 
