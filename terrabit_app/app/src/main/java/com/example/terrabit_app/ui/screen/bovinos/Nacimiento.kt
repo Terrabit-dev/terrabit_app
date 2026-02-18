@@ -133,8 +133,6 @@ fun Nacimiento(navController: NavController,
     // ============================================
     LaunchedEffect(Unit) {
         viewModel.inicializarSharedPreferences(context)
-        viewModel.getIdentificadores("S0800608B", "L1855m58", "1410AK")
-
         if (borradorId.isNotEmpty()) {
             viewModel.cargarBorradorPorId(borradorId)
             return@LaunchedEffect

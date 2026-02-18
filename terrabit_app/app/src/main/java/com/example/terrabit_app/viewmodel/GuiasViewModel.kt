@@ -36,7 +36,7 @@ class GuiasViewModel (application: Application): AndroidViewModel(application) {
     // Leer las credenciales del login guardadas automáticamente
     val nif = userPreferences.getNif() ?: ""
     val password = userPreferences.getPassword() ?: ""
-    val codiMo = userPreferences.getCodiMO() ?: ""
+
 
 
     fun inicializarSharedPreferences(context: Context) {

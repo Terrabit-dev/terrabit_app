@@ -36,7 +36,6 @@ class MovimientosViewModel(application: Application) : AndroidViewModel(applicat
     // Leer las credenciales del login guardadas automáticamente
     val nif = userPreferences.getNif() ?: ""
     val password = userPreferences.getPassword() ?: ""
-    val codiMO = userPreferences.getCodiMO() ?: ""
 
     // ID único para la sesión actual del formulario
     private var borradorSesionId: String = ""

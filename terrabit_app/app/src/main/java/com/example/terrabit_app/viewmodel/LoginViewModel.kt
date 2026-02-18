@@ -50,10 +50,13 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun loadSavedCredentials() {
-        _savedNif.value = userPreferences.getNif()
-        _savedPassword.value = userPreferences.getPassword()
-        _savedCodiMO.value = userPreferences.getCodiMO()
-        _savedRememberMe.value = userPreferences.getRememberMe()
+        // Solo precargar si marcó "Recordarme"
+        if (userPreferences.getRememberMe()) {
+            _savedNif.value = userPreferences.getNif()
+            _savedPassword.value = userPreferences.getPassword()
+            _savedCodiMO.value = userPreferences.getCodiMO()
+            _savedRememberMe.value = true
+        }
     }
 
     fun clearFieldError(field: String) {
@@ -92,9 +95,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun login(nif: String, password: String, codiMO: String, rememberMe: Boolean) {
-        if (!validateFields(nif, password, codiMO)) {
-            return
-        }
+        if (!validateFields(nif, password, codiMO)) return
 
         viewModelScope.launch {
             _loginState.value = LoginState.Loading
@@ -109,12 +110,9 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                 if (response.isSuccessful) {
                     val identificadores = response.body()
                     if (identificadores != null && identificadores.identificadors.isNotEmpty()) {
-                        // Guardar o limpiar credenciales según checkbox
-                        if (rememberMe) {
-                            userPreferences.saveCredentials(nif, password, codiMO)
-                        } else {
-                            userPreferences.clearCredentials()
-                        }
+
+                        // ← Un solo método que lo gestiona todo
+                        userPreferences.saveCredentials(nif, password, codiMO, rememberMe)
 
                         _loginState.value = LoginState.Success(nif, password, codiMO)
                     } else {

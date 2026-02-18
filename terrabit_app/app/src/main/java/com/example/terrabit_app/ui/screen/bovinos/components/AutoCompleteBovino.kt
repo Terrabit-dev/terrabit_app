@@ -13,11 +13,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.terrabit_app.data.network.lista_bovinos.Animal
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.example.terrabit_app.R
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -143,10 +146,11 @@ private fun SuggestionItem(
     HorizontalDivider()
 }
 
+@Composable
 private fun getSexoText(sexe: String): String {
     return when (sexe) {
-        "01" -> "Macho"
-        "02" -> "Hembra"
+        "01" -> stringResource(R.string.female)
+        "02" -> stringResource(R.string.male)
         else -> sexe
     }
 }
