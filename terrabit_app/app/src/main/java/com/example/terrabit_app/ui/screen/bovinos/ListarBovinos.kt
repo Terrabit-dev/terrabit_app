@@ -1,6 +1,5 @@
 package com.example.terrabit_app.ui.screen.bovinos
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -9,6 +8,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -29,6 +30,7 @@ import com.example.terrabit_app.viewmodel.ListarBovinosViewModel
 fun ListarBovinos(navController: NavController, viewModel: ListarBovinosViewModel) {
     val listaFiltrada by viewModel.listaFiltrada.observeAsState(emptyList())
     val cargando by viewModel.cargando.observeAsState(false)
+    val refrescando by viewModel.refrescando.observeAsState(false)
     val error by viewModel.error.observeAsState()
     val busqueda by viewModel.busqueda.observeAsState("")
 
@@ -98,59 +100,65 @@ fun ListarBovinos(navController: NavController, viewModel: ListarBovinosViewMode
                 )
             }
 
-            // Contenido
-            when {
-                cargando -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(color = Color(0xFF4A7C59))
+            // Pull to Refresh
+            PullToRefreshBox(
+                isRefreshing = refrescando,
+                onRefresh = { viewModel.refrescar() },
+                modifier = Modifier.fillMaxSize()
+            ) {
+                when {
+                    cargando -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(color = Color(0xFF4A7C59))
+                        }
                     }
-                }
-                error != null -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = error ?: "Error desconocido",
-                                color = Color.Red,
-                                fontSize = 16.sp
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Button(
-                                onClick = { viewModel.cargarBovinos() },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0xFF4A7C59)
+                    error != null -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = error ?: "Error desconocido",
+                                    color = Color.Red,
+                                    fontSize = 16.sp
                                 )
-                            ) {
-                                Text("Reintentar")
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Button(
+                                    onClick = { viewModel.cargarBovinos() },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(0xFF4A7C59)
+                                    )
+                                ) {
+                                    Text("Reintentar")
+                                }
                             }
                         }
                     }
-                }
-                listaFiltrada.isEmpty() -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = if (busqueda.isEmpty()) "No hay bovinos" else "No se encontraron resultados",
-                            color = Color(0xFF64748B),
-                            fontSize = 16.sp
-                        )
+                    listaFiltrada.isEmpty() -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = if (busqueda.isEmpty()) "No hay bovinos" else "No se encontraron resultados",
+                                color = Color(0xFF64748B),
+                                fontSize = 16.sp
+                            )
+                        }
                     }
-                }
-                else -> {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(listaFiltrada) { animal ->
-                            TarjetaBovino(animal)
+                    else -> {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(listaFiltrada) { animal ->
+                                TarjetaBovino(animal)
+                            }
                         }
                     }
                 }
@@ -173,7 +181,6 @@ fun TarjetaBovino(animal: Animal) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Identificador principal
             Text(
                 text = animal.identificador,
                 fontSize = 18.sp,
@@ -181,7 +188,6 @@ fun TarjetaBovino(animal: Animal) {
                 color = Color(0xFF1E293B)
             )
 
-            // Información adicional
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -201,7 +207,7 @@ fun TarjetaBovino(animal: Animal) {
             }
 
             if (!animal.identificadorMare.isNullOrEmpty()) {
-                Divider(color = Color(0xFFE2E8F0), thickness = 1.dp)
+                HorizontalDivider(color = Color(0xFFE2E8F0), thickness = 1.dp)
                 Text(
                     text = "Madre: ${animal.identificadorMare}",
                     fontSize = 14.sp,
