@@ -123,214 +123,51 @@ fun MaterialDupplicadosScreen(navController: NavController){
                     verticalArrangement = Arrangement.spacedBy(24.dp)
                 ){
                     // Empresa Subministradora
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            "Empresa Subministradora *",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = DarkBlueGrey,
-                            letterSpacing = 0.15.sp
-                        )
-                        Spacer(modifier = Modifier.height(10.dp))
-                        ExposedDropdownMenuBox(
-                            expanded = empresaSubministradoraExpandido,
-                            onExpandedChange = { viewModel.toggleEmpresaExpandida() }
-                        ) {
-                            OutlinedTextField(
-                                value = empresaSubministradora,
-                                onValueChange = {},
-                                modifier = Modifier.fillMaxWidth().menuAnchor(),
-                                readOnly = true,
-                                placeholder = { Text("Seleccionar empresa", color = BlueGrey) },
-                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(empresaSubministradoraExpandido) },
-                                singleLine = true,
-                                shape = MaterialTheme.shapes.medium,
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = MainGreen,
-                                    unfocusedBorderColor = DarkWhiteBackground,
-                                    focusedTextColor = DarkBlueGrey,
-                                    unfocusedTextColor = DarkBlueGrey
-                                )
-                            )
-                            ExposedDropdownMenu(
-                                expanded = empresaSubministradoraExpandido,
-                                onDismissRequest = { viewModel.cerrarEmpresaMenu() },
-                                modifier = Modifier.background(Color.White)
-                            ) {
-                                elementosConCodigos.tiposOficinasComarcales().forEach { (codigo, empresa) ->
-                                    DropdownMenuItem(
-                                        text = {
-                                            Text(
-                                                empresa,
-                                                fontSize = 15.sp,
-                                                color = DarkBlueGrey
-                                            )
-                                        },
-                                        onClick = {  viewModel.seleccionarEmpresa(codigo, empresa)},
-                                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
-                                    )
-
-                                }
-                            }
-                        }
-                    }
+                    DropdownField(
+                        label = "Empresa Subministradora *",
+                        selectedValue = empresaSubministradora,
+                        expanded = empresaSubministradoraExpandido,
+                        placeholder = "Seleccionar empresa",
+                        opciones = elementosConCodigos.TipoEmpresaSubministradora(),
+                        onExpandedChange = { viewModel.toggleEmpresaExpandida() },
+                        onDismissRequest = { viewModel.cerrarEmpresaMenu() },
+                        onSeleccionar = { codigo, nombre -> viewModel.seleccionarEmpresa(codigo, nombre) }
+                    )
                     // Tipos de envio
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            "Tiipos de envio *",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = DarkBlueGrey,
-                            letterSpacing = 0.15.sp
-                        )
-                        Spacer(modifier = Modifier.height(10.dp))
-                        ExposedDropdownMenuBox(
-                            expanded = tipoEviamientoExpandido,
-                            onExpandedChange = { viewModel.toggleTipoEnviamientoExpandido() }
-                        ) {
-                            OutlinedTextField(
-                                value = tipoEnviamiento,
-                                onValueChange = {},
-                                modifier = Modifier.fillMaxWidth().menuAnchor(),
-                                readOnly = true,
-                                placeholder = { Text("Seleccionar empresa", color = BlueGrey) },
-                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(tipoEviamientoExpandido) },
-                                singleLine = true,
-                                shape = MaterialTheme.shapes.medium,
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = MainGreen,
-                                    unfocusedBorderColor = DarkWhiteBackground,
-                                    focusedTextColor = DarkBlueGrey,
-                                    unfocusedTextColor = DarkBlueGrey
-                                )
-                            )
-                            ExposedDropdownMenu(
-                                expanded = tipoEviamientoExpandido,
-                                onDismissRequest = { viewModel.cerrarTipoEnviamientoMenu() },
-                                modifier = Modifier.background(Color.White)
-                            ) {
-                                elementosConCodigos.tiposEnvios().forEach { (codigo, nombre) ->
-                                    DropdownMenuItem(
-                                        text = {
-                                            Text(
-                                                nombre,
-                                                fontSize = 15.sp,
-                                                color = DarkBlueGrey
-                                            )
-                                        },
-                                        onClick = {  viewModel.seleccionarTipoEnviamiento(codigo, nombre)},
-                                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
-                                    )
+                    DropdownField(
+                        label = "Tipo de Envío *",
+                        selectedValue = tipoEnviamiento,
+                        expanded = tipoEviamientoExpandido,
+                        placeholder = "Seleccionar tipo de envío",
+                        opciones = elementosConCodigos.tiposEnvios(),
+                        onExpandedChange = { viewModel.toggleTipoEnviamientoExpandido()},
+                        onDismissRequest = { viewModel.cerrarTipoEnviamientoMenu() },
+                        onSeleccionar = { codigo, nombre -> viewModel.seleccionarTipoEnviamiento(codigo, nombre) }
+                    )
 
-                                }
-                            }
-                        }
-                    }
                     // Direccion de envio
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            "Dirección de envio *",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = DarkBlueGrey,
-                            letterSpacing = 0.15.sp
-                        )
-                        Spacer(modifier = Modifier.height(10.dp))
-                        ExposedDropdownMenuBox(
-                            expanded = direccionEnvioExpandido,
-                            onExpandedChange = { viewModel.toggleDireccionEnvioExpandido() }
-                        ) {
-                            OutlinedTextField(
-                                value = tipoDireccionEnvio,
-                                onValueChange = {},
-                                modifier = Modifier.fillMaxWidth().menuAnchor(),
-                                readOnly = true,
-                                placeholder = { Text("Seleccionar dirección de envio", color = BlueGrey) },
-                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(direccionEnvioExpandido) },
-                                singleLine = true,
-                                shape = MaterialTheme.shapes.medium,
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = MainGreen,
-                                    unfocusedBorderColor = DarkWhiteBackground,
-                                    focusedTextColor = DarkBlueGrey,
-                                    unfocusedTextColor = DarkBlueGrey
-                                )
-                            )
-                            ExposedDropdownMenu(
-                                expanded = direccionEnvioExpandido,
-                                onDismissRequest = { viewModel.cerrarDireccionEnvioMenu() },
-                                modifier = Modifier.background(Color.White)
-                            ) {
-                                elementosConCodigos.tiposDireccionEnvio().forEach { (codigo, nombre) ->
-                                    DropdownMenuItem(
-                                        text = {
-                                            Text(
-                                                nombre,
-                                                fontSize = 15.sp,
-                                                color = DarkBlueGrey
-                                            )
-                                        },
-                                        onClick = {  viewModel.seleccionarDireccionEnvio(codigo, nombre)},
-                                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
-                                    )
-
-                                }
-                            }
-                        }
-                    }
+                    DropdownField(
+                        label = "Dirección de Envío *",
+                        selectedValue = tipoDireccionEnvio,
+                        expanded = direccionEnvioExpandido,
+                        placeholder = "Seleccionar tipo de dirección",
+                        opciones = elementosConCodigos.tiposDireccionEnvio(),
+                        onExpandedChange = { viewModel.toggleDireccionEnvioExpandido() },
+                        onDismissRequest = { viewModel.cerrarDireccionEnvioMenu()},
+                        onSeleccionar = { codigo, nombre -> viewModel.seleccionarDireccionEnvio(codigo, nombre) }
+                    )
                     if (tipoDireccionEnvio == "OC"){
                         // Tipos de envio
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                "Codigo comarcal *",
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = DarkBlueGrey,
-                                letterSpacing = 0.15.sp
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            ExposedDropdownMenuBox(
-                                expanded = oficinaComarcalExpandido,
-                                onExpandedChange = { viewModel.toggleOficinaComarcalExpandido() }
-                            ) {
-                                OutlinedTextField(
-                                    value = oficinaComarcal,
-                                    onValueChange = {},
-                                    modifier = Modifier.fillMaxWidth().menuAnchor(),
-                                    readOnly = true,
-                                    placeholder = { Text("Seleccionar la oficina comarcal", color = BlueGrey) },
-                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(oficinaComarcalExpandido) },
-                                    singleLine = true,
-                                    shape = MaterialTheme.shapes.medium,
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = MainGreen,
-                                        unfocusedBorderColor = DarkWhiteBackground,
-                                        focusedTextColor = DarkBlueGrey,
-                                        unfocusedTextColor = DarkBlueGrey
-                                    )
-                                )
-                                ExposedDropdownMenu(
-                                    expanded = oficinaComarcalExpandido,
-                                    onDismissRequest = { viewModel.cerrarOficinaComarcalMenu() },
-                                    modifier = Modifier.background(Color.White)
-                                ) {
-                                    elementosConCodigos.tiposEnvios().forEach { (codigo, nombre) ->
-                                        DropdownMenuItem(
-                                            text = {
-                                                Text(
-                                                    nombre,
-                                                    fontSize = 15.sp,
-                                                    color = DarkBlueGrey
-                                                )
-                                            },
-                                            onClick = {  viewModel.seleccionarOficinaComarcal(codigo, nombre)},
-                                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
-                                        )
-
-                                    }
-                                }
-                            }
-                        }
+                        DropdownField(
+                            label = "Oficina Comarcal *",
+                            selectedValue = oficinaComarcal,
+                            expanded = oficinaComarcalExpandido,
+                            placeholder = "Seleccionar oficina comarcal",
+                            opciones = elementosConCodigos.tiposOficinasComarcales(),
+                            onExpandedChange = { viewModel.toggleOficinaComarcalExpandido() },
+                            onDismissRequest = { viewModel.cerrarOficinaComarcalMenu() },
+                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarOficinaComarcal(codigo, nombre) }
+                        )
                     }
 
                     //datos de envios
@@ -486,6 +323,66 @@ fun MaterialDupplicadosScreen(navController: NavController){
 
             }
 
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DropdownField(
+    label: String,
+    selectedValue: String,
+    expanded: Boolean,
+    placeholder: String,
+    opciones: Map<String, String>,
+    onExpandedChange: () -> Unit,
+    onDismissRequest: () -> Unit,
+    onSeleccionar: (String, String) -> Unit
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            label,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = DarkBlueGrey,
+            letterSpacing = 0.15.sp
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { onExpandedChange() }
+        ) {
+            OutlinedTextField(
+                value = selectedValue,
+                onValueChange = {},
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor(),
+                readOnly = true,
+                placeholder = { Text(placeholder, color = BlueGrey) },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+                singleLine = true,
+                shape = MaterialTheme.shapes.medium,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MainGreen,
+                    unfocusedBorderColor = DarkWhiteBackground,
+                    focusedTextColor = DarkBlueGrey,
+                    unfocusedTextColor = DarkBlueGrey
+                )
+            )
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { onDismissRequest() },
+                modifier = Modifier.background(Color.White)
+            ) {
+                opciones.forEach { (codigo, nombre) ->
+                    DropdownMenuItem(
+                        text = { Text(nombre, fontSize = 15.sp, color = DarkBlueGrey) },
+                        onClick = { onSeleccionar(codigo, nombre) },
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
+                    )
+                }
+            }
         }
     }
 }
