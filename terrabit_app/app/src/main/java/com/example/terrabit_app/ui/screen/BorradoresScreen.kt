@@ -56,11 +56,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.terrabit_app.R
 import com.example.terrabit_app.data.Borrador
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.screen.bovinos.cambiarIdioma
@@ -139,7 +141,7 @@ fun BorradoresScreen(
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                "No hay Resultados :O",
+                                stringResource(R.string.no_results_description_draft),
                                 fontSize = 16.sp,
                                 color = BlueGrey
                             )
@@ -178,8 +180,8 @@ fun BorradoresScreen(
 
     DialogoConfirmacion(
         mostrar = mostrarDialogoEliminarTodos,
-        titulo = "Eliminar todos los borradores",
-        mensaje = "¿Estás seguro de que deseas eliminar todos los borradores? Esta acción no se puede deshacer.",
+        titulo = stringResource(R.string.title_delete_all_option),
+        mensaje = stringResource(R.string.description_delete_all_option),
         onConfirmar = {
             scope.launch {
                 viewModel.eliminarTodosBorradores()
@@ -274,7 +276,7 @@ fun HeaderBorradores(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                "Borradores",
+                stringResource(R.string.title_draft),
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
@@ -303,7 +305,7 @@ fun HeaderBorradores(
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            "$totalBorradores guardados",
+                            "$totalBorradores ${stringResource(R.string.counter_draft)}",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
                             color = Color.White
@@ -343,7 +345,7 @@ fun HeaderBorradores(
                                         tint = ErrorRed
                                     )
                                     Spacer(modifier = Modifier.width(12.dp))
-                                    Text("Eliminar todos", color = ErrorRed)
+                                    Text(stringResource(R.string.delete_all_option), color = ErrorRed)
                                 }
                             },
                             onClick = {
@@ -377,12 +379,12 @@ fun DialogoConfirmacion(
             },
             confirmButton = {
                 androidx.compose.material3.TextButton(onClick = onConfirmar) {
-                    Text("Confirmar", color = ErrorRed, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.confirm_delete_option_general), color = ErrorRed, fontWeight = FontWeight.SemiBold)
                 }
             },
             dismissButton = {
                 androidx.compose.material3.TextButton(onClick = onCancelar) {
-                    Text("Cancelar", color = BlueGrey)
+                    Text(stringResource(R.string.cancel_delete_option_general), color = BlueGrey)
                 }
             },
             containerColor = Color.White,
@@ -391,29 +393,6 @@ fun DialogoConfirmacion(
     }
 }
 
-@Composable
-fun ChipFiltro(
-    texto: String,
-    seleccionado: Boolean,
-    onClick: () -> Unit
-) {
-    Surface(
-        modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
-            .clickable(onClick = onClick),
-        color = if (seleccionado) Color.White else Color.Transparent,
-        shape = RoundedCornerShape(20.dp),
-        shadowElevation = if (seleccionado) 2.dp else 0.dp
-    ) {
-        Text(
-            texto,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            fontSize = 14.sp,
-            fontWeight = if (seleccionado) FontWeight.SemiBold else FontWeight.Normal,
-            color = if (seleccionado) DarkBlueGrey else BlueGrey
-        )
-    }
-}
 
 @Composable
 fun BarraBusqueda(
@@ -427,7 +406,7 @@ fun BarraBusqueda(
             .fillMaxWidth()
             .padding(horizontal = 20.dp),
         placeholder = {
-            Text("Buscar borradores...", color = BlueGrey)
+            Text(stringResource(R.string.search_bar_text), color = BlueGrey)
         },
         leadingIcon = {
             Icon(Icons.Default.Search, contentDescription = null, tint = BlueGrey)
@@ -459,23 +438,25 @@ fun TarjetaBorrador(
 ) {
     var mostrarMenu by remember { mutableStateOf(false) }
 
+    @Composable
     fun obtenerNombreTipo(tipo: String): String {
         return when (tipo) {
-            "MUERTE" -> "Muerte"
-            "MATERIAL" -> "Material"
-            "NACIMIENTO" -> "Nacimiento"
-            "CORRECCION_SEXO" -> "Corrección Sexo"
-            "IDENTIFICACION_APLAZADA" -> "ID Aplazada"
+            "MUERTE" -> stringResource(R.string.type_draft_title_death)
+            "MATERIAL" -> stringResource(R.string.type_draft_title_material)
+            "NACIMIENTO" -> stringResource(R.string.type_draft_title_born)
+            "CORRECCION_SEXO" -> stringResource(R.string.type_draft_title_sex)
+            "IDENTIFICACION_APLAZADA" -> stringResource(R.string.type_draft_title_id)
             else -> tipo
         }
     }
 
+    @Composable
     fun obtenerEstadoLegible(estado: String): String {
         return when (estado) {
-            "BORRADOR_AUTO" -> "Guardado"
-            "PENDIENTE" -> "Pendiente"
-            "ENVIANDO" -> "Enviando"
-            "ERROR" -> "Error"
+            "BORRADOR_AUTO" -> stringResource(R.string.status_draft_saved)
+            "PENDIENTE" -> stringResource(R.string.status_draft_pending)
+            "ENVIANDO" -> stringResource(R.string.status_draft_sending)
+            "ERROR" -> stringResource(R.string.status_draft_error)
             else -> estado
         }
     }
@@ -614,7 +595,7 @@ fun TarjetaBorrador(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        borrador.hora ?: "Sin hora",
+                        borrador.hora ?: stringResource(R.string.no_hour_value),
                         fontSize = 14.sp,
                         color = BlueGrey,
                         maxLines = 1,
@@ -650,7 +631,7 @@ fun TarjetaBorrador(
                                     tint = Blue
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
-                                Text("Editar", color = Blue)
+                                Text(stringResource(R.string.edit_button_individual_card), color = Blue)
                             }
                         },
                         onClick = {
@@ -668,7 +649,7 @@ fun TarjetaBorrador(
                                     tint = ErrorRed
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
-                                Text("Eliminar", color = ErrorRed)
+                                Text(stringResource(R.string.delete_button_individual_card), color = ErrorRed)
                             }
                         },
                         onClick = {

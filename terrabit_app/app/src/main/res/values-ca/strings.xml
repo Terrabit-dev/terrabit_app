@@ -236,4 +236,35 @@
     <string name="option_electronic_injectable">Injectable electrònic</string>
     <string name="option_ruminal_bowl">Bol ruminal</string>
 
+
+
+    <string name="no_results_description_draft">No hi ha Resultats :O</string>
+
+    <string name="title_draft">Esborranys</string>
+    <string name="counter_draft">Desats</string>
+
+    <string name="delete_all_option">Eliminar tots</string>
+    <string name="title_delete_all_option">Eliminar tots els esborranys</string>
+    <string name="description_delete_all_option">Estàs segur que vols eliminar tots els esborranys? Aquesta acció no es pot desfer.</string>
+    <string name="cancel_delete_option_general">Cancel·lar</string>
+    <string name="confirm_delete_option_general">Confirmar</string>
+
+    <string name="search_bar_text">Buscar esborranys...</string>
+
+    <string name="type_draft_title_death">Mort</string>
+    <string name="type_draft_title_material">Material</string>
+    <string name="type_draft_title_born">Naixement</string>
+    <string name="type_draft_title_sex">Corregir Sexe</string>
+    <string name="type_draft_title_id">ID Ajornada</string>
+
+    <string name="status_draft_saved">Desat</string>
+    <string name="status_draft_pending">Pendent</string>
+    <string name="status_draft_sending">Enviat</string>
+    <string name="status_draft_error">Error</string>
+
+    <string name="no_hour_value">Sense hora</string>
+
+    <string name="edit_button_individual_card">Editar</string>
+    <string name="delete_button_individual_card">Eliminar</string>
+
 </resources>
