@@ -4,21 +4,21 @@ package com.example.terrabit_app.ui.navigation
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.ViewModel
+import androidx.compose.runtime.remember
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.terrabit_app.ui.pantallas.*
+import com.example.terrabit_app.ui.screen.Login
 import com.example.terrabit_app.ui.screen.bovinos.CorregirSexoBovi
 import com.example.terrabit_app.ui.screen.bovinos.Fallecimiento
 import com.example.terrabit_app.ui.screen.bovinos.GestionGuias
 import com.example.terrabit_app.ui.screen.bovinos.IdentificacionApalzada
 import com.example.terrabit_app.ui.screen.bovinos.ListarBovinos
 import com.example.terrabit_app.ui.screen.bovinos.Material
-import com.example.terrabit_app.ui.screen.bovinos.Nacimiento
-import com.example.terrabit_app.ui.screen.Login
 import com.example.terrabit_app.ui.screen.bovinos.Movimientos
+import com.example.terrabit_app.ui.screen.bovinos.Nacimiento
 import com.example.terrabit_app.ui.screen.porcinos.EntradasPorcinos
 import com.example.terrabit_app.ui.screen.porcinos.GestionGuiasPorcinos
 import com.example.terrabit_app.ui.screen.porcinos.HomePorcinos
@@ -127,11 +127,15 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel ) {
         }
 
         // Pantallas porcinos
-        composable(Routes.GestionGuiasPorcinos.route) {
+        composable(Routes.GestionGuiasPorcinos.route) { backStackEntry ->
             val gestionarGuiasViewModel: GestionarGuiasViewModel = viewModel()
+            val sharedViewModel: CrearGuiaPorcinosViewModel = viewModel(
+                viewModelStoreOwner = backStackEntry
+            )
             GestionGuiasPorcinos(
                 navController = navController,
-                gestionarGuiasViewModel
+                gestionarGuiasViewModel,
+                sharedViewModel
             )
         }
 
@@ -139,11 +143,18 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel ) {
             EntradasPorcinos(navController = navController)
         }
 
-        composable(Routes.EditarGuiaPorcinos.route) {
-            val editarGuiasViewModel: CrearGuiaPorcinosViewModel = viewModel()
+        composable(Routes.EditarGuiaPorcinos.route) { backStackEntry ->
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry(Routes.GestionGuiasPorcinos.route)
+            }
+
+            val editarGuiasViewModel: CrearGuiaPorcinosViewModel = viewModel(
+                viewModelStoreOwner = parentEntry
+            )
+
             EditarGuiaPorcinos(
-                navController,
-                editarGuiasViewModel
+                navController = navController,
+                viewModel = editarGuiasViewModel
             )
         }
     }
