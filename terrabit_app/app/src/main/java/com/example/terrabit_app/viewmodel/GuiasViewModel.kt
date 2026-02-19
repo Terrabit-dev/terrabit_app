@@ -10,6 +10,7 @@ import com.example.terrabit_app.data.Borrador
 import com.example.terrabit_app.data.SharedPreferencesManager
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.guias.PeticionAltaGuia
+import com.example.terrabit_app.data.network.lista_bovinos.Animal
 import com.example.terrabit_app.data.network.respuestas.ResAltaGuia
 import com.example.terrabit_app.utils.UserPreferences
 import com.google.gson.Gson
@@ -27,25 +28,97 @@ class GuiasViewModel (application: Application): AndroidViewModel(application) {
     private var repositorio = Repositorio(application)
     private lateinit var sharedPreferencesManager: SharedPreferencesManager
 
-    // ID único para la sesión actual del formulario
     private var borradorSesionId: String = ""
 
-    // Instanciar UserPreferences directamente con la Application
     private val userPreferences = UserPreferences(application)
 
-    // Leer las credenciales del login guardadas automáticamente
     val nif = userPreferences.getNif() ?: ""
     val password = userPreferences.getPassword() ?: ""
+    val codiMo = userPreferences.getCodiMO() ?: ""
+
+    // ============================================
+    // ESTADOS PARA AUTOCOMPLETADO
+    // ============================================
+    private val _suggestionsBovinos = MutableLiveData<List<Animal>>(emptyList())
+    val suggestionsBovinos = _suggestionsBovinos
+
+    private val _isLoadingBovinos = MutableLiveData(false)
+    val isLoadingBovinos = _isLoadingBovinos
+
+    private val _bovinosCargados = MutableLiveData(false)
+    val bovinosCargados = _bovinosCargados
 
 
+    private val _activeFieldIndex = MutableLiveData<Int>(-1)
+    val activeFieldIndex = _activeFieldIndex
 
     fun inicializarSharedPreferences(context: Context) {
         sharedPreferencesManager = SharedPreferencesManager(context)
 
-        // Generar nuevo ID de sesión si no existe
         if (borradorSesionId.isEmpty()) {
             borradorSesionId = "guia_auto_${System.currentTimeMillis()}"
         }
+
+        cargarBovinosEnCache()
+    }
+
+    // ============================================
+    // FUNCIÓN PARA CARGAR BOVINOS EN CACHÉ
+    // ============================================
+    private fun cargarBovinosEnCache() {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                _isLoadingBovinos.postValue(true)
+
+                repositorio.getBovinosWithCache(
+                    nif = nif,
+                    password = password,
+                    tipusVinculacio = "1",
+                    explotacio = codiMo,
+                    forceRefresh = false
+                )
+
+                _bovinosCargados.postValue(true)
+                _isLoadingBovinos.postValue(false)
+                Log.d("GuiasVM", "Bovinos cargados en caché")
+            } catch (e: Exception) {
+                _isLoadingBovinos.postValue(false)
+                _bovinosCargados.postValue(false)
+                Log.e("GuiasVM", "Error al cargar bovinos: ${e.message}", e)
+            }
+        }
+    }
+
+    // ============================================
+    // FUNCIÓN PARA BUSCAR BOVINOS (AUTOCOMPLETADO)
+    // ============================================
+    fun searchBovinos(index: Int, query: String) {
+        _activeFieldIndex.value = index
+        if (query.isBlank()) {
+            _suggestionsBovinos.value = emptyList()
+            return
+        }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val resultados = repositorio.searchBovinosLocal(query)
+                _suggestionsBovinos.postValue(resultados)
+                Log.d("GuiasVM", "Búsqueda: '$query' - ${resultados.size} resultados")
+            } catch (e: Exception) {
+                _suggestionsBovinos.postValue(emptyList())
+                Log.e("GuiasVM", "Error en búsqueda: ${e.message}", e)
+            }
+        }
+    }
+
+    // ============================================
+    // FUNCIÓN AL SELECCIONAR BOVINO
+    // ============================================
+    fun onBovinoSelected(index: Int, animal: Animal) {
+        actualizarIdentificador(index, animal.identificador)
+        _suggestionsBovinos.value = emptyList()
+        _activeFieldIndex.value = -1
+        Log.d("GuiasVM", "Bovino seleccionado en índice $index: ${animal.identificador}")
     }
 
     fun tieneContenido(): Boolean {
@@ -98,18 +171,15 @@ class GuiasViewModel (application: Application): AndroidViewModel(application) {
                 "codiTransport" to codiTransport
             )
 
-            // Buscar si ya existe este borrador específico de la sesión actual
             val borradorExistente = sharedPreferencesManager.obtenerBorradores()
                 .find { it.id == borradorSesionId }
 
             val borrador = if (borradorExistente != null) {
-                // Actualizar borrador de esta sesión
                 borradorExistente.copy(
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
                     datos = Gson().toJson(datosGuia)
                 )
             } else {
-                // Crear nuevo borrador con ID de sesión
                 Borrador(
                     id = borradorSesionId,
                     tipo = "GUIA",
@@ -169,13 +239,12 @@ class GuiasViewModel (application: Application): AndroidViewModel(application) {
         }
     }
 
-
     fun eliminarBorradorAutomatico() {
         try {
             if (borradorSesionId.isNotEmpty()) {
                 sharedPreferencesManager.eliminarBorrador(borradorSesionId)
                 Log.d("Eliminar Borrador", "Borrador eliminado: $borradorSesionId")
-                borradorSesionId = "" // Resetear el ID de sesión
+                borradorSesionId = ""
             }
         } catch (e: Exception) {
             Log.e("Error Eliminar Borrador", "Error: ${e.message}", e)
@@ -633,7 +702,6 @@ class GuiasViewModel (application: Application): AndroidViewModel(application) {
         codiGuiaMobilidad = ""
         codiTransport = ""
 
-        // Generar nuevo ID de sesión para el próximo formulario
         borradorSesionId = ""
     }
 

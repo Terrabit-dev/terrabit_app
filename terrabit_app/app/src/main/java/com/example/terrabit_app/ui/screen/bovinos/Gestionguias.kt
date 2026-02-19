@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.AlertDialog
@@ -92,6 +93,8 @@ import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
+import com.example.terrabit_app.ui.screen.bovinos.components.AutoCompleteBovinoField
+import com.example.terrabit_app.ui.screen.bovinos.components.useDebounce
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -139,6 +142,10 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel, borrad
     val successMessage = stringResource(R.string.success_create_guide)
     val datePlaceholder = stringResource(R.string.form_date_description)
     val hourPlaceholder = stringResource(R.string.form_hour_arrival_description)
+
+    val suggestionsBovinos by viewModel.suggestionsBovinos.observeAsState(emptyList())
+    val isLoadingBovinos by viewModel.isLoadingBovinos.observeAsState(false)
+    val activeIndex by viewModel.activeFieldIndex.observeAsState(-1)
 
     val elementosConCodigos = ElementosConCodigos()
 
@@ -1206,12 +1213,18 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel, borrad
                                 )
                                 IconButton(
                                     onClick = { viewModel.agregarIdentificador() },
-                                    modifier = Modifier.size(36.dp)
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .background(
+                                            color = MainOrange,
+                                            shape = RoundedCornerShape(8.dp)
+                                        )
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Add,
                                         contentDescription = stringResource(R.string.content_desc_add_id),
-                                        tint = MainOrange
+                                        tint = Color.White,
+                                        modifier = Modifier.size(20.dp)
                                     )
                                 }
                             }
@@ -1219,54 +1232,80 @@ fun GestionGuias(navController: NavController, viewModel: GuiasViewModel, borrad
                             Spacer(modifier = Modifier.height(10.dp))
 
                             identificadors.forEachIndexed { index, identificador ->
-                                Row(
+                                Card(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(bottom = 12.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    verticalAlignment = Alignment.CenterVertically
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = Color(0xFFF8FAFC)
+                                    ),
+                                    shape = RoundedCornerShape(12.dp),
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                                 ) {
-                                    OutlinedTextField(
-                                        value = identificador,
-                                        onValueChange = { viewModel.actualizarIdentificador(index, it) },
-                                        modifier = Modifier.weight(1f),
-                                        placeholder = {
-                                            Text(
-                                                stringResource(R.string.form_animal_id_example),
-                                                color = BlueGrey
-                                            )
-                                        },
-                                        singleLine = true,
-                                        shape = MaterialTheme.shapes.medium,
-                                        colors = OutlinedTextFieldDefaults.colors(
-                                            focusedBorderColor = MainOrange,
-                                            unfocusedBorderColor = DarkWhiteBackground,
-                                            focusedTextColor = DarkBlueGrey,
-                                            unfocusedTextColor = DarkBlueGrey,
-                                            cursorColor = MainOrange
-                                        ),
-                                        keyboardOptions = KeyboardOptions(
-                                            keyboardType = KeyboardType.Text,
-                                            imeAction = if (index == identificadors.lastIndex) ImeAction.Done else ImeAction.Next
-                                        )
-                                    )
-
-                                    if (identificadors.size > 1) {
-                                        IconButton(
-                                            onClick = { viewModel.eliminarIdentificador(index) },
-                                            modifier = Modifier.size(36.dp)
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(16.dp),
+                                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            Icon(
-                                                imageVector = Icons.Default.Close,
-                                                contentDescription = stringResource(R.string.content_desc_remove_id),
-                                                tint = ErrorRed
+                                            Text(
+                                                "Animal ${index + 1}",
+                                                fontSize = 16.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = MainOrange
+                                            )
+                                            if (identificadors.size > 1) {
+                                                IconButton(
+                                                    onClick = { viewModel.eliminarIdentificador(index) },
+                                                    modifier = Modifier.size(32.dp)
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Default.Delete,
+                                                        contentDescription = stringResource(R.string.content_desc_remove_id),
+                                                        tint = ErrorRed,
+                                                        modifier = Modifier.size(20.dp)
+                                                    )
+                                                }
+                                            }
+                                        }
+
+                                        Column(modifier = Modifier.fillMaxWidth()) {
+                                            Text(
+                                                stringResource(R.string.form_animal_identifiers),
+                                                fontSize = 14.sp,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = DarkBlueGrey,
+                                                letterSpacing = 0.15.sp
+                                            )
+                                            Spacer(modifier = Modifier.height(8.dp))
+
+                                            useDebounce(identificador, delayMillis = 300L) { query ->
+                                                viewModel.searchBovinos(index, query)
+                                            }
+
+                                            AutoCompleteBovinoField(
+                                                value = identificador,
+                                                onValueChange = { viewModel.actualizarIdentificador(index, it) },
+                                                suggestions = if (activeIndex == index) suggestionsBovinos else emptyList(),
+                                                onAnimalSelected = { viewModel.onBovinoSelected(index, it) },
+                                                isLoading = isLoadingBovinos,
+                                                label = stringResource(R.string.form_animal_identifiers),
+                                                placeholder = stringResource(R.string.form_animal_id_example),
+                                                modifier = Modifier.fillMaxWidth()
                                             )
                                         }
-                                    } else {
-                                        Spacer(modifier = Modifier.width(36.dp))
                                     }
                                 }
                             }
+
+
+
+
                         }
                     }
                 }
