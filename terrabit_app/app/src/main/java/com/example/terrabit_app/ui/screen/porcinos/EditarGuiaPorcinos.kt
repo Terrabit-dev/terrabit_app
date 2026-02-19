@@ -702,7 +702,7 @@ fun EditarGuiaPorcinos(
                         )
                     ) {
                         Text(
-                            text = "Editar y confirmar guía",
+                            text = stringResource(R.string.form_porcinos_edit_confirm),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold,
                             letterSpacing = 0.5.sp

@@ -247,6 +247,8 @@
     <string name="form_porcinos_nifCond">NIF del Conductor</string>
     <string name="form_porcinos_descr_nifCond">Introducir NIF del conductor</string>
     <string name="app_copyright">Terrabit©</string>
+    <string name="form_porcinos_edit_confirm">Editar y confirmar guía</string>
+    <string name="form_porcinos_no_entr">No hay entradas por confirmar</string>
 
 
 </resources>

@@ -33,11 +33,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.terrabit_app.R
 import com.example.terrabit_app.data.network.guiasPorcinos.GuiaMobilitatPorcinos
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.viewmodel.porcinos.EntradasPorcinosViewmodel
@@ -58,14 +60,14 @@ fun EntradasPorcinos(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Confirmar Entradas",
+                        text = stringResource(R.string.name_confirmar_entradas),
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -87,7 +89,7 @@ fun EntradasPorcinos(
             if (uiState.listaEntradasPorcinos.isEmpty()) {
                 item {
                     Text(
-                        "No hay entradas por confirmar",
+                        text = stringResource(R.string.form_porcinos_no_entr),
                         fontSize = 14.sp,
                         color = Color.Gray
                     )
