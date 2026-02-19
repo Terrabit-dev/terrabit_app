@@ -37,7 +37,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.data.network.guiasPorcinos.GuiaMobilitatPorcinos
@@ -58,21 +57,6 @@ fun GestionGuiasPorcinos(
         viewModelCrearGuias: CrearGuiaPorcinosViewModel = viewModel()
     ) {
     val uiStateGestionGuias by viewModelGestionarGuias.uiState.collectAsState()
-
-    val lista: List<GuiaMobilitatPorcinos> = listOf(
-        GuiaMobilitatPorcinos(
-            moOrigen = "Granja El Prat",
-            remo = "ES0809876543",
-            moDesti = "Centro de Selección Genética",
-            categoria = "Truges Reproductores",
-            nombreAnimals = 25,
-            transportista = "Logística Osona",
-            responsable = "Marta Puig",
-            vehicle = "5678-KBC",
-            dataSortida = 202602170700L,   // 17/02/2026 07:00
-            dataArribada = 202602170915L    // 17/02/2026 09:15
-        )
-    )
 
     Scaffold(
         topBar = {
@@ -99,19 +83,19 @@ fun GestionGuiasPorcinos(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-//            if (uiStateGestionGuias.listaGuiasPorcinos.isEmpty()) {
-//                item {
-//                    Text(
-//                        "No hay guías para editar o confirmar",
-//                        fontSize = 14.sp,
-//                        color = Color.Gray
-//                    )
-//                }
-//            } else {
-                items(/*uiStateGestionGuias.listaGuiasPorcinos*/lista) { guia ->
+            if (uiStateGestionGuias.listaGuiasPorcinos.isEmpty()) {
+                item {
+                    Text(
+                        "No hay guías para editar o confirmar",
+                        fontSize = 14.sp,
+                        color = Color.Gray
+                    )
+                }
+            } else {
+                items(uiStateGestionGuias.listaGuiasPorcinos) { guia ->
                     GuiaCard(navController, guia, viewModelCrearGuias)
                 }
-//            }
+            }
         }
     }
 }
@@ -162,7 +146,7 @@ fun GuiaCard(
             ) {
                 FilledIconButton(
                     onClick = {
-                        viewModelCrearGuias.rellenarCampos(guia)
+                        viewModelCrearGuias.cargarDatosGuia(guia)
                         navController.navigate(Routes.EditarGuiaPorcinos.route)
                     },
                     shape = RoundedCornerShape(8.dp),
@@ -177,7 +161,9 @@ fun GuiaCard(
                     )
                 }
                 FilledIconButton(
-                    onClick = {TODO()},
+                    onClick = {
+                        viewModelCrearGuias.confirmarGuia()
+                    },
                     shape = RoundedCornerShape(8.dp),
                     colors = IconButtonDefaults.iconButtonColors(
                         containerColor = MainGreen
