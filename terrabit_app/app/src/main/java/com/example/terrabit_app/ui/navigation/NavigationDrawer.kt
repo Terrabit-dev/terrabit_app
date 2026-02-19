@@ -20,6 +20,7 @@ import com.example.terrabit_app.ui.screen.bovinos.Home
 import com.example.terrabit_app.ui.screen.bovinos.IdentificacionApalzada
 import com.example.terrabit_app.ui.screen.bovinos.ListarBovinos
 import com.example.terrabit_app.ui.screen.bovinos.Material
+import com.example.terrabit_app.ui.screen.bovinos.MaterialDupplicadosScreen
 import com.example.terrabit_app.ui.screen.bovinos.Movimientos
 import com.example.terrabit_app.ui.screen.bovinos.Nacimiento
 import com.example.terrabit_app.ui.screen.porcinos.EntradasPorcinos
@@ -166,6 +167,10 @@ fun NavigationDrawer(
         composable(Routes.Material.route) {
             val materialV: MaterialViewModel = viewModel()
             Material(navController = navController, materialV)
+        }
+
+        composable(Routes.MaterialDuplicado.route){
+            MaterialDupplicadosScreen(navController)
         }
 
         composable(

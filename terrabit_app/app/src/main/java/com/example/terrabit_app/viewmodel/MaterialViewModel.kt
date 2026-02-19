@@ -30,10 +30,15 @@ class MaterialViewModel(application: Application) : AndroidViewModel(application
     private val _codigoEmpresa = MutableLiveData("")
 
     private val _tipoEnviamiento = MutableLiveData("")
+
+    private var codigoTipoEnvio = ""
+
     val tipoEnviamiento = _tipoEnviamiento
 
     private val _destinoLliurament = MutableLiveData("")
     val destinoLliurament = _destinoLliurament
+
+    private var codiDestinoEnvio = ""
 
     private val _oficinaComarcal = MutableLiveData("")
     val oficinaComarcal = _oficinaComarcal
@@ -115,23 +120,7 @@ class MaterialViewModel(application: Application) : AndroidViewModel(application
         EmpresaSubministradora("C78945612", "Suministros Ganaderos Catalunya")
     )
 
-    val listaTiposEnviamiento = listOf(
-        "01 - Correo ordinario",
-        "04 - Correo certificado"
-    )
 
-    val listaDestinos = listOf(
-        "01 - Oficina Comarcal (OC)",
-        "02 - Ramader/ER",
-        "03 - Dirección alternativa"
-    )
-
-    val listaOficinasComarcales = listOf(
-        OficinaComarcal("OC001", "Barcelona"),
-        OficinaComarcal("OC002", "Girona"),
-        OficinaComarcal("OC003", "Lleida"),
-        OficinaComarcal("OC004", "Tarragona")
-    )
 
     val listaTiposMaterial = listOf(
         TipoMaterial("07", "Crotal"),
@@ -147,13 +136,15 @@ class MaterialViewModel(application: Application) : AndroidViewModel(application
         _empresaExpandida.value = false
     }
 
-    fun seleccionarTipoEnviamiento(tipo: String) {
+    fun seleccionarTipoEnviamiento(tipo: String, codigo: String) {
         _tipoEnviamiento.value = tipo
+        codigoTipoEnvio = codigo
         _tipoEnviamientoExpandido.value = false
     }
 
-    fun seleccionarDestino(destino: String) {
+    fun seleccionarDestino(destino: String, codigo: String) {
         _destinoLliurament.value = destino
+        codiDestinoEnvio = codigo
         _destinoExpandido.value = false
 
         when {

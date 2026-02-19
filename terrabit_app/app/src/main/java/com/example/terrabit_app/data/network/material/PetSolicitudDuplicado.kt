@@ -8,7 +8,7 @@ data class PetSolicitudDuplicado(
     val cp: String?,
     val empresaSubministradora: String,
     val especie: String,
-    val identificadors: List<IdenSolicitudDupli?>,
+    val identificadors: List<IdenSolicitudDupli>,
     val municipi: String?,
     val nif: String,
     val oc: String?,

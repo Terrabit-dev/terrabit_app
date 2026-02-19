@@ -49,4 +49,6 @@ sealed class Routes(val route: String) {
     object EntradasPorcinos : Routes("entradas_porcinos")
 
     object Drawer : Routes("drawer_screen")
+
+    object MaterialDuplicado : Routes("material_duplicado")
 }

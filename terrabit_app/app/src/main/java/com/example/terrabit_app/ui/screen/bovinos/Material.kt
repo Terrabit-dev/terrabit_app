@@ -65,6 +65,7 @@ import com.example.terrabit_app.ui.theme.DarkWhiteBackground
 import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.WhiteBackground
+import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.viewmodel.MaterialViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -95,6 +96,8 @@ fun Material(navController: NavController, viewModel: MaterialViewModel, ) {
 
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
+
+    val elementosConCodigos = ElementosConCodigos()
 
     // Mostrar Snackbar de éxito
     LaunchedEffect(registroExitoso) {
@@ -307,21 +310,18 @@ fun Material(navController: NavController, viewModel: MaterialViewModel, ) {
                                     onDismissRequest = { viewModel.cerrarEmpresaMenu() },
                                     modifier = Modifier.background(Color.White)
                                 ) {
-                                    viewModel.listaEmpresas.forEach { empresa ->
+                                    elementosConCodigos.TipoEmpresaSubministradora().forEach { (codigo, empresa) ->
                                         DropdownMenuItem(
                                             text = {
                                                 Text(
-                                                    empresa.nombre,
+                                                    empresa,
                                                     fontSize = 15.sp,
                                                     color = DarkBlueGrey
                                                 )
                                             },
-                                            onClick = { viewModel.seleccionarEmpresa(empresa.nombre, empresa.nif) },
+                                            onClick = { viewModel.seleccionarEmpresa(empresa, codigo) },
                                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
                                         )
-                                        if (empresa != viewModel.listaEmpresas.last()) {
-                                            HorizontalDivider(color = DarkWhiteBackground, thickness = 1.dp)
-                                        }
                                     }
                                 }
                             }
@@ -362,15 +362,13 @@ fun Material(navController: NavController, viewModel: MaterialViewModel, ) {
                                     onDismissRequest = { viewModel.cerrarTipoEnviamientoMenu() },
                                     modifier = Modifier.background(Color.White)
                                 ) {
-                                    viewModel.listaTiposEnviamiento.forEach { tipo ->
+                                    elementosConCodigos.tiposEnvios().forEach { (codigo, tipo) ->
                                         DropdownMenuItem(
                                             text = { Text(tipo, fontSize = 15.sp, color = DarkBlueGrey) },
-                                            onClick = { viewModel.seleccionarTipoEnviamiento(tipo) },
+                                            onClick = { viewModel.seleccionarTipoEnviamiento(tipo, codigo) },
                                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
                                         )
-                                        if (tipo != viewModel.listaTiposEnviamiento.last()) {
-                                            HorizontalDivider(color = DarkWhiteBackground, thickness = 1.dp)
-                                        }
+
                                     }
                                 }
                             }
@@ -411,15 +409,13 @@ fun Material(navController: NavController, viewModel: MaterialViewModel, ) {
                                     onDismissRequest = { viewModel.cerrarDestinoMenu() },
                                     modifier = Modifier.background(Color.White)
                                 ) {
-                                    viewModel.listaDestinos.forEach { destino ->
+                                    elementosConCodigos.tiposDireccionEnvio().forEach { (codigo, destino) ->
                                         DropdownMenuItem(
                                             text = { Text(destino, fontSize = 15.sp, color = DarkBlueGrey) },
-                                            onClick = { viewModel.seleccionarDestino(destino) },
+                                            onClick = { viewModel.seleccionarDestino(destino, codigo) },
                                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
                                         )
-                                        if (destino != viewModel.listaDestinos.last()) {
-                                            HorizontalDivider(color = DarkWhiteBackground, thickness = 1.dp)
-                                        }
+
                                     }
                                 }
                             }
@@ -461,15 +457,13 @@ fun Material(navController: NavController, viewModel: MaterialViewModel, ) {
                                         onDismissRequest = { viewModel.cerrarOficinaComarcalMenu() },
                                         modifier = Modifier.background(Color.White)
                                     ) {
-                                        viewModel.listaOficinasComarcales.forEach { oc ->
+                                        elementosConCodigos.tiposOficinasComarcales().forEach { (codigo, nombre) ->
                                             DropdownMenuItem(
-                                                text = { Text("${oc.codigo} - ${oc.nombre}", fontSize = 15.sp, color = DarkBlueGrey) },
-                                                onClick = { viewModel.seleccionarOficinaComarcal(oc.nombre, oc.codigo) },
+                                                text = { Text(nombre, fontSize = 15.sp, color = DarkBlueGrey) },
+                                                onClick = { viewModel.seleccionarOficinaComarcal(nombre, codigo) },
                                                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
                                             )
-                                            if (oc != viewModel.listaOficinasComarcales.last()) {
-                                                HorizontalDivider(color = DarkWhiteBackground, thickness = 1.dp)
-                                            }
+
                                         }
                                     }
                                 }

@@ -227,5 +227,13 @@
     <string name="content_description_selecionado">Seleccionat</string>
     <string name="content_description_menu">Menú</string>
     <string name="content_description_notificaciones">Notificacions</string>
+    <string name="option_ordinary_mail">Correu ordinari</string>
+    <string name="option_certificate_mail">Correu certificat</string>
+    <string name="option_rancher">Ramader / Explotació ramadera</string>
+    <string name="option_alternative_address">Adrerça alternativa</string>
+    <string name="option_crotal">Cròtal</string>
+    <string name="option_electronic_crotal">Cròtal electrònic</string>
+    <string name="option_electronic_injectable">Injectable electrònic</string>
+    <string name="option_ruminal_bowl">Bol ruminal</string>
 
 </resources>

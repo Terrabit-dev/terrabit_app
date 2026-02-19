@@ -231,4 +231,12 @@
     <string name="content_description_selecionado">Seleccionado</string>
     <string name="content_description_menu">Menú</string>
     <string name="content_description_notificaciones">Notificaciones</string>
+    <string name="option_ordinary_mail">Correo ordinario</string>
+    <string name="option_certificate_mail">Correo certificado</string>
+    <string name="option_rancher">Ganadero / Explotación ganadera</string>
+    <string name="option_alternative_address">Dirección alternativa</string>
+    <string name="option_crotal">Crotal</string>
+    <string name="option_electronic_crotal">Crotal electronico</string>
+    <string name="option_electronic_injectable">Inyectable electronico</string>
+    <string name="option_ruminal_bowl">Bolo ruminal</string>
 </resources>

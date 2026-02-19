@@ -66,7 +66,6 @@ class ElementosConCodigos {
         return listaOpciones
     }
 
-
     @Composable
     fun tiposPresentacion(): Map<String, String>{
         val listaTiposPresentacion = mapOf<String, String>(
@@ -80,4 +79,91 @@ class ElementosConCodigos {
 
     }
 
+    @Composable
+    fun tiposEnvios() : Map<String, String> {
+        val listaTiposEnvios = mapOf<String, String>(
+            "01" to stringResource(R.string.option_ordinary_mail),
+            "04" to stringResource(R.string.option_certificate_mail)
+        )
+        return listaTiposEnvios
+    }
+
+    @Composable
+    fun tiposDireccionEnvio(): Map<String, String>{
+        val listaTiposDireccionEnvio = mapOf<String, String>(
+            "01" to "OC",
+            "02" to stringResource(R.string.option_rancher),
+            "03" to stringResource(R.string.option_alternative_address)
+        )
+        return  listaTiposDireccionEnvio
+    }
+
+    @Composable
+    fun tiposMaterial(): Map<String, String>{
+        val listaTiposMaterial = mapOf<String, String>(
+            "07" to stringResource(R.string.option_crotal),
+            "20" to stringResource(R.string.option_electronic_crotal),
+            "21" to stringResource(R.string.option_electronic_injectable),
+            "22" to stringResource(R.string.option_ruminal_bowl)
+        )
+        return listaTiposMaterial
+    }
+
+    @Composable
+    fun tiposOficinasComarcales(): Map<String, String> {
+        val listaOc = mapOf<String, String>(
+            "OC001" to "Alt Camp",
+            "OC002" to "Alt Empordà",
+            "OC003" to "Alt Penedès",
+            "OC004" to "Alt Urgell",
+            "OC005" to "Alta Ribagorça",
+            "OC006" to "Anoia",
+            "OC007" to "Bages",
+            "OC008" to "Baix Camp",
+            "OC009" to "Baix Ebre",
+            "OC010" to "Baix Empordà",
+            "OC011" to "Baix Llobregat",
+            "OC012" to "Baix Penedès",
+            "OC013" to "Barcelonès",
+            "OC014" to "Berguedà",
+            "OC015" to "Cerdanya",
+            "OC016" to "Conca de Barberà",
+            "OC017" to "Garraf",
+            "OC018" to "Garrigues",
+            "OC019" to "Garrotxa",
+            "OC020" to "Gironès",
+            "OC021" to "Maresme",
+            "OC022" to "Montsià",
+            "OC023" to "Noguera",
+            "OC024" to "Osona",
+            "OC025" to "Pallars Jussà",
+            "OC026" to "Pallars Sobirà",
+            "OC027" to "Pla d'Urgell",
+            "OC028" to "Pla de l'Estany",
+            "OC029" to "Priorat",
+            "OC030" to "Ribera d'Ebre",
+            "OC031" to "Ripollès",
+            "OC032" to "Segarra",
+            "OC033" to "Segrià",
+            "OC034" to "La Selva",
+            "OC035" to "Solsonès",
+            "OC036" to "Tarragonès",
+            "OC037" to "Terra Alta",
+            "OC038" to "Urgell",
+            "OC039" to "Vall d'Aran",
+            "OC040" to "Vallès Occidental",
+            "OC041" to "Vallès Oriental",
+            "OC042" to "Moianès"
+        )
+        return listaOc
+    }
+
+    @Composable
+    fun TipoEmpresaSubministradora(): Map<String, String>{
+        val listaEmpresas = mapOf<String, String>(
+            "B02164317" to "DATAMARS IBERICA SLU",
+            "A78100609" to "AZASA"
+        )
+        return  listaEmpresas
+    }
 }
