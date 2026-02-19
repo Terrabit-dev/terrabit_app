@@ -1,6 +1,7 @@
 package com.example.terrabit_app.viewmodel.porcinos
 
 import android.content.Context
+import android.util.Log
 import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.ViewModel
 import com.example.terrabit_app.data.network.Repositorio
@@ -262,16 +263,23 @@ class CrearGuiaPorcinosViewModel: ViewModel() {
     }
 
     private fun convertirFechaHoraAFormatoAPI(fecha: String, hora: String): String {
-        val partesFecha = fecha.split("/")
-        val fechaLimpia = if (partesFecha.size == 3) {
-            "${partesFecha[2]}${partesFecha[1]}${partesFecha[0]}"
-        } else {
-            "00000000" // Valor por defecto en caso de error
+        return try {
+            if (fecha.length == 10 && hora.length == 5) {
+                val partesFecha = fecha.split("/")
+                val partesHora = hora.split(":")
+                val dia = partesFecha[0]
+                val mes = partesFecha[1]
+                val anio = partesFecha[2]
+                val horas = partesHora[0]
+                val minutos = partesHora[1]
+                "$anio$mes$dia$horas$minutos"
+            } else {
+                ""
+            }
+        } catch (e: Exception) {
+            Log.e("Error conversión fecha/hora", e.message ?: "Error desconocido")
+            ""
         }
-        
-        val horaLimpia = hora.replace(":", "")
-
-        return fechaLimpia + horaLimpia
     }
 
     fun cargarDatosGuia(guia: GuiaMobilitatPorcinos) {
