@@ -37,6 +37,22 @@
     <string name="action_create_guide">Altas Guías</string>
     <string name="action_confirm_movement">Confirmar Movimientos</string>
 
+
+    <string name="list_bovinos_title">Listado de Bovinos</string>
+    <string name="search_bar_list_bovinos">Buscar por identificador...</string>
+
+    <string name="error_loading_list_bovinos">Error Desconocido</string>
+    <string name="retry_loading_list_bovinos">Reintentar</string>
+    <string name="empty_list_bovinos">No hay Bovinos</string>
+    <string name="no_results_list_bovinos">No se encontraron resultados</string>
+
+    <string name="card_info_sex">Sexo</string>
+    <string name="card_info_sex_male">Macho</string>
+    <string name="card_info_sex_female">Hembra</string>
+    <string name="card_info_date_born">Fecha Nac.</string>
+    <string name="card_info_mom">Madre</string>
+
+
     <string name="born_register_name">Registrar Nacimiento</string>
     <string name="form_id_mother">ID Madre *</string>
     <string name="form_mother_description">Introducir o escanear ID de la madre</string>

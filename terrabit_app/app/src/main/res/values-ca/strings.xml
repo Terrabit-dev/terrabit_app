@@ -35,6 +35,22 @@
     <string name="action_create_guide">Altes Guies</string>
     <string name="action_confirm_movement">Confirmar Moviments</string>
 
+
+    <string name="list_bovinos_title">Llistat de Bovins</string>
+    <string name="search_bar_list_bovinos">Buscar per identificador...</string>
+
+    <string name="error_loading_list_bovinos">Error Desconegut</string>
+    <string name="retry_loading_list_bovinos">Reintentar</string>
+    <string name="empty_list_bovinos">No hi ha Bovins</string>
+    <string name="no_results_list_bovinos">No s\'ha trobat resultats</string>
+
+    <string name="card_info_sex">Sexe</string>
+    <string name="card_info_sex_male">Mascle</string>
+    <string name="card_info_sex_female">Femella</string>
+    <string name="card_info_date_born">Data Naix.</string>
+    <string name="card_info_mom">Mare</string>
+
+
     <string name="born_register_name">Registrar Naixement</string>
     <string name="form_id_mother">ID Mare *</string>
     <string name="form_mother_description">Introduir o escanejar ID de la mare</string>

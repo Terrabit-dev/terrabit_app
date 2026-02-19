@@ -17,13 +17,16 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.terrabit_app.R
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.terrabit_app.data.network.lista_bovinos.Animal
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.viewmodel.ListarBovinosViewModel
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,7 +46,7 @@ fun ListarBovinos(navController: NavController, viewModel: ListarBovinosViewMode
             TopAppBar(
                 title = {
                     Text(
-                        "Listado de Bovinos",
+                        stringResource(R.string.list_bovinos_title),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -82,7 +85,7 @@ fun ListarBovinos(navController: NavController, viewModel: ListarBovinosViewMode
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp),
-                    placeholder = { Text("Buscar por identificador...") },
+                    placeholder = { Text(stringResource(R.string.search_bar_list_bovinos)) },
                     leadingIcon = {
                         Icon(
                             Icons.Default.Search,
@@ -122,7 +125,7 @@ fun ListarBovinos(navController: NavController, viewModel: ListarBovinosViewMode
                         ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(
-                                    text = error ?: "Error desconocido",
+                                    text = error ?: stringResource(R.string.error_loading_list_bovinos),
                                     color = Color.Red,
                                     fontSize = 16.sp
                                 )
@@ -133,7 +136,7 @@ fun ListarBovinos(navController: NavController, viewModel: ListarBovinosViewMode
                                         containerColor = Color(0xFF4A7C59)
                                     )
                                 ) {
-                                    Text("Reintentar")
+                                    Text(stringResource(R.string.retry_loading_list_bovinos))
                                 }
                             }
                         }
@@ -144,7 +147,7 @@ fun ListarBovinos(navController: NavController, viewModel: ListarBovinosViewMode
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = if (busqueda.isEmpty()) "No hay bovinos" else "No se encontraron resultados",
+                                text = if (busqueda.isEmpty()) stringResource(R.string.empty_list_bovinos) else "No se encontraron resultados",
                                 color = Color(0xFF64748B),
                                 fontSize = 16.sp
                             )
@@ -193,15 +196,15 @@ fun TarjetaBovino(animal: Animal) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 InfoItem(
-                    label = "Sexo",
+                    label = stringResource(R.string.card_info_sex),
                     value = when (animal.sexe) {
-                        "01" -> "Macho"
-                        "02" -> "Hembra"
+                        "01" -> stringResource(R.string.card_info_sex_male)
+                        "02" -> stringResource(R.string.card_info_sex_female)
                         else -> animal.sexe
                     }
                 )
                 InfoItem(
-                    label = "Fecha Nac.",
+                    label = stringResource(R.string.card_info_date_born),
                     value = formatearFecha(animal.dataNaixement)
                 )
             }
@@ -209,7 +212,7 @@ fun TarjetaBovino(animal: Animal) {
             if (!animal.identificadorMare.isNullOrEmpty()) {
                 HorizontalDivider(color = Color(0xFFE2E8F0), thickness = 1.dp)
                 Text(
-                    text = "Madre: ${animal.identificadorMare}",
+                    text = "${stringResource(R.string.card_info_mom)} ${animal.identificadorMare}",
                     fontSize = 14.sp,
                     color = Color(0xFF64748B)
                 )
@@ -236,6 +239,7 @@ fun InfoItem(label: String, value: String) {
     }
 }
 
+@Composable
 fun formatearFecha(fecha: String): String {
     return try {
         if (fecha.length == 8) {
