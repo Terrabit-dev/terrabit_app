@@ -37,6 +37,8 @@ import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
+import com.example.terrabit_app.ui.screen.bovinos.components.AutoCompleteBovinoField
+import com.example.terrabit_app.ui.screen.bovinos.components.useDebounce
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,6 +79,10 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel, b
     val successMessage = stringResource(R.string.successful_message_confirm_movs)
 
     val elementosConCodigos = ElementosConCodigos()
+
+    val suggestionsBovinos by viewModel.suggestionsBovinos.observeAsState(emptyList())
+    val isLoadingBovinos by viewModel.isLoadingBovinos.observeAsState(false)
+    val activeIndex by viewModel.activeFieldIndex.observeAsState(-1)
 
     // ============================================
     // INICIALIZACIÓN Y DETECCIÓN DE BORRADORES
@@ -998,43 +1004,22 @@ fun Movimientos(navController: NavController, viewModel: MovimientosViewModel, b
                                             letterSpacing = 0.15.sp
                                         )
                                         Spacer(modifier = Modifier.height(8.dp))
-                                        OutlinedTextField(
+
+                                        useDebounce(animal.identificador, delayMillis = 300L) { query ->
+                                            viewModel.searchBovinos(index, query)  // Pasar el índice
+                                        }
+
+                                        AutoCompleteBovinoField(
                                             value = animal.identificador,
                                             onValueChange = {
                                                 viewModel.actualizarIdentificadorAnimal(index, it)
                                             },
-                                            modifier = Modifier.fillMaxWidth(),
-                                            placeholder = {
-                                                Text(
-                                                    stringResource(R.string.form_id_animal_description),
-                                                    color = Color(0xFF94A3B8),
-                                                    fontSize = 14.sp
-                                                )
-                                            },
-                                            trailingIcon = {
-                                                IconButton(onClick = { /* Acción de cámara */ }) {
-                                                    Icon(
-                                                        Icons.Outlined.CameraAlt,
-                                                        contentDescription = "Escanear",
-                                                        tint = Color(0xFFE28F41)
-                                                    )
-                                                }
-                                            },
-                                            singleLine = true,
-                                            shape = MaterialTheme.shapes.medium,
-                                            colors = OutlinedTextFieldDefaults.colors(
-                                                focusedBorderColor = Color(0xFFE28F41),
-                                                unfocusedBorderColor = Color(0xFFCBD5E1),
-                                                focusedTextColor = Color(0xFF1E293B),
-                                                unfocusedTextColor = Color(0xFF1E293B),
-                                                cursorColor = Color(0xFFE28F41),
-                                                focusedContainerColor = Color.White,
-                                                unfocusedContainerColor = Color.White
-                                            ),
-                                            keyboardOptions = KeyboardOptions(
-                                                keyboardType = KeyboardType.Text,
-                                                imeAction = ImeAction.Next
-                                            )
+                                            suggestions = if (activeIndex == index) suggestionsBovinos else emptyList(),  // Solo mostrar si es el campo activo
+                                            onAnimalSelected = { viewModel.onBovinoSelected(index, it) },
+                                            isLoading = isLoadingBovinos,
+                                            label = stringResource(R.string.form_id_animal),
+                                            placeholder = stringResource(R.string.form_id_animal_description),
+                                            modifier = Modifier.fillMaxWidth()
                                         )
                                     }
 

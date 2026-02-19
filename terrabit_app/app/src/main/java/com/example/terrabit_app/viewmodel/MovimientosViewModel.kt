@@ -9,6 +9,7 @@ import com.example.terrabit_app.data.Borrador
 import com.example.terrabit_app.data.SharedPreferencesManager
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.Identificadores.IdenMovimiento
+import com.example.terrabit_app.data.network.lista_bovinos.Animal
 import com.example.terrabit_app.data.network.moviminetos.modelos.Movimientos
 import com.example.terrabit_app.data.network.moviminetos.modelos.PetConfirmacionMovi
 import com.example.terrabit_app.data.network.respuestas.RespuestaUnificada
@@ -37,7 +38,23 @@ class MovimientosViewModel(application: Application) : AndroidViewModel(applicat
     val nif = userPreferences.getNif() ?: ""
     val password = userPreferences.getPassword() ?: ""
 
-    // ID único para la sesión actual del formulario
+    val codiMo = userPreferences.getCodiMO() ?: ""
+
+    // Autocompletado/sugerencias para animales
+    private val _suggestionsBovinos = MutableLiveData<List<Animal>>(emptyList())
+    val suggestionsBovinos = _suggestionsBovinos
+
+    private val _isLoadingBovinos = MutableLiveData(false)
+    val isLoadingBovinos = _isLoadingBovinos
+
+    private val _bovinosCargados = MutableLiveData(false)
+    val bovinosCargados = _bovinosCargados
+
+    private val _activeFieldIndex = MutableLiveData<Int>(-1)
+    val activeFieldIndex = _activeFieldIndex
+
+
+    // ID unico para la sesión actual del formulario
     private var borradorSesionId: String = ""
 
     // ============================================
@@ -51,7 +68,62 @@ class MovimientosViewModel(application: Application) : AndroidViewModel(applicat
         if (borradorSesionId.isEmpty()) {
             borradorSesionId = "movimiento_auto_${System.currentTimeMillis()}"
         }
+        cargarBovinosEnCache()
     }
+
+    private fun cargarBovinosEnCache() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                _isLoadingBovinos.postValue(true)
+
+                repositorio.getBovinosWithCache(
+                    nif = nif,
+                    password = password,
+                    tipusVinculacio = "1",
+                    explotacio = codiMo,
+                    forceRefresh = false
+                )
+
+                _bovinosCargados.postValue(true)
+                _isLoadingBovinos.postValue(false)
+                Log.d("MovimientosVM", "Bovinos cargados en caché")
+            } catch (e: Exception) {
+                _isLoadingBovinos.postValue(false)
+                _bovinosCargados.postValue(false)
+                Log.e("MovimientosVM", "Error al cargar bovinos: ${e.message}", e)
+            }
+        }
+    }
+
+    fun searchBovinos(index: Int, query: String) {
+        _activeFieldIndex.value = index
+
+        if (query.isBlank()) {
+            _suggestionsBovinos.value = emptyList()
+            return
+        }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val resultados = repositorio.searchBovinosLocal(query)
+                _suggestionsBovinos.postValue(resultados)
+                Log.d("MovimientosVM", "Búsqueda en índice $index: '$query' - ${resultados.size} resultados")
+            } catch (e: Exception) {
+                _suggestionsBovinos.postValue(emptyList())
+                Log.e("MovimientosVM", "Error en búsqueda: ${e.message}", e)
+            }
+        }
+    }
+
+    fun onBovinoSelected(index: Int, animal: Animal) {
+        actualizarIdentificadorAnimal(index, animal.identificador)
+        _suggestionsBovinos.value = emptyList()
+        _activeFieldIndex.value = -1
+        Log.d("MovimientosVM", "Bovino seleccionado en índice $index: ${animal.identificador}")
+    }
+
+
+
 
     fun tieneContenido(): Boolean {
         return !_codiRemo.value.isNullOrEmpty() ||
