@@ -61,7 +61,13 @@ fun GestionGuiasPorcinos(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Editar y Confirmar Guías") },
+                title = {
+                    Text(
+                        text = "Editar y Confirmar Guías",
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
@@ -93,7 +99,7 @@ fun GestionGuiasPorcinos(
                 }
             } else {
                 items(uiStateGestionGuias.listaGuiasPorcinos) { guia ->
-                    GuiaCard(navController, guia, viewModelCrearGuias)
+                    GuiaCard(navController, guia, viewModelGestionarGuias, viewModelCrearGuias)
                 }
             }
         }
@@ -105,6 +111,7 @@ fun GestionGuiasPorcinos(
 fun GuiaCard(
     navController: NavController,
     guia: GuiaMobilitatPorcinos,
+    viewModelGestionarGuias: GestionarGuiasViewModel = viewModel(),
     viewModelCrearGuias: CrearGuiaPorcinosViewModel = viewModel()
 ) {
     ElevatedCard(
@@ -162,7 +169,7 @@ fun GuiaCard(
                 }
                 FilledIconButton(
                     onClick = {
-                        viewModelCrearGuias.confirmarGuia()
+                        viewModelGestionarGuias.confirmarGuia()
                     },
                     shape = RoundedCornerShape(8.dp),
                     colors = IconButtonDefaults.iconButtonColors(

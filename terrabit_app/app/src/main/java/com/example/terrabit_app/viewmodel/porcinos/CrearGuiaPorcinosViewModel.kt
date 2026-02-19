@@ -302,16 +302,4 @@ class CrearGuiaPorcinosViewModel: ViewModel() {
             )
         }
     }
-
-    // MOVER ESTO A UN NUEVO VIEWMODEL PARA GESTION DE GUIAS PORCINAS !!!
-    // La lista se tiene que gestionar desde el nuevo viewmodel
-    fun editarYConfirmarGuia() {
-        // En caso de que la api devuelva exitoso, borrar de la lista
-        TODO()
-    }
-
-    fun confirmarGuia() {
-        // En caso de que la api devuelva exitoso, borrar de la lista
-        TODO()
-    }
 }
