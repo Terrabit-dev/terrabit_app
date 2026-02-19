@@ -19,6 +19,7 @@ import com.example.terrabit_app.ui.screen.bovinos.ListarBovinos
 import com.example.terrabit_app.ui.screen.bovinos.Material
 import com.example.terrabit_app.ui.screen.bovinos.Movimientos
 import com.example.terrabit_app.ui.screen.bovinos.Nacimiento
+import com.example.terrabit_app.ui.screen.porcinos.EditarGuiaPorcinos
 import com.example.terrabit_app.ui.screen.porcinos.EntradasPorcinos
 import com.example.terrabit_app.ui.screen.porcinos.GestionGuiasPorcinos
 import com.example.terrabit_app.ui.screen.porcinos.HomePorcinos
@@ -154,7 +155,7 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel ) {
 
             EditarGuiaPorcinos(
                 navController = navController,
-                viewModel = editarGuiasViewModel
+                viewModelCrearGuia = editarGuiasViewModel
             )
         }
     }
