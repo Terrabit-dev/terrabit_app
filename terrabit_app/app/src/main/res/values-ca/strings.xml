@@ -282,5 +282,6 @@
 
     <string name="edit_button_individual_card">Editar</string>
     <string name="delete_button_individual_card">Eliminar</string>
+    <string name="duplicate_request_name">Sol·licitar duplicat</string>
 
 </resources>
