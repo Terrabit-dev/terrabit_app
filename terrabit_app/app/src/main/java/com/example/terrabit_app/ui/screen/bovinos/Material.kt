@@ -310,7 +310,7 @@ fun Material(navController: NavController, viewModel: MaterialViewModel, ) {
                                     onDismissRequest = { viewModel.cerrarEmpresaMenu() },
                                     modifier = Modifier.background(Color.White)
                                 ) {
-                                    elementosConCodigos.TipoEmpresaSubministradora().forEach { (codigo, empresa) ->
+                                    elementosConCodigos.tipoEmpresaSubministradora().forEach { (codigo, empresa) ->
                                         DropdownMenuItem(
                                             text = {
                                                 Text(

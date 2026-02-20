@@ -49,7 +49,7 @@ class NacimientoViewmodel(application: Application) : AndroidViewModel(applicati
     val isLoadingBovinos = _isLoadingBovinos
 
     private val _bovinosCargados = MutableLiveData(false)
-    val bovinosCargados = _bovinosCargados
+
 
     fun inicializarSharedPreferences(context: Context) {
         sharedPreferencesManager = SharedPreferencesManager(context)
@@ -150,13 +150,11 @@ class NacimientoViewmodel(application: Application) : AndroidViewModel(applicati
             val borradorExistente = sharedPreferencesManager.obtenerBorradores()
                 .find { it.id == borradorSesionId }
 
-            val borrador = if (borradorExistente != null) {
-                borradorExistente.copy(
-                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
-                    datos = Gson().toJson(datosNacimiento)
-                )
-            } else {
-                Borrador(
+            val borrador = borradorExistente?.copy(
+                fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                datos = Gson().toJson(datosNacimiento)
+            )
+                ?: Borrador(
                     id = borradorSesionId,
                     tipo = "NACIMIENTO",
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
@@ -164,7 +162,6 @@ class NacimientoViewmodel(application: Application) : AndroidViewModel(applicati
                     datos = Gson().toJson(datosNacimiento),
                     estado = "BORRADOR_AUTO"
                 )
-            }
 
             sharedPreferencesManager.guardarBorrador(borrador)
             Log.d("Autoguardado Nacimiento", "Borrador guardado: $borradorSesionId")
@@ -294,18 +291,8 @@ class NacimientoViewmodel(application: Application) : AndroidViewModel(applicati
     private val _cargandoNacimiento = MutableLiveData(false)
     val cargandoNacimiento = _cargandoNacimiento
 
-    data class Razas(val codigo: String, val nombre: String)
 
-    val razasBovinas = listOf(
-        Razas("1111", "Holstein (Frisona)"),
-        Razas("1116", "Angus"),
-        Razas("1114", "Hereford"),
-        Razas("9907", "Simmental"),
-        Razas("1113", "Charolais (Xarolesa)"),
-        Razas("1115", "Jersey"),
-        Razas("1117", "Limousin (Limusina)"),
-        Razas("0000", "Mestizo")
-    )
+
     val listaAptitudes = listOf("Carne", "Leche", "Doble propósito")
 
     fun actualizarIdMadre(nuevoId: String) { _idMadre.value = nuevoId }

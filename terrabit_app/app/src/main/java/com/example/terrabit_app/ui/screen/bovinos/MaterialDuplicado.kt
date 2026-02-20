@@ -73,6 +73,7 @@ import com.example.terrabit_app.ui.theme.DarkWhiteBackground
 import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.WhiteBackground
+import com.example.terrabit_app.utils.DropdownField
 import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.viewmodel.MaterialDuplicadoViewModel
 
@@ -292,7 +293,7 @@ fun MaterialDupplicadosScreen(navController: NavController) {
                             selectedValue = empresaSubministradora,
                             expanded = empresaExpandida,
                             placeholder = stringResource(R.string.form_suply_company_description),
-                            opciones = elementosConCodigos.TipoEmpresaSubministradora(),
+                            opciones = elementosConCodigos.tipoEmpresaSubministradora(),
                             onExpandedChange = { viewModel.toggleEmpresaExpandida() },
                             onDismissRequest = { viewModel.cerrarEmpresaMenu() },
                             onSeleccionar = { codigo, nombre -> viewModel.seleccionarEmpresa(codigo, nombre) }
@@ -487,65 +488,7 @@ fun MaterialDupplicadosScreen(navController: NavController) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun DropdownField(
-    label: String,
-    selectedValue: String,
-    expanded: Boolean,
-    placeholder: String,
-    opciones: Map<String, String>,
-    onExpandedChange: () -> Unit,
-    onDismissRequest: () -> Unit,
-    onSeleccionar: (String, String) -> Unit
-) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            label,
-            fontSize = 15.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = DarkBlueGrey,
-            letterSpacing = 0.15.sp
-        )
-        Spacer(modifier = Modifier.height(10.dp))
-        ExposedDropdownMenuBox(
-            expanded = expanded,
-            onExpandedChange = { onExpandedChange() }
-        ) {
-            OutlinedTextField(
-                value = selectedValue,
-                onValueChange = {},
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .menuAnchor(),
-                readOnly = true,
-                placeholder = { Text(placeholder, color = BlueGrey) },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-                singleLine = true,
-                shape = MaterialTheme.shapes.medium,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MainGreen,
-                    unfocusedBorderColor = DarkWhiteBackground,
-                    focusedTextColor = DarkBlueGrey,
-                    unfocusedTextColor = DarkBlueGrey
-                )
-            )
-            ExposedDropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { onDismissRequest() },
-                modifier = Modifier.background(Color.White)
-            ) {
-                opciones.forEach { (codigo, nombre) ->
-                    DropdownMenuItem(
-                        text = { Text(nombre, fontSize = 15.sp, color = DarkBlueGrey) },
-                        onClick = { onSeleccionar(codigo, nombre) },
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
-                    )
-                }
-            }
-        }
-    }
-}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
