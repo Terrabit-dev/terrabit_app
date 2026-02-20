@@ -287,5 +287,35 @@
     <string name="option_electronic_crotal">Crotal electronico</string>
     <string name="option_electronic_injectable">Inyectable electronico</string>
     <string name="option_ruminal_bowl">Bolo ruminal</string>
-    <string name="duplicate_request_name">Solicitar duplicado</string>
+    <string name="duplicate_request_name">Solicitud de Duplicado</string>
+    <string name="title_duplicate_error">Error al Solicitar Duplicado</string>
+    <string name="success_duplicate_request">Duplicado solicitado exitosamente</string>
+    <string name="btn_duplicate_request">Solicitar Duplicado</string>
+
+    <string name="form_suply_company">Empresa Suministradora</string>
+    <string name="form_suply_company_description">Seleccionar empresa</string>
+    <string name="form_send_type">Tipo de Envío</string>
+    <string name="form_send_type_description">Seleccionar tipo de envío</string>
+    <string name="form_send_address">Dirección de Envío</string>
+    <string name="form_send_address_description">Seleccionar destino</string>
+    <string name="form_comarcal_office">Oficina Comarcal</string>
+    <string name="form_comarcal_office_description">Seleccionar oficina</string>
+    <string name="mesagge_send_dades">Datos de envío</string>
+    <string name="form_address">Dirección</string>
+    <string name="form_address_description">Calle, número, piso...</string>
+    <string name="form_poblacion">Población</string>
+    <string name="form_poblacion_description">Introducir población</string>
+    <string name="form_postal_code">Código Postal</string>
+    <string name="form_postal_code_description">Introducir código postal</string>
+    <string name="form_municipality">Municipio</string>
+    <string name="form_municipality_description">Introducir municipio</string>
+    <string name="form_contact_phone">Teléfono de Contacto</string>
+    <string name="form_contact_phone_description">Introducir teléfono</string>
+
+    <string name="title_identifiers">Identificadores</string>
+    <string name="label_identifier_count">Identificador</string>
+    <string name="action_add">Agregar</string>
+    <string name="form_material_type">Tipo de Material</string>
+    <string name="form_material_type_description">Seleccionar tipo de material</string>
+    <string name="form_id_scan_description">Introducir o escanear identificador</string>
 </resources>

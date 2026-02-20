@@ -282,6 +282,37 @@
 
     <string name="edit_button_individual_card">Editar</string>
     <string name="delete_button_individual_card">Eliminar</string>
-    <string name="duplicate_request_name">Sol·licitar duplicat</string>
+
+    <string name="duplicate_request_name">Sol·licitud de Duplicat</string>
+    <string name="title_duplicate_error">Error en Sol·licitar el Duplicat</string>
+    <string name="success_duplicate_request">Duplicat sol·licitat correctament</string>
+    <string name="btn_duplicate_request">Sol·licitar Duplicat</string>
+
+    <string name="form_suply_company">Empresa Subministradora</string>
+    <string name="form_suply_company_description">Seleccionar empresa</string>
+    <string name="form_send_type">Tipus d\'Enviament</string>
+    <string name="form_send_type_description">Seleccionar tipus d\'enviament</string>
+    <string name="form_send_address">Adreça d\'Enviament</string>
+    <string name="form_send_address_description">Seleccionar destí</string>
+    <string name="form_comarcal_office">Oficina Comarcal</string>
+    <string name="form_comarcal_office_description">Seleccionar oficina</string>
+    <string name="mesagge_send_dades">Dades d\'enviament</string>
+    <string name="form_address">Adreça</string>
+    <string name="form_address_description">Carrer, número, pis...</string>
+    <string name="form_poblacion">Població</string>
+    <string name="form_poblacion_description">Introduir població</string>
+    <string name="form_postal_code">Codi Postal</string>
+    <string name="form_postal_code_description">Introduir codi postal</string>
+    <string name="form_municipality">Municipi</string>
+    <string name="form_municipality_description">Introduir municipi</string>
+    <string name="form_contact_phone">Telèfon de Contacte</string>
+    <string name="form_contact_phone_description">Introduir telèfon</string>
+
+    <string name="title_identifiers">Identificadors</string>
+    <string name="label_identifier_count">Identificador</string>
+    <string name="action_add">Afegir</string>
+    <string name="form_material_type">Tipus de Material</string>
+    <string name="form_material_type_description">Seleccionar tipus de material</string>
+    <string name="form_id_scan_description">Introduir o escanejar identificador</string>
 
 </resources>

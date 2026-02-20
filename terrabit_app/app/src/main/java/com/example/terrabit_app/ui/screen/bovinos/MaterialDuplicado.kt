@@ -76,7 +76,6 @@ import com.example.terrabit_app.ui.theme.WhiteBackground
 import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.viewmodel.MaterialDuplicadoViewModel
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MaterialDupplicadosScreen(navController: NavController) {
@@ -97,8 +96,6 @@ fun MaterialDupplicadosScreen(navController: NavController) {
     val direccionAlternativa = "03"
     val direccionExplatoacion = "02"
     val direccioOficinaComarcal = "01"
-
-
 
     // Observar lista de identificadores
     val listaIdentificadores by viewModel.listaIdentificadores.observeAsState(emptyList())
@@ -121,11 +118,14 @@ fun MaterialDupplicadosScreen(navController: NavController) {
     // Tipos de material disponibles (código -> nombre)
     val tiposMaterial = elementosConCodigos.tiposMaterial()
 
+    // Recursos de texto frecuentes
+    val successMessage = stringResource(R.string.success_duplicate_request)
+
     // Snackbar de éxito
     LaunchedEffect(registroExitoso) {
         if (registroExitoso) {
             snackbarHostState.showSnackbar(
-                message = "Duplicado solicitado exitosamente",
+                message = successMessage,
                 duration = SnackbarDuration.Short
             )
             viewModel.resetearEstado()
@@ -155,7 +155,7 @@ fun MaterialDupplicadosScreen(navController: NavController) {
             },
             title = {
                 Text(
-                    "Error al Solicitar Duplicado",
+                    stringResource(R.string.title_duplicate_error),
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
                     color = DarkBlueGrey
@@ -178,7 +178,7 @@ fun MaterialDupplicadosScreen(navController: NavController) {
                     colors = ButtonDefaults.buttonColors(containerColor = ErrorRed),
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text("Entendido", fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.error_buttom), fontWeight = FontWeight.SemiBold)
                 }
             },
             containerColor = Color.White,
@@ -213,7 +213,7 @@ fun MaterialDupplicadosScreen(navController: NavController) {
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         Text(
-                            "Procesando...",
+                            stringResource(R.string.loading_processing),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
                             color = BlueGrey
@@ -237,7 +237,10 @@ fun MaterialDupplicadosScreen(navController: NavController) {
                     },
                     navigationIcon = {
                         IconButton(onClick = { navController.navigate(Routes.MaterialCategoria.route) }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                            Icon(
+                                Icons.Default.ArrowBack,
+                                contentDescription = stringResource(R.string.content_description_back)
+                            )
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -285,10 +288,10 @@ fun MaterialDupplicadosScreen(navController: NavController) {
 
                         // Empresa Subministradora
                         DropdownField(
-                            label = "Empresa Subministradora *",
+                            label = stringResource(R.string.form_suply_company) + " *",
                             selectedValue = empresaSubministradora,
                             expanded = empresaExpandida,
-                            placeholder = "Seleccionar empresa",
+                            placeholder = stringResource(R.string.form_suply_company_description),
                             opciones = elementosConCodigos.TipoEmpresaSubministradora(),
                             onExpandedChange = { viewModel.toggleEmpresaExpandida() },
                             onDismissRequest = { viewModel.cerrarEmpresaMenu() },
@@ -297,10 +300,10 @@ fun MaterialDupplicadosScreen(navController: NavController) {
 
                         // Tipo de Envío
                         DropdownField(
-                            label = "Tipo de Envío *",
+                            label = stringResource(R.string.form_send_type) + " *",
                             selectedValue = tipoEnviamiento,
                             expanded = tipoEnviamientoExpandido,
-                            placeholder = "Seleccionar tipo de envío",
+                            placeholder = stringResource(R.string.form_send_type_description),
                             opciones = elementosConCodigos.tiposEnvios(),
                             onExpandedChange = { viewModel.toggleTipoEnviamientoExpandido() },
                             onDismissRequest = { viewModel.cerrarTipoEnviamientoMenu() },
@@ -309,10 +312,10 @@ fun MaterialDupplicadosScreen(navController: NavController) {
 
                         // Dirección de Envío
                         DropdownField(
-                            label = "Dirección de Envío *",
+                            label = stringResource(R.string.form_send_address) + " *",
                             selectedValue = tipoDireccionEnvio,
                             expanded = direccionEnvioExpandido,
-                            placeholder = "Seleccionar tipo de dirección",
+                            placeholder = stringResource(R.string.form_send_address_description),
                             opciones = elementosConCodigos.tiposDireccionEnvio(),
                             onExpandedChange = { viewModel.toggleDireccionEnvioExpandido() },
                             onDismissRequest = { viewModel.cerrarDireccionEnvioMenu() },
@@ -322,10 +325,10 @@ fun MaterialDupplicadosScreen(navController: NavController) {
                         // Oficina Comarcal (solo si destino == "OC" / código "01")
                         if (viewModel.getCodigoDirecioEnvio() == direccioOficinaComarcal ) {
                             DropdownField(
-                                label = "Oficina Comarcal *",
+                                label = stringResource(R.string.form_comarcal_office) + " *",
                                 selectedValue = oficinaComarcal,
                                 expanded = oficinaComarcalExpandido,
-                                placeholder = "Seleccionar oficina comarcal",
+                                placeholder = stringResource(R.string.form_comarcal_office_description),
                                 opciones = elementosConCodigos.tiposOficinasComarcales(),
                                 onExpandedChange = { viewModel.toggleOficinaComarcalExpandido() },
                                 onDismissRequest = { viewModel.cerrarOficinaComarcalMenu() },
@@ -337,7 +340,7 @@ fun MaterialDupplicadosScreen(navController: NavController) {
                         if (viewModel.getCodigoDirecioEnvio() == direccionExplatoacion || viewModel.getCodigoDirecioEnvio() == direccionAlternativa) {
                             if (viewModel.getCodigoDirecioEnvio() == direccionExplatoacion) {
                                 Text(
-                                    "Introducir los datos informados en el sistema",
+                                    stringResource(R.string.mesagge_send_dades),
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = BlueGrey,
@@ -345,34 +348,34 @@ fun MaterialDupplicadosScreen(navController: NavController) {
                                 )
                             }
                             CampoTexto(
-                                label = "Dirección *",
+                                label = stringResource(R.string.form_address) + " *",
                                 valor = direccionEnvio,
-                                placeholder = "Introducir dirección",
+                                placeholder = stringResource(R.string.form_address_description),
                                 onValueChange = { viewModel.actualizarDireccionEnvio(it) }
                             )
                             CampoTexto(
-                                label = "Población *",
+                                label = stringResource(R.string.form_poblacion) + " *",
                                 valor = poblacion,
-                                placeholder = "Introducir población",
+                                placeholder = stringResource(R.string.form_poblacion_description),
                                 onValueChange = { viewModel.actualizarPoblacion(it) }
                             )
                             CampoTexto(
-                                label = "Código Postal *",
+                                label = stringResource(R.string.form_postal_code) + " *",
                                 valor = codigoPostal,
-                                placeholder = "Introducir código postal",
+                                placeholder = stringResource(R.string.form_postal_code_description),
                                 keyboardType = KeyboardType.Number,
                                 onValueChange = { viewModel.actualizarCodigoPostal(it) }
                             )
                             CampoTexto(
-                                label = "Municipio *",
+                                label = stringResource(R.string.form_municipality) + " *",
                                 valor = municipio,
-                                placeholder = "Introducir municipio",
+                                placeholder = stringResource(R.string.form_municipality_description),
                                 onValueChange = { viewModel.actualizarMunicipio(it) }
                             )
                             CampoTexto(
-                                label = "Teléfono de Contacto *",
+                                label = stringResource(R.string.form_contact_phone) + " *",
                                 valor = telefono,
-                                placeholder = "Introducir teléfono",
+                                placeholder = stringResource(R.string.form_contact_phone_description),
                                 keyboardType = KeyboardType.Phone,
                                 onValueChange = { viewModel.actualizarTelefonoContacto(it) }
                             )
@@ -404,7 +407,7 @@ fun MaterialDupplicadosScreen(navController: NavController) {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                "Identificadores",
+                                stringResource(R.string.title_identifiers),
                                 fontSize = 17.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = DarkBlueGrey
@@ -415,11 +418,11 @@ fun MaterialDupplicadosScreen(navController: NavController) {
                             ) {
                                 Icon(
                                     Icons.Default.Add,
-                                    contentDescription = "Agregar",
+                                    contentDescription = stringResource(R.string.action_add),
                                     modifier = Modifier.size(18.dp)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("Agregar", fontWeight = FontWeight.SemiBold)
+                                Text(stringResource(R.string.action_add), fontWeight = FontWeight.SemiBold)
                             }
                         }
 
@@ -471,7 +474,7 @@ fun MaterialDupplicadosScreen(navController: NavController) {
                     )
                 ) {
                     Text(
-                        "Solicitar Duplicado",
+                        stringResource(R.string.btn_duplicate_request),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         letterSpacing = 0.5.sp
@@ -543,6 +546,7 @@ fun DropdownField(
         }
     }
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun IdentificadorItem(
@@ -569,7 +573,7 @@ private fun IdentificadorItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                "Identificador ${indice + 1}",
+                stringResource(R.string.label_identifier_count) + " ${indice + 1}",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = BlueGrey
@@ -592,7 +596,7 @@ private fun IdentificadorItem(
         // Campo Identificador
         Column(modifier = Modifier.fillMaxWidth()) {
             Text(
-                "Identificador *",
+                stringResource(R.string.form_id_animal),
                 fontSize = 15.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = DarkBlueGrey,
@@ -603,7 +607,7 @@ private fun IdentificadorItem(
                 value = identificador,
                 onValueChange = onIdentificadorChange,
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Introducir o escanear identificador", color = BlueGrey) },
+                placeholder = { Text(stringResource(R.string.form_id_scan_description), color = BlueGrey) },
                 trailingIcon = {
                     IconButton(onClick = { /* Acción cámara */ }) {
                         Icon(
@@ -632,7 +636,7 @@ private fun IdentificadorItem(
         // Dropdown Tipo de Material
         Column(modifier = Modifier.fillMaxWidth()) {
             Text(
-                "Tipo de Material *",
+                stringResource(R.string.form_material_type) + " *",
                 fontSize = 15.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = DarkBlueGrey,
@@ -651,7 +655,7 @@ private fun IdentificadorItem(
                         .fillMaxWidth()
                         .menuAnchor(),
                     readOnly = true,
-                    placeholder = { Text("Seleccionar tipo de material", color = BlueGrey) },
+                    placeholder = { Text(stringResource(R.string.form_material_type_description), color = BlueGrey) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(tipoMaterialExpandido) },
                     singleLine = true,
                     shape = MaterialTheme.shapes.medium,
@@ -721,4 +725,3 @@ private fun CampoTexto(
         )
     }
 }
-
