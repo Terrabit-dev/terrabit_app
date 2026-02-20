@@ -37,12 +37,12 @@ class ElementosConCodigos {
     @Composable
     fun transporte(): Map<String, String> {
         val listaTransporte = mapOf<String, String>(
-            stringResource(R.string.option_truck) to "04",
-            stringResource(R.string.option_boat) to "05",
-            stringResource(R.string.option_airplane) to "06",
-            stringResource(R.string.option_train) to "07",
-            stringResource(R.string.option_walking) to "08",
-            stringResource(R.string.option_other) to "99"
+            "04" to stringResource(R.string.option_truck),
+            "05" to stringResource(R.string.option_boat),
+            "06" to stringResource(R.string.option_airplane),
+            "07" to stringResource(R.string.option_train),
+            "08" to stringResource(R.string.option_walking),
+            "99" to stringResource(R.string.option_other)
         )
         return listaTransporte
     }
@@ -61,8 +61,8 @@ class ElementosConCodigos {
     @Composable
     fun opcionesSiNo(): Map<String, String>{
         val listaOpciones= mapOf<String, String>(
-            stringResource(R.string.option_yes) to "SI",
-            stringResource(R.string.option_no) to "NO"
+             "SI" to stringResource(R.string.option_yes) ,
+             "NO" to stringResource(R.string.option_no)
         )
         return listaOpciones
     }

@@ -296,7 +296,8 @@ fun MaterialDupplicadosScreen(navController: NavController) {
                             opciones = elementosConCodigos.tipoEmpresaSubministradora(),
                             onExpandedChange = { viewModel.toggleEmpresaExpandida() },
                             onDismissRequest = { viewModel.cerrarEmpresaMenu() },
-                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarEmpresa(codigo, nombre) }
+                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarEmpresa(codigo, nombre) },
+                            defectColor =  true
                         )
 
                         // Tipo de Envío
@@ -308,7 +309,8 @@ fun MaterialDupplicadosScreen(navController: NavController) {
                             opciones = elementosConCodigos.tiposEnvios(),
                             onExpandedChange = { viewModel.toggleTipoEnviamientoExpandido() },
                             onDismissRequest = { viewModel.cerrarTipoEnviamientoMenu() },
-                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarTipoEnviamiento(codigo, nombre) }
+                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarTipoEnviamiento(codigo, nombre) },
+                            defectColor = true
                         )
 
                         // Dirección de Envío
@@ -320,7 +322,8 @@ fun MaterialDupplicadosScreen(navController: NavController) {
                             opciones = elementosConCodigos.tiposDireccionEnvio(),
                             onExpandedChange = { viewModel.toggleDireccionEnvioExpandido() },
                             onDismissRequest = { viewModel.cerrarDireccionEnvioMenu() },
-                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarDireccionEnvio(codigo, nombre) }
+                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarDireccionEnvio(codigo, nombre) },
+                            defectColor = true
                         )
 
                         // Oficina Comarcal (solo si destino == "OC" / código "01")
@@ -333,7 +336,8 @@ fun MaterialDupplicadosScreen(navController: NavController) {
                                 opciones = elementosConCodigos.tiposOficinasComarcales(),
                                 onExpandedChange = { viewModel.toggleOficinaComarcalExpandido() },
                                 onDismissRequest = { viewModel.cerrarOficinaComarcalMenu() },
-                                onSeleccionar = { codigo, nombre -> viewModel.seleccionarOficinaComarcal(codigo, nombre) }
+                                onSeleccionar = { codigo, nombre -> viewModel.seleccionarOficinaComarcal(codigo, nombre) },
+                                defectColor = true
                             )
                         }
 
@@ -348,32 +352,32 @@ fun MaterialDupplicadosScreen(navController: NavController) {
                                     letterSpacing = 0.15.sp
                                 )
                             }
-                            CampoTexto(
+                            CampoTextoDupli(
                                 label = stringResource(R.string.form_address) + " *",
                                 valor = direccionEnvio,
                                 placeholder = stringResource(R.string.form_address_description),
                                 onValueChange = { viewModel.actualizarDireccionEnvio(it) }
                             )
-                            CampoTexto(
+                            CampoTextoDupli(
                                 label = stringResource(R.string.form_poblacion) + " *",
                                 valor = poblacion,
                                 placeholder = stringResource(R.string.form_poblacion_description),
                                 onValueChange = { viewModel.actualizarPoblacion(it) }
                             )
-                            CampoTexto(
+                            CampoTextoDupli(
                                 label = stringResource(R.string.form_postal_code) + " *",
                                 valor = codigoPostal,
                                 placeholder = stringResource(R.string.form_postal_code_description),
                                 keyboardType = KeyboardType.Number,
                                 onValueChange = { viewModel.actualizarCodigoPostal(it) }
                             )
-                            CampoTexto(
+                            CampoTextoDupli(
                                 label = stringResource(R.string.form_municipality) + " *",
                                 valor = municipio,
                                 placeholder = stringResource(R.string.form_municipality_description),
                                 onValueChange = { viewModel.actualizarMunicipio(it) }
                             )
-                            CampoTexto(
+                            CampoTextoDupli(
                                 label = stringResource(R.string.form_contact_phone) + " *",
                                 valor = telefono,
                                 placeholder = stringResource(R.string.form_contact_phone_description),
@@ -634,7 +638,7 @@ private fun IdentificadorItem(
 }
 
 @Composable
-private fun CampoTexto(
+private fun CampoTextoDupli(
     label: String,
     valor: String,
     placeholder: String,

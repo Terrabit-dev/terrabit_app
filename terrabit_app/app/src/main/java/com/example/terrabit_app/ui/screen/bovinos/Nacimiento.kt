@@ -569,7 +569,8 @@ fun Nacimiento(navController: NavController,
                             opciones = elementosConCodigos.sexos(),
                             onExpandedChange = { viewModel.toggleSexoExpandido() },
                             onDismissRequest = { viewModel.cerrarSexoMenu() },
-                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarSexo(nombre, codigo) }
+                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarSexo(nombre, codigo) },
+                            defectColor = true
                         )
 
                         // Razas
@@ -581,7 +582,8 @@ fun Nacimiento(navController: NavController,
                             opciones = elementosConCodigos.razasBovinas(),
                             onExpandedChange = { viewModel.toggleRazaExpandida() },
                             onDismissRequest = { viewModel.cerrarRazaMenu() },
-                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarRaza(nombre, codigo) }
+                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarRaza(nombre, codigo) },
+                            defectColor = true
                         )
 
                         // Aptitudes
@@ -594,7 +596,8 @@ fun Nacimiento(navController: NavController,
                             opciones = elementosConCodigos.aptitudes(),
                             onExpandedChange = { viewModel.toggleAptitudExpandida() },
                             onDismissRequest = { viewModel.cerrarAptitudMenu() },
-                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarAptitud(nombre, codigo) }
+                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarAptitud(nombre, codigo) },
+                            defectColor = true
                         )
                     }
                 }
