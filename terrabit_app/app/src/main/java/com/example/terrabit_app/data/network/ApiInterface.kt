@@ -14,17 +14,20 @@ import com.example.terrabit_app.data.network.guias.PeticionAltaGuia
 import com.example.terrabit_app.data.network.guias.PeticionModificarGuia
 import com.example.terrabit_app.data.network.animales.RegistroMuerteBovi
 import com.example.terrabit_app.data.network.animales.RegistroNacimientoBovi
-import com.example.terrabit_app.data.network.guiasPorcinos.CrearGuiaMobilitatPorcinos
 import com.example.terrabit_app.data.network.lista_bovinos.ListaBovinos
 import com.example.terrabit_app.data.network.respuestas.ResAltaGuia
 import com.example.terrabit_app.data.network.respuestas.ResBasica
 import com.example.terrabit_app.data.network.respuestas.ResConfirmacionMovi
 import com.example.terrabit_app.data.network.respuestas.ResModificarGuia
 import com.example.terrabit_app.data.network.respuestas.RespuestaUnificada
-import com.example.terrabit_app.data.network.guiasPorcinos.GuiaMobilitatPorcinos
-import com.example.terrabit_app.data.network.guiasPorcinos.PeticionModificarGuiaPorcinos
-import com.example.terrabit_app.data.network.guiasPorcinos.ResModificarGuiaPorcinos
-import com.example.terrabit_app.data.network.guiasPorcinos.RespuestaMovilidadPorcinos
+import com.example.terrabit_app.data.network.DataClassPorcinos.AltaGuiaExitoResponse
+import com.example.terrabit_app.data.network.DataClassPorcinos.AltaMovimientoGTR
+import com.example.terrabit_app.data.network.DataClassPorcinos.ConfirmarMovimientosRequest
+import com.example.terrabit_app.data.network.DataClassPorcinos.ConsultaMovimientosPorConfirmar
+import com.example.terrabit_app.data.network.DataClassPorcinos.GtrConfirmacioResponse
+import com.example.terrabit_app.data.network.DataClassPorcinos.GtrStandardResponse
+import com.example.terrabit_app.data.network.DataClassPorcinos.GuiaGTRLista
+import com.example.terrabit_app.data.network.DataClassPorcinos.ModificarMovimentsAGias
 
 import okhttp3.OkHttpClient
 import retrofit2.Response
@@ -124,26 +127,65 @@ interface ApiInterface {
         @Body request: PetSolicitudMaterial
     ): Response<ResBasica>
 
-    //PORCINOS
+    //---------------------- PORCINOS ----------------------
 
-    @PUT("WSAltaguies/AppJava/WSAltaGuia/")
-    suspend fun putMovilidadPorcinos(
-        @Body request: CrearGuiaMobilitatPorcinos
-    ): Response<RespuestaMovilidadPorcinos>
+    // --- SECCIÓN 1: GESTIÓN DE SALIDAS (ALTA Y CARGA) ---
 
-    @GET("WSMobilitat/AppJava/WSCarregaGuiesMobilitat/")
-    suspend fun getGuiesMobilitatPorcinos(
+    /**
+     * 5.1 SW Alta de guies
+     * Crea un nuevo movimiento en el sistema GTR.
+     */
+    @PUT("gtr/WSAltaguies/AppJava/WSAltaGuia")
+    suspend fun altaMovimientoPorcino(
+        @Body request: AltaMovimientoGTR
+    ): Response<AltaGuiaExitoResponse>
+
+    /**
+     * 5.2 SW càrrega de guies DST per mobilitat
+     * Descarga las guías marcadas para movilidad desde el origen.
+     */
+    @GET("gtr/WSMobilitat/AppJava/WSCarregaGuiesMobilitat")
+    suspend fun listarMovimientosOrigenPorcino(
         @Query("nif") nif: String,
         @Query("password") password: String,
         @Query("codiMo") codiMo: String,
         @Query("codiRega") codiRega: String,
-        @Query("dataSortida") dataSortida: String?
-    ): Response<GuiaMobilitatPorcinos>
+        @Query("dataSortida") dataSortida: String // Format: yyyymmddHHMM
+    ): Response<List<GuiaGTRLista>>
 
-    @PUT("WSMobilitat/AppJava/WSModificarGuiasMovilitat/")
-    suspend fun putModificarGuiaPorcinos(
-        @Body request: PeticionModificarGuiaPorcinos
-    ): Response<ResModificarGuiaPorcinos>
+    /**
+     * 5.3 SW DST’s tramitats en App Mòbil
+     * Modifica y cierra (pasa a "Emesa") una guía descargada previamente.
+     */
+    @PUT("gtr/WSMobilitat/AppJava/WSModificarGuiasMovilitat")
+    suspend fun tramitarMovimientoMovilidadPorcina(
+        @Body request: ModificarMovimentsAGias
+    ): Response<GtrStandardResponse>
+
+
+    // --- SECCIÓN 2: CONFIRMACIÓN DE ENTRADAS (DESTINO) ---
+
+    /**
+     * 5.2 Consulta de moviments confirmació d’entrada
+     * Lista las guías que están esperando a que el destino confirme la llegada.
+     */
+    @GET("gtr/WSConfirmacioMoviments/AppJava/WSObtenirMovimentPteConfirmar")
+    suspend fun listarMovimientosPendientesEntradaPorcina(
+        @Query("nif") nif: String,
+        @Query("password") password: String,
+        @Query("moDesti") moDesti: String,
+        @Query("dataSortidaDesde") desde: String,
+        @Query("dataSortidaFins") fins: String
+    ): Response<ConsultaMovimientosPorConfirmar>
+
+    /**
+     * 5.1 Confirmació de moviments d’entrada
+     * El destino confirma oficialmente que los animales han llegado.
+     */
+    @PUT("gtr/WSConfirmacioMoviments/AppJava/WSConfirmarMoviment")
+    suspend fun confirmarEntradaMovimientoPorcina(
+        @Body request: ConfirmarMovimientosRequest
+    ): Response<GtrConfirmacioResponse>
 
 
     companion object {
