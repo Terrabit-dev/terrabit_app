@@ -117,7 +117,7 @@ fun MaterialDupplicadosScreen(navController: NavController) {
     var mostrarDialogoError by remember { mutableStateOf(false) }
 
     // Tipos de material disponibles (código -> nombre)
-    val tiposMaterial = elementosConCodigos.tiposMaterial()
+    val tiposMaterial = elementosConCodigos.tiposMaterialDuplicados()
 
     // Recursos de texto frecuentes
     val successMessage = stringResource(R.string.success_duplicate_request)

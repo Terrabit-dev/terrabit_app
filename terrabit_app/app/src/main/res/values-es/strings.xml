@@ -318,4 +318,14 @@
     <string name="form_material_type">Tipo de Material</string>
     <string name="form_material_type_description">Seleccionar tipo de material</string>
     <string name="form_id_scan_description">Introducir o escanear identificador</string>
+    <string name="option_crotal_simple_tisular">Crotal tisular simple</string>
+    <string name="option_crotal_double_tisular">Crotal tisular doble</string>
+    <string name="option_crotal_ruminal_bowl">Crotal + Bol ruminal</string>
+    <string name="option_crotal_electronic_crotal">Crotal + Crotal electronico</string>
+    <string name="option_rebuilding">Reidentificación</string>
+    <string name="form_unitats">Unidades</string>
+    <string name="form_codiMo_description">Ingrese el MO destinatario</string>
+    <string name="form_unitats_description">Ingrese el numero de unidades</string>
+    <string name="alert_material_codiMo">El Codi MO es obligatorio para el tipo de material seleccionado</string>
+    <string name="alert_necessary_codiMO">Campo obligatorio para este tipo de material</string>
 </resources>

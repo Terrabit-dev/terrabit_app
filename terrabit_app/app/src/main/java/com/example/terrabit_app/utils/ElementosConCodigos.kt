@@ -100,12 +100,24 @@ class ElementosConCodigos {
     }
 
     @Composable
-    fun tiposMaterial(): Map<String, String>{
+    fun tiposMaterialDuplicados(): Map<String, String>{
         val listaTiposMaterial = mapOf<String, String>(
             "07" to stringResource(R.string.option_crotal),
             "20" to stringResource(R.string.option_electronic_crotal),
             "21" to stringResource(R.string.option_electronic_injectable),
             "22" to stringResource(R.string.option_ruminal_bowl)
+        )
+        return listaTiposMaterial
+    }
+    @Composable
+    fun tiposMaterial(): Map<String, String>{
+        val listaTiposMaterial = mapOf<String, String>(
+            "21" to stringResource(R.string.option_electronic_injectable),
+            "22" to stringResource(R.string.option_ruminal_bowl),
+            "23" to stringResource(R.string.option_crotal_simple_tisular),
+            "24" to stringResource(R.string.option_crotal_double_tisular),
+            "26" to stringResource(R.string.option_crotal_electronic_crotal),
+            "25" to stringResource(R.string.option_rebuilding)
         )
         return listaTiposMaterial
     }
