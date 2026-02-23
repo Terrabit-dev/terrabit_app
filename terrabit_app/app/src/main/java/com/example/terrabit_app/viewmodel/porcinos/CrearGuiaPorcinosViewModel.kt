@@ -6,6 +6,7 @@ import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.ViewModel
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.DataClassPorcinos.AltaMovimientoGTR
+import com.example.terrabit_app.data.network.DataClassPorcinos.ModificarMovimentsAGias
 import com.example.terrabit_app.ui.screen.porcinos.CrearGuiasPorcinosUiState
 import com.example.terrabit_app.utils.UserPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,9 +22,6 @@ class CrearGuiaPorcinosViewModel: ViewModel() {
     private val repositorio = Repositorio()
 
     private lateinit var userPreferences: UserPreferences
-
-    private var categoriaApiSeleccionada: String = "0"
-    private var medioTransporteApiSeleccionada: String = "0"
 
     fun inicializarUserPreferences(context: Context) {
         userPreferences = UserPreferences(context)
@@ -290,40 +288,30 @@ class CrearGuiaPorcinosViewModel: ViewModel() {
 
     // LA TEVA FUNCIÓ DE CÀRREGA (De API a UI)
     fun cargarDatosGuia(guia: AltaMovimientoGTR) {
-        val rawSortida = guia.dataSortida
-        val rawArribada = guia.dataArribada
-
-        // Parseig visual DD/MM/YYYY
-        val fechaSalidaVisual = if (rawSortida.length >= 8) {
-            "${rawSortida.substring(6, 8)}/${rawSortida.substring(4, 6)}/${rawSortida.substring(0, 4)}"
-        } else ""
-
-        val fechaLlegadaVisual = if (rawArribada.length >= 8) {
-            "${rawArribada.substring(6, 8)}/${rawArribada.substring(4, 6)}/${rawArribada.substring(0, 4)}"
-        } else ""
-
-        // Parseig hores HH:MM
-        val horaSalida = if (rawSortida.length >= 12) {
-            "${rawSortida.substring(8, 10)}:${rawSortida.substring(10, 12)}"
-        } else ""
-
-        val horaLlegada = if (rawArribada.length >= 12) {
-            "${rawArribada.substring(8, 10)}:${rawArribada.substring(10, 12)}"
-        } else ""
+        val fechaSalida = guia.dataSortida.toString().let {
+            "${it.substring(6, 8)}/${it.substring(4, 6)}/${it.substring(0, 4)}"
+        }
+        val fechaLlegada = guia.dataArribada.toString().let {
+            "${it.substring(6, 8)}/${it.substring(4, 6)}/${it.substring(0, 4)}"
+        }
+        val horaSalida = guia.dataSortida.toString().let {
+            "${it.substring(8, 10)}:${it.substring(10, 12)}"
+        }
+        val horaLlegada = guia.dataArribada.toString().let {
+            "${it.substring(8, 10)}:${it.substring(10, 12)}"
+        }
 
         _uiState.update { currentState ->
             currentState.copy(
                 explotacion = guia.explotacioEntrada,
-                categoriaApiSeleccionada = guia.codiCategoria,
+                categoriaSeleccionada = guia.codiCategoria,
                 numAnimales = guia.numAnimals.toString(),
-                fechaSalida = fechaSalidaVisual, // <--- FORMAT VISUAL
-                fechaLlegada = fechaLlegadaVisual, // <--- FORMAT VISUAL
+                fechaSalida = fechaSalida,
+                fechaLlegada = fechaLlegada,
                 horaSalida = horaSalida,
                 horaLlegada = horaLlegada,
-                matricula = guia.matricula ?: "",
-                nifConductor = guia.nifConductor ?: "",
-                codigoSIR = guia.codiSirentra ?: "",
-                medioTransporteApiSeleccionado = guia.mitjaTransport ?: "01"
+                matricula= guia.mitjaTransport.toString(),
+                nifConductor = guia.nifConductor.toString()
             )
         }
     }
