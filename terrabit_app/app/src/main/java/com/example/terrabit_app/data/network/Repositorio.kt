@@ -20,6 +20,9 @@ import com.example.terrabit_app.data.network.moviminetos.modelos.PetModificacioM
 import com.example.terrabit_app.data.network.moviminetos.modelos.PetRegistroIntercanvi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.example.terrabit_app.data.network.DataClassPorcinos.AltaMovimientoGTR
+import com.example.terrabit_app.data.network.DataClassPorcinos.ConfirmarMovimientosRequest
+import com.example.terrabit_app.data.network.DataClassPorcinos.ModificarMovimentsAGias
 
 class Repositorio {
     val apiInterface = ApiInterface.create()
@@ -135,18 +138,40 @@ class Repositorio {
     suspend fun putSolicitudMaterial(request: PetSolicitudMaterial) =
         apiInterface.putSolicitudMaterial(request)
 
-    //Porcinos
-    suspend fun putMovilidadPorcinos(request: CrearGuiaMobilitatPorcinos) =
-        apiInterface.putMovilidadPorcinos(request)
+    //------------------- Porcinos -------------------
 
-    suspend fun getDescargaGuiasMobilitatPorcions(
+    // --- FLUJO DE SALIDAS (ORIGEN) ---
+
+    // 5.1 Alta de guías
+    suspend fun altaGuiaPorcinas(request: AltaMovimientoGTR) =
+        apiInterface.altaMovimientoPorcino(request)
+
+    // 5.2 Descarga de movimientos para movilidad
+    suspend fun getGuiasMobilitatPorcinas(
         nif: String,
-        passwordMobilitat: String,
+        password: String,
         codiMo: String,
         codiRega: String,
         dataSortida: String
-    ) = apiInterface.getGuiesMobilitatPorcinos(nif, passwordMobilitat, codiMo, codiRega, dataSortida)
+    ) = apiInterface.listarMovimientosOrigenPorcino(nif, password, codiMo, codiRega, dataSortida)
 
-    suspend fun putModificarGuiaPorcinos(request: PeticionModificarGuiaPorcinos) =
-        apiInterface.putModificarGuiaPorcinos(request)
+    // 5.3 Modificar y emitir guía (Cierre)
+    suspend fun tramitarGuiaPorcina(request: ModificarMovimentsAGias) =
+        apiInterface.tramitarMovimientoMovilidadPorcina(request)
+
+
+    // --- FLUJO DE ENTRADAS (DESTINO) ---
+
+    // 5.2 Consulta de movimientos pendientes de confirmar entrada
+    suspend fun getPendientesConfirmarEntradaPorcina(
+        nif: String,
+        password: String,
+        moDesti: String,
+        desde: String,
+        fins: String
+    ) = apiInterface.listarMovimientosPendientesEntradaPorcina(nif, password, moDesti, desde, fins)
+
+    // 5.1 Confirmación oficial de la entrada
+    suspend fun confirmarEntradaPorcina(request: ConfirmarMovimientosRequest) =
+        apiInterface.confirmarEntradaMovimientoPorcina(request)
 }

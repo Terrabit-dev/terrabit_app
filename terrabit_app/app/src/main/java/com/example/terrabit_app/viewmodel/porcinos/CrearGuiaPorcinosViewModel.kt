@@ -5,8 +5,8 @@ import android.util.Log
 import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.ViewModel
 import com.example.terrabit_app.data.network.Repositorio
-import com.example.terrabit_app.data.network.guiasPorcinos.CrearGuiaMobilitatPorcinos
 import com.example.terrabit_app.data.network.guiasPorcinos.GuiaMobilitatPorcinos
+import com.example.terrabit_app.data.network.DataClassPorcinos.AltaMovimientoGTR
 import com.example.terrabit_app.ui.screen.porcinos.CrearGuiasPorcinosUiState
 import com.example.terrabit_app.utils.UserPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -232,31 +232,24 @@ class CrearGuiaPorcinosViewModel: ViewModel() {
 
         val currentUiState = _uiState.value
 
-        val fechaSalida = convertirFechaHoraAFormatoAPI(
-            currentUiState.fechaSalida,
-            currentUiState.horaSalida
-        ).toLong()
-        val fechaLlegada = convertirFechaHoraAFormatoAPI(
-            currentUiState.fechaLlegada,
-            currentUiState.horaLlegada
-        ).toLong()
 
-        val guia = CrearGuiaMobilitatPorcinos(
+
+        val guia = AltaMovimientoGTR(
             nif = nif,
             password = password,
-            moOrigen = codiMoOrign,
-            moDesti = currentUiState.explotacion,
-            categoria = currentUiState.categoriaApiSeleccionada,
-            nombreAnimals = currentUiState.numAnimales.toInt(),
-            dataSortida = fechaSalida,
-            dataArribada = fechaLlegada,
-            codiSir = currentUiState.codigoSIR,
-            medioTransporte = currentUiState.medioTransporteApiSeleccionado,
+            explotacioSortida = codiMoOrign,
+            explotacioEntrada = currentUiState.explotacion,
+            codiCategoria = currentUiState.categoriaApiSeleccionada,
+            numAnimals = currentUiState.numAnimales.toInt(),
+            dataSortida = currentUiState.fechaSalida,
+            dataArribada = currentUiState.fechaLlegada,
+            codiSirentra = currentUiState.codigoSIR,
+            mitjaTransport = currentUiState.medioTransporteApiSeleccionado,
             matricula = currentUiState.matricula,
             nifConductor = currentUiState.nifConductor
         )
 
-        repositorio.putMovilidadPorcinos(guia)
+        repositorio.altaGuiaPorcinas(guia)
 
         _uiState.update { CrearGuiasPorcinosUiState() }
         /*TODO*/
