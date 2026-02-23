@@ -225,74 +225,90 @@ class CrearGuiaPorcinosViewModel: ViewModel() {
     }
 
     suspend fun crearGuia() {
-        val nif: String? = userPreferences.getNif()
-        val password: String? = userPreferences.getPassword()
-        val codiMoOrign: String? = userPreferences.getCodiMO()
+        // 1. Obtenim credencials de l'administrador (Preferences)
+        val nif = userPreferences.getNif() ?: ""
+        val password = userPreferences.getPassword() ?: ""
+        val codiMoOrign = userPreferences.getCodiMO() ?: ""
 
         val currentUiState = _uiState.value
 
+        // 2. CONVERSIÓ: Passem de format visual (UI) a format GTR (API)
+        // Utilitzem la teva funció de conversió per a la sortida i l'arribada
+        val dataSortidaApi = convertirFechaHoraAFormatoAPI(
+            currentUiState.fechaSalida,
+            currentUiState.horaSalida
+        )
+        val dataArribadaApi = convertirFechaHoraAFormatoAPI(
+            currentUiState.fechaLlegada,
+            currentUiState.horaLlegada
+        )
 
-
+        // 3. Creem l'objecte de petició amb les dades formatejades
         val guia = AltaMovimientoGTR(
             nif = nif,
             password = password,
             explotacioSortida = codiMoOrign,
             explotacioEntrada = currentUiState.explotacion,
             codiCategoria = currentUiState.categoriaApiSeleccionada,
-            numAnimals = currentUiState.numAnimales.toInt(),
-            dataSortida = currentUiState.fechaSalida,
-            dataArribada = currentUiState.fechaLlegada,
+            numAnimals = currentUiState.numAnimales.toIntOrNull() ?: 0,
+            dataSortida = dataSortidaApi,     // <--- DATA CONVERTIDA
+            dataArribada = dataArribadaApi,   // <--- DATA CONVERTIDA
             codiSirentra = currentUiState.codigoSIR,
             mitjaTransport = currentUiState.medioTransporteApiSeleccionado,
             matricula = currentUiState.matricula,
             nifConductor = currentUiState.nifConductor
         )
 
+        // 4. Cridem al repositori
         repositorio.altaGuiaPorcinas(guia)
 
+        // 5. Reset del formulari
         _uiState.update { CrearGuiasPorcinosUiState() }
-        /*TODO*/
     }
 
+    // LA TEVA FUNCIÓ DE CONVERSIÓ (De UI a API)
     private fun convertirFechaHoraAFormatoAPI(fecha: String, hora: String): String {
         return try {
-            // Validamos que fecha sea DD/MM/YYYY (10 car) y hora HH:MM (5 car)
             if (fecha.contains("/") && hora.contains(":")) {
                 val partesFecha = fecha.split("/")
                 val partesHora = hora.split(":")
 
                 if (partesFecha.size == 3 && partesHora.size == 2) {
-                    val (dia, mes, anio) = partesFecha
-                    val (horas, minutos) = partesHora
+                    val dia = partesFecha[0]
+                    val mes = partesFecha[1]
+                    val anio = partesFecha[2]
+                    val horas = partesHora[0]
+                    val minutos = partesHora[1]
                     "$anio$mes$dia$horas$minutos"
                 } else ""
             } else ""
         } catch (e: Exception) {
-            Log.e("GTR_Conv", "Error en conversión: ${e.message}")
+            Log.e("GTR_Conv", "Error en conversió: ${e.message}")
             ""
         }
     }
 
+    // LA TEVA FUNCIÓ DE CÀRREGA (De API a UI)
     fun cargarDatosGuia(guia: AltaMovimientoGTR) {
-        val rawDataSortida = guia.dataSortida
-        val rawDataArribada = guia.dataArribada
+        val rawSortida = guia.dataSortida
+        val rawArribada = guia.dataArribada
 
-        // Parseo visual para los campos de texto de la UI (DD/MM/YYYY)
-        val fechaSalidaVisual = if (rawDataSortida.length >= 8) {
-            "${rawDataSortida.substring(6, 8)}/${rawDataSortida.substring(4, 6)}/${rawDataSortida.substring(0, 4)}"
+        // Parseig visual DD/MM/YYYY
+        val fechaSalidaVisual = if (rawSortida.length >= 8) {
+            "${rawSortida.substring(6, 8)}/${rawSortida.substring(4, 6)}/${rawSortida.substring(0, 4)}"
         } else ""
 
-        val fechaLlegadaVisual = if (rawDataArribada.length >= 8) {
-            "${rawDataArribada.substring(6, 8)}/${rawDataArribada.substring(4, 6)}/${rawDataArribada.substring(0, 4)}"
+        val fechaLlegadaVisual = if (rawArribada.length >= 8) {
+            "${rawArribada.substring(6, 8)}/${rawArribada.substring(4, 6)}/${rawArribada.substring(0, 4)}"
         } else ""
 
-        // Parseo de horas (HH:MM)
-        val horaSalida = if (rawDataSortida.length >= 12) {
-            "${rawDataSortida.substring(8, 10)}:${rawDataSortida.substring(10, 12)}"
+        // Parseig hores HH:MM
+        val horaSalida = if (rawSortida.length >= 12) {
+            "${rawSortida.substring(8, 10)}:${rawSortida.substring(10, 12)}"
         } else ""
 
-        val horaLlegada = if (rawDataArribada.length >= 12) {
-            "${rawDataArribada.substring(8, 10)}:${rawDataArribada.substring(10, 12)}"
+        val horaLlegada = if (rawArribada.length >= 12) {
+            "${rawArribada.substring(8, 10)}:${rawArribada.substring(10, 12)}"
         } else ""
 
         _uiState.update { currentState ->
@@ -300,12 +316,8 @@ class CrearGuiaPorcinosViewModel: ViewModel() {
                 explotacion = guia.explotacioEntrada,
                 categoriaApiSeleccionada = guia.codiCategoria,
                 numAnimales = guia.numAnimals.toString(),
-
-                // IMPORTANTE: Aquí decides si guardas el formato visual o el técnico.
-                // Si tus TextField muestran la fecha, usa la visual:
-                fechaSalida = fechaSalidaVisual,
-                fechaLlegada = fechaLlegadaVisual,
-
+                fechaSalida = fechaSalidaVisual, // <--- FORMAT VISUAL
+                fechaLlegada = fechaLlegadaVisual, // <--- FORMAT VISUAL
                 horaSalida = horaSalida,
                 horaLlegada = horaLlegada,
                 matricula = guia.matricula ?: "",
