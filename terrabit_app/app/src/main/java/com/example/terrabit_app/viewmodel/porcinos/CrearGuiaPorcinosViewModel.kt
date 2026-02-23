@@ -5,7 +5,6 @@ import android.util.Log
 import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.ViewModel
 import com.example.terrabit_app.data.network.Repositorio
-import com.example.terrabit_app.data.network.guiasPorcinos.GuiaMobilitatPorcinos
 import com.example.terrabit_app.data.network.DataClassPorcinos.AltaMovimientoGTR
 import com.example.terrabit_app.ui.screen.porcinos.CrearGuiasPorcinosUiState
 import com.example.terrabit_app.utils.UserPreferences
@@ -275,31 +274,37 @@ class CrearGuiaPorcinosViewModel: ViewModel() {
         }
     }
 
-    fun cargarDatosGuia(guia: GuiaMobilitatPorcinos) {
-        val fechaSalida = guia.dataSortida.toString().let {
-            "${it.substring(6, 8)}/${it.substring(4, 6)}/${it.substring(0, 4)}"
-        }
-        val fechaLlegada = guia.dataArribada.toString().let {
-            "${it.substring(6, 8)}/${it.substring(4, 6)}/${it.substring(0, 4)}"
-        }
-        val horaSalida = guia.dataSortida.toString().let {
-            "${it.substring(8, 10)}:${it.substring(10, 12)}"
-        }
-        val horaLlegada = guia.dataArribada.toString().let {
-            "${it.substring(8, 10)}:${it.substring(10, 12)}"
-        }
+    fun cargarDatosGuia(guia: AltaMovimientoGTR) {
+        // La fecha viene en formato yyyymmddHHMM (12 caracteres)
+        // Ejemplo: 2025 07 29 22 00
+
+        val rawDataSortida = guia.dataSortida // String de 12 car.
+        val rawDataArribada = guia.dataArribada
+
+        // Parseo de horas (HH:MM)
+        val horaSalida = if (rawDataSortida.length >= 12) {
+            "${rawDataSortida.substring(8, 10)}:${rawDataSortida.substring(10, 12)}"
+        } else ""
+
+        val horaLlegada = if (rawDataArribada.length >= 12) {
+            "${rawDataArribada.substring(8, 10)}:${rawDataArribada.substring(10, 12)}"
+        } else ""
 
         _uiState.update { currentState ->
             currentState.copy(
-                explotacion = guia.moDesti,
-                categoriaSeleccionada = guia.categoria,
-                numAnimales = guia.nombreAnimals.toString(),
-                fechaSalida = fechaSalida,
-                fechaLlegada = fechaLlegada,
+                explotacion = guia.explotacioEntrada, // Antes moDesti
+                categoriaApiSeleccionada = guia.codiCategoria, // Antes categoria
+                numAnimales = guia.numAnimals.toString(),
+                fechaSalida = rawDataSortida,
+                fechaLlegada = rawDataArribada,
+                // Guardamos las versiones formateadas para la UI si tu State tiene campos para ello
+                // o simplemente actualizamos las horas:
                 horaSalida = horaSalida,
                 horaLlegada = horaLlegada,
-                matricula= guia.vehicle.toString(),
-                nifConductor = guia.responsable.toString()
+                matricula = guia.matricula ?: "", // Usamos el campo matricula de la nueva clase
+                nifConductor = guia.nifConductor ?: "", // Usamos nifConductor
+                codigoSIR = guia.codiSirentra ?: "",
+                medioTransporteApiSeleccionado = guia.mitjaTransport ?: "01"
             )
         }
     }
