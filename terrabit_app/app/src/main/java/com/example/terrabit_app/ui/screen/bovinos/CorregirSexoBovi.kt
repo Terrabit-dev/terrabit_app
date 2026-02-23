@@ -391,7 +391,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                                     onDismissRequest = { viewModel.cerrarSexoCorreccionMenu() },
                                     modifier = Modifier.background(Color.White)
                                 ) {
-                                    elementosConCodigos.sexos().forEach { (sexo, codigo) ->
+                                    elementosConCodigos.sexos().forEach { (codigo, sexo) ->
                                         DropdownMenuItem(
                                             text = {
                                                 Text(

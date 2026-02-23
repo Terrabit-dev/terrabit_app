@@ -392,7 +392,6 @@ class CorrecionSexoViewModel(application: Application): AndroidViewModel(applica
         _identificadorCorreccionSexo.value = ""
         _sexoCorreccionSeleccionado.value = ""
         codigoSexo = ""
-
         borradorSesionId = ""
     }
 
