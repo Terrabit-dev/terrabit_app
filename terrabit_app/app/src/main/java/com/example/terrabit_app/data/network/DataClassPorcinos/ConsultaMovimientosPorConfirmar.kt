@@ -19,7 +19,7 @@ data class MovimentPteDetail(
 
     val categoria: String,
 
-    val nombreAnimals: String, // Al JSON de l'exemple ve com a String "1"
+    val numAnimals: String, // Al JSON de l'exemple ve com a String "1"
 
     val dataSortida: String, // Format DD/MM/YYYY segons l'exemple
 

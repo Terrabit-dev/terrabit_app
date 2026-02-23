@@ -146,10 +146,10 @@ interface ApiInterface {
      * Descarga las guías marcadas para movilidad desde el origen.
      */
     @GET("gtr/WSMobilitat/AppJava/WSCarregaGuiesMobilitat")
-    suspend fun listarMovimientosOrigenPorcino(
-        @Query("nif") nif: String,
-        @Query("password") password: String,
-        @Query("codiMo") codiMo: String,
+    suspend fun     listarMovimientosOrigenPorcino(
+        @Query("nif") nif: String?,
+        @Query("password") password: String?,
+        @Query("codiMo") codiMo: String?,
         @Query("codiRega") codiRega: String,
         @Query("dataSortida") dataSortida: String // Format: yyyymmddHHMM
     ): Response<List<GuiaGTRLista>>
@@ -172,9 +172,9 @@ interface ApiInterface {
      */
     @GET("gtr/WSConfirmacioMoviments/AppJava/WSObtenirMovimentPteConfirmar")
     suspend fun listarMovimientosPendientesEntradaPorcina(
-        @Query("nif") nif: String,
-        @Query("password") password: String,
-        @Query("moDesti") moDesti: String,
+        @Query("nif") nif: String?,
+        @Query("password") password: String?,
+        @Query("moDesti") moDesti: String?,
         @Query("dataSortidaDesde") desde: String,
         @Query("dataSortidaFins") fins: String
     ): Response<ConsultaMovimientosPorConfirmar>

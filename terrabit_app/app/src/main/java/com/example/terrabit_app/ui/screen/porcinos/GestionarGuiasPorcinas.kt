@@ -39,7 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.terrabit_app.data.network.guiasPorcinos.GuiaMobilitatPorcinos
+import com.example.terrabit_app.data.network.DataClassPorcinos.MovimentPteDetail
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
@@ -52,10 +52,10 @@ import java.time.format.DateTimeFormatter
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GestionGuiasPorcinos(
-        navController: NavController,
-        viewModelGestionarGuias: GestionarGuiasViewModel = viewModel(),
-        viewModelCrearGuias: CrearGuiaPorcinosViewModel = viewModel()
-    ) {
+    navController: NavController,
+    viewModelGestionarGuias: GestionarGuiasViewModel = viewModel(),
+    viewModelCrearGuias: CrearGuiaPorcinosViewModel = viewModel()
+) {
     val uiStateGestionGuias by viewModelGestionarGuias.uiState.collectAsState()
 
     Scaffold(
@@ -110,7 +110,7 @@ fun GestionGuiasPorcinos(
 @Composable
 fun GuiaCard(
     navController: NavController,
-    guia: GuiaMobilitatPorcinos,
+    guia: MovimentPteDetail,
     viewModelGestionarGuias: GestionarGuiasViewModel = viewModel(),
     viewModelCrearGuias: CrearGuiaPorcinosViewModel = viewModel()
 ) {
@@ -126,7 +126,7 @@ fun GuiaCard(
             ) {
                 Column {
                     Text(
-                        text = guia.remo,
+                        text = guia.codiRemo,
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp
                     )
@@ -138,11 +138,11 @@ fun GuiaCard(
                 }
                 Column {
                     Text(
-                        text = "Fecha Salida: " + formatearFecha(guia.dataSortida),
+                        text = "Fecha Salida: " + formatearFecha(guia.dataSortida.toLong()),
                         fontSize = 16.sp
                     )
                     Text(
-                        text = "Fecha Llegada: " + formatearFecha(guia.dataArribada),
+                        text = "Fecha Llegada: " + formatearFecha(guia.dataArribada.toLong()),
                         fontSize = 16.sp
                     )
                 }

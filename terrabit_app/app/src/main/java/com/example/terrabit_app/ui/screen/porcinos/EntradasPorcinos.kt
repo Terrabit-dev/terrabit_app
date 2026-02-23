@@ -28,11 +28,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -40,9 +42,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
-import com.example.terrabit_app.data.network.guiasPorcinos.GuiaMobilitatPorcinos
+import com.example.terrabit_app.data.network.DataClassPorcinos.MovimentPteDetail
 import com.example.terrabit_app.ui.theme.MainGreen
-import com.example.terrabit_app.viewmodel.porcinos.EntradasPorcinosViewmodel
+import com.example.terrabit_app.viewmodel.porcinos.EntradasPorcinosViewModel
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -51,9 +53,15 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun EntradasPorcinos(
     navController: NavController,
-    viewModelEntradasGuias: EntradasPorcinosViewmodel = viewModel(),
+    viewModelEntradasGuias: EntradasPorcinosViewModel = viewModel(),
 ) {
     val uiState by viewModelEntradasGuias.uiState.collectAsState()
+    val context = LocalContext.current
+
+    // Se cargan las User Preferences y se hace la llamada para obtener las entradas
+    LaunchedEffect(Unit) {
+        viewModelEntradasGuias.inicializarUserPreferences(context)
+    }
 
     Scaffold(
         topBar = {
@@ -106,8 +114,8 @@ fun EntradasPorcinos(
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun EntradaCard(
-    guia: GuiaMobilitatPorcinos,
-    viewModelGestionarGuias: EntradasPorcinosViewmodel = viewModel(),
+    guia: MovimentPteDetail,
+    viewModelGestionarGuias: EntradasPorcinosViewModel = viewModel(),
 ) {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
@@ -121,7 +129,7 @@ fun EntradaCard(
             ) {
                 Column {
                     Text(
-                        text = guia.remo,
+                        text = guia.codiRemo,
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp
                     )
@@ -133,11 +141,11 @@ fun EntradaCard(
                 }
                 Column {
                     Text(
-                        text = "Fecha Salida: " + formatearFechaEntrega(guia.dataSortida),
+                        text = "Fecha Salida: " + formatearFechaEntrega(guia.dataSortida.toLong()),
                         fontSize = 16.sp
                     )
                     Text(
-                        text = "Fecha Llegada: " + formatearFechaEntrega(guia.dataArribada),
+                        text = "Fecha Llegada: " + formatearFechaEntrega(guia.dataArribada.toLong()),
                         fontSize = 16.sp
                     )
                 }

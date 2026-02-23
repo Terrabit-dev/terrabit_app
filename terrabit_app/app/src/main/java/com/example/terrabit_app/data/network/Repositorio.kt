@@ -148,9 +148,9 @@ class Repositorio {
 
     // 5.2 Descarga de movimientos para movilidad
     suspend fun getGuiasMobilitatPorcinas(
-        nif: String,
-        password: String,
-        codiMo: String,
+        nif: String?,
+        password: String?,
+        codiMo: String?,
         codiRega: String,
         dataSortida: String
     ) = apiInterface.listarMovimientosOrigenPorcino(nif, password, codiMo, codiRega, dataSortida)
@@ -164,9 +164,9 @@ class Repositorio {
 
     // 5.2 Consulta de movimientos pendientes de confirmar entrada
     suspend fun getPendientesConfirmarEntradaPorcina(
-        nif: String,
-        password: String,
-        moDesti: String,
+        nif: String?,
+        password: String?,
+        moDesti: String?,
         desde: String,
         fins: String
     ) = apiInterface.listarMovimientosPendientesEntradaPorcina(nif, password, moDesti, desde, fins)
