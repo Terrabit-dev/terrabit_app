@@ -256,30 +256,35 @@ class CrearGuiaPorcinosViewModel: ViewModel() {
 
     private fun convertirFechaHoraAFormatoAPI(fecha: String, hora: String): String {
         return try {
-            if (fecha.length == 10 && hora.length == 5) {
+            // Validamos que fecha sea DD/MM/YYYY (10 car) y hora HH:MM (5 car)
+            if (fecha.contains("/") && hora.contains(":")) {
                 val partesFecha = fecha.split("/")
                 val partesHora = hora.split(":")
-                val dia = partesFecha[0]
-                val mes = partesFecha[1]
-                val anio = partesFecha[2]
-                val horas = partesHora[0]
-                val minutos = partesHora[1]
-                "$anio$mes$dia$horas$minutos"
-            } else {
-                ""
-            }
+
+                if (partesFecha.size == 3 && partesHora.size == 2) {
+                    val (dia, mes, anio) = partesFecha
+                    val (horas, minutos) = partesHora
+                    "$anio$mes$dia$horas$minutos"
+                } else ""
+            } else ""
         } catch (e: Exception) {
-            Log.e("Error conversión fecha/hora", e.message ?: "Error desconocido")
+            Log.e("GTR_Conv", "Error en conversión: ${e.message}")
             ""
         }
     }
 
     fun cargarDatosGuia(guia: AltaMovimientoGTR) {
-        // La fecha viene en formato yyyymmddHHMM (12 caracteres)
-        // Ejemplo: 2025 07 29 22 00
-
-        val rawDataSortida = guia.dataSortida // String de 12 car.
+        val rawDataSortida = guia.dataSortida
         val rawDataArribada = guia.dataArribada
+
+        // Parseo visual para los campos de texto de la UI (DD/MM/YYYY)
+        val fechaSalidaVisual = if (rawDataSortida.length >= 8) {
+            "${rawDataSortida.substring(6, 8)}/${rawDataSortida.substring(4, 6)}/${rawDataSortida.substring(0, 4)}"
+        } else ""
+
+        val fechaLlegadaVisual = if (rawDataArribada.length >= 8) {
+            "${rawDataArribada.substring(6, 8)}/${rawDataArribada.substring(4, 6)}/${rawDataArribada.substring(0, 4)}"
+        } else ""
 
         // Parseo de horas (HH:MM)
         val horaSalida = if (rawDataSortida.length >= 12) {
@@ -292,17 +297,19 @@ class CrearGuiaPorcinosViewModel: ViewModel() {
 
         _uiState.update { currentState ->
             currentState.copy(
-                explotacion = guia.explotacioEntrada, // Antes moDesti
-                categoriaApiSeleccionada = guia.codiCategoria, // Antes categoria
+                explotacion = guia.explotacioEntrada,
+                categoriaApiSeleccionada = guia.codiCategoria,
                 numAnimales = guia.numAnimals.toString(),
-                fechaSalida = rawDataSortida,
-                fechaLlegada = rawDataArribada,
-                // Guardamos las versiones formateadas para la UI si tu State tiene campos para ello
-                // o simplemente actualizamos las horas:
+
+                // IMPORTANTE: Aquí decides si guardas el formato visual o el técnico.
+                // Si tus TextField muestran la fecha, usa la visual:
+                fechaSalida = fechaSalidaVisual,
+                fechaLlegada = fechaLlegadaVisual,
+
                 horaSalida = horaSalida,
                 horaLlegada = horaLlegada,
-                matricula = guia.matricula ?: "", // Usamos el campo matricula de la nueva clase
-                nifConductor = guia.nifConductor ?: "", // Usamos nifConductor
+                matricula = guia.matricula ?: "",
+                nifConductor = guia.nifConductor ?: "",
                 codigoSIR = guia.codiSirentra ?: "",
                 medioTransporteApiSeleccionado = guia.mitjaTransport ?: "01"
             )
