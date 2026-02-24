@@ -52,6 +52,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.data.network.ApiInterface
 import com.example.terrabit_app.data.network.DataClassPorcinos.GuiaGTRLista
+import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
@@ -71,14 +72,14 @@ fun GestionGuiasPorcinos(
     val context = LocalContext.current
 
     // 1. Inicializamos la API usando tu propio companion object
-    val apiService = remember { ApiInterface.create() }
+    val repo = remember { Repositorio() }
 
     // 2. Inicializamos las preferencias
     val userPrefs = remember { UserPreferences(context) }
 
     // 3. Creamos el ViewModel con la Factory
     val viewModelGestionarGuias: GestionarGuiasViewModel = viewModel(
-        factory = GestionarGuiasViewModelFactory(apiService, userPrefs)
+        factory = GestionarGuiasViewModelFactory(repo, userPrefs)
     )
 
     val uiStateGestionGuias by viewModelGestionarGuias.uiState.collectAsState()

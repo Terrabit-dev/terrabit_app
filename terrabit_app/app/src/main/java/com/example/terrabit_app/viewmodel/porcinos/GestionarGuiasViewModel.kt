@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class GestionarGuiasViewModel(
-    private val api: ApiInterface,
+    private val repo: Repositorio,
     private val userPreferences: UserPreferences // Para obtener NIF/Pass
 ) : ViewModel() {
 
@@ -36,7 +36,7 @@ class GestionarGuiasViewModel(
             Log.d("DEBUG_API", "Params enviats: NIF=$nif, MO=$codiMo, REGA=$rega, Data=$fechaCorte")
 
             try {
-                val response = api.listarMovimientosOrigenPorcino(nif, pass, codiMo, rega, fechaCorte)
+                val response = repo.getGuiasMobilitatPorcinas(nif, pass, codiMo, rega, fechaCorte)
 
                 if (response.isSuccessful) {
                     val body = response.body()

@@ -5,12 +5,14 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.terrabit_app.data.network.ApiInterface
+import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.ui.pantallas.*
 import com.example.terrabit_app.ui.screen.Login
 import com.example.terrabit_app.ui.screen.bovinos.CorregirSexoBovi
@@ -47,7 +49,8 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel ) {
     val navController = rememberNavController()
     val context = LocalContext.current
 
-    val apiInterface = remember { ApiInterface.create() }
+    val repositorio = remember { Repositorio() }
+
     val userPreferences = remember { UserPreferences(context) }
 
     NavHost(
@@ -140,7 +143,7 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel ) {
 
             // 2. Aquí és on passem la Factory
             val gestionarGuiasViewModel: GestionarGuiasViewModel = viewModel(
-                factory = GestionarGuiasViewModelFactory(apiInterface, userPreferences)
+                factory = GestionarGuiasViewModelFactory( repositorio, userPreferences)
             )
 
             val sharedViewModel: CrearGuiaPorcinosViewModel = viewModel(
