@@ -7,12 +7,14 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.network.DataClassPorcinos.ConfirmarMovimientosRequest
+import com.example.terrabit_app.data.network.DataClassPorcinos.MovimentPteDetail
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.ui.screen.porcinos.EntradasPorcinosUiState
 import com.example.terrabit_app.utils.UserPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -68,8 +70,45 @@ class EntradasPorcinosViewModel : ViewModel() {
         }
     }
 
-    fun confirmarGuia() {
-        // Provisional
-        TODO()
+    fun confirmarEntrada(guia: MovimentPteDetail) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+
+            // Mapeo desde MovimentPteDetail a ConfirmarMovimientosRequest
+            val request = ConfirmarMovimientosRequest(
+                nif = "37370803N", // TODO: userPreferences.getNif()
+                password = "5Q62h4rP", // TODO: userPreferences.getPass()
+                moDesti = guia.moDesti,
+                remo = guia.codiRemo,
+                codiAtes = guia.codiAtes, // Ajustar si MovimentPteDetail tiene transportista
+                nifConductor = guia.nifConductor?: "",
+                matricula = guia.matricula?: "",
+                nombreAnimals = guia.numAnimals?: "0" // Ajustar si el detalle incluye cantidad
+            )
+
+            try {
+                val response = repositorio.confirmarEntradaPorcina(request)
+
+                if (response.isSuccessful && response.body()?.codi == "OK") {
+                    // Filtramos la lista eliminando la guía confirmada por su código REMO
+                    val listaActualizada = _uiState.value.listaEntradasPorcinos.filter {
+                        it.codiRemo != guia.codiRemo
+                    }
+
+                    _uiState.update { it.copy(
+                        listaEntradasPorcinos = listaActualizada,
+                        isLoading = false
+                    )}
+                    Log.d("DEBUG_API", "Confirmación OK: ${guia.codiRemo}")
+                } else {
+                    val errorMsg = response.body()?.descripcio ?: "Error al confirmar"
+                    _uiState.update { it.copy(isLoading = false) }
+                    Log.e("DEBUG_API", "Error Negocio: $errorMsg")
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false) }
+                Log.e("DEBUG_API", "Error Conexión: ${e.localizedMessage}")
+            }
+        }
     }
 }

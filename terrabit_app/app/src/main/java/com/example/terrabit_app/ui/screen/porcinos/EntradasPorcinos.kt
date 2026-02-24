@@ -184,7 +184,7 @@ fun EntradaCard(
             ) {
                 FilledIconButton(
                     onClick = {
-                        viewModelGestionarGuias.confirmarGuia()
+                        viewModelGestionarGuias.confirmarEntrada(guia)
                     },
                     shape = RoundedCornerShape(8.dp),
                     colors = IconButtonDefaults.iconButtonColors(
