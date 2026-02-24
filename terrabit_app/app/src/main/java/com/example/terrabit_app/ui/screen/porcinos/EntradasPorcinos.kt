@@ -6,9 +6,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
@@ -58,7 +61,6 @@ fun EntradasPorcinos(
     val uiState by viewModelEntradasGuias.uiState.collectAsState()
     val context = LocalContext.current
 
-    // Se cargan las User Preferences y se hace la llamada para obtener las entradas
     LaunchedEffect(Unit) {
         viewModelEntradasGuias.inicializarUserPreferences(context)
     }
@@ -66,16 +68,10 @@ fun EntradasPorcinos(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(R.string.name_confirmar_entradas),
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                },
+                title = { Text(stringResource(R.string.name_confirmar_entradas), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
+                        Icon(Icons.Default.ArrowBack, contentDescription = null)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -86,25 +82,57 @@ fun EntradasPorcinos(
             )
         }
     ) { padding ->
-        LazyColumn(
+        // Contenedor principal para manejar el estado de carga
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            if (uiState.listaEntradasPorcinos.isEmpty()) {
-                item {
+            if (uiState.isLoading) {
+                // PANTALLA DE CARGA
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    CircularProgressIndicator(
+                        color = MainGreen,
+                        strokeWidth = 4.dp
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = stringResource(R.string.form_porcinos_no_entr),
-                        fontSize = 14.sp,
-                        color = Color.Gray
+                        text = "Cargando entradas...",
+                        color = Color.Gray,
+                        fontSize = 14.sp
                     )
                 }
             } else {
-                items(uiState.listaEntradasPorcinos) { guia ->
-                    EntradaCard(guia, viewModelEntradasGuias)
+                // LISTA DE DATOS
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    if (uiState.listaEntradasPorcinos.isEmpty()) {
+                        item {
+                            Box(
+                                modifier = Modifier.fillParentMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.form_porcinos_no_entr),
+                                    fontSize = 16.sp,
+                                    color = Color.Gray
+                                )
+                            }
+                        }
+                    } else {
+                        items(uiState.listaEntradasPorcinos) { guia ->
+                            EntradaCard(guia, viewModelEntradasGuias)
+                        }
+                    }
                 }
             }
         }
@@ -141,11 +169,11 @@ fun EntradaCard(
                 }
                 Column {
                     Text(
-                        text = "Fecha Salida: " + formatearFechaEntrega(guia.dataSortida.toLong()),
+                        text = "Fecha Salida: " + guia.dataSortida,
                         fontSize = 16.sp
                     )
                     Text(
-                        text = "Fecha Llegada: " + formatearFechaEntrega(guia.dataArribada.toLong()),
+                        text = "Fecha Llegada: " + guia.dataArribada,
                         fontSize = 16.sp
                     )
                 }
@@ -172,14 +200,4 @@ fun EntradaCard(
             }
         }
     }
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-fun formatearFechaEntrega(dateLong: Long): String {
-    val dateString = dateLong.toString()
-    val inputFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmm")
-    val dateTime = LocalDateTime.parse(dateString, inputFormatter)
-    val outputFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-
-    return dateTime.format(outputFormatter)
 }
