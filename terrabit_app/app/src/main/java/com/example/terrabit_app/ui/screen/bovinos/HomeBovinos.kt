@@ -65,6 +65,17 @@ import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
 import com.example.terrabit_app.ui.theme.MintCreamGreen
 import com.example.terrabit_app.ui.theme.WhiteBackground
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
+import android.content.Intent
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 
 @Composable
 fun Home(
@@ -72,6 +83,78 @@ fun Home(
     onMenuClick: () -> Unit,
     navController: NavController
 ) {
+
+
+    val context = LocalContext.current
+    var mostrarDialogo by remember { mutableStateOf(false) }
+
+    val launcherBluetooth = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode != android.app.Activity.RESULT_OK) {
+            mostrarDialogo = true
+        }
+    }
+
+
+    val launcherPermiso = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { concedido ->
+        if (concedido) {
+            val bluetoothManager = context.getSystemService(BluetoothManager::class.java)
+            val bluetoothAdapter = bluetoothManager?.adapter
+            if (bluetoothAdapter != null && !bluetoothAdapter.isEnabled) {
+                val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                launcherBluetooth.launch(intent)
+            }
+        }
+    }
+
+    // Comprueba si el Bluetooth está activado al entrar a la pantalla
+    LaunchedEffect(Unit) {
+        val bluetoothManager = context.getSystemService(BluetoothManager::class.java)
+        val bluetoothAdapter = bluetoothManager?.adapter
+
+
+        val permisoOk = ContextCompat.checkSelfPermission(
+            context,
+            android.Manifest.permission.BLUETOOTH_CONNECT
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (permisoOk && bluetoothAdapter != null && !bluetoothAdapter.isEnabled) {
+            val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+            launcherBluetooth.launch(intent)
+        }
+    }
+
+
+
+    LaunchedEffect(Unit) {
+        launcherPermiso.launch(android.Manifest.permission.BLUETOOTH_CONNECT)
+    }
+
+    // Diálogo manual si el usuario rechazó el popup del sistema
+    if (mostrarDialogo) {
+        AlertDialog(
+            onDismissRequest = { mostrarDialogo = false },
+            title = { Text("Bluetooth desactivado") },
+            text = { Text("La app necesita Bluetooth para comunicarse con el ESP32. ¿Quieres activarlo?") },
+            confirmButton = {
+                Button(onClick = {
+                    mostrarDialogo = false
+                    val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                    launcherBluetooth.launch(intent)
+                }) {
+                    Text("Activar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { mostrarDialogo = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
     Scaffold(
         containerColor = WhiteBackground
     ) { padding ->
