@@ -35,34 +35,35 @@ class EntradasPorcinosViewModel : ViewModel() {
     private fun cargarGuiasPendientes() {
         val fechaFin = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"))
 
-        // Ejecutamos la función suspendida dentro de una corrutina
         viewModelScope.launch {
+            // 1. Iniciamos carga
+            _uiState.value = _uiState.value.copy(isLoading = true)
+
             try {
                 val response = repositorio.getPendientesConfirmarEntradaPorcina(
                     /*nif = userPreferences.getNif(),
                     password = userPreferences.getPassword(),
                     moDesti = userPreferences.getCodiMO(),*/
-                    // CREDENCIALES DE HARDCODEADAS DE PRUEBA (FUNCIONAN)
                     nif = "37370803N",
                     password = "5Q62h4rP",
                     moDesti = "1880AE",
-                    desde = "200001010001",
+                    desde = "000101010000",
                     fins = fechaFin
                 )
 
                 if (response.isSuccessful) {
-                    val body = response.body()
-
-                    val nuevasGuias = body?.llistat ?: emptyList()
-
+                    val nuevasGuias = response.body()?.llistat ?: emptyList()
                     _uiState.value = _uiState.value.copy(
-                        listaEntradasPorcinos = nuevasGuias
+                        listaEntradasPorcinos = nuevasGuias,
+                        isLoading = false // 2. Éxito: quitamos carga
                     )
                 } else {
-                    Log.e("EntradasPorcinosViewModel", "Error en la llamada a la API: ${response.code()}")
+                    _uiState.value = _uiState.value.copy(isLoading = false) // Error de API
+                    Log.e("EntradasPorcinosViewModel", "Error: ${response.code()}")
                 }
             } catch (e: Exception) {
-                Log.e("EntradasPorcinosViewModel", "Error en la llamada a la API", e)
+                _uiState.value = _uiState.value.copy(isLoading = false) // Error de Red
+                Log.e("EntradasPorcinosViewModel", "Error en la llamada", e)
             }
         }
     }

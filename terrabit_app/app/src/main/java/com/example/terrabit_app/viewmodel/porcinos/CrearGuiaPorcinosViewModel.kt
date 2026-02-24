@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.DataClassPorcinos.AltaMovimientoGTR
 import com.example.terrabit_app.data.network.DataClassPorcinos.ModificarMovimentsAGias
@@ -13,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import java.util.Calendar
 
 class CrearGuiaPorcinosViewModel: ViewModel() {
@@ -20,7 +22,6 @@ class CrearGuiaPorcinosViewModel: ViewModel() {
     val uiState: StateFlow<CrearGuiasPorcinosUiState> = _uiState.asStateFlow()
 
     private val repositorio = Repositorio()
-
     private lateinit var userPreferences: UserPreferences
 
     fun inicializarUserPreferences(context: Context) {
@@ -222,67 +223,95 @@ class CrearGuiaPorcinosViewModel: ViewModel() {
         }
     }
 
-    suspend fun crearGuia() {
-        // 1. Obtenim credencials de l'administrador (Preferences)
-        val nif = userPreferences.getNif() ?: ""
-        val password = userPreferences.getPassword() ?: ""
-        val codiMoOrign = userPreferences.getCodiMO() ?: ""
+    fun crearGuia() {
+        val TAG = "GTR_API_DEBUG" // Etiqueta para filtrar en Logcat
 
-        val currentUiState = _uiState.value
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, mensajeError = null) }
 
-        // 2. CONVERSIÓ: Passem de format visual (UI) a format GTR (API)
-        // Utilitzem la teva funció de conversió per a la sortida i l'arribada
-        val dataSortidaApi = convertirFechaHoraAFormatoAPI(
-            currentUiState.fechaSalida,
-            currentUiState.horaSalida
-        )
-        val dataArribadaApi = convertirFechaHoraAFormatoAPI(
-            currentUiState.fechaLlegada,
-            currentUiState.horaLlegada
-        )
+            try {
+                // 1. Obtenemos las credenciales del administrador logueado actualmente
+//                val nifAdmin = userPreferences.getNif() ?: ""
+//                val passwordAdmin = userPreferences.getPassword() ?: ""
+//                val codiMoOrigen = userPreferences.getCodiMO() ?: ""
 
-        // 3. Creem l'objecte de petició amb les dades formatejades
-        val guia = AltaMovimientoGTR(
-            nif = nif,
-            password = password,
-            explotacioSortida = codiMoOrign,
-            explotacioEntrada = currentUiState.explotacion,
-            codiCategoria = currentUiState.categoriaApiSeleccionada,
-            numAnimals = currentUiState.numAnimales.toIntOrNull() ?: 0,
-            dataSortida = dataSortidaApi,     // <--- DATA CONVERTIDA
-            dataArribada = dataArribadaApi,   // <--- DATA CONVERTIDA
-            codiSirentra = currentUiState.codigoSIR,
-            mitjaTransport = currentUiState.medioTransporteApiSeleccionado,
-            matricula = currentUiState.matricula,
-            nifConductor = currentUiState.nifConductor
-        )
+                // 1. Credenciales (Hardcoded para test según tu código)
+                val nifAdmin = "37370803N"
+                val passwordAdmin = "5Q62h4rP"
+                val codiMoOrigen = "1880AE"
 
-        // 4. Cridem al repositori
-        repositorio.altaGuiaPorcinas(guia)
+                val state = _uiState.value
 
-        // 5. Reset del formulari
-        _uiState.update { CrearGuiasPorcinosUiState() }
+                // 2. Construcción del objeto
+                val request = AltaMovimientoGTR(
+                    nif = nifAdmin,
+                    password = passwordAdmin,
+                    tipusEspecie = "02",
+                    tipusAccio = "NO",
+                    tipusMoviment = "01",
+                    explotacioSortida = codiMoOrigen,
+                    explotacioEntrada = state.explotacion,
+                    codiCategoria = state.categoriaApiSeleccionada,
+                    numAnimals = state.numAnimales.toIntOrNull() ?: 0,
+                    dataSortida = convertirFechaHoraAFormatoAPI(state.fechaSalida, state.horaSalida),
+                    dataArribada = convertirFechaHoraAFormatoAPI(state.fechaLlegada, state.horaLlegada),
+                    codiSirentra = state.codigoSIR,
+                    mitjaTransport = state.medioTransporteApiSeleccionado,
+                    matricula = state.matricula,
+                    nifConductor = state.nifConductor,
+                    mobilitat = "SI"
+                )
+
+                // --- LOG DE ENVÍO ---
+                Log.d(TAG, "Enviando petición PUT a la API...")
+                Log.d(TAG, "Cuerpo del JSON: $request")
+
+                // 3. Llamada al repositorio
+                val response = repositorio.altaGuiaPorcinas(request)
+
+                // --- LOG DE RESPUESTA ---
+                if (response.isSuccessful) {
+                    val body = response.body()
+                    Log.i(TAG, "Respuesta exitosa (200 OK)")
+                    Log.i(TAG, "Cuerpo de respuesta: ${body?.descripcio}")
+
+                    if (body?.descripcio?.firstOrNull() == "OK") {
+                        val codigoGuia = body.descripcio.getOrNull(1)
+                        Log.d(TAG, "Guía generada con éxito. ID: $codigoGuia")
+
+                        _uiState.update {
+                            CrearGuiasPorcinosUiState(mensajeExito = "Guía creada: $codigoGuia")
+                        }
+                    } else {
+                        Log.w(TAG, "La API respondió OK pero el contenido es inesperado")
+                    }
+                } else {
+                    // Log de error de la API (4xx o 5xx)
+                    val errorBody = response.errorBody()?.string()
+                    Log.e(TAG, "Error en la API: Código ${response.code()}")
+                    Log.e(TAG, "Mensaje de error: ${response.message()}")
+                    Log.e(TAG, "Cuerpo del error: $errorBody")
+
+                    _uiState.update { it.copy(mensajeError = "Error en la API: ${response.message()}") }
+                }
+
+            } catch (e: Exception) {
+                Log.e(TAG, "Excepción durante la llamada: ${e.message}", e)
+                _uiState.update { it.copy(mensajeError = "Error de red: ${e.localizedMessage}") }
+            } finally {
+                Log.d(TAG, "Operación finalizada (loading = false)")
+                _uiState.update { it.copy(isLoading = false) }
+            }
+        }
     }
 
-    // LA TEVA FUNCIÓ DE CONVERSIÓ (De UI a API)
     private fun convertirFechaHoraAFormatoAPI(fecha: String, hora: String): String {
-        return try {
-            if (fecha.contains("/") && hora.contains(":")) {
-                val partesFecha = fecha.split("/")
-                val partesHora = hora.split(":")
-
-                if (partesFecha.size == 3 && partesHora.size == 2) {
-                    val dia = partesFecha[0]
-                    val mes = partesFecha[1]
-                    val anio = partesFecha[2]
-                    val horas = partesHora[0]
-                    val minutos = partesHora[1]
-                    "$anio$mes$dia$horas$minutos"
-                } else ""
-            } else ""
-        } catch (e: Exception) {
-            Log.e("GTR_Conv", "Error en conversió: ${e.message}")
-            ""
-        }
+        // Tu lógica actual: DD/MM/YYYY + HH:mm -> YYYYMMDDHHMM
+        // Asegúrate de que los ceros a la izquierda estén presentes
+        val partesFecha = fecha.split("/")
+        val partesHora = hora.split(":")
+        return if (partesFecha.size == 3 && partesHora.size == 2) {
+            "${partesFecha[2]}${partesFecha[1]}${partesFecha[0]}${partesHora[0]}${partesHora[1]}"
+        } else ""
     }
 }

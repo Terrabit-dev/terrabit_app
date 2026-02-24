@@ -527,7 +527,7 @@ fun GestionPorcinos(
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable { viewModel.mostrarTimePickerLlegada() }
+                                    .clickable { viewModel.mostrarDatePickerLlegada() }
                             ) {
                                 OutlinedTextField(
                                     value = uiState.fechaLlegada,

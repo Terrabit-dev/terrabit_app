@@ -4,6 +4,6 @@ import com.example.terrabit_app.data.network.DataClassPorcinos.ConsultaMovimient
 import com.example.terrabit_app.data.network.DataClassPorcinos.MovimentPteDetail
 
 data class EntradasPorcinosUiState(
-    // CAMBIAR "GuiaMobilitatPorcinos" POR EL DATACLASS INDICADO (aun no se ha creado)
-    val listaEntradasPorcinos: List<MovimentPteDetail> = mutableListOf()
+    val listaEntradasPorcinos: List<MovimentPteDetail> = mutableListOf(),
+    val isLoading: Boolean = false
 )
