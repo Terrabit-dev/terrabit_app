@@ -6,6 +6,7 @@
     <string name="drawer_subtitle">Gestió Ramadera</string>
     <string name="drawer_explained">Tipus d\'Animal</string>
     <string name="bovinos_name">Bovins</string>
+    <string name="draft_name">Esborranys</string>
     <string name="porcionos_name">Porcins</string>
 
     <string name="title_home">Benvingut/da!</string>
@@ -34,6 +35,22 @@
     <string name="content_description_back">Tornar</string>
     <string name="action_create_guide">Altes Guies</string>
     <string name="action_confirm_movement">Confirmar Moviments</string>
+
+
+    <string name="list_bovinos_title">Llistat de Bovins</string>
+    <string name="search_bar_list_bovinos">Buscar per identificador...</string>
+
+    <string name="error_loading_list_bovinos">Error Desconegut</string>
+    <string name="retry_loading_list_bovinos">Reintentar</string>
+    <string name="empty_list_bovinos">No hi ha Bovins</string>
+    <string name="no_results_list_bovinos">No s\'ha trobat resultats</string>
+
+    <string name="card_info_sex">Sexe</string>
+    <string name="card_info_sex_male">Mascle</string>
+    <string name="card_info_sex_female">Femella</string>
+    <string name="card_info_date_born">Data Naix.</string>
+    <string name="card_info_mom">Mare</string>
+
 
     <string name="born_register_name">Registrar Naixement</string>
     <string name="form_id_mother">ID Mare *</string>
@@ -227,6 +244,87 @@
     <string name="content_description_selecionado">Seleccionat</string>
     <string name="content_description_menu">Menú</string>
     <string name="content_description_notificaciones">Notificacions</string>
+    <string name="option_ordinary_mail">Correu ordinari</string>
+    <string name="option_certificate_mail">Correu certificat</string>
+    <string name="option_rancher">Ramader / Explotació ramadera</string>
+    <string name="option_alternative_address">Adrerça alternativa</string>
+    <string name="option_crotal">Cròtal</string>
+    <string name="option_electronic_crotal">Cròtal electrònic</string>
+    <string name="option_electronic_injectable">Injectable electrònic</string>
+    <string name="option_ruminal_bowl">Bol ruminal</string>
+
+
+
+    <string name="no_results_description_draft">No hi ha Resultats :O</string>
+
+    <string name="title_draft">Esborranys</string>
+    <string name="counter_draft">Desats</string>
+
+    <string name="delete_all_option">Eliminar tots</string>
+    <string name="title_delete_all_option">Eliminar tots els esborranys</string>
+    <string name="description_delete_all_option">Estàs segur que vols eliminar tots els esborranys? Aquesta acció no es pot desfer.</string>
+    <string name="cancel_delete_option_general">Cancel·lar</string>
+    <string name="confirm_delete_option_general">Confirmar</string>
+
+    <string name="search_bar_text">Buscar esborranys...</string>
+
+    <string name="type_draft_title_death">Mort</string>
+    <string name="type_draft_title_material">Material</string>
+    <string name="type_draft_title_born">Naixement</string>
+    <string name="type_draft_title_sex">Corregir Sexe</string>
+    <string name="type_draft_title_id">ID Ajornada</string>
+
+    <string name="status_draft_saved">Desat</string>
+    <string name="status_draft_pending">Pendent</string>
+    <string name="status_draft_sending">Enviat</string>
+    <string name="status_draft_error">Error</string>
+
+    <string name="no_hour_value">Sense hora</string>
+
+    <string name="edit_button_individual_card">Editar</string>
+    <string name="delete_button_individual_card">Eliminar</string>
+
+    <string name="duplicate_request_name">Sol·licitud de Duplicat</string>
+    <string name="title_duplicate_error">Error en Sol·licitar el Duplicat</string>
+    <string name="success_duplicate_request">Duplicat sol·licitat correctament</string>
+    <string name="btn_duplicate_request">Sol·licitar Duplicat</string>
+
+    <string name="form_suply_company">Empresa Subministradora</string>
+    <string name="form_suply_company_description">Seleccionar empresa</string>
+    <string name="form_send_type">Tipus d\'Enviament</string>
+    <string name="form_send_type_description">Seleccionar tipus d\'enviament</string>
+    <string name="form_send_address">Adreça d\'Enviament</string>
+    <string name="form_send_address_description">Seleccionar destí</string>
+    <string name="form_comarcal_office">Oficina Comarcal</string>
+    <string name="form_comarcal_office_description">Seleccionar oficina</string>
+    <string name="mesagge_send_dades">Dades d\'enviament</string>
+    <string name="form_address">Adreça</string>
+    <string name="form_address_description">Carrer, número, pis...</string>
+    <string name="form_poblacion">Població</string>
+    <string name="form_poblacion_description">Introduir població</string>
+    <string name="form_postal_code">Codi Postal</string>
+    <string name="form_postal_code_description">Introduir codi postal</string>
+    <string name="form_municipality">Municipi</string>
+    <string name="form_municipality_description">Introduir municipi</string>
+    <string name="form_contact_phone">Telèfon de Contacte</string>
+    <string name="form_contact_phone_description">Introduir telèfon</string>
+
+    <string name="title_identifiers">Identificadors</string>
+    <string name="label_identifier_count">Identificador</string>
+    <string name="action_add">Afegir</string>
+    <string name="form_material_type">Tipus de Material</string>
+    <string name="form_material_type_description">Seleccionar tipus de material</string>
+    <string name="form_id_scan_description">Introduir o escanejar identificador</string>
+    <string name="option_crotal_simple_tisular">Cròtal tissular simple</string>
+    <string name="option_crotal_double_tisular">Cròtal tissular doble</string>
+    <string name="option_crotal_ruminal_bowl">Cròtal+bol ruminal</string>
+    <string name="option_crotal_electronic_crotal">Cròtal+Cròtal electrònic</string>
+    <string name="option_rebuilding">Reidentificació</string>
+    <string name="form_unitats">Unitats</string>
+    <string name="form_codiMo_description">Ingressi el MO destinatari</string>
+    <string name="form_unitats_description">Ingressi el numero d\'unitats</string>
+    <string name="alert_material_codiMo">El Codi MO és obligatori per al tipus de material seleccionat</string>
+    <string name="alert_necessary_codiMO">Camp obligatori per a aquesta mena de material</string>
     <string name="title_porcinos_gestion_guias">Gestionar Guies</string>
     <string name="name_confirmar_entradas">Confirmar Entrades</string>
     <string name="gestion_subtitle_porcinos">Seleccioneu una acció</string>

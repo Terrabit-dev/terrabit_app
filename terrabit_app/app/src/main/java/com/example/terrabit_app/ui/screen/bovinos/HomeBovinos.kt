@@ -1,4 +1,4 @@
-package com.example.terrabit_app.ui.pantallas
+package com.example.terrabit_app.ui.screen.bovinos
 
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.background
@@ -21,10 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Agriculture
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Drafts
-import androidx.compose.material.icons.filled.EmojiNature
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.LocalShipping
@@ -34,33 +31,25 @@ import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ModalDrawerSheet
-import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -71,221 +60,233 @@ import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.theme.BlueGrey
 import com.example.terrabit_app.ui.theme.DarkBlueGrey
-import com.example.terrabit_app.ui.theme.DarkWhiteBackground
 import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
 import com.example.terrabit_app.ui.theme.MintCreamGreen
 import com.example.terrabit_app.ui.theme.WhiteBackground
-import com.example.terrabit_app.viewmodel.BorradorViewModel
-import com.example.terrabit_app.viewmodel.DrawerViewModel
-import com.example.terrabit_app.viewmodel.MainViewmodel
-import kotlinx.coroutines.launch
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
+import android.content.Intent
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Home(
-    navController: NavController,
-    drawerViewModel: DrawerViewModel,
-    mainViewModel: MainViewmodel,
-    borradorViewmodel: BorradorViewModel
-) {
-    val context = LocalContext.current
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
-    val tipoAnimalSeleccionado by drawerViewModel.tipoAnimalSeleccionado.observeAsState("Bovinos")
-
-    // Estado para controlar qué pantalla mostrar
-    var mostrarBorradores by remember { mutableStateOf(false) }
-
-    // Inicializar SharedPreferences y cargar borradores
-    LaunchedEffect(Unit) {
-        borradorViewmodel.inicializarSharedPreferences(context)
-        borradorViewmodel.cargarBorradores()
-    }
-
-    // Drawer con menú lateral
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            DrawerContent(
-                tipoSeleccionado = tipoAnimalSeleccionado,
-                onTipoSeleccionado = { tipo ->
-                    drawerViewModel.seleccionarTipoAnimal(tipo)
-                    mostrarBorradores = false
-                    scope.launch { drawerState.close() }
-                },
-                onBorradoresClick = {
-                    mostrarBorradores = true
-                    scope.launch { drawerState.close() }
-                },
-                borradoresSeleccionado = mostrarBorradores,
-                navController = navController
-            )
-        }
-    ) {
-        Scaffold(
-            containerColor = WhiteBackground
-        ) { padding ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-            ) {
-                if (mostrarBorradores) {
-                    BorradoresScreen(
-                        viewModel = borradorViewmodel,
-                        onMenuClick = {
-                            scope.launch { drawerState.open() }
-                        }
-                    )
-                } else {
-                    HomeContent(
-                        tipoAnimalSeleccionado = tipoAnimalSeleccionado,
-                        onMenuClick = {
-                            scope.launch { drawerState.open() }
-                        },
-                        navController = navController
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun HomeContent(
     tipoAnimalSeleccionado: String,
     onMenuClick: () -> Unit,
     navController: NavController
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-    ) {
-        // Header con gradiente y bienvenida
-        HeaderBienvenida(
-            tipoAnimal = tipoAnimalSeleccionado,
-            onMenuClick = onMenuClick
-        )
 
-        Spacer(modifier = Modifier.height(24.dp))
 
-        // Título de sección
-        Text(
-            stringResource(R.string.subtitle_home),
-            fontSize = 26.sp,
-            fontWeight = FontWeight.Bold,
-            color = DarkBlueGrey,
-            letterSpacing = 0.3.sp,
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
-        )
+    val context = LocalContext.current
+    var mostrarDialogo by remember { mutableStateOf(false) }
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Grid de tarjetas organizadoras
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-
-            // Tarjeta Listado de Bovinos
-            TarjetaMenu(
-                icono = Icons.Default.List,
-                titulo = stringResource(R.string.list_bovinos),
-                descripcion = stringResource(R.string.list_bovinos_subtitle),
-                colorFondo = Color(0xFFE28F41),
-                onClick = { navController.navigate(Routes.ListarBovinos.route)}
-
-            )
-            // Tarjeta Gestión de Bovinos
-            TarjetaMenu(
-                icono = Icons.Default.Agriculture,
-                titulo = stringResource(R.string.card_name_animals),
-                descripcion = stringResource(R.string.card_description_animals),
-                colorFondo = MainGreen,
-                onClick = { navController.navigate(Routes.GestionBovinos.route) }
-            )
-
-            // Tarjeta Guías/Movimientos
-            TarjetaMenu(
-                icono = Icons.Default.LocalShipping,
-                titulo = stringResource(R.string.card_name_guias),
-                descripcion = stringResource(R.string.card_description_guias),
-                colorFondo = MainOrange,
-                contadorBadge = 2,
-                onClick = { navController.navigate(Routes.GuiasMovimientos.route) }
-            )
-
-            // Tarjeta Material
-            TarjetaMenu(
-                icono = Icons.Default.ShoppingCart,
-                titulo = stringResource(R.string.card_name_material),
-                descripcion = stringResource(R.string.card_description_material),
-                colorFondo = MainGreen,
-                onClick = { navController.navigate(Routes.MaterialCategoria.route) }
-            )
+    val launcherBluetooth = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode != android.app.Activity.RESULT_OK) {
+            mostrarDialogo = true
         }
+    }
 
-        Spacer(modifier = Modifier.height(32.dp))
 
-        // Card de Información del Sistema
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MintCreamGreen
-            ),
-            shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp),
-                verticalAlignment = Alignment.Top
-            ) {
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = MainGreen.copy(alpha = 0.15f),
-                    modifier = Modifier.size(48.dp)
-                ) {
-                    Icon(
-                        Icons.Default.Info,
-                        contentDescription = null,
-                        tint = MainGreen,
-                        modifier = Modifier.padding(12.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        stringResource(R.string.information_title_home),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,
-                        color = MainGreen,
-                        letterSpacing = 0.2.sp
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        stringResource(R.string.information_description_home),
-                        fontSize = 14.sp,
-                        color = BlueGrey,
-                        lineHeight = 20.sp,
-                        letterSpacing = 0.1.sp
-                    )
-                }
+    val launcherPermiso = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { concedido ->
+        if (concedido) {
+            val bluetoothManager = context.getSystemService(BluetoothManager::class.java)
+            val bluetoothAdapter = bluetoothManager?.adapter
+            if (bluetoothAdapter != null && !bluetoothAdapter.isEnabled) {
+                val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                launcherBluetooth.launch(intent)
             }
         }
+    }
 
-        // Espaciado inferior
-        Spacer(modifier = Modifier.height(24.dp))
+    // Comprueba si el Bluetooth está activado al entrar a la pantalla
+    LaunchedEffect(Unit) {
+        val bluetoothManager = context.getSystemService(BluetoothManager::class.java)
+        val bluetoothAdapter = bluetoothManager?.adapter
+
+
+        val permisoOk = ContextCompat.checkSelfPermission(
+            context,
+            android.Manifest.permission.BLUETOOTH_CONNECT
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (permisoOk && bluetoothAdapter != null && !bluetoothAdapter.isEnabled) {
+            val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+            launcherBluetooth.launch(intent)
+        }
+    }
+
+
+
+    LaunchedEffect(Unit) {
+        launcherPermiso.launch(android.Manifest.permission.BLUETOOTH_CONNECT)
+    }
+
+    // Diálogo manual si el usuario rechazó el popup del sistema
+    if (mostrarDialogo) {
+        AlertDialog(
+            onDismissRequest = { mostrarDialogo = false },
+            title = { Text("Bluetooth desactivado") },
+            text = { Text("La app necesita Bluetooth para comunicarse con el ESP32. ¿Quieres activarlo?") },
+            confirmButton = {
+                Button(onClick = {
+                    mostrarDialogo = false
+                    val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                    launcherBluetooth.launch(intent)
+                }) {
+                    Text("Activar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { mostrarDialogo = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+    Scaffold(
+        containerColor = WhiteBackground
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+        ) {
+            // Header con gradiente y bienvenida
+            HeaderBienvenida(
+                tipoAnimal = tipoAnimalSeleccionado,
+                onMenuClick = onMenuClick
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Título de sección
+            Text(
+                stringResource(R.string.subtitle_home),
+                fontSize = 26.sp,
+                fontWeight = FontWeight.Bold,
+                color = DarkBlueGrey,
+                letterSpacing = 0.3.sp,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Grid de tarjetas organizadoras
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+
+                // Tarjeta Listado de Bovinos
+                TarjetaMenu(
+                    icono = Icons.Default.List,
+                    titulo = stringResource(R.string.list_bovinos),
+                    descripcion = stringResource(R.string.list_bovinos_subtitle),
+                    colorFondo = Color(0xFFE28F41),
+                    onClick = { navController.navigate(Routes.ListarBovinos.route) }
+                )
+
+                // Tarjeta Gestión de Bovinos
+                TarjetaMenu(
+                    icono = Icons.Default.Agriculture,
+                    titulo = stringResource(R.string.card_name_animals),
+                    descripcion = stringResource(R.string.card_description_animals),
+                    colorFondo = MainGreen,
+                    onClick = { navController.navigate(Routes.GestionBovinos.route) }
+                )
+
+                // Tarjeta Guías/Movimientos
+                TarjetaMenu(
+                    icono = Icons.Default.LocalShipping,
+                    titulo = stringResource(R.string.card_name_guias),
+                    descripcion = stringResource(R.string.card_description_guias),
+                    colorFondo = MainOrange,
+                    contadorBadge = 2,
+                    onClick = { navController.navigate(Routes.GuiasMovimientos.route) }
+                )
+
+                // Tarjeta Material
+                TarjetaMenu(
+                    icono = Icons.Default.ShoppingCart,
+                    titulo = stringResource(R.string.card_name_material),
+                    descripcion = stringResource(R.string.card_description_material),
+                    colorFondo = MainGreen,
+                    onClick = { navController.navigate(Routes.MaterialCategoria.route) }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Card de Información del Sistema
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MintCreamGreen
+                ),
+                shape = RoundedCornerShape(16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = MainGreen.copy(alpha = 0.15f),
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Info,
+                            contentDescription = null,
+                            tint = MainGreen,
+                            modifier = Modifier.padding(12.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            stringResource(R.string.information_title_home),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            color = MainGreen,
+                            letterSpacing = 0.2.sp
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            stringResource(R.string.information_description_home),
+                            fontSize = 14.sp,
+                            color = BlueGrey,
+                            lineHeight = 20.sp,
+                            letterSpacing = 0.1.sp
+                        )
+                    }
+                }
+            }
+
+            // Espaciado inferior
+            Spacer(modifier = Modifier.height(24.dp))
+        }
     }
 }
 
@@ -393,175 +394,17 @@ fun cambiarIdioma(codigoIdioma: String) {
 }
 
 @Composable
-fun DrawerContent(
-    tipoSeleccionado: String,
-    onTipoSeleccionado: (String) -> Unit,
-    onBorradoresClick: () -> Unit,
-    borradoresSeleccionado: Boolean,
-    navController: NavController
-) {
-    ModalDrawerSheet(
-        drawerContainerColor = Color.White,
-        modifier = Modifier.width(280.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-            // Header del drawer
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 24.dp)
-            ) {
-                Text(
-                    "Terrabit",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MainGreen
-                )
-                Text(
-                    stringResource(R.string.drawer_subtitle),
-                    fontSize = 14.sp,
-                    color = BlueGrey,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-            }
-
-            HorizontalDivider(color = DarkWhiteBackground)
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Título de sección
-            Text(
-                stringResource(R.string.drawer_explained),
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = BlueGrey,
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
-            )
-
-            // Opción Bovinos
-            OpcionTipoAnimal(
-                icono = Icons.Default.Agriculture,
-                titulo = stringResource(R.string.bovinos_name),
-                seleccionado = tipoSeleccionado == stringResource(R.string.bovinos_name) && !borradoresSeleccionado,
-                onClick = {
-                    onTipoSeleccionado("Bovinos")
-                    navController.navigate(Routes.HomeBovinos.route)
-                }
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Opción Porcinos
-            OpcionTipoAnimal(
-                icono = Icons.Default.EmojiNature,
-                titulo = stringResource(R.string.porcionos_name),
-                seleccionado = tipoSeleccionado == stringResource(R.string.porcionos_name) && !borradoresSeleccionado,
-                onClick = {
-                    onTipoSeleccionado("Porcinos")
-                    navController.navigate(Routes.HomePorcinos.route)
-                }
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Opción Borradores
-            OpcionTipoAnimal(
-                icono = Icons.Default.Drafts,
-                titulo = "Borradores",
-                seleccionado = borradoresSeleccionado,
-                onClick = onBorradoresClick
-            )
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            // Información adicional
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = WhiteBackground
-                ),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text(
-                        "Versión 1.0.0",
-                        fontSize = 12.sp,
-                        color = DarkBlueGrey
-                    )
-                    Text(
-                        "© 2026 Terrabit",
-                        fontSize = 10.sp,
-                        color = BlueGrey,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun OpcionTipoAnimal(
-    icono: ImageVector,
-    titulo: String,
-    seleccionado: Boolean,
-    onClick: () -> Unit
-) {
-    val backgroundColor = if (seleccionado) MainGreen.copy(alpha = 0.1f) else Color.Transparent
-    val textColor = if (seleccionado) MainGreen else DarkBlueGrey
-    val iconColor = if (seleccionado) MainGreen else BlueGrey
-
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .clickable(onClick = onClick),
-        color = backgroundColor
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                icono,
-                contentDescription = titulo,
-                tint = iconColor,
-                modifier = Modifier.size(24.dp)
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            Text(
-                titulo,
-                fontSize = 15.sp,
-                fontWeight = if (seleccionado) FontWeight.SemiBold else FontWeight.Normal,
-                color = textColor
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            if (seleccionado) {
-                Icon(
-                    Icons.Default.Check,
-                    contentDescription = "Seleccionado",
-                    tint = MainGreen,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-        }
-    }
-}
-
-@Composable
 fun HeaderBienvenida(
     tipoAnimal: String,
     onMenuClick: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
+    var botonActivo by remember { mutableStateOf(false) }
+
+    LaunchedEffect(botonActivo) {
+        kotlinx.coroutines.delay(10000)
+        botonActivo = true
+    }
     Box(
         modifier = Modifier
             .fillMaxWidth()

@@ -1,17 +1,20 @@
 package com.example.terrabit_app.viewmodel
 
+import android.app.Application
 import android.content.Context
 import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import com.example.terrabit_app.data.Borrador
 import com.example.terrabit_app.data.SharedPreferencesManager
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.Identificadores.IdenMovimiento
+import com.example.terrabit_app.data.network.lista_bovinos.Animal
 import com.example.terrabit_app.data.network.moviminetos.modelos.Movimientos
 import com.example.terrabit_app.data.network.moviminetos.modelos.PetConfirmacionMovi
 import com.example.terrabit_app.data.network.respuestas.RespuestaUnificada
 import com.example.terrabit_app.utils.DateUtils.convertirFechaAFormatoAPI
+import com.example.terrabit_app.utils.UserPreferences
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.CoroutineScope
@@ -23,12 +26,35 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
-class MovimientosViewModel : ViewModel() {
+class MovimientosViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repositorio = Repositorio()
+    private var repositorio = Repositorio(application)
     private lateinit var sharedPreferencesManager: SharedPreferencesManager
 
-    // ID único para la sesión actual del formulario
+    // Instanciar UserPreferences directamente con la Application
+    private val userPreferences = UserPreferences(application)
+
+    // Leer las credenciales del login guardadas automáticamente
+    val nif = userPreferences.getNif() ?: ""
+    val password = userPreferences.getPassword() ?: ""
+
+    val codiMo = userPreferences.getCodiMO() ?: ""
+
+    // Autocompletado/sugerencias para animales
+    private val _suggestionsBovinos = MutableLiveData<List<Animal>>(emptyList())
+    val suggestionsBovinos = _suggestionsBovinos
+
+    private val _isLoadingBovinos = MutableLiveData(false)
+    val isLoadingBovinos = _isLoadingBovinos
+
+    private val _bovinosCargados = MutableLiveData(false)
+    val bovinosCargados = _bovinosCargados
+
+    private val _activeFieldIndex = MutableLiveData<Int>(-1)
+    val activeFieldIndex = _activeFieldIndex
+
+
+    // ID unico para la sesión actual del formulario
     private var borradorSesionId: String = ""
 
     // ============================================
@@ -42,7 +68,62 @@ class MovimientosViewModel : ViewModel() {
         if (borradorSesionId.isEmpty()) {
             borradorSesionId = "movimiento_auto_${System.currentTimeMillis()}"
         }
+        cargarBovinosEnCache()
     }
+
+    private fun cargarBovinosEnCache() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                _isLoadingBovinos.postValue(true)
+
+                repositorio.getBovinosWithCache(
+                    nif = nif,
+                    password = password,
+                    tipusVinculacio = "1",
+                    explotacio = codiMo,
+                    forceRefresh = false
+                )
+
+                _bovinosCargados.postValue(true)
+                _isLoadingBovinos.postValue(false)
+                Log.d("MovimientosVM", "Bovinos cargados en caché")
+            } catch (e: Exception) {
+                _isLoadingBovinos.postValue(false)
+                _bovinosCargados.postValue(false)
+                Log.e("MovimientosVM", "Error al cargar bovinos: ${e.message}", e)
+            }
+        }
+    }
+
+    fun searchBovinos(index: Int, query: String) {
+        _activeFieldIndex.value = index
+
+        if (query.isBlank()) {
+            _suggestionsBovinos.value = emptyList()
+            return
+        }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val resultados = repositorio.searchBovinosLocal(query)
+                _suggestionsBovinos.postValue(resultados)
+                Log.d("MovimientosVM", "Búsqueda en índice $index: '$query' - ${resultados.size} resultados")
+            } catch (e: Exception) {
+                _suggestionsBovinos.postValue(emptyList())
+                Log.e("MovimientosVM", "Error en búsqueda: ${e.message}", e)
+            }
+        }
+    }
+
+    fun onBovinoSelected(index: Int, animal: Animal) {
+        actualizarIdentificadorAnimal(index, animal.identificador)
+        _suggestionsBovinos.value = emptyList()
+        _activeFieldIndex.value = -1
+        Log.d("MovimientosVM", "Bovino seleccionado en índice $index: ${animal.identificador}")
+    }
+
+
+
 
     fun tieneContenido(): Boolean {
         return !_codiRemo.value.isNullOrEmpty() ||
@@ -96,6 +177,7 @@ class MovimientosViewModel : ViewModel() {
                     id = borradorSesionId,
                     tipo = "MOVIMIENTO",
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
                     datos = Gson().toJson(datosMovimiento),
                     estado = "BORRADOR_AUTO"
                 )
@@ -108,83 +190,65 @@ class MovimientosViewModel : ViewModel() {
         }
     }
 
-    fun cargarBorradorExistente() {
+    fun cargarBorradorPorId(id: String) {
         try {
-            val borradores = sharedPreferencesManager.obtenerBorradores()
+            val borrador = sharedPreferencesManager.obtenerBorradores()
+                .find { it.id == id } ?: return
 
-            // Buscar cualquier borrador de tipo MOVIMIENTO con estado BORRADOR_AUTO
-            val borradoresMovimiento = borradores.filter {
-                it.tipo == "MOVIMIENTO" && it.estado == "BORRADOR_AUTO"
-            }
+            borradorSesionId = borrador.id
 
-            if (borradoresMovimiento.isNotEmpty()) {
-                // Tomar el más reciente (último guardado)
-                val borradorMovimiento = borradoresMovimiento.maxByOrNull {
-                    it.id.substringAfter("movimiento_auto_").toLongOrNull() ?: 0L
+            val datos: Map<String, Any?> = Gson().fromJson(
+                borrador.datos,
+                object : TypeToken<Map<String, Any?>>() {}.type
+            )
+
+            _codiRemo.value = datos["codiRemo"] as? String ?: ""
+            _dataArribada.value = datos["dataArribada"] as? String ?: ""
+            _horaArribada.value = datos["horaArribada"] as? String ?: ""
+            _codiAtes.value = datos["codiAtes"] as? String ?: ""
+            _nomTransportista.value = datos["nomTransportista"] as? String ?: ""
+            _matricula.value = datos["matricula"] as? String ?: ""
+            _mitjaTransport.value = datos["mitjaTransport"] as? String ?: ""
+            _nifConductor.value = datos["nifConductor"] as? String ?: ""
+            _nomConductor.value = datos["nomConductor"] as? String ?: ""
+            _explotacioDestinacio.value = datos["explotacioDestinacio"] as? String ?: ""
+            _codiTransport.value = datos["codiTransport"] as? String ?: ""
+
+            val listaAnimalesJson = datos["listaAnimales"] as? List<*>
+            if (listaAnimalesJson != null) {
+                val listaRestaurada = listaAnimalesJson.mapNotNull { item ->
+                    try {
+                        val itemMap = item as? Map<*, *>
+                        IdenMovimiento(
+                            identificador = itemMap?.get("identificador") as? String ?: "",
+                            estatArribada = itemMap?.get("estatArribada") as? String,
+                            classCanal = itemMap?.get("classCanal") as? String,
+                            dataSacrMort = itemMap?.get("dataSacrMort") as? String,
+                            pesCanal = itemMap?.get("pesCanal") as? String,
+                            tipusPresentacio = itemMap?.get("tipusPresentacio") as? String
+                        )
+                    } catch (e: Exception) { null }
                 }
-
-                if (borradorMovimiento != null) {
-                    // Asignar este ID a la sesión actual
-                    borradorSesionId = borradorMovimiento.id
-
-                    val gson = Gson()
-                    val datos: Map<String, Any?> = gson.fromJson(
-                        borradorMovimiento.datos,
-                        object : TypeToken<Map<String, Any?>>() {}.type
+                _listaAnimales.value = listaRestaurada.ifEmpty {
+                    listOf(
+                        IdenMovimiento(
+                            identificador = "",
+                            estatArribada = null,
+                            classCanal = null,
+                            dataSacrMort = null,
+                            pesCanal = null,
+                            tipusPresentacio = null
+                        )
                     )
-
-                    // Restaurar datos
-                    _codiRemo.value = datos["codiRemo"] as? String ?: ""
-                    _dataArribada.value = datos["dataArribada"] as? String ?: ""
-                    _horaArribada.value = datos["horaArribada"] as? String ?: ""
-                    _codiAtes.value = datos["codiAtes"] as? String ?: ""
-                    _nomTransportista.value = datos["nomTransportista"] as? String ?: ""
-                    _matricula.value = datos["matricula"] as? String ?: ""
-                    _mitjaTransport.value = datos["mitjaTransport"] as? String ?: ""
-                    _nifConductor.value = datos["nifConductor"] as? String ?: ""
-                    _nomConductor.value = datos["nomConductor"] as? String ?: ""
-                    _explotacioDestinacio.value = datos["explotacioDestinacio"] as? String ?: ""
-                    _codiTransport.value = datos["codiTransport"] as? String ?: ""
-
-                    // Restaurar lista de animales
-                    val listaAnimalesJson = datos["listaAnimales"] as? List<*>
-                    if (listaAnimalesJson != null) {
-                        val listaAnimalesRestaurada = listaAnimalesJson.mapNotNull { item ->
-                            try {
-                                val itemMap = item as? Map<*, *>
-                                IdenMovimiento(
-                                    identificador = itemMap?.get("identificador") as? String ?: "",
-                                    estatArribada = itemMap?.get("estatArribada") as? String ?: "",
-                                    classCanal = itemMap?.get("classCanal") as? String,
-                                    dataSacrMort = itemMap?.get("dataSacrMort") as? String,
-                                    pesCanal = itemMap?.get("pesCanal") as? String,
-                                    tipusPresentacio = itemMap?.get("tipusPresentacio") as? String
-                                )
-                            } catch (e: Exception) {
-                                null
-                            }
-                        }
-                        _listaAnimales.value = listaAnimalesRestaurada.ifEmpty {
-                            listOf(
-                                IdenMovimiento(
-                                    identificador = "",
-                                    estatArribada = "",
-                                    classCanal = null,
-                                    dataSacrMort = null,
-                                    pesCanal = null,
-                                    tipusPresentacio = null
-                                )
-                            )
-                        }
-                    }
-
-                    Log.d("Cargar Borrador", "Borrador cargado: $borradorSesionId")
                 }
             }
+
+            Log.d("MovimientosVM", "Borrador cargado por ID: $id")
         } catch (e: Exception) {
-            Log.e("Error Cargar Borrador", "Error al cargar: ${e.message}", e)
+            Log.e("MovimientosVM", "Error al cargar borrador por ID: ${e.message}", e)
         }
     }
+
 
     fun eliminarBorradorAutomatico() {
         try {
@@ -644,7 +708,7 @@ class MovimientosViewModel : ViewModel() {
         val listaAnimales = _listaAnimales.value ?: emptyList()
         val animalesValidos = listaAnimales.all { animal ->
             val identificadorValido = animal.identificador.isNotEmpty()
-            val estatValido = animal.estatArribada.isNotEmpty()
+            val estatValido = animal.estatArribada?.isNotEmpty()
 
             val camposAdicionales = if (animal.estatArribada == "80") {
                 !animal.dataSacrMort.isNullOrEmpty() &&
@@ -653,7 +717,7 @@ class MovimientosViewModel : ViewModel() {
                         !animal.tipusPresentacio.isNullOrEmpty()
             } else true
 
-            identificadorValido && estatValido && camposAdicionales
+            identificadorValido && estatValido == true && camposAdicionales
         }
 
         return codiRemoValido && dataArribadaValida && horaArribadaValida &&
@@ -701,8 +765,8 @@ class MovimientosViewModel : ViewModel() {
                 }
 
                 val request = PetConfirmacionMovi(
-                    nif = "S0800608B",
-                    passwordMobilitat = "L1855m58",
+                    nif = nif,
+                    passwordMobilitat = password,
                     especie = "01",
                     codiRemo = _codiRemo.value ?: "",
                     dataArribada = fechaHoraArribadaAPI,
@@ -810,7 +874,7 @@ class MovimientosViewModel : ViewModel() {
         _listaAnimales.value = listOf(
             IdenMovimiento(
                 identificador = "",
-                estatArribada = "",
+                estatArribada = null,
                 classCanal = null,
                 dataSacrMort = null,
                 pesCanal = null,

@@ -1,200 +1,47 @@
 package com.example.terrabit_app.ui.navigation
 
-
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.terrabit_app.data.network.ApiInterface
-import com.example.terrabit_app.data.network.Repositorio
-import com.example.terrabit_app.ui.pantallas.*
+import com.example.terrabit_app.ui.screen.DrawerScreen
 import com.example.terrabit_app.ui.screen.Login
-import com.example.terrabit_app.ui.screen.bovinos.CorregirSexoBovi
-import com.example.terrabit_app.ui.screen.bovinos.Fallecimiento
-import com.example.terrabit_app.ui.screen.bovinos.GestionGuias
-import com.example.terrabit_app.ui.screen.bovinos.IdentificacionApalzada
-import com.example.terrabit_app.ui.screen.bovinos.ListarBovinos
-import com.example.terrabit_app.ui.screen.bovinos.Material
-import com.example.terrabit_app.ui.screen.bovinos.Movimientos
-import com.example.terrabit_app.ui.screen.bovinos.Nacimiento
-import com.example.terrabit_app.ui.screen.porcinos.EditarGuiaPorcinos
-import com.example.terrabit_app.ui.screen.porcinos.EntradasPorcinos
-import com.example.terrabit_app.ui.screen.porcinos.GestionGuiasPorcinos
-import com.example.terrabit_app.ui.screen.porcinos.HomePorcinos
 import com.example.terrabit_app.utils.UserPreferences
-import com.example.terrabit_app.viewmodel.BorradorViewModel
-import com.example.terrabit_app.viewmodel.CorrecionSexoViewModel
 import com.example.terrabit_app.viewmodel.DrawerViewModel
-import com.example.terrabit_app.viewmodel.GuiasViewModel
-import com.example.terrabit_app.viewmodel.IdentificacionAplazaViewModel
-import com.example.terrabit_app.viewmodel.ListarBovinosViewModel
 import com.example.terrabit_app.viewmodel.MainViewmodel
-import com.example.terrabit_app.viewmodel.MaterialViewModel
-import com.example.terrabit_app.viewmodel.MovimientosViewModel
-import com.example.terrabit_app.viewmodel.NacimientoViewmodel
-import com.example.terrabit_app.viewmodel.ViewModelMuerteBovi
-import com.example.terrabit_app.viewmodel.porcinos.CrearGuiaPorcinosViewModel
-import com.example.terrabit_app.viewmodel.porcinos.EditarGuiaPorcinosViewModel
-import com.example.terrabit_app.viewmodel.porcinos.GestionarGuiasViewModel
-import com.example.terrabit_app.viewmodel.porcinos.GestionarGuiasViewModelFactory
+import androidx.compose.ui.platform.LocalContext
+import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel ) {
-    val navController = rememberNavController()
+fun Navigation(bluetooth: BluetoothViewModel, drawerViewModel: DrawerViewModel) {
+    val mainNavController = rememberNavController()
     val context = LocalContext.current
 
-    val repositorio = remember { Repositorio() }
-
+    // Leer si hay sesión guardada
     val userPreferences = remember { UserPreferences(context) }
+    val haySesionActiva = remember {
+        userPreferences.getRememberMe() &&
+                !userPreferences.getNif().isNullOrEmpty() &&
+                !userPreferences.getPassword().isNullOrEmpty()
+    }
+
+    // Arrancar en DrawerScreen si hay sesión, o en Login si no
+    val startDestination = if (haySesionActiva) Routes.Drawer.route else Routes.Login.route
 
     NavHost(
-        navController = navController,
-        startDestination = Routes.Login.route
+        navController = mainNavController,
+        startDestination = startDestination
     ) {
-        // Pantalla principal
-        composable(Routes.HomeBovinos.route) {
-            val borradorviewmodel: BorradorViewModel = viewModel()
-            Home(navController = navController, drawerViewModel, myViewmodel, borradorviewmodel)
-        }
-
-
-        // Pantalla principal porcinos
-        composable(Routes.HomePorcinos.route) {
-            HomePorcinos(
-                navController = navController,
-                drawerViewModel = drawerViewModel
-            )
-        }
-
-        // Pantallas de categorías (intermedias)
-
-        composable(Routes.ListarBovinos.route) {
-            val viewmodel : ListarBovinosViewModel = viewModel()
-            ListarBovinos(navController = navController, viewmodel)
-        }
-        composable(Routes.GestionBovinos.route) {
-            GestionBovinos(navController = navController)
-        }
-
-        composable(Routes.GuiasMovimientos.route) {
-            GuiasMovimientos(navController = navController)
-        }
-
-        composable(Routes.MaterialCategoria.route) {
-            MaterialCategoria(navController = navController)
-        }
-
-        // Pantallas de categorías porcinos (intermedias)
-        composable(Routes.GestionPorcinos.route) {
-            GestionPorcinos(navController = navController)
-        }
-
-        composable(Routes.GuiasMovimientosPorcinos.route) {
-            GuiasMovimientosPorcinos(navController = navController)
-        }
-
-        // Pantallas de acciones específicas (las que ya tenías)
-        composable(Routes.Nacimiento.route) {
-            val nacimientos : NacimientoViewmodel = viewModel()
-            Nacimiento(navController = navController, nacimientos)
-        }
-
-        composable(Routes.Fallecimiento.route) {
-            val muertes : ViewModelMuerteBovi = viewModel()
-            Fallecimiento(navController = navController, muertes)
-        }
-
-        composable(Routes.GestionGuias.route) {
-            val guiasViewModel : GuiasViewModel = viewModel()
-            GestionGuias(navController = navController, guiasViewModel)
-        }
-
-        composable(Routes.Movimientos.route) {
-            val MoviViewModel : MovimientosViewModel = viewModel()
-            Movimientos(navController = navController, MoviViewModel)
-        }
-
-        composable(Routes.Material.route) {
-            val MaterialV : MaterialViewModel = viewModel()
-            Material(navController = navController, MaterialV)
-        }
-
-        // Pantalla de login
         composable(Routes.Login.route) {
-            Login(navController = navController)
-        }
-        composable(Routes.CorregirBovino.route) {
-            val corregirSexo : CorrecionSexoViewModel = viewModel()
-            CorregirSexoBovi(navController, corregirSexo)
-        }
-        composable(Routes.IdentificacionAplazada.route) {
-            val identificacion: IdentificacionAplazaViewModel = viewModel()
-            IdentificacionApalzada(navController, identificacion)
+            Login(navController = mainNavController)
         }
 
-        // Pantallas porcinos
-        composable(Routes.GestionGuiasPorcinos.route) { backStackEntry ->
-            val gestionarGuiasViewModel: GestionarGuiasViewModel = viewModel(
-                factory = GestionarGuiasViewModelFactory(repositorio, userPreferences)
-            )
-
-            // Este ViewModel persistirá mientras estemos en la ruta de Gestión o sus hijas
-            val editarViewModel: EditarGuiaPorcinosViewModel = viewModel(
-                viewModelStoreOwner = backStackEntry
-            )
-
-            GestionGuiasPorcinos(
-                navController = navController,
-                viewModelGestionarGuias = gestionarGuiasViewModel,
-                viewModelEditarGuias = editarViewModel // Añadido
-            )
-        }
-
-        composable(Routes.EditarGuiaPorcinos.route) { backStackEntry ->
-            // Recuperamos la entrada de la pantalla anterior para compartir ViewModels
-            val parentEntry = remember(backStackEntry) {
-                navController.getBackStackEntry(Routes.GestionGuiasPorcinos.route)
-            }
-
-            val gestionarViewModel: GestionarGuiasViewModel = viewModel(parentEntry)
-            val editarViewModel: EditarGuiaPorcinosViewModel = viewModel(parentEntry)
-
-            EditarGuiaPorcinos(
-                navController = navController,
-                viewModelEditarGuias = editarViewModel,    // El que gestiona el formulario
-                viewModelGestionarGuias = gestionarViewModel // El que tiene la guiaSeleccionada
-            )
-        }
-
-        composable(Routes.EntradasPorcinos.route) {
-            EntradasPorcinos(navController = navController)
-        }
-
-        composable(Routes.EditarGuiaPorcinos.route) { backStackEntry ->
-            // Recuperamos la entrada de la pantalla de Gestión
-            val parentEntry = remember(backStackEntry) {
-                navController.getBackStackEntry(Routes.GestionGuiasPorcinos.route)
-            }
-
-            // Usamos el MISMO ViewModel que inicializamos en la pantalla anterior
-            val editarGuiasViewModel: EditarGuiaPorcinosViewModel = viewModel(
-                viewModelStoreOwner = parentEntry
-            )
-
-            // También necesitamos el de gestión para la lista (si fuera necesario)
-            val gestionarViewModel: GestionarGuiasViewModel = viewModel(parentEntry)
-
-            EditarGuiaPorcinos(
-                navController = navController,
-                viewModelEditarGuias = editarGuiasViewModel,
-                viewModelGestionarGuias = gestionarViewModel
+        composable(Routes.Drawer.route) {
+            DrawerScreen(
+                bluetooth = bluetooth,
+                mainNavController = mainNavController,
+                drawerViewModel = drawerViewModel
             )
         }
     }

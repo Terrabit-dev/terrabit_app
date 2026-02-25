@@ -14,6 +14,7 @@ import com.example.terrabit_app.data.network.guias.PeticionAltaGuia
 import com.example.terrabit_app.data.network.guias.PeticionModificarGuia
 import com.example.terrabit_app.data.network.animales.RegistroMuerteBovi
 import com.example.terrabit_app.data.network.animales.RegistroNacimientoBovi
+import com.example.terrabit_app.data.network.guiasPorcinos.CrearGuiaMobilitatPorcinos
 import com.example.terrabit_app.data.network.lista_bovinos.ListaBovinos
 import com.example.terrabit_app.data.network.respuestas.ResAltaGuia
 import com.example.terrabit_app.data.network.respuestas.ResBasica

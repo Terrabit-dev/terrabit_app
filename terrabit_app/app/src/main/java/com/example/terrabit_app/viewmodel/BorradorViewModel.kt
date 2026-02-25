@@ -7,10 +7,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.Borrador
 import com.example.terrabit_app.data.SharedPreferencesManager
-import com.google.gson.Gson
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.*
+
 
 class BorradorViewModel : ViewModel() {
 
@@ -23,103 +21,83 @@ class BorradorViewModel : ViewModel() {
     private val _borradores = MutableLiveData<List<Borrador>>()
     val borradores = _borradores
 
+    private val _textoBusqueda = MutableLiveData("")
+    val textoBusqueda = _textoBusqueda
+
+    private val _borradoresFiltrados = MutableLiveData<List<Borrador>>()
+    val borradoresFiltrados = _borradoresFiltrados
+
+    private val _borradorIdParaEditar = MutableLiveData<String?>(null)
+    val borradorIdParaEditar = _borradorIdParaEditar
+
     fun cargarBorradores() {
         viewModelScope.launch {
             try {
+                if (!::sharedPreferencesManager.isInitialized) {
+                    Log.e("BorradorViewModel", "SharedPreferencesManager no inicializado")
+                    _borradores.postValue(emptyList())
+                    _borradoresFiltrados.postValue(emptyList())
+                    return@launch
+                }
                 val listaBorradores = sharedPreferencesManager.obtenerBorradores()
                 _borradores.postValue(listaBorradores)
+
+                val texto = _textoBusqueda.value ?: ""
+                if (texto.isBlank()) {
+                    _borradoresFiltrados.postValue(listaBorradores)
+                } else {
+                    _borradoresFiltrados.postValue(listaBorradores.filter { borrador ->
+                        obtenerNombreTipo(borrador.tipo).contains(texto, ignoreCase = true) ||
+                                borrador.fecha.contains(texto, ignoreCase = true) ||
+                                (borrador.hora ?: "").contains(texto, ignoreCase = true) ||
+                                obtenerEstadoLegible(borrador.estado).contains(texto, ignoreCase = true)
+                    })
+                }
             } catch (e: Exception) {
                 Log.e("Error Borradores", "Error al cargar: ${e.message}", e)
                 _borradores.postValue(emptyList())
+                _borradoresFiltrados.postValue(emptyList())
             }
         }
     }
 
-    fun guardarBorradorMuerte(
-        tipo: String?,
-        identificador: String?,
-        fecha: String?,
-        mesesGestacion: String?,
-        cadaverInaccesible: Boolean?,
-        coordenadaX: String?,
-        coordenadaY: String?
-    ) {
-        try {
-            val datosMuerte = mapOf(
-                "tipo" to tipo,
-                "identificador" to identificador,
-                "fecha" to fecha,
-                "mesesGestacion" to mesesGestacion,
-                "cadaverInaccesible" to cadaverInaccesible,
-                "coordenadaX" to coordenadaX,
-                "coordenadaY" to coordenadaY
-            )
+    fun actualizarBusqueda(texto: String) {
+        _textoBusqueda.value = texto
+        filtrarBorradores(texto)
+    }
 
-            val borrador = Borrador(
-                id = "muerte_${System.currentTimeMillis()}",
-                tipo = "MUERTE",
-                fecha = fecha ?: "",
-                datos = Gson().toJson(datosMuerte),
-                estado = "BORRADOR_AUTO"
-            )
-
-            sharedPreferencesManager.guardarBorrador(borrador)
-            cargarBorradores()
-
-            Log.d("Borrador Muerte", "Guardado exitosamente")
-        } catch (e: Exception) {
-            Log.e("Error Borrador Muerte", "Error al guardar: ${e.message}", e)
+    private fun filtrarBorradores(texto: String) {
+        val lista = _borradores.value ?: emptyList()
+        if (texto.isBlank()) {
+            _borradoresFiltrados.value = lista
+        } else {
+            _borradoresFiltrados.value = lista.filter { borrador ->
+                obtenerNombreTipo(borrador.tipo).contains(texto, ignoreCase = true) ||
+                        borrador.fecha.contains(texto, ignoreCase = true) ||
+                        (borrador.hora ?: "").contains(texto, ignoreCase = true) ||
+                        obtenerEstadoLegible(borrador.estado).contains(texto, ignoreCase = true)
+            }
         }
     }
 
-    fun guardarBorradorMaterial(
-        empresaSubministradora: String?,
-        codigoEmpresa: String?,
-        tipoEnviamiento: String?,
-        destinoLliurament: String?,
-        oficinaComarcal: String?,
-        direccion: String?,
-        poblacion: String?,
-        codigoPostal: String?,
-        municipio: String?,
-        telefonoContacto: String?,
-        identificadorMaterial: String?,
-        tipoMaterial: String?,
-        numeroUnidades: String?,
-        codigoExplotacion: String?
-    ) {
-        try {
-            val datosMaterial = mapOf(
-                "empresaSubministradora" to empresaSubministradora,
-                "codigoEmpresa" to codigoEmpresa,
-                "tipoEnviamiento" to tipoEnviamiento,
-                "destinoLliurament" to destinoLliurament,
-                "oficinaComarcal" to oficinaComarcal,
-                "direccion" to direccion,
-                "poblacion" to poblacion,
-                "codigoPostal" to codigoPostal,
-                "municipio" to municipio,
-                "telefonoContacto" to telefonoContacto,
-                "identificadorMaterial" to identificadorMaterial,
-                "tipoMaterial" to tipoMaterial,
-                "numeroUnidades" to numeroUnidades,
-                "codigoExplotacion" to codigoExplotacion
-            )
+    private fun obtenerNombreTipo(tipo: String): String {
+        return when (tipo) {
+            "MUERTE" -> "Muerte"
+            "MATERIAL" -> "Material"
+            "NACIMIENTO" -> "Nacimiento"
+            "CORRECCION_SEXO" -> "Corrección Sexo"
+            "IDENTIFICACION_APLAZADA" -> "ID Aplazada"
+            else -> tipo
+        }
+    }
 
-            val borrador = Borrador(
-                id = "material_${System.currentTimeMillis()}",
-                tipo = "MATERIAL",
-                fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
-                datos = Gson().toJson(datosMaterial),
-                estado = "BORRADOR_AUTO"
-            )
-
-            sharedPreferencesManager.guardarBorrador(borrador)
-            cargarBorradores()
-
-            Log.d("Borrador Material", "Guardado exitosamente")
-        } catch (e: Exception) {
-            Log.e("Error Borrador Material", "Error al guardar: ${e.message}", e)
+    private fun obtenerEstadoLegible(estado: String): String {
+        return when (estado) {
+            "BORRADOR_AUTO" -> "Guardado"
+            "PENDIENTE" -> "Pendiente"
+            "ENVIANDO" -> "Enviando"
+            "ERROR" -> "Error"
+            else -> estado
         }
     }
 
@@ -135,30 +113,28 @@ class BorradorViewModel : ViewModel() {
         }
     }
 
-    fun actualizarEstadoBorrador(id: String, nuevoEstado: String) {
-        viewModelScope.launch {
-            try {
-                val borradorActual = sharedPreferencesManager.obtenerBorradores()
-                    .find { it.id == id }
 
-                borradorActual?.let {
-                    val borradorActualizado = it.copy(estado = nuevoEstado)
-                    sharedPreferencesManager.guardarBorrador(borradorActualizado)
-                    cargarBorradores()
-                    Log.d("Borrador", "Estado actualizado: $id -> $nuevoEstado")
-                }
-            } catch (e: Exception) {
-                Log.e("Error Borrador", "Error al actualizar estado: ${e.message}", e)
+    fun seleccionarBorradorParaEditar(id: String) {
+        _borradorIdParaEditar.value = id
+    }
+
+    fun limpiarBorradorParaEditar() {
+        _borradorIdParaEditar.value = null
+    }
+
+    suspend fun eliminarTodosBorradores() {
+        try {
+            val listaBorradores = sharedPreferencesManager.obtenerBorradores()
+            listaBorradores.forEach { borrador ->
+                sharedPreferencesManager.eliminarBorrador(borrador.id)
             }
+            val listaVacia = sharedPreferencesManager.obtenerBorradores()
+            _borradores.postValue(listaVacia)
+            _borradoresFiltrados.postValue(listaVacia)
+            Log.d("Borrador", "Todos los borradores eliminados")
+        } catch (e: Exception) {
+            Log.e("Error Borrador", "Error al eliminar todos: ${e.message}", e)
         }
     }
 
-    fun obtenerBorrador(id: String): Borrador? {
-        return try {
-            sharedPreferencesManager.obtenerBorradores().find { it.id == id }
-        } catch (e: Exception) {
-            Log.e("Error Borrador", "Error al obtener borrador: ${e.message}", e)
-            null
-        }
-    }
 }

@@ -1,6 +1,5 @@
 package com.example.terrabit_app.ui.screen.bovinos
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -9,6 +8,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -16,18 +17,23 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.terrabit_app.R
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.terrabit_app.data.network.lista_bovinos.Animal
+import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.viewmodel.ListarBovinosViewModel
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListarBovinos(navController: NavController, viewModel: ListarBovinosViewModel) {
     val listaFiltrada by viewModel.listaFiltrada.observeAsState(emptyList())
     val cargando by viewModel.cargando.observeAsState(false)
+    val refrescando by viewModel.refrescando.observeAsState(false)
     val error by viewModel.error.observeAsState()
     val busqueda by viewModel.busqueda.observeAsState("")
 
@@ -40,13 +46,13 @@ fun ListarBovinos(navController: NavController, viewModel: ListarBovinosViewMode
             TopAppBar(
                 title = {
                     Text(
-                        "Listado de Bovinos",
+                        stringResource(R.string.list_bovinos_title),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.SemiBold
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { navController.navigate(Routes.HomeBovinos.route) }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
                     }
                 },
@@ -79,7 +85,7 @@ fun ListarBovinos(navController: NavController, viewModel: ListarBovinosViewMode
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp),
-                    placeholder = { Text("Buscar por identificador...") },
+                    placeholder = { Text(stringResource(R.string.search_bar_list_bovinos)) },
                     leadingIcon = {
                         Icon(
                             Icons.Default.Search,
@@ -97,59 +103,65 @@ fun ListarBovinos(navController: NavController, viewModel: ListarBovinosViewMode
                 )
             }
 
-            // Contenido
-            when {
-                cargando -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(color = Color(0xFF4A7C59))
+            // Pull to Refresh
+            PullToRefreshBox(
+                isRefreshing = refrescando,
+                onRefresh = { viewModel.refrescar() },
+                modifier = Modifier.fillMaxSize()
+            ) {
+                when {
+                    cargando -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(color = Color(0xFF4A7C59))
+                        }
                     }
-                }
-                error != null -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = error ?: "Error desconocido",
-                                color = Color.Red,
-                                fontSize = 16.sp
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Button(
-                                onClick = { viewModel.cargarBovinos() },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0xFF4A7C59)
+                    error != null -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = error ?: stringResource(R.string.error_loading_list_bovinos),
+                                    color = Color.Red,
+                                    fontSize = 16.sp
                                 )
-                            ) {
-                                Text("Reintentar")
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Button(
+                                    onClick = { viewModel.cargarBovinos() },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(0xFF4A7C59)
+                                    )
+                                ) {
+                                    Text(stringResource(R.string.retry_loading_list_bovinos))
+                                }
                             }
                         }
                     }
-                }
-                listaFiltrada.isEmpty() -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = if (busqueda.isEmpty()) "No hay bovinos" else "No se encontraron resultados",
-                            color = Color(0xFF64748B),
-                            fontSize = 16.sp
-                        )
+                    listaFiltrada.isEmpty() -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = if (busqueda.isEmpty()) stringResource(R.string.empty_list_bovinos) else "No se encontraron resultados",
+                                color = Color(0xFF64748B),
+                                fontSize = 16.sp
+                            )
+                        }
                     }
-                }
-                else -> {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(listaFiltrada) { animal ->
-                            TarjetaBovino(animal)
+                    else -> {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(listaFiltrada) { animal ->
+                                TarjetaBovino(animal)
+                            }
                         }
                     }
                 }
@@ -172,7 +184,6 @@ fun TarjetaBovino(animal: Animal) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Identificador principal
             Text(
                 text = animal.identificador,
                 fontSize = 18.sp,
@@ -180,29 +191,28 @@ fun TarjetaBovino(animal: Animal) {
                 color = Color(0xFF1E293B)
             )
 
-            // Información adicional
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 InfoItem(
-                    label = "Sexo",
+                    label = stringResource(R.string.card_info_sex),
                     value = when (animal.sexe) {
-                        "01" -> "Macho"
-                        "02" -> "Hembra"
+                        "01" -> stringResource(R.string.card_info_sex_male)
+                        "02" -> stringResource(R.string.card_info_sex_female)
                         else -> animal.sexe
                     }
                 )
                 InfoItem(
-                    label = "Fecha Nac.",
+                    label = stringResource(R.string.card_info_date_born),
                     value = formatearFecha(animal.dataNaixement)
                 )
             }
 
             if (!animal.identificadorMare.isNullOrEmpty()) {
-                Divider(color = Color(0xFFE2E8F0), thickness = 1.dp)
+                HorizontalDivider(color = Color(0xFFE2E8F0), thickness = 1.dp)
                 Text(
-                    text = "Madre: ${animal.identificadorMare}",
+                    text = "${stringResource(R.string.card_info_mom)} ${animal.identificadorMare}",
                     fontSize = 14.sp,
                     color = Color(0xFF64748B)
                 )
@@ -229,6 +239,7 @@ fun InfoItem(label: String, value: String) {
     }
 }
 
+@Composable
 fun formatearFecha(fecha: String): String {
     return try {
         if (fecha.length == 8) {

@@ -1,7 +1,9 @@
 package com.example.terrabit_app.viewmodel
 
+import android.app.Application
 import android.content.Context
 import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,7 +11,9 @@ import com.example.terrabit_app.data.Borrador
 import com.example.terrabit_app.data.SharedPreferencesManager
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.animales.PetModicarAnimal
+import com.example.terrabit_app.data.network.lista_bovinos.Animal
 import com.example.terrabit_app.data.network.respuestas.RespuestaUnificada
+import com.example.terrabit_app.utils.UserPreferences
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -18,21 +22,126 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class CorrecionSexoViewModel: ViewModel() {
+class CorrecionSexoViewModel(application: Application): AndroidViewModel(application) {
 
-    private val repositorio = Repositorio()
+    private  var repositorio = Repositorio(application)
     private lateinit var sharedPreferencesManager: SharedPreferencesManager
 
     // ID único para la sesión actual del formulario
     private var borradorSesionId: String = ""
 
+    // ============================================
+    //  ESTADOS PARA AUTOCOMPLETADO
+    // ============================================
+    private val _suggestionsBovinos = MutableLiveData<List<Animal>>(emptyList())
+    val suggestionsBovinos = _suggestionsBovinos
+
+    private val _isLoadingBovinos = MutableLiveData(false)
+    val isLoadingBovinos = _isLoadingBovinos
+
+    private val _bovinosCargados = MutableLiveData(false)
+    val bovinosCargados = _bovinosCargados
+
+    // Instanciar UserPreferences directamente con la Application
+    private val userPreferences = UserPreferences(application)
+
+    // Leer las credenciales del login guardadas automáticamente
+    val nif = userPreferences.getNif() ?: ""
+    val password = userPreferences.getPassword() ?: ""
+    val codiMo = userPreferences.getCodiMO() ?: ""
+
+
     fun initSharedPreferences(context: Context){
+        repositorio = Repositorio(context)
         sharedPreferencesManager = SharedPreferencesManager(context)
 
         // Generar nuevo ID de sesión si no existe
         if (borradorSesionId.isEmpty()) {
             borradorSesionId = "correccion_sexo_auto_${System.currentTimeMillis()}"
         }
+
+        // Cargar bovinos en caché al iniciar
+        cargarBovinosEnCache()
+    }
+
+    // ============================================
+    // FUNCIÓN PARA CARGAR BOVINOS EN CACHÉ
+    // ============================================
+    private fun cargarBovinosEnCache() {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                _isLoadingBovinos.postValue(true)
+
+                // Reemplaza con tus credenciales reales o desde SharedPreferences
+                repositorio.getBovinosWithCache(
+                    nif = nif,
+                    password = password,
+                    tipusVinculacio = "1",
+                    explotacio = codiMo,
+                    forceRefresh = false
+                )
+
+                _bovinosCargados.postValue(true)
+                _isLoadingBovinos.postValue(false)
+                Log.d("CorrecionSexoVM", "Bovinos cargados en caché")
+            } catch (e: Exception) {
+                _isLoadingBovinos.postValue(false)
+                _bovinosCargados.postValue(false)
+                Log.e("CorrecionSexoVM", "Error al cargar bovinos: ${e.message}", e)
+            }
+        }
+    }
+
+    fun cargarBorradorPorId(id: String) {
+        try {
+            val borrador = sharedPreferencesManager.obtenerBorradores()
+                .find { it.id == id } ?: return
+
+            borradorSesionId = borrador.id
+
+            val datos: Map<String, Any?> = Gson().fromJson(
+                borrador.datos,
+                object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
+            )
+
+            _identificadorCorreccionSexo.value = datos["identificador"] as? String ?: ""
+            _sexoCorreccionSeleccionado.value = datos["sexoSeleccionado"] as? String ?: ""
+            codigoSexo = datos["codigoSexo"] as? String ?: ""
+
+            Log.d("CorrecionSexoVM", "Borrador cargado por ID: $id")
+        } catch (e: Exception) {
+            Log.e("CorrecionSexoVM", "Error al cargar borrador por ID: ${e.message}", e)
+        }
+    }
+
+    // ============================================
+    // FUNCIÓN PARA BUSCAR BOVINOS (AUTOCOMPLETADO)
+    // ============================================
+    fun searchBovinos(query: String) {
+        if (query.isBlank()) {
+            _suggestionsBovinos.value = emptyList()
+            return
+        }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val resultados = repositorio.searchBovinosLocal(query)
+                _suggestionsBovinos.postValue(resultados)
+                Log.d("CorrecionSexoVM", "Búsqueda: '$query' - ${resultados.size} resultados")
+            } catch (e: Exception) {
+                _suggestionsBovinos.postValue(emptyList())
+                Log.e("CorrecionSexoVM", "Error en búsqueda: ${e.message}", e)
+            }
+        }
+    }
+
+    // ============================================
+    // FUNCIÓN AL SELECCIONAR BOVINO
+    // ============================================
+    fun onBovinoSelected(animal: Animal) {
+        _identificadorCorreccionSexo.value = animal.identificador
+        _suggestionsBovinos.value = emptyList()
+        Log.d("CorrecionSexoVM", "Bovino seleccionado: ${animal.identificador}")
     }
 
     fun tieneContenido(): Boolean{
@@ -53,22 +162,20 @@ class CorrecionSexoViewModel: ViewModel() {
                 "codigoSexo" to codigoSexo
             )
 
-            // Buscar si ya existe este borrador específico de la sesión actual
             val borradorExistente = sharedPreferencesManager.obtenerBorradores()
                 .find { it.id == borradorSesionId }
 
             val borrador = if (borradorExistente != null){
-                // Actualizar borrador de esta sesión
                 borradorExistente.copy(
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
                     datos = Gson().toJson(datosCorregirSexo)
                 )
             } else {
-                // Crear nuevo borrador con ID de sesión
                 Borrador(
                     id = borradorSesionId,
                     tipo = "CORRECCION_SEXO",
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
                     datos = Gson().toJson(datosCorregirSexo),
                     estado = "BORRADOR_AUTO"
                 )
@@ -85,19 +192,16 @@ class CorrecionSexoViewModel: ViewModel() {
         try {
             val borradores = sharedPreferencesManager.obtenerBorradores()
 
-            // Buscar cualquier borrador de tipo CORRECCION_SEXO con estado BORRADOR_AUTO
             val borradoresCorreccionSexo = borradores.filter {
                 it.tipo == "CORRECCION_SEXO" && it.estado == "BORRADOR_AUTO"
             }
 
             if (borradoresCorreccionSexo.isNotEmpty()) {
-                // Tomar el más reciente (último guardado)
                 val borradorCorreccionSexo = borradoresCorreccionSexo.maxByOrNull {
                     it.id.substringAfter("correccion_sexo_auto_").toLongOrNull() ?: 0L
                 }
 
                 if (borradorCorreccionSexo != null) {
-                    // Asignar este ID a la sesión actual
                     borradorSesionId = borradorCorreccionSexo.id
 
                     val gson = Gson()
@@ -106,7 +210,6 @@ class CorrecionSexoViewModel: ViewModel() {
                         object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
                     )
 
-                    // Restaurar datos
                     _identificadorCorreccionSexo.value = datos["identificador"] as? String ?: ""
                     _sexoCorreccionSeleccionado.value = datos["sexoSeleccionado"] as? String ?: ""
                     codigoSexo = datos["codigoSexo"] as? String ?: ""
@@ -124,7 +227,7 @@ class CorrecionSexoViewModel: ViewModel() {
             if (borradorSesionId.isNotEmpty()) {
                 sharedPreferencesManager.eliminarBorrador(borradorSesionId)
                 Log.d("Eliminar Borrador", "Borrador eliminado: $borradorSesionId")
-                borradorSesionId = "" // Resetear el ID de sesión
+                borradorSesionId = ""
             }
         } catch (e: Exception) {
             Log.e("Error Eliminar Borrador", "Error: ${e.message}", e)
@@ -208,8 +311,8 @@ class CorrecionSexoViewModel: ViewModel() {
             try {
                 val request = PetModicarAnimal(
                     identificador = _identificadorCorreccionSexo.value ?: "",
-                    nif = "S0800608B",
-                    passwordMobilitat = "L1855m58",
+                    nif = nif,
+                    passwordMobilitat = password,
                     sexe = codigoSexo
                 )
 
@@ -289,8 +392,6 @@ class CorrecionSexoViewModel: ViewModel() {
         _identificadorCorreccionSexo.value = ""
         _sexoCorreccionSeleccionado.value = ""
         codigoSexo = ""
-
-        // Generar nuevo ID de sesión para el próximo formulario
         borradorSesionId = ""
     }
 
