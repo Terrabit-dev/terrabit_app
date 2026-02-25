@@ -132,9 +132,8 @@ fun NavigationDrawer(
                 nullable = true
             })
         ) { backStackEntry ->
-            val muertes: ViewModelMuerteBovi = viewModel()
             val borradorId = backStackEntry.arguments?.getString("borradorId") ?: ""
-            Fallecimiento(navController = navController, muertes, borradorId)
+            Fallecimiento(navController = navController, bluetooth, borradorId)
         }
 
         composable(
@@ -145,9 +144,8 @@ fun NavigationDrawer(
                 nullable = true
             })
         ) { backStackEntry ->
-            val guiasViewModel: GuiasViewModel = viewModel()
             val borradorId = backStackEntry.arguments?.getString("borradorId") ?: ""
-            GestionGuias(navController = navController, guiasViewModel, borradorId)
+            GestionGuias(navController = navController, bluetooth, borradorId)
         }
 
         composable(
@@ -158,9 +156,8 @@ fun NavigationDrawer(
                 nullable = true
             })
         ) { backStackEntry ->
-            val moviViewModel: MovimientosViewModel = viewModel()
             val borradorId = backStackEntry.arguments?.getString("borradorId") ?: ""
-            Movimientos(navController = navController, moviViewModel, borradorId)
+            Movimientos(navController = navController, bluetooth, borradorId)
         }
 
         composable(Routes.Material.route) {
@@ -180,9 +177,8 @@ fun NavigationDrawer(
                 nullable = true
             })
         ) { backStackEntry ->
-            val corregirSexo: CorrecionSexoViewModel = viewModel()
             val borradorId = backStackEntry.arguments?.getString("borradorId") ?: ""
-            CorregirSexoBovi(navController, corregirSexo, borradorId)
+            CorregirSexoBovi(navController, bluetooth, borradorId)
         }
 
         composable(
@@ -195,7 +191,7 @@ fun NavigationDrawer(
         ) { backStackEntry ->
             val identificacion: IdentificacionAplazaViewModel = viewModel()
             val borradorId = backStackEntry.arguments?.getString("borradorId") ?: ""
-            IdentificacionApalzada(navController, identificacion, borradorId)
+            IdentificacionApalzada(navController, bluetooth, borradorId)
         }
 
         // Pantallas Porcinos

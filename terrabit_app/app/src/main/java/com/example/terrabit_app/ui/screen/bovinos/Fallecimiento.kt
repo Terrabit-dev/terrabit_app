@@ -73,6 +73,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
@@ -89,11 +90,13 @@ import com.example.terrabit_app.ui.theme.WhiteBackground
 import com.example.terrabit_app.ui.theme.Yellow
 import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
+import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 import com.example.terrabit_app.viewmodel.ViewModelMuerteBovi
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi, borradorId: String = "") {
+fun Fallecimiento(navController: NavController, bluetoothViewModel: BluetoothViewModel, borradorId: String = "") {
+    val viewModel = viewModel<ViewModelMuerteBovi>()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 

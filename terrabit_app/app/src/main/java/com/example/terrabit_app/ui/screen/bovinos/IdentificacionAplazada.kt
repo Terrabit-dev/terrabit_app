@@ -66,6 +66,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
@@ -78,10 +79,12 @@ import com.example.terrabit_app.utils.alertsErrosScreens
 import com.example.terrabit_app.viewmodel.IdentificacionAplazaViewModel
 import com.example.terrabit_app.ui.screen.bovinos.components.AutoCompleteBovinoField
 import com.example.terrabit_app.ui.screen.bovinos.components.useDebounce
+import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun IdentificacionApalzada(navController: NavController, viewModel: IdentificacionAplazaViewModel, borradorId: String = ""){
+fun IdentificacionApalzada(navController: NavController, bluetoothViewModel: BluetoothViewModel, borradorId: String = ""){
+    val viewModel = viewModel<IdentificacionAplazaViewModel>()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 

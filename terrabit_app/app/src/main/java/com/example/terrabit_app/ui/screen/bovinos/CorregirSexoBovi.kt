@@ -66,6 +66,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
@@ -79,12 +80,14 @@ import com.example.terrabit_app.utils.alertsErrosScreens
 import com.example.terrabit_app.viewmodel.CorrecionSexoViewModel
 import com.example.terrabit_app.ui.screen.bovinos.components.AutoCompleteBovinoField
 import com.example.terrabit_app.ui.screen.bovinos.components.useDebounce
+import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 import com.example.terrabit_app.viewmodel.BorradorViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewModel, borradorId: String = "") {
+fun CorregirSexoBovi(navController: NavController, bluetoothViewModel: BluetoothViewModel, borradorId: String = "") {
+    val viewModel = viewModel<CorrecionSexoViewModel>()
     val identificadorCorreccionSexo by viewModel.identificadorCorreccionSexo.observeAsState("")
     val sexoCorreccionSeleccionado by viewModel.sexoCorreccionSeleccionado.observeAsState("")
     val sexoCorreccionExpandido by viewModel.sexoCorreccionExpandido.observeAsState(false)

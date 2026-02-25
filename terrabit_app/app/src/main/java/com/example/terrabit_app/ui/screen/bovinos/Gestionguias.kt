@@ -80,6 +80,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.ui.theme.BlueGrey
 import com.example.terrabit_app.ui.theme.DarkBlueGrey
@@ -97,10 +98,13 @@ import com.example.terrabit_app.ui.screen.bovinos.components.AutoCompleteBovinoF
 import com.example.terrabit_app.ui.screen.bovinos.components.useDebounce
 import com.example.terrabit_app.utils.CampoTexto
 import com.example.terrabit_app.utils.DropdownField
+import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GestionGuias(navController: NavController, viewModel: GuiasViewModel, borradorId: String = "") {
+fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothViewModel, borradorId: String = "") {
+
+    val viewModel = viewModel<GuiasViewModel>()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
