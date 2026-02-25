@@ -66,8 +66,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
+import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.theme.BlueGrey
 import com.example.terrabit_app.ui.theme.DarkBlueGrey
 import com.example.terrabit_app.ui.theme.DarkWhiteBackground
@@ -78,11 +80,14 @@ import com.example.terrabit_app.utils.alertsErrosScreens
 import com.example.terrabit_app.viewmodel.CorrecionSexoViewModel
 import com.example.terrabit_app.ui.screen.bovinos.components.AutoCompleteBovinoField
 import com.example.terrabit_app.ui.screen.bovinos.components.useDebounce
+import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
+import com.example.terrabit_app.viewmodel.BorradorViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewModel) {
+fun CorregirSexoBovi(navController: NavController, bluetoothViewModel: BluetoothViewModel, borradorId: String = "") {
+    val viewModel = viewModel<CorrecionSexoViewModel>()
     val identificadorCorreccionSexo by viewModel.identificadorCorreccionSexo.observeAsState("")
     val sexoCorreccionSeleccionado by viewModel.sexoCorreccionSeleccionado.observeAsState("")
     val sexoCorreccionExpandido by viewModel.sexoCorreccionExpandido.observeAsState(false)
@@ -113,61 +118,18 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
     LaunchedEffect(Unit) {
         viewModel.initSharedPreferences(context)
 
+        if (borradorId.isNotEmpty()) {
+            viewModel.cargarBorradorPorId(borradorId)
+            return@LaunchedEffect
+        }
+
         val borradores = viewModel.obtenerBorradoresCorreccionSexo()
         cantidadBorradores = borradores.size
-
         if (cantidadBorradores >= 2) {
             mostrarDialogoAviso = true
         }
     }
 
-    // ============================================
-    // DIÁLOGO DE AVISO DE BORRADORES
-    // ============================================
-    if (mostrarDialogoAviso) {
-        AlertDialog(
-            onDismissRequest = { },
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.Description,
-                    contentDescription = null,
-                    tint = MainGreen,
-                    modifier = Modifier.size(48.dp)
-                )
-            },
-            title = {
-                Text(
-                    text = "Borradores pendientes",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
-                    color = DarkBlueGrey
-                )
-            },
-            text = {
-                Text(
-                    text = "Tienes $cantidadBorradores borradores guardados de este formulario. Puedes verlos en la página de Borradores.\n\n¿Deseas crear uno nuevo?",
-                    fontSize = 16.sp,
-                    color = BlueGrey,
-                    lineHeight = 24.sp
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        mostrarDialogoAviso = false
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MainGreen
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text("Crear nuevo", fontWeight = FontWeight.SemiBold)
-                }
-            },
-            containerColor = Color.White,
-            shape = RoundedCornerShape(16.dp)
-        )
-    }
 
     // ============================================
     // DETECCIÓN DE CICLO DE VIDA (AUTOGUARDADO)
@@ -312,7 +274,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                         }
                     },
                     navigationIcon = {
-                        IconButton(onClick = { navController.popBackStack() }) {
+                        IconButton(onClick = { navController.navigate(Routes.GestionBovinos.route) }) {
                             Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
                         }
                     },
@@ -432,7 +394,7 @@ fun CorregirSexoBovi(navController: NavController, viewModel: CorrecionSexoViewM
                                     onDismissRequest = { viewModel.cerrarSexoCorreccionMenu() },
                                     modifier = Modifier.background(Color.White)
                                 ) {
-                                    elementosConCodigos.sexos().forEach { (sexo, codigo) ->
+                                    elementosConCodigos.sexos().forEach { (codigo, sexo) ->
                                         DropdownMenuItem(
                                             text = {
                                                 Text(

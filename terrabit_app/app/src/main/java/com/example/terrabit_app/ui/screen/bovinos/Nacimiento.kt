@@ -1,5 +1,6 @@
 package com.example.terrabit_app.ui.screen.bovinos
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.outlined.Bluetooth
 import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -73,7 +75,6 @@ import com.example.terrabit_app.data.network.Identificadores.Identificadores
 import com.example.terrabit_app.viewmodel.NacimientoViewmodel
 import kotlin.collections.emptyList
 import com.example.terrabit_app.R
-
 import com.example.terrabit_app.ui.theme.BlueGrey
 import com.example.terrabit_app.ui.theme.DarkBlueGrey
 import com.example.terrabit_app.ui.theme.DarkWhiteBackground
@@ -85,11 +86,22 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.terrabit_app.ui.navigation.Routes
+import com.example.terrabit_app.viewmodel.BorradorViewModel
+import com.example.terrabit_app.ui.screen.bovinos.components.AutoCompleteBovinoField
+import com.example.terrabit_app.ui.screen.bovinos.components.useDebounce
+import com.example.terrabit_app.utils.DropdownField
+import com.example.terrabit_app.utils.bluetooth.BluetoothScanDialog
+import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
+fun Nacimiento(navController: NavController,
+               bluetooth : BluetoothViewModel,
+               borradorId: String = "")
+{
+    val viewModel = viewModel<NacimientoViewmodel>()
     val idMadre by viewModel.idMadre.observeAsState("")
     val idCria by viewModel.idCria.observeAsState("")
     val fechaNacimiento by viewModel.fechaNacimiento.observeAsState("")
@@ -114,8 +126,6 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
 
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
-    var mostrarDialogoAviso by remember { mutableStateOf(false) }
-    var cantidadBorradores by remember { mutableStateOf(0) }
 
     val mensajeRegistroExitoso = stringResource(R.string.successful_message_born)
     val mensajeRegistroError = stringResource(R.string.error_message_born)
@@ -124,68 +134,35 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
+    // control de bluethooth
+    var mostrarBluetooth by remember { mutableStateOf(false) }
+
+
     // ============================================
     // INICIALIZACIÓN Y DETECCIÓN DE BORRADORES
     // ============================================
     LaunchedEffect(Unit) {
         viewModel.inicializarSharedPreferences(context)
-        viewModel.getIdentificadores("S0800608B", "L1855m58", "1410AK")
-
-        val borradores = viewModel.obtenerBorradoresNacimiento()
-        cantidadBorradores = borradores.size
-
-        if (cantidadBorradores >= 2) {
-            mostrarDialogoAviso = true
+        if (borradorId.isNotEmpty()) {
+            viewModel.cargarBorradorPorId(borradorId)
+            return@LaunchedEffect
         }
+        val borradores = viewModel.obtenerBorradoresNacimiento()
     }
 
-    // ============================================
-    // DIÁLOGO DE AVISO DE BORRADORES
-    // ============================================
-    if (mostrarDialogoAviso) {
-        AlertDialog(
-            onDismissRequest = { },
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.Description,
-                    contentDescription = null,
-                    tint = Color(0xFFFFA726),
-                    modifier = Modifier.size(48.dp)
-                )
+    if (mostrarBluetooth) {
+        BluetoothScanDialog(
+            bluetoothViewModel = bluetooth,
+            onMensajeRecibido = { mensaje ->
+                viewModel.actualizarIdCria(mensaje)   // directo, sin condición
+                mostrarBluetooth = false
             },
-            title = {
-                Text(
-                    text = "Borradores pendientes",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
-                    color = Color(0xFF1E293B)
-                )
-            },
-            text = {
-                Text(
-                    text = "Tienes $cantidadBorradores borradores guardados de este formulario. Puedes verlos en la página de Borradores.\n\n¿Deseas crear uno nuevo?",
-                    fontSize = 16.sp,
-                    color = Color(0xFF475569),
-                    lineHeight = 24.sp
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        mostrarDialogoAviso = false
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF4A7C59)
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text("Crear nuevo", fontWeight = FontWeight.SemiBold)
-                }
-            },
-            containerColor = Color.White,
-            shape = RoundedCornerShape(16.dp)
+            onDismiss = {
+                mostrarBluetooth = false
+            }
         )
     }
+
 
     // ============================================
     // DETECCIÓN DE CICLO DE VIDA (AUTOGUARDADO)
@@ -394,7 +371,7 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                         }
                     },
                     navigationIcon = {
-                        IconButton(onClick = { navController.popBackStack() }) {
+                        IconButton(onClick = { navController.navigate(Routes.GestionBovinos.route) }) {
                             Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
                         }
                     },
@@ -450,39 +427,23 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
-                            OutlinedTextField(
+
+                            val suggestionsBovinos by viewModel.suggestionsBovinos.observeAsState(emptyList())
+                            val isLoadingBovinos by viewModel.isLoadingBovinos.observeAsState(false)
+
+                            useDebounce(idMadre, delayMillis = 300L) { query ->
+                                viewModel.searchBovinos(query)
+                            }
+
+                            AutoCompleteBovinoField(
                                 value = idMadre,
                                 onValueChange = { viewModel.actualizarIdMadre(it) },
-                                modifier = Modifier.fillMaxWidth(),
-                                placeholder = {
-                                    Text(
-                                        stringResource(R.string.form_mother_description),
-                                        color = BlueGrey
-                                    )
-                                },
-                                trailingIcon = {
-                                    IconButton(onClick = { /* Acción de cámara */ }) {
-                                        Icon(
-                                            Icons.Outlined.CameraAlt,
-                                            contentDescription = "Escanear",
-                                            tint = MainGreen
-                                        )
-                                    }
-                                },
-                                singleLine = true,
-                                shape = MaterialTheme.shapes.medium,
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = MainGreen,
-                                    unfocusedBorderColor = DarkWhiteBackground,
-                                    focusedTextColor = DarkBlueGrey,
-                                    unfocusedTextColor = DarkBlueGrey,
-                                    cursorColor = MainGreen
-                                ),
-                                keyboardOptions = KeyboardOptions(
-                                    keyboardType = KeyboardType.Text,
-                                    imeAction = ImeAction.Next,
-                                    autoCorrect = false
-                                )
+                                suggestions = suggestionsBovinos,
+                                onAnimalSelected = { viewModel.onBovinoSelected(it) },
+                                isLoading = isLoadingBovinos,
+                                label = stringResource(R.string.form_id_mother),
+                                placeholder = stringResource(R.string.form_mother_description),
+                                modifier = Modifier.fillMaxWidth()
                             )
                         }
 
@@ -506,12 +467,12 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                                     )
                                 },
                                 trailingIcon = {
-                                    IconButton(onClick = { /* Acción de cámara */ }) {
-                                        Icon(
-                                            Icons.Outlined.CameraAlt,
-                                            contentDescription = "Escanear",
-                                            tint = MainGreen
-                                        )
+
+                                    IconButton(onClick = {
+                                        bluetooth.iniciarEscaneo(context)
+                                        mostrarBluetooth = true
+                                    }) {
+                                        Icon(Icons.Outlined.Bluetooth, contentDescription = "Leer crotal")
                                     }
 
                                 },
@@ -623,238 +584,45 @@ fun Nacimiento(navController: NavController, viewModel: NacimientoViewmodel) {
                         }
 
                         // Sexo
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                stringResource(R.string.form_sex),
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = DarkBlueGrey,
-                                letterSpacing = 0.15.sp
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            ExposedDropdownMenuBox(
-                                expanded = sexoExpandido,
-                                onExpandedChange = { viewModel.toggleSexoExpandido() }
-                            ) {
-                                OutlinedTextField(
-                                    value = sexoSeleccionado,
-                                    onValueChange = {},
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .menuAnchor(),
-                                    readOnly = true,
-                                    placeholder = {
-                                        Text(
-                                            stringResource(R.string.form_sex_description),
-                                            color = BlueGrey
-                                        )
-                                    },
-                                    trailingIcon = {
-                                        ExposedDropdownMenuDefaults.TrailingIcon(
-                                            expanded = sexoExpandido
-                                        )
-                                    },
-                                    singleLine = true,
-                                    shape = MaterialTheme.shapes.medium,
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = MainGreen,
-                                        unfocusedBorderColor = DarkWhiteBackground,
-                                        focusedTextColor = DarkBlueGrey,
-                                        unfocusedTextColor = DarkBlueGrey
-                                    )
-                                )
-                                ExposedDropdownMenu(
-                                    expanded = sexoExpandido,
-                                    onDismissRequest = { viewModel.cerrarSexoMenu() },
-                                    modifier = Modifier
-                                        .background(Color.White)
-                                ) {
-                                    elementosConCodigos.sexos().forEach { (sexo, codigo) ->
-                                        DropdownMenuItem(
-                                            text = {
-                                                Text(
-                                                    sexo,
-                                                    fontSize = 15.sp,
-                                                    color = DarkBlueGrey,
-                                                    fontWeight = FontWeight.Normal
-                                                )
-                                            },
-                                            onClick = { viewModel.seleccionarSexo(sexo, codigo) },
-                                            contentPadding = PaddingValues(
-                                                horizontal = 16.dp,
-                                                vertical = 14.dp
-                                            ),
-                                            colors = MenuDefaults.itemColors(
-                                                textColor = DarkBlueGrey,
-                                                leadingIconColor = DarkBlueGrey,
-                                                trailingIconColor = DarkBlueGrey,
-                                                disabledTextColor = BlueGrey
-                                            )
-                                        )
-                                    }
-                                }
-                            }
-                        }
 
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                stringResource(R.string.form_raze),
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = DarkBlueGrey,
-                                letterSpacing = 0.15.sp
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            ExposedDropdownMenuBox(
-                                expanded = razaExpandida,
-                                onExpandedChange = { viewModel.toggleRazaExpandida() }
-                            ) {
-                                OutlinedTextField(
-                                    value = razaSeleccionada,
-                                    onValueChange = {},
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .menuAnchor(),
-                                    readOnly = true,
-                                    placeholder = {
-                                        Text(
-                                            stringResource(R.string.form_raze_description),
-                                            color = BlueGrey
-                                        )
-                                    },
-                                    trailingIcon = {
-                                        ExposedDropdownMenuDefaults.TrailingIcon(
-                                            expanded = razaExpandida
-                                        )
-                                    },
-                                    singleLine = true,
-                                    shape = MaterialTheme.shapes.medium,
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = MainGreen,
-                                        unfocusedBorderColor = DarkWhiteBackground,
-                                        focusedTextColor = DarkBlueGrey,
-                                        unfocusedTextColor = DarkBlueGrey
-                                    )
-                                )
-                                ExposedDropdownMenu(
-                                    expanded = razaExpandida,
-                                    onDismissRequest = { viewModel.cerrarRazaMenu() },
-                                    modifier = Modifier
-                                        .background(Color.White)
-                                ) {
-                                    viewModel.razasBovinas.forEach { raza ->
-                                        DropdownMenuItem(
-                                            text = {
-                                                Text(
-                                                    raza.nombre,
-                                                    fontSize = 15.sp,
-                                                    color = DarkBlueGrey,
-                                                    fontWeight = FontWeight.Normal
-                                                )
-                                            },
-                                            onClick = {
-                                                viewModel.seleccionarRaza(raza.nombre, raza.codigo) },
-                                            contentPadding = PaddingValues(
-                                                horizontal = 16.dp,
-                                                vertical = 14.dp
-                                            ),
-                                            colors = MenuDefaults.itemColors(
-                                                textColor = DarkBlueGrey,
-                                                leadingIconColor = DarkBlueGrey,
-                                                trailingIconColor = DarkBlueGrey,
-                                                disabledTextColor = BlueGrey
-                                            )
-                                        )
-                                        if (raza != viewModel.razasBovinas.last()) {
-                                            HorizontalDivider(
-                                                color = DarkWhiteBackground,
-                                                thickness = 1.dp
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        DropdownField(
+                            label = stringResource(R.string.form_sex) ,
+                            selectedValue = sexoSeleccionado,
+                            expanded = sexoExpandido,
+                            placeholder = stringResource(R.string.form_sex_description),
+                            opciones = elementosConCodigos.sexos(),
+                            onExpandedChange = { viewModel.toggleSexoExpandido() },
+                            onDismissRequest = { viewModel.cerrarSexoMenu() },
+                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarSexo(nombre, codigo) },
+                            defectColor = true
+                        )
 
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                stringResource(R.string.form_aptitude),
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = DarkBlueGrey,
-                                letterSpacing = 0.15.sp
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            ExposedDropdownMenuBox(
-                                expanded = aptitudExpandida,
-                                onExpandedChange = { viewModel.toggleAptitudExpandida() }
-                            ) {
-                                OutlinedTextField(
-                                    value = aptitudSeleccionada,
-                                    onValueChange = {},
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .menuAnchor(),
-                                    readOnly = true,
-                                    placeholder = {
-                                        Text(
-                                            stringResource(R.string.form_aptitude_description),
-                                            color = BlueGrey
-                                        )
-                                    },
-                                    trailingIcon = {
-                                        ExposedDropdownMenuDefaults.TrailingIcon(
-                                            expanded = aptitudExpandida
-                                        )
-                                    },
-                                    singleLine = true,
-                                    shape = MaterialTheme.shapes.medium,
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = MainGreen,
-                                        unfocusedBorderColor = DarkWhiteBackground,
-                                        focusedTextColor = DarkBlueGrey,
-                                        unfocusedTextColor = DarkBlueGrey
-                                    )
-                                )
+                        // Razas
+                        DropdownField(
+                            label = stringResource(R.string.form_raze),
+                            selectedValue = razaSeleccionada,
+                            expanded = razaExpandida,
+                            placeholder = stringResource(R.string.form_raze_description),
+                            opciones = elementosConCodigos.razasBovinas(),
+                            onExpandedChange = { viewModel.toggleRazaExpandida() },
+                            onDismissRequest = { viewModel.cerrarRazaMenu() },
+                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarRaza(nombre, codigo) },
+                            defectColor = true
+                        )
 
-                                ExposedDropdownMenu(
-                                    expanded = aptitudExpandida,
-                                    onDismissRequest = { viewModel.cerrarAptitudMenu() },
-                                    modifier = Modifier
-                                        .background(Color.White)
-                                ) {
-                                    elementosConCodigos.aptitudes().forEach { (aptitud, codigo) ->
-                                        DropdownMenuItem(
-                                            text = {
-                                                Text(
-                                                    aptitud,
-                                                    fontSize = 15.sp,
-                                                    color = DarkBlueGrey,
-                                                    fontWeight = FontWeight.Normal
-                                                )
-                                            },
-                                            onClick = { viewModel.seleccionarAptitud(aptitud, codigo) },
-                                            contentPadding = PaddingValues(
-                                                horizontal = 16.dp,
-                                                vertical = 14.dp
-                                            ),
-                                            colors = MenuDefaults.itemColors(
-                                                textColor = DarkBlueGrey,
-                                                leadingIconColor = DarkBlueGrey,
-                                                trailingIconColor = DarkBlueGrey,
-                                                disabledTextColor = BlueGrey
-                                            )
-                                        )
-                                        if (aptitud != viewModel.listaAptitudes.last()) {
-                                            HorizontalDivider(
-                                                color = DarkWhiteBackground,
-                                                thickness = 1.dp
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        // Aptitudes
+
+                        DropdownField(
+                            label = stringResource(R.string.form_aptitude),
+                            selectedValue = aptitudSeleccionada,
+                            expanded = aptitudExpandida,
+                            placeholder = stringResource(R.string.form_aptitude_description),
+                            opciones = elementosConCodigos.aptitudes(),
+                            onExpandedChange = { viewModel.toggleAptitudExpandida() },
+                            onDismissRequest = { viewModel.cerrarAptitudMenu() },
+                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarAptitud(nombre, codigo) },
+                            defectColor = true
+                        )
                     }
                 }
 

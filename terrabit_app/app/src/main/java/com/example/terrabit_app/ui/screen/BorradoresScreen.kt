@@ -29,15 +29,18 @@ import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -52,11 +55,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.example.terrabit_app.R
 import com.example.terrabit_app.data.Borrador
+import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.screen.bovinos.cambiarIdioma
 import com.example.terrabit_app.ui.theme.Blue
 import com.example.terrabit_app.ui.theme.BlueGrey
@@ -71,7 +79,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun BorradoresScreen(
     viewModel: BorradorViewModel,
-    onMenuClick: () -> Unit
+    onMenuClick: () -> Unit,
+    navController: NavController
 ) {
     val borradores by viewModel.borradores.observeAsState(emptyList())
     val borradoresFiltered by viewModel.borradoresFiltrados.observeAsState(emptyList())
@@ -79,69 +88,87 @@ fun BorradoresScreen(
 
     var mostrarDialogoEliminarTodos by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
+        viewModel.inicializarSharedPreferences(context)
         viewModel.cargarBorradores()
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(WhiteBackground)
-    ) {
-        HeaderBorradores(
-            totalBorradores = borradores.size,
-            onMenuClick = onMenuClick,
-            onEliminarTodos = { mostrarDialogoEliminarTodos = true }
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        BarraBusqueda(
-            texto = textoBusqueda,
-            onTextoChange = { viewModel.actualizarBusqueda(it) }
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        if (borradoresFiltered.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(20.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Icon(
-                        Icons.Default.Description,
-                        contentDescription = null,
-                        modifier = Modifier.size(64.dp),
-                        tint = BlueGrey
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        "No hay Resultados :O",
-                        fontSize = 16.sp,
-                        color = BlueGrey
-                    )
-                }
+    Scaffold(
+        containerColor = WhiteBackground
+    ) { padding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
+            verticalArrangement = Arrangement.spacedBy(0.dp)
+        ) {
+            item {
+                HeaderBorradores(
+                    totalBorradores = borradores.size,
+                    onMenuClick = onMenuClick,
+                    onEliminarTodos = { mostrarDialogoEliminarTodos = true }
+                )
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 20.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
+
+            item {
+                Spacer(modifier = Modifier.height(24.dp))
+                BarraBusqueda(
+                    texto = textoBusqueda,
+                    onTextoChange = { viewModel.actualizarBusqueda(it) }
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            if (borradoresFiltered.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp)
+                            .padding(top = 48.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                Icons.Default.Description,
+                                contentDescription = null,
+                                modifier = Modifier.size(64.dp),
+                                tint = BlueGrey
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                stringResource(R.string.no_results_description_draft),
+                                fontSize = 16.sp,
+                                color = BlueGrey
+                            )
+                        }
+                    }
+                }
+            } else {
                 items(borradoresFiltered) { borrador ->
                     TarjetaBorrador(
                         borrador = borrador,
-                        onEliminarClick = {
-                            viewModel.eliminarBorrador(borrador.id)
-                        }
+                        onEliminarClick = { viewModel.eliminarBorrador(borrador.id) },
+                        onEditarClick = {
+                            navController.navigate(
+                                when (borrador.tipo) {
+                                    "CORRECCION_SEXO" -> Routes.CorregirBovino.conBorrador(borrador.id)
+                                    "MUERTE" -> Routes.Fallecimiento.conBorrador(borrador.id)
+                                    "NACIMIENTO" -> Routes.Nacimiento.conBorrador(borrador.id)
+                                    "IDENTIFICACION_APLAZADA" -> Routes.IdentificacionAplazada.conBorrador(borrador.id)
+                                    "GUIA" -> Routes.GestionGuias.conBorrador(borrador.id)
+                                    "MOVIMIENTO" -> Routes.Movimientos.conBorrador(borrador.id)
+                                    else -> return@TarjetaBorrador
+                                }
+                            )
+                        },
+                        modifier = Modifier.padding(horizontal = 20.dp)
                     )
+                    Spacer(modifier = Modifier.height(12.dp))
                 }
 
                 item {
@@ -153,14 +180,13 @@ fun BorradoresScreen(
 
     DialogoConfirmacion(
         mostrar = mostrarDialogoEliminarTodos,
-        titulo = "Eliminar todos los borradores",
-        mensaje = "¿Estás seguro de que deseas eliminar todos los borradores? Esta acción no se puede deshacer.",
+        titulo = stringResource(R.string.title_delete_all_option),
+        mensaje = stringResource(R.string.description_delete_all_option),
         onConfirmar = {
             scope.launch {
                 viewModel.eliminarTodosBorradores()
                 mostrarDialogoEliminarTodos = false
             }
-
         },
         onCancelar = { mostrarDialogoEliminarTodos = false }
     )
@@ -208,9 +234,7 @@ fun HeaderBorradores(
                     )
                 }
 
-                Box(
-                    contentAlignment = Alignment.Center
-                ) {
+                Box(contentAlignment = Alignment.Center) {
                     IconButton(
                         onClick = { expandedConfig = true },
                         modifier = Modifier
@@ -238,7 +262,6 @@ fun HeaderBorradores(
                                 cambiarIdioma("es")
                             }
                         )
-
                         DropdownMenuItem(
                             text = { Text("Català") },
                             onClick = {
@@ -253,7 +276,7 @@ fun HeaderBorradores(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                "Borradores",
+                stringResource(R.string.title_draft),
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
@@ -282,7 +305,7 @@ fun HeaderBorradores(
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            "$totalBorradores guardados",
+                            "$totalBorradores ${stringResource(R.string.counter_draft)}",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
                             color = Color.White
@@ -322,7 +345,7 @@ fun HeaderBorradores(
                                         tint = ErrorRed
                                     )
                                     Spacer(modifier = Modifier.width(12.dp))
-                                    Text("Eliminar todos", color = ErrorRed)
+                                    Text(stringResource(R.string.delete_all_option), color = ErrorRed)
                                 }
                             },
                             onClick = {
@@ -349,30 +372,19 @@ fun DialogoConfirmacion(
         androidx.compose.material3.AlertDialog(
             onDismissRequest = onCancelar,
             title = {
-                Text(
-                    titulo,
-                    fontWeight = FontWeight.Bold,
-                    color = DarkBlueGrey
-                )
+                Text(titulo, fontWeight = FontWeight.Bold, color = DarkBlueGrey)
             },
             text = {
-                Text(
-                    mensaje,
-                    color = BlueGrey
-                )
+                Text(mensaje, color = BlueGrey)
             },
             confirmButton = {
-                androidx.compose.material3.TextButton(
-                    onClick = onConfirmar
-                ) {
-                    Text("Confirmar", color = ErrorRed, fontWeight = FontWeight.SemiBold)
+                androidx.compose.material3.TextButton(onClick = onConfirmar) {
+                    Text(stringResource(R.string.confirm_delete_option_general), color = ErrorRed, fontWeight = FontWeight.SemiBold)
                 }
             },
             dismissButton = {
-                androidx.compose.material3.TextButton(
-                    onClick = onCancelar
-                ) {
-                    Text("Cancelar", color = BlueGrey)
+                androidx.compose.material3.TextButton(onClick = onCancelar) {
+                    Text(stringResource(R.string.cancel_delete_option_general), color = BlueGrey)
                 }
             },
             containerColor = Color.White,
@@ -381,68 +393,34 @@ fun DialogoConfirmacion(
     }
 }
 
-@Composable
-fun ChipFiltro(
-    texto: String,
-    seleccionado: Boolean,
-    onClick: () -> Unit
-) {
-    Surface(
-        modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
-            .clickable(onClick = onClick),
-        color = if (seleccionado) Color.White else Color.Transparent,
-        shape = RoundedCornerShape(20.dp),
-        shadowElevation = if (seleccionado) 2.dp else 0.dp
-    ) {
-        Text(
-            texto,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            fontSize = 14.sp,
-            fontWeight = if (seleccionado) FontWeight.SemiBold else FontWeight.Normal,
-            color = if (seleccionado) DarkBlueGrey else BlueGrey
-        )
-    }
-}
 
 @Composable
 fun BarraBusqueda(
     texto: String,
     onTextoChange: (String) -> Unit
 ) {
-    androidx.compose.material3.OutlinedTextField(
+    OutlinedTextField(
         value = texto,
         onValueChange = onTextoChange,
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp),
         placeholder = {
-            Text(
-                "Buscar borradores...",
-                color = BlueGrey
-            )
+            Text(stringResource(R.string.search_bar_text), color = BlueGrey)
         },
         leadingIcon = {
-            Icon(
-                Icons.Default.Search,
-                contentDescription = null,
-                tint = BlueGrey
-            )
+            Icon(Icons.Default.Search, contentDescription = null, tint = BlueGrey)
         },
         trailingIcon = {
             if (texto.isNotEmpty()) {
                 IconButton(onClick = { onTextoChange("") }) {
-                    Icon(
-                        Icons.Default.Clear,
-                        contentDescription = "Limpiar",
-                        tint = BlueGrey
-                    )
+                    Icon(Icons.Default.Clear, contentDescription = "Limpiar", tint = BlueGrey)
                 }
             }
         },
         singleLine = true,
         shape = RoundedCornerShape(12.dp),
-        colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+        colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = MainGreen,
             unfocusedBorderColor = BlueGrey.copy(alpha = 0.3f),
             focusedContainerColor = Color.White,
@@ -454,38 +432,40 @@ fun BarraBusqueda(
 @Composable
 fun TarjetaBorrador(
     borrador: Borrador,
-    onEliminarClick: () -> Unit
+    onEliminarClick: () -> Unit,
+    onEditarClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     var mostrarMenu by remember { mutableStateOf(false) }
 
+    @Composable
     fun obtenerNombreTipo(tipo: String): String {
         return when (tipo) {
-            "MUERTE" -> "Muerte"
-            "MATERIAL" -> "Material"
-            "NACIMIENTO" -> "Nacimiento"
-            "CORRECCION_SEXO" -> "Corrección Sexo"
-            "IDENTIFICACION_APLAZADA" -> "ID Aplazada"
+            "MUERTE" -> stringResource(R.string.type_draft_title_death)
+            "MATERIAL" -> stringResource(R.string.type_draft_title_material)
+            "NACIMIENTO" -> stringResource(R.string.type_draft_title_born)
+            "CORRECCION_SEXO" -> stringResource(R.string.type_draft_title_sex)
+            "IDENTIFICACION_APLAZADA" -> stringResource(R.string.type_draft_title_id)
             else -> tipo
         }
     }
 
+    @Composable
     fun obtenerEstadoLegible(estado: String): String {
         return when (estado) {
-            "BORRADOR_AUTO" -> "Guardado"
-            "PENDIENTE" -> "Pendiente"
-            "ENVIANDO" -> "Enviando"
-            "ERROR" -> "Error"
+            "BORRADOR_AUTO" -> stringResource(R.string.status_draft_saved)
+            "PENDIENTE" -> stringResource(R.string.status_draft_pending)
+            "ENVIANDO" -> stringResource(R.string.status_draft_sending)
+            "ERROR" -> stringResource(R.string.status_draft_error)
             else -> estado
         }
     }
 
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .height(96.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        ),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
         shape = RoundedCornerShape(16.dp)
     ) {
@@ -589,9 +569,7 @@ fun TarjetaBorrador(
 
                 Spacer(modifier = Modifier.height(6.dp))
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         Icons.Default.CalendarToday,
                         contentDescription = null,
@@ -615,10 +593,9 @@ fun TarjetaBorrador(
                         modifier = Modifier.size(14.dp),
                         tint = BlueGrey
                     )
-
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        borrador.hora ?: "Sin hora",
+                        borrador.hora ?: stringResource(R.string.no_hour_value),
                         fontSize = 14.sp,
                         color = BlueGrey,
                         maxLines = 1,
@@ -648,13 +625,31 @@ fun TarjetaBorrador(
                         text = {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
+                                    Icons.Default.Edit,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp),
+                                    tint = Blue
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(stringResource(R.string.edit_button_individual_card), color = Blue)
+                            }
+                        },
+                        onClick = {
+                            mostrarMenu = false
+                            onEditarClick()
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
                                     Icons.Default.Delete,
                                     contentDescription = null,
                                     modifier = Modifier.size(20.dp),
                                     tint = ErrorRed
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
-                                Text("Eliminar", color = ErrorRed)
+                                Text(stringResource(R.string.delete_button_individual_card), color = ErrorRed)
                             }
                         },
                         onClick = {

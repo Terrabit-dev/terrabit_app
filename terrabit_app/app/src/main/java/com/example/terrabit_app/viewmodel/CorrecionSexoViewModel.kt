@@ -1,7 +1,9 @@
 package com.example.terrabit_app.viewmodel
 
+import android.app.Application
 import android.content.Context
 import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,6 +13,7 @@ import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.animales.PetModicarAnimal
 import com.example.terrabit_app.data.network.lista_bovinos.Animal
 import com.example.terrabit_app.data.network.respuestas.RespuestaUnificada
+import com.example.terrabit_app.utils.UserPreferences
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -19,16 +22,16 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class CorrecionSexoViewModel: ViewModel() {
+class CorrecionSexoViewModel(application: Application): AndroidViewModel(application) {
 
-    private lateinit var repositorio: Repositorio
+    private  var repositorio = Repositorio(application)
     private lateinit var sharedPreferencesManager: SharedPreferencesManager
 
     // ID único para la sesión actual del formulario
     private var borradorSesionId: String = ""
 
     // ============================================
-    // NUEVOS ESTADOS PARA AUTOCOMPLETADO
+    //  ESTADOS PARA AUTOCOMPLETADO
     // ============================================
     private val _suggestionsBovinos = MutableLiveData<List<Animal>>(emptyList())
     val suggestionsBovinos = _suggestionsBovinos
@@ -38,6 +41,15 @@ class CorrecionSexoViewModel: ViewModel() {
 
     private val _bovinosCargados = MutableLiveData(false)
     val bovinosCargados = _bovinosCargados
+
+    // Instanciar UserPreferences directamente con la Application
+    private val userPreferences = UserPreferences(application)
+
+    // Leer las credenciales del login guardadas automáticamente
+    val nif = userPreferences.getNif() ?: ""
+    val password = userPreferences.getPassword() ?: ""
+    val codiMo = userPreferences.getCodiMO() ?: ""
+
 
     fun initSharedPreferences(context: Context){
         repositorio = Repositorio(context)
@@ -62,10 +74,10 @@ class CorrecionSexoViewModel: ViewModel() {
 
                 // Reemplaza con tus credenciales reales o desde SharedPreferences
                 repositorio.getBovinosWithCache(
-                    nif = "S0800608B",
-                    password = "L1855m58",
+                    nif = nif,
+                    password = password,
                     tipusVinculacio = "1",
-                    explotacio = "1410AK", // Reemplaza con tu explotación
+                    explotacio = codiMo,
                     forceRefresh = false
                 )
 
@@ -77,6 +89,28 @@ class CorrecionSexoViewModel: ViewModel() {
                 _bovinosCargados.postValue(false)
                 Log.e("CorrecionSexoVM", "Error al cargar bovinos: ${e.message}", e)
             }
+        }
+    }
+
+    fun cargarBorradorPorId(id: String) {
+        try {
+            val borrador = sharedPreferencesManager.obtenerBorradores()
+                .find { it.id == id } ?: return
+
+            borradorSesionId = borrador.id
+
+            val datos: Map<String, Any?> = Gson().fromJson(
+                borrador.datos,
+                object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
+            )
+
+            _identificadorCorreccionSexo.value = datos["identificador"] as? String ?: ""
+            _sexoCorreccionSeleccionado.value = datos["sexoSeleccionado"] as? String ?: ""
+            codigoSexo = datos["codigoSexo"] as? String ?: ""
+
+            Log.d("CorrecionSexoVM", "Borrador cargado por ID: $id")
+        } catch (e: Exception) {
+            Log.e("CorrecionSexoVM", "Error al cargar borrador por ID: ${e.message}", e)
         }
     }
 
@@ -277,8 +311,8 @@ class CorrecionSexoViewModel: ViewModel() {
             try {
                 val request = PetModicarAnimal(
                     identificador = _identificadorCorreccionSexo.value ?: "",
-                    nif = "S0800608B",
-                    passwordMobilitat = "L1855m58",
+                    nif = nif,
+                    passwordMobilitat = password,
                     sexe = codigoSexo
                 )
 
@@ -358,7 +392,6 @@ class CorrecionSexoViewModel: ViewModel() {
         _identificadorCorreccionSexo.value = ""
         _sexoCorreccionSeleccionado.value = ""
         codigoSexo = ""
-
         borradorSesionId = ""
     }
 

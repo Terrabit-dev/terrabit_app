@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,13 +22,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -58,6 +63,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
@@ -67,60 +73,67 @@ import com.example.terrabit_app.ui.theme.DarkWhiteBackground
 import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.WhiteBackground
-import com.example.terrabit_app.utils.CampoTexto
 import com.example.terrabit_app.utils.DropdownField
 import com.example.terrabit_app.utils.ElementosConCodigos
-import com.example.terrabit_app.viewmodel.MaterialViewModel
+import com.example.terrabit_app.viewmodel.MaterialDuplicadoViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Material(navController: NavController, viewModel: MaterialViewModel) {
+fun MaterialDupplicadosScreen(navController: NavController) {
 
+    val viewModel = viewModel<MaterialDuplicadoViewModel>()
+    val elementosConCodigos = ElementosConCodigos()
+
+    // Observar estado del formulario
     val empresaSubministradora by viewModel.empresaSubministradora.observeAsState("")
     val tipoEnviamiento by viewModel.tipoEnviamiento.observeAsState("")
-    val destinoLliurament by viewModel.destinoLliurament.observeAsState("")
+    val tipoDireccionEnvio by viewModel.direccionEnvio.observeAsState("")
     val oficinaComarcal by viewModel.oficinaComarcal.observeAsState("")
-    val direccion by viewModel.direccion.observeAsState("")
+    val direccionEnvio by viewModel.dirrecionEnvio.observeAsState("")
     val poblacion by viewModel.poblacion.observeAsState("")
-    val codigoPostal by viewModel.codigoPostal.observeAsState("")
     val municipio by viewModel.municipio.observeAsState("")
-    val telefonoContacto by viewModel.telefonoContacto.observeAsState("")
-    val tipoMaterial by viewModel.tipoMaterial.observeAsState("")
+    val codigoPostal by viewModel.codigoPostal.observeAsState("")
+    val telefono by viewModel.telefonoContacto.observeAsState("")
+    val direccionAlternativa = "03"
+    val direccionExplatoacion = "02"
+    val direccioOficinaComarcal = "01"
 
+    // Observar lista de identificadores
+    val listaIdentificadores by viewModel.listaIdentificadores.observeAsState(emptyList())
+    val tipoMaterialExpandidoMap by viewModel.tipoMaterialExpandido.observeAsState(emptyMap())
+
+    // Observar expansión de menús
     val empresaExpandida by viewModel.empresaExpandida.observeAsState(false)
     val tipoEnviamientoExpandido by viewModel.tipoEnviamientoExpandido.observeAsState(false)
-    val destinoExpandido by viewModel.destinoExpandido.observeAsState(false)
-    val oficinaComarcalExpandida by viewModel.oficinaComarcalExpandida.observeAsState(false)
-    val tipoMaterialExpandido by viewModel.tipoMaterialExpandido.observeAsState(false)
+    val direccionEnvioExpandido by viewModel.direccionEnvioExpandido.observeAsState(false)
+    val oficinaComarcalExpandido by viewModel.oficinaComarcalExpandido.observeAsState(false)
 
-    val registroExitoso by viewModel.registroMaterialExitoso.observeAsState(false)
-    val mensajeError by viewModel.mensajeErrorMaterial.observeAsState("")
-    val estadoCarga by viewModel.cargandoMaterial.observeAsState(false)
-
-    val listaUnidades by viewModel.listaUnidades.observeAsState(emptyList())
+    // Observar feedback
+    val registroExitoso by viewModel.registroExitoso.observeAsState(false)
+    val mensajeError by viewModel.mensajeError.observeAsState("")
+    val cargando by viewModel.cargando.observeAsState(false)
 
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
 
-    val elementosConCodigos = ElementosConCodigos()
+    // Tipos de material disponibles (código -> nombre)
+    val tiposMaterial = elementosConCodigos.tiposMaterialDuplicados()
 
-    // Códigos de destino
-    val codigoDestino = viewModel.getCodiDestinoEnvio()
-    val codigoTipoMaterial = viewModel.getCodigoTipoMaterial()
+    // Recursos de texto frecuentes
+    val successMessage = stringResource(R.string.success_duplicate_request)
 
-    // El codiMo es obligatorio para estos tipos de material
-    val codiMoObligatorio = viewModel.codiMoEsObligatorio()
-
+    // Snackbar de éxito
     LaunchedEffect(registroExitoso) {
         if (registroExitoso) {
             snackbarHostState.showSnackbar(
-                message = "Material solicitado exitosamente",
+                message = successMessage,
                 duration = SnackbarDuration.Short
             )
-            viewModel.resetearEstadoRegistroMaterial()
+            viewModel.resetearEstado()
         }
     }
 
+    // Diálogo de error
     LaunchedEffect(mensajeError) {
         if (mensajeError.isNotEmpty()) {
             mostrarDialogoError = true
@@ -131,19 +144,19 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
         AlertDialog(
             onDismissRequest = {
                 mostrarDialogoError = false
-                viewModel.resetearEstadoRegistroMaterial()
+                viewModel.resetearEstado()
             },
             icon = {
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
                     contentDescription = null,
-                    tint = MainGreen,
+                    tint = ErrorRed,
                     modifier = Modifier.size(48.dp)
                 )
             },
             title = {
                 Text(
-                    "Error al Solicitar Material",
+                    stringResource(R.string.title_duplicate_error),
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
                     color = DarkBlueGrey
@@ -161,12 +174,12 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                 Button(
                     onClick = {
                         mostrarDialogoError = false
-                        viewModel.resetearEstadoRegistroMaterial()
+                        viewModel.resetearEstado()
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = MainGreen),
+                    colors = ButtonDefaults.buttonColors(containerColor = ErrorRed),
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text("Entendido", fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.error_buttom), fontWeight = FontWeight.SemiBold)
                 }
             },
             containerColor = Color.White,
@@ -174,7 +187,8 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
         )
     }
 
-    if (estadoCarga) {
+    // Overlay de carga
+    if (cargando) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -200,7 +214,7 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         Text(
-                            "Procesando...",
+                            stringResource(R.string.loading_processing),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
                             color = BlueGrey
@@ -214,15 +228,20 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
             topBar = {
                 TopAppBar(
                     title = {
-                        Text(
-                            "Solicitar Material",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
+                        Column {
+                            Text(
+                                stringResource(R.string.duplicate_request_name),
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
                     },
                     navigationIcon = {
                         IconButton(onClick = { navController.navigate(Routes.MaterialCategoria.route) }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                            Icon(
+                                Icons.Default.ArrowBack,
+                                contentDescription = stringResource(R.string.content_description_back)
+                            )
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -267,6 +286,8 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                             .padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
+
+                        // Empresa Subministradora
                         DropdownField(
                             label = stringResource(R.string.form_suply_company) + " *",
                             selectedValue = empresaSubministradora,
@@ -275,10 +296,11 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                             opciones = elementosConCodigos.tipoEmpresaSubministradora(),
                             onExpandedChange = { viewModel.toggleEmpresaExpandida() },
                             onDismissRequest = { viewModel.cerrarEmpresaMenu() },
-                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarEmpresa(nombre, codigo) },
-                            defectColor = true
+                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarEmpresa(codigo, nombre) },
+                            defectColor =  true
                         )
 
+                        // Tipo de Envío
                         DropdownField(
                             label = stringResource(R.string.form_send_type) + " *",
                             selectedValue = tipoEnviamiento,
@@ -287,40 +309,41 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                             opciones = elementosConCodigos.tiposEnvios(),
                             onExpandedChange = { viewModel.toggleTipoEnviamientoExpandido() },
                             onDismissRequest = { viewModel.cerrarTipoEnviamientoMenu() },
-                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarTipoEnviamiento(nombre, codigo) },
+                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarTipoEnviamiento(codigo, nombre) },
                             defectColor = true
                         )
 
+                        // Dirección de Envío
                         DropdownField(
                             label = stringResource(R.string.form_send_address) + " *",
-                            selectedValue = destinoLliurament,
-                            expanded = destinoExpandido,
+                            selectedValue = tipoDireccionEnvio,
+                            expanded = direccionEnvioExpandido,
                             placeholder = stringResource(R.string.form_send_address_description),
                             opciones = elementosConCodigos.tiposDireccionEnvio(),
-                            onExpandedChange = { viewModel.toggleDestinoExpandido() },
-                            onDismissRequest = { viewModel.cerrarDestinoMenu() },
-                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarDestino(nombre, codigo) },
+                            onExpandedChange = { viewModel.toggleDireccionEnvioExpandido() },
+                            onDismissRequest = { viewModel.cerrarDireccionEnvioMenu() },
+                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarDireccionEnvio(codigo, nombre) },
                             defectColor = true
                         )
 
-                        // OC: solo si destino es "01"
-                        if (codigoDestino == "01") {
+                        // Oficina Comarcal (solo si destino == "OC" / código "01")
+                        if (viewModel.getCodigoDirecioEnvio() == direccioOficinaComarcal ) {
                             DropdownField(
                                 label = stringResource(R.string.form_comarcal_office) + " *",
                                 selectedValue = oficinaComarcal,
-                                expanded = oficinaComarcalExpandida,
+                                expanded = oficinaComarcalExpandido,
                                 placeholder = stringResource(R.string.form_comarcal_office_description),
                                 opciones = elementosConCodigos.tiposOficinasComarcales(),
-                                onExpandedChange = { viewModel.toggleOficinaComarcalExpandida() },
+                                onExpandedChange = { viewModel.toggleOficinaComarcalExpandido() },
                                 onDismissRequest = { viewModel.cerrarOficinaComarcalMenu() },
                                 onSeleccionar = { codigo, nombre -> viewModel.seleccionarOficinaComarcal(codigo, nombre) },
                                 defectColor = true
                             )
                         }
 
-                        // Campos dirección: visibles para "02" (opcionales) y "03" (obligatorios)
-                        if (codigoDestino == "02" || codigoDestino == "03") {
-                            if (codigoDestino == "02") {
+                        // Campos de dirección alternativa (solo si destino == código "03")
+                        if (viewModel.getCodigoDirecioEnvio() == direccionExplatoacion || viewModel.getCodigoDirecioEnvio() == direccionAlternativa) {
+                            if (viewModel.getCodigoDirecioEnvio() == direccionExplatoacion) {
                                 Text(
                                     stringResource(R.string.mesagge_send_dades),
                                     fontSize = 16.sp,
@@ -329,64 +352,45 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                                     letterSpacing = 0.15.sp
                                 )
                             }
-                            // El asterisco "*" solo se muestra si el campo es obligatorio (destino "03")
-                            val sufijo = if (codigoDestino == "03") " *" else ""
-                            CampoTexto(
-                                label = stringResource(R.string.form_address) + sufijo,
-                                valor = direccion,
+                            CampoTextoDupli(
+                                label = stringResource(R.string.form_address) + " *",
+                                valor = direccionEnvio,
                                 placeholder = stringResource(R.string.form_address_description),
-                                onValueChange = { viewModel.actualizarDireccion(it) },
-                                defectColor = true
+                                onValueChange = { viewModel.actualizarDireccionEnvio(it) }
                             )
-                            CampoTexto(
-                                label = stringResource(R.string.form_poblacion) + sufijo,
+                            CampoTextoDupli(
+                                label = stringResource(R.string.form_poblacion) + " *",
                                 valor = poblacion,
                                 placeholder = stringResource(R.string.form_poblacion_description),
-                                onValueChange = { viewModel.actualizarPoblacion(it) },
-                                defectColor = true
+                                onValueChange = { viewModel.actualizarPoblacion(it) }
                             )
-                            CampoTexto(
-                                label = stringResource(R.string.form_postal_code) + sufijo,
+                            CampoTextoDupli(
+                                label = stringResource(R.string.form_postal_code) + " *",
                                 valor = codigoPostal,
                                 placeholder = stringResource(R.string.form_postal_code_description),
                                 keyboardType = KeyboardType.Number,
-                                onValueChange = { viewModel.actualizarCodigoPostal(it) },
-                                defectColor = true
+                                onValueChange = { viewModel.actualizarCodigoPostal(it) }
                             )
-                            CampoTexto(
-                                label = stringResource(R.string.form_municipality) + sufijo,
+                            CampoTextoDupli(
+                                label = stringResource(R.string.form_municipality) + " *",
                                 valor = municipio,
                                 placeholder = stringResource(R.string.form_municipality_description),
-                                onValueChange = { viewModel.actualizarMunicipio(it) },
-                                defectColor = true
+                                onValueChange = { viewModel.actualizarMunicipio(it) }
                             )
-                            CampoTexto(
-                                label = stringResource(R.string.form_contact_phone) + sufijo,
-                                valor = telefonoContacto,
+                            CampoTextoDupli(
+                                label = stringResource(R.string.form_contact_phone) + " *",
+                                valor = telefono,
                                 placeholder = stringResource(R.string.form_contact_phone_description),
                                 keyboardType = KeyboardType.Phone,
-                                onValueChange = { viewModel.actualizarTelefonoContacto(it) },
-                                defectColor = true
+                                onValueChange = { viewModel.actualizarTelefonoContacto(it) }
                             )
                         }
-
-                        DropdownField(
-                            label = stringResource(R.string.form_material_type) + " *",
-                            selectedValue = tipoMaterial,
-                            expanded = tipoMaterialExpandido,
-                            placeholder = stringResource(R.string.form_material_type_description),
-                            opciones = elementosConCodigos.tiposMaterial(),
-                            onExpandedChange = { viewModel.toggleTipoMaterialExpandido() },
-                            onDismissRequest = { viewModel.cerrarTipoMaterialMenu() },
-                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarTipoMaterial(nombre, codigo) },
-                            defectColor = true
-                        )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // ---- CARD: Unidades ----
+                // ---- CARD: Identificadores ----
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -401,6 +405,7 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                             .padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
+                        // Cabecera de la sección
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -413,7 +418,7 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                                 color = DarkBlueGrey
                             )
                             TextButton(
-                                onClick = { viewModel.agregarUnidades() },
+                                onClick = { viewModel.agregarIdentificador() },
                                 colors = ButtonDefaults.textButtonColors(contentColor = MainGreen)
                             ) {
                                 Icon(
@@ -426,31 +431,25 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                             }
                         }
 
-                        // Aviso informativo si el codiMo es obligatorio
-                        if (codiMoObligatorio) {
-                            Text(
-                                text = stringResource(R.string.alert_material_codiMo),
-                                fontSize = 13.sp,
-                                color = ErrorRed,
-                                fontWeight = FontWeight.Medium
-                            )
-                        }
-
                         HorizontalDivider(color = DarkWhiteBackground, thickness = 1.dp)
 
-                        listaUnidades.forEachIndexed { indice, item ->
-                            UnidadesItem(
+                        // Renderizar cada identificador
+                        listaIdentificadores.forEachIndexed { indice, item ->
+                            IdentificadorItem(
                                 indice = indice,
-                                codiMo = item.codiExplotacio,
-                                unidades = item.nombreUnitats,
-                                mostrarEliminar = listaUnidades.size > 1,
-                                codiMoObligatorio = codiMoObligatorio,
-                                oncodiMoChange = { viewModel.actualizarCodiExplotacio(indice, it) },
-                                onEliminar = { viewModel.eliminarUnidades(indice) },
-                                onUnidadesChange = { viewModel.actualizarUnidades(indice, it) }
+                                identificador = item.identificador,
+                                tipusMaterial = item.tipusMaterial,
+                                tiposMaterial = tiposMaterial,
+                                tipoMaterialExpandido = tipoMaterialExpandidoMap[indice] ?: false,
+                                mostrarEliminar = listaIdentificadores.size > 1,
+                                onIdentificadorChange = { viewModel.actualizarIdentificador(indice, it) },
+                                onTipoMaterialExpandedChange = { viewModel.toggleTipoMaterialExpandido(indice) },
+                                onTipoMaterialDismiss = { viewModel.cerrarTipoMaterialMenu(indice) },
+                                onTipoMaterialSeleccionado = { codigo -> viewModel.seleccionarTipoMaterialIdentificador(indice, codigo) },
+                                onEliminar = { viewModel.eliminarIdentificador(indice) }
                             )
 
-                            if (indice < listaUnidades.lastIndex) {
+                            if (indice < listaIdentificadores.lastIndex) {
                                 HorizontalDivider(
                                     color = DarkWhiteBackground,
                                     thickness = 1.dp,
@@ -461,13 +460,14 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                     }
                 }
 
+                // Botón Solicitar
                 Button(
-                    onClick = { viewModel.solicitarMaterial() },
+                    onClick = { viewModel.solicitarDuplicado() },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp, vertical = 24.dp)
                         .height(56.dp),
-                    enabled = !estadoCarga,
+                    enabled = !cargando,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MainGreen,
                         disabledContainerColor = DarkWhiteBackground
@@ -479,7 +479,7 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                     )
                 ) {
                     Text(
-                        "Solicitar Material",
+                        stringResource(R.string.btn_duplicate_request),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         letterSpacing = 0.5.sp
@@ -492,29 +492,35 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
     }
 }
 
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun UnidadesItem(
+private fun IdentificadorItem(
     indice: Int,
-    codiMo: String?,
-    unidades: String,
+    identificador: String,
+    tipusMaterial: String,
+    tiposMaterial: Map<String, String>,
+    tipoMaterialExpandido: Boolean,
     mostrarEliminar: Boolean,
-    codiMoObligatorio: Boolean,
-    oncodiMoChange: (String) -> Unit,
-    onUnidadesChange: (String) -> Unit,
+    onIdentificadorChange: (String) -> Unit,
+    onTipoMaterialExpandedChange: () -> Unit,
+    onTipoMaterialDismiss: () -> Unit,
+    onTipoMaterialSeleccionado: (String) -> Unit,
     onEliminar: () -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        // Número de ítem + botón eliminar
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                stringResource(R.string.form_unitats) + " ${indice + 1}",
+                stringResource(R.string.label_identifier_count) + " ${indice + 1}",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = BlueGrey
@@ -526,7 +532,7 @@ private fun UnidadesItem(
                 ) {
                     Icon(
                         Icons.Default.Delete,
-                        contentDescription = "Eliminar unidad",
+                        contentDescription = "Eliminar identificador",
                         tint = ErrorRed,
                         modifier = Modifier.size(20.dp)
                     )
@@ -534,11 +540,10 @@ private fun UnidadesItem(
             }
         }
 
-        // Codi MO — label dinámico con/sin asterisco según obligatoriedad
+        // Campo Identificador
         Column(modifier = Modifier.fillMaxWidth()) {
             Text(
-                // Muestra "*" solo si es obligatorio para el tipo de material actual
-                text = stringResource(R.string.label_codimo) + if (codiMoObligatorio) " *" else "",
+                stringResource(R.string.form_id_animal),
                 fontSize = 15.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = DarkBlueGrey,
@@ -546,50 +551,19 @@ private fun UnidadesItem(
             )
             Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
-                value = codiMo ?: "",
-                onValueChange = oncodiMoChange,
+                value = identificador,
+                onValueChange = onIdentificadorChange,
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text(stringResource(R.string.form_codiMo_description), color = BlueGrey) },
-                singleLine = true,
-                shape = MaterialTheme.shapes.medium,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = if (codiMoObligatorio && codiMo.isNullOrEmpty()) ErrorRed else MainGreen,
-                    unfocusedBorderColor = if (codiMoObligatorio && codiMo.isNullOrEmpty()) ErrorRed.copy(alpha = 0.5f) else DarkWhiteBackground,
-                    focusedTextColor = DarkBlueGrey,
-                    unfocusedTextColor = DarkBlueGrey,
-                    cursorColor = MainGreen
-                ),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Text,
-                    autoCorrect = false
-                )
-            )
-            // Mensaje de ayuda visual si está vacío y es obligatorio
-            if (codiMoObligatorio && codiMo.isNullOrEmpty()) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = stringResource(R.string.alert_necessary_codiMO),
-                    fontSize = 12.sp,
-                    color = ErrorRed
-                )
-            }
-        }
-
-        // Unidades
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Text(
-                stringResource(R.string.form_unitats) + " *",
-                fontSize = 15.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = DarkBlueGrey,
-                letterSpacing = 0.15.sp
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(
-                value = unidades,
-                onValueChange = onUnidadesChange,
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text(stringResource(R.string.form_unitats_description), color = BlueGrey) },
+                placeholder = { Text(stringResource(R.string.form_id_scan_description), color = BlueGrey) },
+                trailingIcon = {
+                    IconButton(onClick = { /* Acción cámara */ }) {
+                        Icon(
+                            Icons.Outlined.CameraAlt,
+                            contentDescription = "Escanear",
+                            tint = MainGreen
+                        )
+                    }
+                },
                 singleLine = true,
                 shape = MaterialTheme.shapes.medium,
                 colors = OutlinedTextFieldDefaults.colors(
@@ -599,8 +573,102 @@ private fun UnidadesItem(
                     unfocusedTextColor = DarkBlueGrey,
                     cursorColor = MainGreen
                 ),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    autoCorrect = false
+                )
             )
         }
+
+        // Dropdown Tipo de Material
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                stringResource(R.string.form_material_type) + " *",
+                fontSize = 15.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = DarkBlueGrey,
+                letterSpacing = 0.15.sp
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            ExposedDropdownMenuBox(
+                expanded = tipoMaterialExpandido,
+                onExpandedChange = { onTipoMaterialExpandedChange() }
+            ) {
+                val nombreSeleccionado = tiposMaterial[tipusMaterial] ?: ""
+                OutlinedTextField(
+                    value = nombreSeleccionado.ifEmpty { "" },
+                    onValueChange = {},
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(),
+                    readOnly = true,
+                    placeholder = { Text(stringResource(R.string.form_material_type_description), color = BlueGrey) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(tipoMaterialExpandido) },
+                    singleLine = true,
+                    shape = MaterialTheme.shapes.medium,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MainGreen,
+                        unfocusedBorderColor = DarkWhiteBackground,
+                        focusedTextColor = DarkBlueGrey,
+                        unfocusedTextColor = DarkBlueGrey
+                    )
+                )
+                ExposedDropdownMenu(
+                    expanded = tipoMaterialExpandido,
+                    onDismissRequest = { onTipoMaterialDismiss() },
+                    modifier = Modifier.background(Color.White)
+                ) {
+                    tiposMaterial.forEach { (codigo, nombre) ->
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    nombre,
+                                    fontSize = 15.sp,
+                                    color = DarkBlueGrey
+                                )
+                            },
+                            onClick = { onTipoMaterialSeleccionado(codigo) },
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CampoTextoDupli(
+    label: String,
+    valor: String,
+    placeholder: String,
+    keyboardType: KeyboardType = KeyboardType.Text,
+    onValueChange: (String) -> Unit
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            label,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = DarkBlueGrey,
+            letterSpacing = 0.15.sp
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedTextField(
+            value = valor,
+            onValueChange = onValueChange,
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text(placeholder, color = BlueGrey) },
+            singleLine = true,
+            shape = MaterialTheme.shapes.medium,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MainGreen,
+                unfocusedBorderColor = DarkWhiteBackground,
+                focusedTextColor = DarkBlueGrey,
+                unfocusedTextColor = DarkBlueGrey,
+                cursorColor = MainGreen
+            ),
+            keyboardOptions = KeyboardOptions(keyboardType = keyboardType)
+        )
     }
 }

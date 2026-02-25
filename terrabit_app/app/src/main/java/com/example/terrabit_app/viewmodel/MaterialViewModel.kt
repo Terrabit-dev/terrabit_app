@@ -1,41 +1,48 @@
 package com.example.terrabit_app.viewmodel
 
+import android.app.Application
 import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.terrabit_app.data.network.Identificadores.IdenSolicitudDupli
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.material.PetSolicitudMaterial
 import com.example.terrabit_app.data.network.material.Unitat
+import com.example.terrabit_app.utils.UserPreferences
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class MaterialViewModel : ViewModel() {
+class MaterialViewModel(application: Application) : AndroidViewModel(application) {
 
-    // Instancia del repositorio
-    private lateinit var repositorio: Repositorio
+    private var repositorio = Repositorio(application)
+    private val userPreferences = UserPreferences(application)
+
+    val nif = userPreferences.getNif() ?: ""
+    val password = userPreferences.getPassword() ?: ""
 
     // ============================================
-    // SECCIÓN: SOLICITUD DE MATERIAL
+    // ESTADOS DEL FORMULARIO
     // ============================================
 
-    // Estados del formulario de material
     private val _empresaSubministradora = MutableLiveData("")
     val empresaSubministradora = _empresaSubministradora
-
     private val _codigoEmpresa = MutableLiveData("")
 
     private val _tipoEnviamiento = MutableLiveData("")
     val tipoEnviamiento = _tipoEnviamiento
+    // Almacena el código real del tipo de envío (ej: "01", "04")
+    private var codigoTipoEnvio = ""
 
     private val _destinoLliurament = MutableLiveData("")
     val destinoLliurament = _destinoLliurament
+    // Almacena el código real del destino (ej: "01", "02", "03")
+    private var codiDestinoEnvio = ""
 
     private val _oficinaComarcal = MutableLiveData("")
     val oficinaComarcal = _oficinaComarcal
-
-    private val _codigoOC = MutableLiveData("")
+    private var codigoOC = ""
 
     private val _direccion = MutableLiveData("")
     val direccion = _direccion
@@ -57,16 +64,24 @@ class MaterialViewModel : ViewModel() {
 
     private val _tipoMaterial = MutableLiveData("")
     val tipoMaterial = _tipoMaterial
-
+    // Almacena el código real del tipo de material (ej: "21", "22", "25", "26")
     private val _codigoTipoMaterial = MutableLiveData("")
 
-    private val _numeroUnidades = MutableLiveData("1")
-    val numeroUnidades = _numeroUnidades
+    // ============================================
+    // TIPOS DE MATERIAL QUE REQUIEREN CODI MO
+    // ============================================
 
-    private val _codigoExplotacion = MutableLiveData("")
-    val codigoExplotacion = _codigoExplotacion
+    // Estos códigos de material requieren codiMo obligatorio en cada unidad
+    private val tiposMaterialConCodiMoObligatorio = setOf("21", "22", "25", "26")
 
-    // Estados de expansión de menús desplegables - Material
+    fun codiMoEsObligatorio(): Boolean {
+        return _codigoTipoMaterial.value in tiposMaterialConCodiMoObligatorio
+    }
+
+    // ============================================
+    // ESTADOS DE EXPANSIÓN DE MENÚS
+    // ============================================
+
     private val _empresaExpandida = MutableLiveData(false)
     val empresaExpandida = _empresaExpandida
 
@@ -82,207 +97,188 @@ class MaterialViewModel : ViewModel() {
     private val _tipoMaterialExpandido = MutableLiveData(false)
     val tipoMaterialExpandido = _tipoMaterialExpandido
 
-    // Estados para feedback del registro - Material
+    // ============================================
+    // ESTADOS DE FEEDBACK
+    // ============================================
+
     private val _registroMaterialExitoso = MutableLiveData<Boolean>()
     val registroMaterialExitoso = _registroMaterialExitoso
 
     private val _mensajeErrorMaterial = MutableLiveData<String>()
     val mensajeErrorMaterial = _mensajeErrorMaterial
 
-    // Estado de carga - NUEVO
     private val _cargandoMaterial = MutableLiveData(false)
     val cargandoMaterial = _cargandoMaterial
 
-    // Data classes para opciones UI
-    data class EmpresaSubministradora(val nif: String, val nombre: String)
-    data class OficinaComarcal(val codigo: String, val nombre: String)
-    data class TipoMaterial(val codigo: String, val nombre: String)
+    // ============================================
+    // SECCIÓN: Lista de unidades
+    // ============================================
 
-    // Listas de opciones - Material
-    val listaEmpresas = listOf(
-        EmpresaSubministradora("A60229508", "Tecnología Agrícola S.L."),
-        EmpresaSubministradora("B65432109", "Ganadera del Norte S.A."),
-        EmpresaSubministradora("C78945612", "Suministros Ganaderos Catalunya")
+    private val _listaUnidades = MutableLiveData<List<Unitat>>(
+        listOf(Unitat(codiExplotacio = "", nombreUnitats = ""))
     )
+    val listaUnidades = _listaUnidades
 
-    val listaTiposEnviamiento = listOf(
-        "01 - Correo ordinario",
-        "04 - Correo certificado"
-    )
+    fun agregarUnidades() {
+        val listaActual = _listaUnidades.value?.toMutableList() ?: mutableListOf()
+        listaActual.add(Unitat(codiExplotacio = "", nombreUnitats = ""))
+        _listaUnidades.value = listaActual
+    }
 
-    val listaDestinos = listOf(
-        "01 - Oficina Comarcal (OC)",
-        "02 - Ramader/ER",
-        "03 - Dirección alternativa"
-    )
+    fun eliminarUnidades(indice: Int) {
+        val listaActual = _listaUnidades.value?.toMutableList() ?: return
+        if (listaActual.size > 1) {
+            listaActual.removeAt(indice)
+            _listaUnidades.value = listaActual
+        }
+    }
 
-    val listaOficinasComarcales = listOf(
-        OficinaComarcal("OC001", "Barcelona"),
-        OficinaComarcal("OC002", "Girona"),
-        OficinaComarcal("OC003", "Lleida"),
-        OficinaComarcal("OC004", "Tarragona")
-    )
+    fun actualizarCodiExplotacio(indice: Int, valor: String) {
+        val listaActual = _listaUnidades.value?.toMutableList() ?: return
+        if (indice < listaActual.size) {
+            listaActual[indice] = listaActual[indice].copy(codiExplotacio = valor)
+            _listaUnidades.value = listaActual
+        }
+    }
 
-    val listaTiposMaterial = listOf(
-        TipoMaterial("07", "Crotal"),
-        TipoMaterial("20", "Crotal electrónico"),
-        TipoMaterial("21", "Injectable electrónico"),
-        TipoMaterial("22", "Bol ruminal")
-    )
+    fun actualizarUnidades(indice: Int, valor: String) {
+        val listaActual = _listaUnidades.value?.toMutableList() ?: return
+        if (indice < listaActual.size) {
+            listaActual[indice] = listaActual[indice].copy(nombreUnitats = valor)
+            _listaUnidades.value = listaActual
+        }
+    }
 
-    // Funciones para actualizar los campos - Material
+    // ============================================
+    // FUNCIONES DE SELECCIÓN
+    // ============================================
+
     fun seleccionarEmpresa(nombre: String, nif: String) {
         _empresaSubministradora.value = nombre
         _codigoEmpresa.value = nif
         _empresaExpandida.value = false
     }
 
-    fun seleccionarTipoEnviamiento(tipo: String) {
+    fun seleccionarTipoEnviamiento(tipo: String, codigo: String) {
         _tipoEnviamiento.value = tipo
+        codigoTipoEnvio = codigo             // Guardamos el código real
         _tipoEnviamientoExpandido.value = false
     }
 
-    fun seleccionarDestino(destino: String) {
+    fun seleccionarDestino(destino: String, codigo: String) {
         _destinoLliurament.value = destino
-        _destinoExpandido.value = false
+        codiDestinoEnvio = codigo            // Guardamos el código real
 
-        when {
-            destino.startsWith("01") -> {
+        // Limpieza de campos condicionales según el CÓDIGO (no el nombre)
+        when (codigo) {
+            "01" -> {                        // OC: limpiar campos de dirección libre
                 _direccion.value = ""
                 _poblacion.value = ""
                 _codigoPostal.value = ""
                 _municipio.value = ""
                 _telefonoContacto.value = ""
             }
-            destino.startsWith("02") -> {
+            "02", "03" -> {                 // Explotación / Dirección alternativa: limpiar OC
                 _oficinaComarcal.value = ""
-                _codigoOC.value = ""
-            }
-            destino.startsWith("03") -> {
-                _oficinaComarcal.value = ""
-                _codigoOC.value = ""
+                codigoOC = ""
             }
         }
+
+        _destinoExpandido.value = false
     }
 
     fun seleccionarOficinaComarcal(nombre: String, codigo: String) {
         _oficinaComarcal.value = nombre
-        _codigoOC.value = codigo
+        codigoOC = codigo
         _oficinaComarcalExpandida.value = false
     }
 
     fun seleccionarTipoMaterial(nombre: String, codigo: String) {
         _tipoMaterial.value = nombre
-        _codigoTipoMaterial.value = codigo
+        _codigoTipoMaterial.value = codigo   // Guardamos el código real
         _tipoMaterialExpandido.value = false
     }
 
-    fun actualizarDireccion(valor: String) {
-        _direccion.value = valor
-    }
-
-    fun actualizarPoblacion(valor: String) {
-        _poblacion.value = valor
-    }
-
+    fun actualizarDireccion(valor: String) { _direccion.value = valor }
+    fun actualizarPoblacion(valor: String) { _poblacion.value = valor }
     fun actualizarCodigoPostal(valor: String) {
         if (valor.length <= 5 && (valor.isEmpty() || valor.all { it.isDigit() })) {
             _codigoPostal.value = valor
         }
     }
-
-    fun actualizarMunicipio(valor: String) {
-        _municipio.value = valor
-    }
-
+    fun actualizarMunicipio(valor: String) { _municipio.value = valor }
     fun actualizarTelefonoContacto(valor: String) {
         if (valor.all { it.isDigit() || it.isWhitespace() }) {
             _telefonoContacto.value = valor
         }
     }
+    fun actualizarIdentificadorMaterial(valor: String) { _identificadorMaterial.value = valor }
 
-    fun actualizarIdentificadorMaterial(valor: String) {
-        _identificadorMaterial.value = valor
-    }
+    // ============================================
+    // FUNCIONES DE EXPANSIÓN DE MENÚS
+    // ============================================
 
-    fun actualizarNumeroUnidades(valor: String) {
-        if (valor.isEmpty() || valor.all { it.isDigit() }) {
-            _numeroUnidades.value = valor
-        }
-    }
+    fun toggleEmpresaExpandida() { _empresaExpandida.value = !(_empresaExpandida.value ?: false) }
+    fun toggleTipoEnviamientoExpandido() { _tipoEnviamientoExpandido.value = !(_tipoEnviamientoExpandido.value ?: false) }
+    fun toggleDestinoExpandido() { _destinoExpandido.value = !(_destinoExpandido.value ?: false) }
+    fun toggleOficinaComarcalExpandida() { _oficinaComarcalExpandida.value = !(_oficinaComarcalExpandida.value ?: false) }
+    fun toggleTipoMaterialExpandido() { _tipoMaterialExpandido.value = !(_tipoMaterialExpandido.value ?: false) }
 
-    fun actualizarCodigoExplotacion(valor: String) {
-        _codigoExplotacion.value = valor
-    }
+    fun cerrarEmpresaMenu() { _empresaExpandida.value = false }
+    fun cerrarTipoEnviamientoMenu() { _tipoEnviamientoExpandido.value = false }
+    fun cerrarDestinoMenu() { _destinoExpandido.value = false }
+    fun cerrarOficinaComarcalMenu() { _oficinaComarcalExpandida.value = false }
+    fun cerrarTipoMaterialMenu() { _tipoMaterialExpandido.value = false }
 
-    // Funciones para controlar la expansión de menús - Material
-    fun toggleEmpresaExpandida() {
-        _empresaExpandida.value = !(_empresaExpandida.value ?: false)
-    }
+    // ============================================
+    // EXPOSICIÓN DE CÓDIGOS INTERNOS (para la UI)
+    // ============================================
 
-    fun toggleTipoEnviamientoExpandido() {
-        _tipoEnviamientoExpandido.value = !(_tipoEnviamientoExpandido.value ?: false)
-    }
+    fun getCodigoTipoEnvio(): String = codigoTipoEnvio
+    fun getCodiDestinoEnvio(): String = codiDestinoEnvio
+    fun getCodigoTipoMaterial(): String = _codigoTipoMaterial.value ?: ""
 
-    fun toggleDestinoExpandido() {
-        _destinoExpandido.value = !(_destinoExpandido.value ?: false)
-    }
+    // ============================================
+    // VALIDACIÓN
+    // ============================================
 
-    fun toggleOficinaComarcalExpandida() {
-        _oficinaComarcalExpandida.value = !(_oficinaComarcalExpandida.value ?: false)
-    }
-
-    fun toggleTipoMaterialExpandido() {
-        _tipoMaterialExpandido.value = !(_tipoMaterialExpandido.value ?: false)
-    }
-
-    fun cerrarEmpresaMenu() {
-        _empresaExpandida.value = false
-    }
-
-    fun cerrarTipoEnviamientoMenu() {
-        _tipoEnviamientoExpandido.value = false
-    }
-
-    fun cerrarDestinoMenu() {
-        _destinoExpandido.value = false
-    }
-
-    fun cerrarOficinaComarcalMenu() {
-        _oficinaComarcalExpandida.value = false
-    }
-
-    fun cerrarTipoMaterialMenu() {
-        _tipoMaterialExpandido.value = false
-    }
-
-    // Función para validar el formulario - Material
     fun esFormularioMaterialValido(): Boolean {
-        val empresaValida = !_empresaSubministradora.value.isNullOrEmpty()
-        val tipoEnviamientoValido = !_tipoEnviamiento.value.isNullOrEmpty()
-        val destinoValido = !_destinoLliurament.value.isNullOrEmpty()
-        val identificadorValido = !_identificadorMaterial.value.isNullOrEmpty()
-        val tipoMaterialValido = !_tipoMaterial.value.isNullOrEmpty()
+        // Campos siempre obligatorios
+        if (_empresaSubministradora.value.isNullOrEmpty()) return false
+        if (_tipoEnviamiento.value.isNullOrEmpty()) return false
+        if (_destinoLliurament.value.isNullOrEmpty()) return false
+        if (_tipoMaterial.value.isNullOrEmpty()) return false
 
-        val camposDestinoValidos = when {
-            _destinoLliurament.value?.startsWith("01") == true -> {
-                !_oficinaComarcal.value.isNullOrEmpty()
+        // Campos condicionales según el CÓDIGO real del destino
+        when (codiDestinoEnvio) {
+            "01" -> if (codigoOC.isEmpty()) return false
+            "02" -> { /* campos de dirección opcionales */ }
+            "03" -> {
+                if (_direccion.value.isNullOrEmpty()) return false
+                if (_poblacion.value.isNullOrEmpty()) return false
+                if (_codigoPostal.value.isNullOrEmpty()) return false
+                if (_municipio.value.isNullOrEmpty()) return false
+                if (_telefonoContacto.value.isNullOrEmpty()) return false
             }
-            _destinoLliurament.value?.startsWith("03") == true -> {
-                !_direccion.value.isNullOrEmpty() &&
-                        !_poblacion.value.isNullOrEmpty() &&
-                        !_codigoPostal.value.isNullOrEmpty() &&
-                        !_municipio.value.isNullOrEmpty() &&
-                        !_telefonoContacto.value.isNullOrEmpty()
-            }
-            else -> true
         }
 
-        return empresaValida && tipoEnviamientoValido && destinoValido &&
-                camposDestinoValidos && identificadorValido && tipoMaterialValido
+        // Validar unidades: nombreUnitats siempre obligatorio
+        val unidades = _listaUnidades.value ?: return false
+        if (unidades.isEmpty()) return false
+        if (unidades.any { it.nombreUnitats.isNullOrEmpty() }) return false
+
+        // Si el tipo de material requiere codiMo, validar que todas las unidades lo tengan
+        if (codiMoEsObligatorio()) {
+            if (unidades.any { it.codiExplotacio.isNullOrEmpty() }) return false
+        }
+
+        return true
     }
 
-    // Función para solicitar material
+    // ============================================
+    // LLAMADA A LA API
+    // ============================================
+
     fun solicitarMaterial() {
         if (!esFormularioMaterialValido()) {
             val mensajeError = when {
@@ -292,22 +288,24 @@ class MaterialViewModel : ViewModel() {
                     "Por favor, seleccione el tipo de envío"
                 _destinoLliurament.value.isNullOrEmpty() ->
                     "Por favor, seleccione el destino de entrega"
-                _destinoLliurament.value?.startsWith("01") == true && _oficinaComarcal.value.isNullOrEmpty() ->
+                codiDestinoEnvio == "01" && codigoOC.isEmpty() ->
                     "Por favor, seleccione la oficina comarcal"
-                _destinoLliurament.value?.startsWith("03") == true && _direccion.value.isNullOrEmpty() ->
+                codiDestinoEnvio == "03" && _direccion.value.isNullOrEmpty() ->
                     "Por favor, introduzca la dirección"
-                _destinoLliurament.value?.startsWith("03") == true && _poblacion.value.isNullOrEmpty() ->
+                codiDestinoEnvio == "03" && _poblacion.value.isNullOrEmpty() ->
                     "Por favor, introduzca la población"
-                _destinoLliurament.value?.startsWith("03") == true && _codigoPostal.value.isNullOrEmpty() ->
+                codiDestinoEnvio == "03" && _codigoPostal.value.isNullOrEmpty() ->
                     "Por favor, introduzca el código postal"
-                _destinoLliurament.value?.startsWith("03") == true && _municipio.value.isNullOrEmpty() ->
+                codiDestinoEnvio == "03" && _municipio.value.isNullOrEmpty() ->
                     "Por favor, introduzca el municipio"
-                _destinoLliurament.value?.startsWith("03") == true && _telefonoContacto.value.isNullOrEmpty() ->
+                codiDestinoEnvio == "03" && _telefonoContacto.value.isNullOrEmpty() ->
                     "Por favor, introduzca el teléfono de contacto"
-                _identificadorMaterial.value.isNullOrEmpty() ->
-                    "Por favor, introduzca el identificador"
                 _tipoMaterial.value.isNullOrEmpty() ->
                     "Por favor, seleccione el tipo de material"
+                _listaUnidades.value?.any { it.nombreUnitats.isNullOrEmpty() } == true ->
+                    "Por favor, introduzca el número de unidades en cada fila"
+                codiMoEsObligatorio() && _listaUnidades.value?.any { it.codiExplotacio.isNullOrEmpty() } == true ->
+                    "El Codi MO es obligatorio para el tipo de material seleccionado"
                 else ->
                     "Por favor, complete todos los campos obligatorios"
             }
@@ -317,41 +315,39 @@ class MaterialViewModel : ViewModel() {
         }
 
         viewModelScope.launch {
-            // Activar indicador de carga
             _cargandoMaterial.postValue(true)
-
             try {
-                val codigoTipoEnvio = _tipoEnviamiento.value?.substring(0, 2) ?: ""
-                val codigoDestino = _destinoLliurament.value?.substring(0, 2) ?: ""
+                // Usamos los códigos reales almacenados, no intentamos extraerlos del texto mostrado
+                val adrecaFinal = if (codiDestinoEnvio == "03") _direccion.value else null
+                val poblacionFinal = if (codiDestinoEnvio == "03") _poblacion.value else null
+                val cpFinal = if (codiDestinoEnvio == "03") _codigoPostal.value else null
+                val municipioFinal = if (codiDestinoEnvio == "03") _municipio.value else null
+                val telefonoFinal = if (codiDestinoEnvio == "03") _telefonoContacto.value else null
+                val ocFinal = if (codiDestinoEnvio == "01") codigoOC else null
 
-                val adrecaFinal = if (codigoDestino == "03") _direccion.value else null
-                val poblacionFinal = if (codigoDestino == "03") _poblacion.value else null
-                val cpFinal = if (codigoDestino == "03") _codigoPostal.value else null
-                val municipioFinal = if (codigoDestino == "03") _municipio.value else null
-                val telefonoFinal = if (codigoDestino == "03") _telefonoContacto.value else null
-                val ocFinal = if (codigoDestino == "01") _codigoOC.value else null
+                // Para "02": incluir los campos de dirección si el usuario los rellenó (opcionales)
+                val adrecaFinalConOpcional = if (codiDestinoEnvio == "02") _direccion.value?.takeIf { it.isNotEmpty() } else adrecaFinal
+                val poblacionFinalConOpcional = if (codiDestinoEnvio == "02") _poblacion.value?.takeIf { it.isNotEmpty() } else poblacionFinal
+                val cpFinalConOpcional = if (codiDestinoEnvio == "02") _codigoPostal.value?.takeIf { it.isNotEmpty() } else cpFinal
+                val municipioFinalConOpcional = if (codiDestinoEnvio == "02") _municipio.value?.takeIf { it.isNotEmpty() } else municipioFinal
+                val telefonoFinalConOpcional = if (codiDestinoEnvio == "02") _telefonoContacto.value?.takeIf { it.isNotEmpty() } else telefonoFinal
 
-                val unidades = listOf(
-                    Unitat(
-                        codiExplotacio = _codigoExplotacion.value?.takeIf { it.isNotEmpty() },
-                        nombreUnitats = _numeroUnidades.value ?: "1"
-                    )
-                )
+                val unidades = _listaUnidades.value ?: listOf(Unitat(codiExplotacio = null, nombreUnitats = "1"))
 
                 val request = PetSolicitudMaterial(
-                    nif = "S0800608B",
-                    passwordMobilitat = "L1855m58",
+                    nif = nif,
+                    passwordMobilitat = password,
                     especie = "01",
                     empresaSubministradora = _codigoEmpresa.value ?: "",
-                    tipusEnviament = codigoTipoEnvio,
-                    adrecaLliurament = codigoDestino,
+                    tipusEnviament = codigoTipoEnvio,       // Código real, no texto
+                    adrecaLliurament = codiDestinoEnvio,    // Código real, no texto
                     oc = ocFinal,
-                    adreca = adrecaFinal,
-                    poblacio = poblacionFinal,
-                    cp = cpFinal,
-                    municipi = municipioFinal,
-                    telefonContacte = telefonoFinal,
-                    tipusMaterial = _codigoTipoMaterial.value ?: "",
+                    adreca = adrecaFinalConOpcional,
+                    poblacio = poblacionFinalConOpcional,
+                    cp = cpFinalConOpcional,
+                    municipi = municipioFinalConOpcional,
+                    telefonContacte = telefonoFinalConOpcional,
+                    tipusMaterial = _codigoTipoMaterial.value ?: "",  // Código real
                     unitats = unidades
                 )
 
@@ -360,20 +356,14 @@ class MaterialViewModel : ViewModel() {
                 val response = repositorio.putSolicitudMaterial(request)
 
                 withContext(Dispatchers.Main) {
-                    // Desactivar indicador de carga
                     _cargandoMaterial.value = false
-
                     when {
                         response.isSuccessful && response.body() != null -> {
                             val body = response.body()!!
-
                             if (body.codi == "0" || body.descripcio == "OK") {
                                 _registroMaterialExitoso.value = true
                                 _mensajeErrorMaterial.value = ""
-
-                                Log.d("Solicitud Material", "Material solicitado exitosamente")
-                                Log.d("Solicitud Material", "Respuesta: [${body.codi}] ${body.descripcio}")
-
+                                Log.d("Solicitud Material", "Exitoso: [${body.codi}] ${body.descripcio}")
                                 limpiarFormularioMaterial()
                             } else {
                                 _registroMaterialExitoso.value = false
@@ -385,17 +375,11 @@ class MaterialViewModel : ViewModel() {
                             val errorBody = response.errorBody()?.string()
                             _registroMaterialExitoso.value = false
                             _mensajeErrorMaterial.value = "Error HTTP ${response.code()}: ${response.message()}"
-
-                            Log.e("Error Solicitud Material", "HTTP ${response.code()}")
-                            Log.e("Error Solicitud Material", "Mensaje: ${response.message()}")
-                            if (errorBody != null) {
-                                Log.e("Error Solicitud Material", "Body: $errorBody")
-                            }
+                            Log.e("Error Solicitud Material", "HTTP ${response.code()} - $errorBody")
                         }
                         else -> {
                             _registroMaterialExitoso.value = false
                             _mensajeErrorMaterial.value = "Error: Respuesta vacía del servidor"
-                            Log.e("Error Solicitud Material", "Respuesta vacía del servidor")
                         }
                     }
                 }
@@ -429,19 +413,19 @@ class MaterialViewModel : ViewModel() {
         _empresaSubministradora.value = ""
         _codigoEmpresa.value = ""
         _tipoEnviamiento.value = ""
+        codigoTipoEnvio = ""
         _destinoLliurament.value = ""
+        codiDestinoEnvio = ""
         _oficinaComarcal.value = ""
-        _codigoOC.value = ""
+        codigoOC = ""
         _direccion.value = ""
         _poblacion.value = ""
         _codigoPostal.value = ""
         _municipio.value = ""
         _telefonoContacto.value = ""
-        _identificadorMaterial.value = ""
         _tipoMaterial.value = ""
         _codigoTipoMaterial.value = ""
-        _numeroUnidades.value = "1"
-        _codigoExplotacion.value = ""
+        _listaUnidades.value = listOf(Unitat(codiExplotacio = "", nombreUnitats = ""))
     }
 
     fun resetearEstadoRegistroMaterial() {

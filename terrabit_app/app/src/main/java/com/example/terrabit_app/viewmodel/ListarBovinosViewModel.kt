@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.lista_bovinos.Animal
+import com.example.terrabit_app.utils.UserPreferences
 import kotlinx.coroutines.launch
 
 class ListarBovinosViewModel(application: Application) : AndroidViewModel(application) {
@@ -22,11 +23,20 @@ class ListarBovinosViewModel(application: Application) : AndroidViewModel(applic
     private val _cargando = MutableLiveData(false)
     val cargando = _cargando
 
+    private val _refrescando = MutableLiveData(false)
+    val refrescando = _refrescando
+
     private val _error = MutableLiveData<String?>()
     val error = _error
 
     private val _busqueda = MutableLiveData("")
     val busqueda = _busqueda
+
+    private val userPreferences = UserPreferences(application)
+
+    val nif = userPreferences.getNif() ?: ""
+    val password = userPreferences.getPassword() ?: ""
+    val codiMo = userPreferences.getCodiMO() ?: ""
 
     fun actualizarBusqueda(texto: String) {
         _busqueda.value = texto
@@ -46,18 +56,21 @@ class ListarBovinosViewModel(application: Application) : AndroidViewModel(applic
         }
     }
 
-    fun cargarBovinos(
-        nif: String = "S0800608B",
-        password: String = "L1855m58",
-        tipusVinculacio: String = "1",
-        explotacio: String = "1410AK"
-    ) {
+    fun refrescar() {
+        cargarBovinos(esRefresh = true)
+    }
+
+    fun cargarBovinos(esRefresh: Boolean = false) {
         viewModelScope.launch {
-            _cargando.value = true
+            if (esRefresh) {
+                _refrescando.value = true
+            } else {
+                _cargando.value = true
+            }
             _error.value = null
 
             try {
-                val response = repositorio.getListaBovinos(nif, password, tipusVinculacio, explotacio)
+                val response = repositorio.getListaBovinos(nif, password, "1", codiMo)
 
                 Log.d("PARSEO", "Response code: ${response.code()}")
 
@@ -70,7 +83,7 @@ class ListarBovinosViewModel(application: Application) : AndroidViewModel(applic
 
                     if (body != null && !body.identificadors.isNullOrEmpty()) {
                         _listaBovinos.value = body.identificadors
-                        _listaFiltrada.value = body.identificadors
+                        filtrarBovinos(_busqueda.value ?: "")
                         Log.d("PARSEO", "✅ Lista cargada: ${body.identificadors.size} bovinos")
                     } else {
                         _error.value = "Lista vacía"
@@ -84,6 +97,7 @@ class ListarBovinosViewModel(application: Application) : AndroidViewModel(applic
                 _error.value = "Error: ${e.message}"
             } finally {
                 _cargando.value = false
+                _refrescando.value = false
             }
         }
     }

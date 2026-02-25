@@ -35,6 +35,24 @@
     <string name="action_create_guide">Altas Guías</string>
     <string name="action_confirm_movement">Confirmar Movimientos</string>
 
+
+    <string name="list_bovinos_title">Listado de Bovinos</string>
+    <string name="search_bar_list_bovinos">Buscar por identificador...</string>
+
+    <string name="error_loading_list_bovinos">Error Desconocido</string>
+    <string name="retry_loading_list_bovinos">Reintentar</string>
+    <string name="empty_list_bovinos">No hay Bovinos</string>
+    <string name="no_results_list_bovinos">No se encontraron resultados</string>
+
+    <string name="card_info_sex">Sexo</string>
+    <string name="card_info_sex_male">Macho</string>
+    <string name="card_info_sex_female">Hembra</string>
+    <string name="card_info_date_born">Fecha Nac.</string>
+    <string name="card_info_mom">Madre</string>
+
+
+
+
     <string name="born_register_name">Registrar Nacimiento</string>
     <string name="form_id_mother">ID Madre *</string>
     <string name="form_mother_description">Introducir o escanear ID de la madre</string>
@@ -178,7 +196,7 @@
     <string name="form_error_selected_sex">Por favor, seleccione el sexo del animal</string>
     <string name="form_error_selected_raze">Por favor, seleccione la raza</string>
     <string name="form_error_selected_aptitude">Por favor, seleccione la aptitud</string>
-    <string name="form_error_universal">Por favor, complete todos los campos obligatorios marcados con *</string>w
+    <string name="form_error_universal">Por favor, complete todos los campos obligatorios marcados con *</string>
     <string name="form_error_type_dead">Por favor, seleccione el tipo (Fallecimiento o Aborto)</string>
     <string name="form_error_dead_date">Por favor, seleccione la fecha de muerte</string>
     <string name="form_error_months_pregnacy">Por favor, introduzca los meses de gestación (1-9)</string>
@@ -213,8 +231,6 @@
 
 
 
-
-
     <string name="form_date_identification">Fecha de Identificación *</string>
     <string name="form_id_animal">ID Animal *</string>
     <string name="form_id_animal_description">Introducir o escanear ID del animal</string>
@@ -231,4 +247,85 @@
     <string name="content_description_selecionado">Seleccionado</string>
     <string name="content_description_menu">Menú</string>
     <string name="content_description_notificaciones">Notificaciones</string>
+
+
+
+    <string name="no_results_description_draft">No hay Resultados :O</string>
+
+    <string name="title_draft">Borradores</string>
+    <string name="counter_draft">Guardados</string>
+
+    <string name="delete_all_option">Eliminar todos</string>
+    <string name="title_delete_all_option">Eliminar todos los borradores</string>
+    <string name="description_delete_all_option">¿Estás seguro de que deseas eliminar todos los borradores? Esta acción no se puede deshacer.</string>
+    <string name="cancel_delete_option_general">Cancelar</string>
+    <string name="confirm_delete_option_general">Confirmar</string>
+
+    <string name="search_bar_text">Buscar borradores...</string>
+
+    <string name="type_draft_title_death">Muerte</string>
+    <string name="type_draft_title_material">Material</string>
+    <string name="type_draft_title_born">Nacimiento</string>
+    <string name="type_draft_title_sex">Corrección Sexo</string>
+    <string name="type_draft_title_id">ID Aplazada</string>
+
+    <string name="status_draft_saved">Guardado</string>
+    <string name="status_draft_pending">Pendiente</string>
+    <string name="status_draft_sending">Enviando</string>
+    <string name="status_draft_error">Error</string>
+
+    <string name="no_hour_value">Sin hora</string>
+
+    <string name="edit_button_individual_card">Editar</string>
+    <string name="delete_button_individual_card">Eliminar</string>
+
+    <string name="option_ordinary_mail">Correo ordinario</string>
+    <string name="option_certificate_mail">Correo certificado</string>
+    <string name="option_rancher">Ganadero / Explotación ganadera</string>
+    <string name="option_alternative_address">Dirección alternativa</string>
+    <string name="option_crotal">Crotal</string>
+    <string name="option_electronic_crotal">Crotal electronico</string>
+    <string name="option_electronic_injectable">Inyectable electronico</string>
+    <string name="option_ruminal_bowl">Bolo ruminal</string>
+    <string name="duplicate_request_name">Solicitud de Duplicado</string>
+    <string name="title_duplicate_error">Error al Solicitar Duplicado</string>
+    <string name="success_duplicate_request">Duplicado solicitado exitosamente</string>
+    <string name="btn_duplicate_request">Solicitar Duplicado</string>
+
+    <string name="form_suply_company">Empresa Suministradora</string>
+    <string name="form_suply_company_description">Seleccionar empresa</string>
+    <string name="form_send_type">Tipo de Envío</string>
+    <string name="form_send_type_description">Seleccionar tipo de envío</string>
+    <string name="form_send_address">Dirección de Envío</string>
+    <string name="form_send_address_description">Seleccionar destino</string>
+    <string name="form_comarcal_office">Oficina Comarcal</string>
+    <string name="form_comarcal_office_description">Seleccionar oficina</string>
+    <string name="mesagge_send_dades">Datos de envío</string>
+    <string name="form_address">Dirección</string>
+    <string name="form_address_description">Calle, número, piso...</string>
+    <string name="form_poblacion">Población</string>
+    <string name="form_poblacion_description">Introducir población</string>
+    <string name="form_postal_code">Código Postal</string>
+    <string name="form_postal_code_description">Introducir código postal</string>
+    <string name="form_municipality">Municipio</string>
+    <string name="form_municipality_description">Introducir municipio</string>
+    <string name="form_contact_phone">Teléfono de Contacto</string>
+    <string name="form_contact_phone_description">Introducir teléfono</string>
+
+    <string name="title_identifiers">Identificadores</string>
+    <string name="label_identifier_count">Identificador</string>
+    <string name="action_add">Agregar</string>
+    <string name="form_material_type">Tipo de Material</string>
+    <string name="form_material_type_description">Seleccionar tipo de material</string>
+    <string name="form_id_scan_description">Introducir o escanear identificador</string>
+    <string name="option_crotal_simple_tisular">Crotal tisular simple</string>
+    <string name="option_crotal_double_tisular">Crotal tisular doble</string>
+    <string name="option_crotal_ruminal_bowl">Crotal + Bol ruminal</string>
+    <string name="option_crotal_electronic_crotal">Crotal + Crotal electronico</string>
+    <string name="option_rebuilding">Reidentificación</string>
+    <string name="form_unitats">Unidades</string>
+    <string name="form_codiMo_description">Ingrese el MO destinatario</string>
+    <string name="form_unitats_description">Ingrese el numero de unidades</string>
+    <string name="alert_material_codiMo">El Codi MO es obligatorio para el tipo de material seleccionado</string>
+    <string name="alert_necessary_codiMO">Campo obligatorio para este tipo de material</string>
 </resources>

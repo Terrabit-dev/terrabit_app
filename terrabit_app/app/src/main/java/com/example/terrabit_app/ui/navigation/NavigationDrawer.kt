@@ -3,8 +3,10 @@ package com.example.terrabit_app.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.example.terrabit_app.ui.pantallas.BorradoresScreen
 import com.example.terrabit_app.ui.pantallas.GestionBovinos
 import com.example.terrabit_app.ui.screen.porcinos.GestionPorcinos
@@ -18,11 +20,13 @@ import com.example.terrabit_app.ui.screen.bovinos.Home
 import com.example.terrabit_app.ui.screen.bovinos.IdentificacionApalzada
 import com.example.terrabit_app.ui.screen.bovinos.ListarBovinos
 import com.example.terrabit_app.ui.screen.bovinos.Material
+import com.example.terrabit_app.ui.screen.bovinos.MaterialDupplicadosScreen
 import com.example.terrabit_app.ui.screen.bovinos.Movimientos
 import com.example.terrabit_app.ui.screen.bovinos.Nacimiento
 import com.example.terrabit_app.ui.screen.porcinos.EntradasPorcinos
 import com.example.terrabit_app.ui.screen.porcinos.GestionGuiasPorcinos
 import com.example.terrabit_app.ui.screen.porcinos.HomePorcinos
+import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 import com.example.terrabit_app.viewmodel.BorradorViewModel
 import com.example.terrabit_app.viewmodel.CorrecionSexoViewModel
 import com.example.terrabit_app.viewmodel.DrawerViewModel
@@ -37,8 +41,7 @@ import com.example.terrabit_app.viewmodel.ViewModelMuerteBovi
 
 @Composable
 fun NavigationDrawer(
-    myViewmodel: MainViewmodel,
-    drawerViewModel: DrawerViewModel,
+    bluetooth : BluetoothViewModel,
     navController: NavHostController,
     onMenuClick: () -> Unit
 ) {
@@ -70,7 +73,8 @@ fun NavigationDrawer(
             val borradorViewModel: BorradorViewModel = viewModel()
             BorradoresScreen(
                 viewModel = borradorViewModel,
-                onMenuClick = onMenuClick
+                onMenuClick = onMenuClick,
+                navController = navController
             )
         }
 
@@ -108,24 +112,52 @@ fun NavigationDrawer(
         }
 
         // Pantallas de acciones específicas
-        composable(Routes.Nacimiento.route) {
-            val nacimientos: NacimientoViewmodel = viewModel()
-            Nacimiento(navController = navController, nacimientos)
+        composable(
+            route = Routes.Nacimiento.route,
+            arguments = listOf(navArgument("borradorId") {
+                type = NavType.StringType
+                defaultValue = ""
+                nullable = true
+            })
+        ) { backStackEntry ->
+            val borradorId = backStackEntry.arguments?.getString("borradorId") ?: ""
+            Nacimiento(navController = navController, bluetooth, borradorId)
         }
 
-        composable(Routes.Fallecimiento.route) {
-            val muertes: ViewModelMuerteBovi = viewModel()
-            Fallecimiento(navController = navController, muertes)
+        composable(
+            route = Routes.Fallecimiento.route,
+            arguments = listOf(navArgument("borradorId") {
+                type = NavType.StringType
+                defaultValue = ""
+                nullable = true
+            })
+        ) { backStackEntry ->
+            val borradorId = backStackEntry.arguments?.getString("borradorId") ?: ""
+            Fallecimiento(navController = navController, bluetooth, borradorId)
         }
 
-        composable(Routes.GestionGuias.route) {
-            val guiasViewModel: GuiasViewModel = viewModel()
-            GestionGuias(navController = navController, guiasViewModel)
+        composable(
+            route = Routes.GestionGuias.route,
+            arguments = listOf(navArgument("borradorId") {
+                type = NavType.StringType
+                defaultValue = ""
+                nullable = true
+            })
+        ) { backStackEntry ->
+            val borradorId = backStackEntry.arguments?.getString("borradorId") ?: ""
+            GestionGuias(navController = navController, bluetooth, borradorId)
         }
 
-        composable(Routes.Movimientos.route) {
-            val moviViewModel: MovimientosViewModel = viewModel()
-            Movimientos(navController = navController, moviViewModel)
+        composable(
+            route = Routes.Movimientos.route,
+            arguments = listOf(navArgument("borradorId") {
+                type = NavType.StringType
+                defaultValue = ""
+                nullable = true
+            })
+        ) { backStackEntry ->
+            val borradorId = backStackEntry.arguments?.getString("borradorId") ?: ""
+            Movimientos(navController = navController, bluetooth, borradorId)
         }
 
         composable(Routes.Material.route) {
@@ -133,14 +165,33 @@ fun NavigationDrawer(
             Material(navController = navController, materialV)
         }
 
-        composable(Routes.CorregirBovino.route) {
-            val corregirSexo: CorrecionSexoViewModel = viewModel()
-            CorregirSexoBovi(navController, corregirSexo)
+        composable(Routes.MaterialDuplicado.route){
+            MaterialDupplicadosScreen(navController)
         }
 
-        composable(Routes.IdentificacionAplazada.route) {
+        composable(
+            route = Routes.CorregirBovino.route,
+            arguments = listOf(navArgument("borradorId") {
+                type = NavType.StringType
+                defaultValue = ""
+                nullable = true
+            })
+        ) { backStackEntry ->
+            val borradorId = backStackEntry.arguments?.getString("borradorId") ?: ""
+            CorregirSexoBovi(navController, bluetooth, borradorId)
+        }
+
+        composable(
+            route = Routes.IdentificacionAplazada.route,
+            arguments = listOf(navArgument("borradorId") {
+                type = NavType.StringType
+                defaultValue = ""
+                nullable = true
+            })
+        ) { backStackEntry ->
             val identificacion: IdentificacionAplazaViewModel = viewModel()
-            IdentificacionApalzada(navController, identificacion)
+            val borradorId = backStackEntry.arguments?.getString("borradorId") ?: ""
+            IdentificacionApalzada(navController, bluetooth, borradorId)
         }
 
         // Pantallas Porcinos

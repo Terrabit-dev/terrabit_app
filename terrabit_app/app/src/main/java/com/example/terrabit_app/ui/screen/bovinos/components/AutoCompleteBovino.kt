@@ -13,11 +13,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.terrabit_app.data.network.lista_bovinos.Animal
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.example.terrabit_app.R
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,7 +38,7 @@ fun AutoCompleteBovinoField(
     var expanded by remember { mutableStateOf(false) }
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    // ✅ AÑADIDO: Auto-expandir cuando hay sugerencias
+    // Auto-expandir cuando hay sugerencias
     LaunchedEffect(suggestions, value) {
         expanded = value.isNotBlank() && suggestions.isNotEmpty()
     }
@@ -69,7 +72,7 @@ fun AutoCompleteBovinoField(
                 }
             },
             modifier = Modifier.fillMaxWidth(),
-            // ✅ AÑADIDO: Estilo mejorado
+            // Estilo mejorado
             shape = RoundedCornerShape(8.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -85,7 +88,7 @@ fun AutoCompleteBovinoField(
                     .padding(top = 4.dp),
                 shape = RoundedCornerShape(8.dp),
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-                // ✅ AÑADIDO: Elevación para mejor visual
+                // Elevación para mejor visual
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
                 LazyColumn(
@@ -143,10 +146,11 @@ private fun SuggestionItem(
     HorizontalDivider()
 }
 
+@Composable
 private fun getSexoText(sexe: String): String {
     return when (sexe) {
-        "01" -> "Macho"
-        "02" -> "Hembra"
+        "01" -> stringResource(R.string.female)
+        "02" -> stringResource(R.string.male)
         else -> sexe
     }
 }

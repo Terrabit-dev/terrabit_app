@@ -21,9 +21,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -75,8 +73,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
+import com.example.terrabit_app.ui.navigation.Routes
+import com.example.terrabit_app.ui.screen.bovinos.components.AutoCompleteBovinoField
+import com.example.terrabit_app.ui.screen.bovinos.components.useDebounce
 import com.example.terrabit_app.ui.theme.BlueGrey
 import com.example.terrabit_app.ui.theme.DarkBlueGrey
 import com.example.terrabit_app.ui.theme.DarkOrange
@@ -88,15 +90,16 @@ import com.example.terrabit_app.ui.theme.WhiteBackground
 import com.example.terrabit_app.ui.theme.Yellow
 import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
+import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 import com.example.terrabit_app.viewmodel.ViewModelMuerteBovi
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) {
+fun Fallecimiento(navController: NavController, bluetoothViewModel: BluetoothViewModel, borradorId: String = "") {
+    val viewModel = viewModel<ViewModelMuerteBovi>()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    // Observar variables del ViewModel para Fallecimiento
     val tipoSeleccionado by viewModel.tipoMuerte.observeAsState("")
     val identificadorAnimal by viewModel.identificadorMuerte.observeAsState("")
     val fechaMuerte by viewModel.fechaMuerte.observeAsState("")
@@ -115,13 +118,10 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
 
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
-    var mostrarDialogoAviso by remember { mutableStateOf(false) }
-    var cantidadBorradores by remember { mutableStateOf(0) }
 
     val mensajeRegistroExitoso = stringResource(R.string.successful_message_dead)
     val mensajeRegistroError = stringResource(R.string.error_message_dead)
 
-    // Recursos con codigo
     val elementosConCodigos = ElementosConCodigos()
 
     // ============================================
@@ -130,60 +130,10 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
     LaunchedEffect(Unit) {
         viewModel.inicializarSharedPreferences(context)
 
-        val borradores = viewModel.obtenerBorradoresMuerte()
-        cantidadBorradores = borradores.size
-
-        if (cantidadBorradores >= 2) {
-            mostrarDialogoAviso = true
+        if (borradorId.isNotEmpty()) {
+            viewModel.cargarBorradorPorId(borradorId)
+            return@LaunchedEffect
         }
-    }
-
-    // ============================================
-    // DIÁLOGO DE AVISO DE BORRADORES
-    // ============================================
-    if (mostrarDialogoAviso) {
-        AlertDialog(
-            onDismissRequest = { },
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.Description,
-                    contentDescription = null,
-                    tint = ErrorRed,
-                    modifier = Modifier.size(48.dp)
-                )
-            },
-            title = {
-                Text(
-                    text = "Borradores pendientes",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
-                    color = DarkBlueGrey
-                )
-            },
-            text = {
-                Text(
-                    text = "Tienes $cantidadBorradores borradores guardados de este formulario. Puedes verlos en la página de Borradores.\n\n¿Deseas crear uno nuevo?",
-                    fontSize = 16.sp,
-                    color = BlueGrey,
-                    lineHeight = 24.sp
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        mostrarDialogoAviso = false
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = ErrorRed
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text("Crear nuevo", fontWeight = FontWeight.SemiBold)
-                }
-            },
-            containerColor = Color.White,
-            shape = RoundedCornerShape(16.dp)
-        )
     }
 
     // ============================================
@@ -360,7 +310,7 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                         }
                     },
                     navigationIcon = {
-                        IconButton(onClick = { navController.popBackStack() }) {
+                        IconButton(onClick = { navController.navigate(Routes.GestionBovinos.route) }) {
                             Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
                         }
                     },
@@ -407,7 +357,6 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                             .padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
-                        // Tipo (Mort / Avortament)
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 stringResource(R.string.form_type_dead),
@@ -475,7 +424,6 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                             }
                         }
 
-                        // ID Animal / ID Madre
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 if (tipoMuerte.contains("01")) stringResource(R.string.form_id_animal) else stringResource(R.string.form_id_mother),
@@ -485,46 +433,32 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
-                            OutlinedTextField(
+
+                            val suggestionsBovinos by viewModel.suggestionsBovinos.observeAsState(emptyList())
+                            val isLoadingBovinos by viewModel.isLoadingBovinos.observeAsState(false)
+
+                            useDebounce(identificadorAnimal, delayMillis = 300L) { query ->
+                                viewModel.searchBovinos(query)
+                            }
+
+                            AutoCompleteBovinoField(
                                 value = identificadorAnimal,
                                 onValueChange = { viewModel.actualizarIdentificadorMuerte(it) },
-                                modifier = Modifier.fillMaxWidth(),
-                                placeholder = {
-                                    Text(
-                                        if (tipoMuerte.contains("01"))
-                                            stringResource(R.string.form_id_animal_description)
-                                        else
-                                            stringResource(R.string.form_mother_description),
-                                        color = BlueGrey
-                                    )
-                                },
-                                trailingIcon = {
-                                    IconButton(onClick = { /* Acción de cámara */ }) {
-                                        Icon(
-                                            Icons.Outlined.CameraAlt,
-                                            contentDescription = "Escanear",
-                                            tint = ErrorRed
-                                        )
-                                    }
-                                },
-                                singleLine = true,
-                                shape = MaterialTheme.shapes.medium,
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = ErrorRed,
-                                    unfocusedBorderColor = DarkWhiteBackground,
-                                    focusedTextColor = DarkBlueGrey,
-                                    unfocusedTextColor = DarkBlueGrey,
-                                    cursorColor = ErrorRed
-                                ),
-                                keyboardOptions = KeyboardOptions(
-                                    keyboardType = KeyboardType.Text,
-                                    imeAction = ImeAction.Next,
-                                    autoCorrect = false
-                                )
+                                suggestions = suggestionsBovinos,
+                                onAnimalSelected = { viewModel.onBovinoSelected(it) },
+                                isLoading = isLoadingBovinos,
+                                label = if (tipoMuerte.contains("01"))
+                                    stringResource(R.string.form_id_animal)
+                                else
+                                    stringResource(R.string.form_id_mother),
+                                placeholder = if (tipoMuerte.contains("01"))
+                                    stringResource(R.string.form_id_animal_description)
+                                else
+                                    stringResource(R.string.form_mother_description),
+                                modifier = Modifier.fillMaxWidth()
                             )
                         }
 
-                        // Fecha de Muerte
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 stringResource(R.string.form_dead_date),
@@ -570,7 +504,6 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
                             }
                         }
 
-                        // Meses de Gestación (solo si es Avortament)
                         if (tipoMuerte.contains("02")) {
                             Column(modifier = Modifier.fillMaxWidth()) {
                                 Text(
@@ -612,7 +545,6 @@ fun Fallecimiento(navController: NavController, viewModel: ViewModelMuerteBovi) 
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Card de Cadáver Inaccesible
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
