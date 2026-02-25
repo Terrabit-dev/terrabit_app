@@ -1,5 +1,7 @@
 package com.example.terrabit_app.ui.screen.porcinos
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -47,6 +49,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -67,30 +70,39 @@ import com.example.terrabit_app.ui.theme.DarkWhiteBackground
 import com.example.terrabit_app.ui.theme.MainOrange
 import com.example.terrabit_app.ui.theme.WhiteBackground
 import com.example.terrabit_app.utils.porcinos.ElementosConCodigosPorcinos
-import com.example.terrabit_app.viewmodel.porcinos.CrearGuiaPorcinosViewModel
+import com.example.terrabit_app.viewmodel.porcinos.EditarGuiaPorcinosViewModel
 import com.example.terrabit_app.viewmodel.porcinos.GestionarGuiasViewModel
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditarGuiaPorcinos(
-        navController: NavController,
-        viewModelCrearGuia: CrearGuiaPorcinosViewModel = viewModel(),
-        viewModelGestionarGuias: GestionarGuiasViewModel = viewModel()
-    ) {
-    val uiState by viewModelCrearGuia.uiState.collectAsState()
+    navController: NavController,
+    viewModelEditarGuias: EditarGuiaPorcinosViewModel,
+    viewModelGestionarGuias: GestionarGuiasViewModel
+) {
+    val uiStateEdita by viewModelEditarGuias.uiState.collectAsState()
+    val uiStateLista by viewModelGestionarGuias.uiState.collectAsState()
+
+    // 1. Cargamos los datos de la lista al formulario al entrar
+    LaunchedEffect(Unit) {
+        uiStateLista.guiaSeleccionada?.let { guia ->
+            viewModelEditarGuias.cargarDatosGuia(guia)
+        }
+    }
 
     val elementosConCodigos = ElementosConCodigosPorcinos()
 
     // DatePickerDialog para fecha de salida
-    if (uiState.mostrarDatePickerSalida) {
+    if (uiStateEdita.mostrarDatePickerSalida) {
         val datePickerState = rememberDatePickerState()
         DatePickerDialog(
-            onDismissRequest = { viewModelCrearGuia.ocultarDatePickerSalida() },
+            onDismissRequest = { viewModelEditarGuias.ocultarDatePickerSalida() },
             confirmButton = {
                 TextButton(
                     onClick = {
                         datePickerState.selectedDateMillis?.let { millis ->
-                            viewModelCrearGuia.seleccionarFechaSalida(millis)
+                            viewModelEditarGuias.seleccionarFechaSalida(millis)
                         }
                     }
                 ) {
@@ -98,7 +110,7 @@ fun EditarGuiaPorcinos(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { viewModelCrearGuia.ocultarDatePickerSalida() }) {
+                TextButton(onClick = { viewModelEditarGuias.ocultarDatePickerSalida() }) {
                     Text(stringResource(R.string.cancel_buttom), color = BlueGrey)
                 }
             }
@@ -114,25 +126,25 @@ fun EditarGuiaPorcinos(
     }
 
     // TimePickerDialog para fecha de salida
-    if (uiState.mostrarTimePickerSalida) {
+    if (uiStateEdita.mostrarTimePickerSalida) {
         val timePickerState = rememberTimePickerState()
         AlertDialog(
-            onDismissRequest = { viewModelCrearGuia.ocultarTimePickerSalida() },
+            onDismissRequest = { viewModelEditarGuias.ocultarTimePickerSalida() },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        viewModelCrearGuia.actualizarHoraSalida(
+                        viewModelEditarGuias.actualizarHoraSalida(
                             timePickerState.hour.toString(),
                             timePickerState.minute.toString()
                         )
-                        viewModelCrearGuia.ocultarTimePickerSalida()
+                        viewModelEditarGuias.ocultarTimePickerSalida()
                     }
                 ) {
                     Text(stringResource(R.string.accept_buttom), color = MainOrange)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { viewModelCrearGuia.ocultarTimePickerSalida() }) {
+                TextButton(onClick = { viewModelEditarGuias.ocultarTimePickerSalida() }) {
                     Text(stringResource(R.string.cancel_buttom), color = BlueGrey)
                 }
             },
@@ -149,15 +161,15 @@ fun EditarGuiaPorcinos(
     }
 
     // DatePickerDialog para fecha de llegada
-    if (uiState.mostrarDatePickerLlegada) {
+    if (uiStateEdita.mostrarDatePickerLlegada) {
         val datePickerState = rememberDatePickerState()
         DatePickerDialog(
-            onDismissRequest = { viewModelCrearGuia.ocultarDatePickerLlegada() },
+            onDismissRequest = { viewModelEditarGuias.ocultarDatePickerLlegada() },
             confirmButton = {
                 TextButton(
                     onClick = {
                         datePickerState.selectedDateMillis?.let { millis ->
-                            viewModelCrearGuia.seleccionarFechaLlegada(millis)
+                            viewModelEditarGuias.seleccionarFechaLlegada(millis)
                         }
                     }
                 ) {
@@ -165,7 +177,7 @@ fun EditarGuiaPorcinos(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { viewModelCrearGuia.ocultarDatePickerLlegada() }) {
+                TextButton(onClick = { viewModelEditarGuias.ocultarDatePickerLlegada() }) {
                     Text(stringResource(R.string.cancel_buttom), color = BlueGrey)
                 }
             }
@@ -181,25 +193,25 @@ fun EditarGuiaPorcinos(
     }
 
     // TimePickerDialog para fecha de llegada
-    if (uiState.mostrarTimePickerLlegada) {
+    if (uiStateEdita.mostrarTimePickerLlegada) {
         val timePickerState = rememberTimePickerState()
         AlertDialog(
-            onDismissRequest = { viewModelCrearGuia.ocultarTimePickerLlegada() },
+            onDismissRequest = { viewModelEditarGuias.ocultarTimePickerLlegada() },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        viewModelCrearGuia.actualizarHoraLlegada(
+                        viewModelEditarGuias.actualizarHoraLlegada(
                             timePickerState.hour.toString(),
                             timePickerState.minute.toString()
                         )
-                        viewModelCrearGuia.ocultarTimePickerLlegada()
+                        viewModelEditarGuias.ocultarTimePickerLlegada()
                     }
                 ) {
                     Text(stringResource(R.string.accept_buttom), color = MainOrange)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { viewModelCrearGuia.ocultarTimePickerLlegada() }) {
+                TextButton(onClick = { viewModelEditarGuias.ocultarTimePickerLlegada() }) {
                     Text(stringResource(R.string.cancel_buttom), color = BlueGrey)
                 }
             },
@@ -221,7 +233,7 @@ fun EditarGuiaPorcinos(
                 title = {
                     Column {
                         Text(
-                            text = stringResource(R.string.card_crear_guias),
+                            text = stringResource(R.string.card_confirm_edit_guias_porcinos),
                             fontSize = 20.sp,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -276,11 +288,11 @@ fun EditarGuiaPorcinos(
                         )
                         Spacer(modifier = Modifier.height(10.dp))
                         ExposedDropdownMenuBox(
-                            expanded = uiState.categoriaExpandido,
-                            onExpandedChange = { viewModelCrearGuia.toggleCategoriaExpandido() }
+                            expanded = uiStateEdita.categoriaExpandido,
+                            onExpandedChange = { viewModelEditarGuias.toggleCategoriaExpandido() }
                         ) {
                             OutlinedTextField(
-                                value = uiState.categoriaSeleccionada,
+                                value = uiStateEdita.categoriaSeleccionada,
                                 onValueChange = {},
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -294,7 +306,7 @@ fun EditarGuiaPorcinos(
                                 },
                                 trailingIcon = {
                                     ExposedDropdownMenuDefaults.TrailingIcon(
-                                        expanded = uiState.categoriaExpandido
+                                        expanded = uiStateEdita.categoriaExpandido
                                     )
                                 },
                                 singleLine = true,
@@ -307,8 +319,8 @@ fun EditarGuiaPorcinos(
                                 )
                             )
                             ExposedDropdownMenu(
-                                expanded = uiState.categoriaExpandido,
-                                onDismissRequest = { viewModelCrearGuia.cerrarCategoriaMenu() },
+                                expanded = uiStateEdita.categoriaExpandido,
+                                onDismissRequest = { viewModelEditarGuias.cerrarCategoriaMenu() },
                                 modifier = Modifier
                                     .background(Color.White)
                             ) {
@@ -322,7 +334,7 @@ fun EditarGuiaPorcinos(
                                                 fontWeight = FontWeight.Normal
                                             )
                                         },
-                                        onClick = { viewModelCrearGuia.seleccionarCategoria(categoria, codigo) },
+                                        onClick = { viewModelEditarGuias.seleccionarCategoria(categoria, codigo) },
                                         contentPadding = PaddingValues(
                                             horizontal = 16.dp,
                                             vertical = 14.dp
@@ -352,8 +364,8 @@ fun EditarGuiaPorcinos(
                         )
                         Spacer(modifier = Modifier.height(10.dp))
                         OutlinedTextField(
-                            value = uiState.numAnimales,
-                            onValueChange = { viewModelCrearGuia.actualizarNumAnimales(it) },
+                            value = uiStateEdita.numAnimales,
+                            onValueChange = { viewModelEditarGuias.actualizarNumAnimales(it) },
                             modifier = Modifier.fillMaxWidth(),
                             placeholder = {
                                 Text(
@@ -395,10 +407,10 @@ fun EditarGuiaPorcinos(
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable { viewModelCrearGuia.mostrarDatePickerSalida() }
+                                    .clickable { viewModelEditarGuias.mostrarDatePickerSalida() }
                             ) {
                                 OutlinedTextField(
-                                    value = uiState.fechaSalida,
+                                    value = uiStateEdita.fechaSalida,
                                     onValueChange = {},
                                     modifier = Modifier.fillMaxWidth(),
                                     placeholder = {
@@ -440,10 +452,10 @@ fun EditarGuiaPorcinos(
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable { viewModelCrearGuia.mostrarTimePickerSalida() }
+                                    .clickable { viewModelEditarGuias.mostrarTimePickerSalida() }
                             ) {
                                 OutlinedTextField(
-                                    value = uiState.horaSalida,
+                                    value = uiStateEdita.horaSalida,
                                     onValueChange = {},
                                     modifier = Modifier.fillMaxWidth(),
                                     placeholder = {
@@ -491,10 +503,10 @@ fun EditarGuiaPorcinos(
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable { viewModelCrearGuia.mostrarTimePickerLlegada() }
+                                    .clickable { viewModelEditarGuias.mostrarDatePickerLlegada() }
                             ) {
                                 OutlinedTextField(
-                                    value = uiState.fechaLlegada,
+                                    value = uiStateEdita.fechaLlegada,
                                     onValueChange = {},
                                     modifier = Modifier.fillMaxWidth(),
                                     placeholder = {
@@ -536,10 +548,10 @@ fun EditarGuiaPorcinos(
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable { viewModelCrearGuia.mostrarTimePickerLlegada() }
+                                    .clickable { viewModelEditarGuias.mostrarTimePickerLlegada() }
                             ) {
                                 OutlinedTextField(
-                                    value = uiState.horaLlegada,
+                                    value = uiStateEdita.horaLlegada,
                                     onValueChange = {},
                                     modifier = Modifier.fillMaxWidth(),
                                     placeholder = {
@@ -581,8 +593,8 @@ fun EditarGuiaPorcinos(
                         )
                         Spacer(modifier = Modifier.height(10.dp))
                         OutlinedTextField(
-                            value = uiState.codigoSIR,
-                            onValueChange = { viewModelCrearGuia.actualizarCodigoSIR(it) },
+                            value = uiStateEdita.codigoSIR,
+                            onValueChange = { viewModelEditarGuias.actualizarCodigoSIR(it) },
                             modifier = Modifier.fillMaxWidth(),
                             placeholder = {
                                 Text(
@@ -618,8 +630,8 @@ fun EditarGuiaPorcinos(
                         )
                         Spacer(modifier = Modifier.height(10.dp))
                         OutlinedTextField(
-                            value = uiState.matricula,
-                            onValueChange = { viewModelCrearGuia.actualizarMatricula(it) },
+                            value = uiStateEdita.matricula,
+                            onValueChange = { viewModelEditarGuias.actualizarMatricula(it) },
                             modifier = Modifier.fillMaxWidth(),
                             placeholder = {
                                 Text(
@@ -655,8 +667,8 @@ fun EditarGuiaPorcinos(
                         )
                         Spacer(modifier = Modifier.height(10.dp))
                         OutlinedTextField(
-                            value = uiState.nifConductor,
-                            onValueChange = { viewModelCrearGuia.actualizarNifConductor(it) },
+                            value = uiStateEdita.nifConductor,
+                            onValueChange = { viewModelEditarGuias.actualizarNifConductor(it) },
                             modifier = Modifier.fillMaxWidth(),
                             placeholder = {
                                 Text(
@@ -684,8 +696,9 @@ fun EditarGuiaPorcinos(
                     // Botón Editar
                     Button(
                         onClick = {
-                            viewModelGestionarGuias.editarYConfirmarGuia()
-                            navController.navigate(Routes.GestionGuiasPorcinos.route)
+                            viewModelEditarGuias.editarYConfirmarGuia {
+                                navController.popBackStack()
+                            }
                         },
                         modifier = Modifier
                             .fillMaxWidth()

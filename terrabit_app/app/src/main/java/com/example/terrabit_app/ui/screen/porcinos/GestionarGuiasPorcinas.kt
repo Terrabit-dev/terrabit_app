@@ -58,6 +58,7 @@ import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
 import com.example.terrabit_app.utils.UserPreferences
 import com.example.terrabit_app.viewmodel.porcinos.CrearGuiaPorcinosViewModel
+import com.example.terrabit_app.viewmodel.porcinos.EditarGuiaPorcinosViewModel
 import com.example.terrabit_app.viewmodel.porcinos.GestionarGuiasViewModel
 import com.example.terrabit_app.viewmodel.porcinos.GestionarGuiasViewModelFactory
 import java.time.LocalDateTime
@@ -68,6 +69,8 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun GestionGuiasPorcinos(
     navController: NavController,
+    viewModelGestionarGuias: GestionarGuiasViewModel,
+    viewModelEditarGuias: EditarGuiaPorcinosViewModel
 ) {
     val context = LocalContext.current
 
@@ -81,6 +84,7 @@ fun GestionGuiasPorcinos(
     val viewModelGestionarGuias: GestionarGuiasViewModel = viewModel(
         factory = GestionarGuiasViewModelFactory(repo, userPrefs)
     )
+
 
     val uiStateGestionGuias by viewModelGestionarGuias.uiState.collectAsState()
 
@@ -163,7 +167,8 @@ fun GestionGuiasPorcinos(
                             GuiaCard(
                                 navController = navController,
                                 guia = guia,
-                                viewModelGestionarGuias = viewModelGestionarGuias
+                                viewModelGestionarGuias = viewModelGestionarGuias,
+                                viewModelEditarGuias = viewModelEditarGuias
                             )
                         }
                     }
@@ -179,6 +184,7 @@ fun GuiaCard(
     navController: NavController,
     guia: GuiaGTRLista,
     viewModelGestionarGuias: GestionarGuiasViewModel = viewModel(),
+    viewModelEditarGuias: EditarGuiaPorcinosViewModel = viewModel(),
 ) {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
@@ -219,7 +225,7 @@ fun GuiaCard(
             ) {
                 FilledIconButton(
                     onClick = {
-                        //viewModelGestionarGuias.cargarDatosGuia(guia)
+                        viewModelEditarGuias.cargarDatosGuia(guia)
                         navController.navigate(Routes.EditarGuiaPorcinos.route)
                     },
                     shape = RoundedCornerShape(8.dp),
@@ -230,21 +236,6 @@ fun GuiaCard(
                     Icon(
                         imageVector = Icons.Default.Edit,
                         contentDescription = "Editar",
-                        tint = Color.White
-                    )
-                }
-                FilledIconButton(
-                    onClick = {
-                        viewModelGestionarGuias.confirmarGuia(guia)
-                    },
-                    shape = RoundedCornerShape(8.dp),
-                    colors = IconButtonDefaults.iconButtonColors(
-                        containerColor = MainGreen
-                    )
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Check,
-                        contentDescription = "Confirmar",
                         tint = Color.White
                     )
                 }

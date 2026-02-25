@@ -40,6 +40,7 @@ import com.example.terrabit_app.viewmodel.MovimientosViewModel
 import com.example.terrabit_app.viewmodel.NacimientoViewmodel
 import com.example.terrabit_app.viewmodel.ViewModelMuerteBovi
 import com.example.terrabit_app.viewmodel.porcinos.CrearGuiaPorcinosViewModel
+import com.example.terrabit_app.viewmodel.porcinos.EditarGuiaPorcinosViewModel
 import com.example.terrabit_app.viewmodel.porcinos.GestionarGuiasViewModel
 import com.example.terrabit_app.viewmodel.porcinos.GestionarGuiasViewModelFactory
 
@@ -140,18 +141,35 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel ) {
 
         // Pantallas porcinos
         composable(Routes.GestionGuiasPorcinos.route) { backStackEntry ->
-
-            // 2. Aquí és on passem la Factory
             val gestionarGuiasViewModel: GestionarGuiasViewModel = viewModel(
-                factory = GestionarGuiasViewModelFactory( repositorio, userPreferences)
+                factory = GestionarGuiasViewModelFactory(repositorio, userPreferences)
             )
 
-            val sharedViewModel: CrearGuiaPorcinosViewModel = viewModel(
+            // Este ViewModel persistirá mientras estemos en la ruta de Gestión o sus hijas
+            val editarViewModel: EditarGuiaPorcinosViewModel = viewModel(
                 viewModelStoreOwner = backStackEntry
             )
 
             GestionGuiasPorcinos(
                 navController = navController,
+                viewModelGestionarGuias = gestionarGuiasViewModel,
+                viewModelEditarGuias = editarViewModel // Añadido
+            )
+        }
+
+        composable(Routes.EditarGuiaPorcinos.route) { backStackEntry ->
+            // Recuperamos la entrada de la pantalla anterior para compartir ViewModels
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry(Routes.GestionGuiasPorcinos.route)
+            }
+
+            val gestionarViewModel: GestionarGuiasViewModel = viewModel(parentEntry)
+            val editarViewModel: EditarGuiaPorcinosViewModel = viewModel(parentEntry)
+
+            EditarGuiaPorcinos(
+                navController = navController,
+                viewModelEditarGuias = editarViewModel,    // El que gestiona el formulario
+                viewModelGestionarGuias = gestionarViewModel // El que tiene la guiaSeleccionada
             )
         }
 
@@ -160,17 +178,23 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel ) {
         }
 
         composable(Routes.EditarGuiaPorcinos.route) { backStackEntry ->
+            // Recuperamos la entrada de la pantalla de Gestión
             val parentEntry = remember(backStackEntry) {
                 navController.getBackStackEntry(Routes.GestionGuiasPorcinos.route)
             }
 
-            val editarGuiasViewModel: CrearGuiaPorcinosViewModel = viewModel(
+            // Usamos el MISMO ViewModel que inicializamos en la pantalla anterior
+            val editarGuiasViewModel: EditarGuiaPorcinosViewModel = viewModel(
                 viewModelStoreOwner = parentEntry
             )
 
+            // También necesitamos el de gestión para la lista (si fuera necesario)
+            val gestionarViewModel: GestionarGuiasViewModel = viewModel(parentEntry)
+
             EditarGuiaPorcinos(
                 navController = navController,
-                viewModelCrearGuia = editarGuiasViewModel
+                viewModelEditarGuias = editarGuiasViewModel,
+                viewModelGestionarGuias = gestionarViewModel
             )
         }
     }
