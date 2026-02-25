@@ -150,17 +150,23 @@ fun EntradaCard(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
-        Box(modifier = Modifier.fillMaxSize().padding(8.dp)) {
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .padding(8.dp)) {
             Column(
-                modifier = Modifier.fillMaxHeight().padding(4.dp),
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .padding(4.dp),
                 verticalArrangement = Arrangement.SpaceEvenly
             ) {
                 Column {
+                    // Código REMO
                     Text(
                         text = guia.codiRemo,
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp
                     )
+                    // MO Destinación
                     Text(
                         text = guia.moDesti,
                         fontWeight = FontWeight.Bold,
@@ -168,12 +174,14 @@ fun EntradaCard(
                     )
                 }
                 Column {
+                    // Fecha Salida
                     Text(
-                        text = "Fecha Salida: " + guia.dataSortida,
+                        text = stringResource(R.string.form_porcino_entradas_fecha_salida) + guia.dataSortida,
                         fontSize = 16.sp
                     )
+                    // Fecha Llegada
                     Text(
-                        text = "Fecha Llegada: " + guia.dataArribada,
+                        text = stringResource(R.string.form_porcinos_entradas_fecha_llegada) + guia.dataArribada,
                         fontSize = 16.sp
                     )
                 }
@@ -182,6 +190,7 @@ fun EntradaCard(
                 modifier = Modifier.align(Alignment.BottomEnd),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
+                // Botón confirmar entrada
                 FilledIconButton(
                     onClick = {
                         viewModelGestionarGuias.confirmarEntrada(guia)
@@ -193,7 +202,7 @@ fun EntradaCard(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Check,
-                        contentDescription = "Confirmar",
+                        contentDescription = stringResource(R.string.confirmar),
                         tint = Color.White
                     )
                 }

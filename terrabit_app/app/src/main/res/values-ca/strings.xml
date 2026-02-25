@@ -352,5 +352,12 @@
     <string name="app_copyright">Terrabit©</string>
     <string name="form_porcinos_edit_confirm">Editar i confirmar guies</string>
     <string name="form_porcinos_no_entr">No hi ha entrades per confirmar</string>
+    <string name="form_porcino_entradas_fecha_salida">"Data Eixida: "</string>
+    <string name="form_porcinos_entradas_fecha_llegada">"Data Arribada: "</string>
+    <string name="form_porcinos_but_confirmar">Confirmar</string>
+    <string name="gest_porcinos_edit_confirm">Editar i Confirmar Guies</string>
+    <string name="gest_porcinos_cargando_mov">Càrrega de moviments...</string>
+    <string name="gest_porcinos_no_guias">No hi ha guies per a l\'edició o la confirmació.</string>
+    <string name="content_description_edit">Editar</string>
 
 </resources>
