@@ -5,7 +5,9 @@ import com.example.terrabit_app.data.network.DataClassPorcinos.GuiaGTRLista
 import com.example.terrabit_app.data.network.DataClassPorcinos.MovimentPteDetail
 
 data class GestionarGuiasPorcinosUiState(
-    val listaGuiasPorcinos: List<GuiaGTRLista> = emptyList(),
+    val listaGuiasPorcinos: List<GuiaGTRLista> = mutableListOf(),
     val isLoading: Boolean = false,
-    val mensajeError: String? = null
+    val mensajeError: String? = null,
+
+    val guiaSeleccionada: GuiaGTRLista? = null
 )

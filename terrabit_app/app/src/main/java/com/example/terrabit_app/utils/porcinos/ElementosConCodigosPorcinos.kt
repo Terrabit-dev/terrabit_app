@@ -24,4 +24,16 @@ class ElementosConCodigosPorcinos {
         )
         return codigos
     }
+
+    fun categoriasB(): Map<String, String> {
+        val codigos = mapOf<String, String>(
+            "Engreix" to "00",
+            "Garrins" to "01",
+            "Recria/Transició" to "02",
+            "Famelles" to "03",
+            "Reposició" to "04",
+            "Sementals" to "05"
+        )
+        return codigos
+    }
 }

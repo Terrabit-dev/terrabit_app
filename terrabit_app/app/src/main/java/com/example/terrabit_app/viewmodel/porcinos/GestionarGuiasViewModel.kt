@@ -83,10 +83,6 @@ class GestionarGuiasViewModel(
         }
     }
 
-    fun editarYConfirmarGuia() {
-        // En caso de que la api devuelva exitoso, borrar de la lista
-        TODO()
-    }
 
     fun confirmarGuia(guia: GuiaGTRLista) {
         // Validación previa: La API no acepta campos vacíos o nulos para el transporte

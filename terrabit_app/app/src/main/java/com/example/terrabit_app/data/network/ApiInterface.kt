@@ -161,7 +161,7 @@ interface ApiInterface {
     @PUT("WSMobilitat/AppJava/WSModificarGuiasMovilitat")
     suspend fun tramitarMovimientoMovilidadPorcina(
         @Body request: ModificarMovimentsAGias
-    ): Response<List<GtrStandardResponse>>
+    ): Response<GtrStandardResponse> // Quitamos el List
 
 
     // --- SECCIÓN 2: CONFIRMACIÓN DE ENTRADAS (DESTINO) ---
