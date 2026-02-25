@@ -45,11 +45,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.terrabit_app.R
 import com.example.terrabit_app.data.network.ApiInterface
 import com.example.terrabit_app.data.network.DataClassPorcinos.GuiaGTRLista
 import com.example.terrabit_app.data.network.Repositorio
@@ -98,14 +100,14 @@ fun GestionGuiasPorcinos(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Editar y Confirmar Guías",
+                        text = stringResource(R.string.gest_porcinos_edit_confirm),
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -116,13 +118,13 @@ fun GestionGuiasPorcinos(
             )
         }
     ) { padding ->
-        // Contenidor principal
+        // Contenedor principal
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // CONDICIÓ: Si està carregant, mostra el cercle
+            // CONDICIÓ: Si está cargando, muestra el círculo de carga.
             if (uiStateGestionGuias.isLoading) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
@@ -135,13 +137,13 @@ fun GestionGuiasPorcinos(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Cargando movimientos de la API...",
+                        text = stringResource(R.string.gest_porcinos_cargando_mov),
                         color = Color.Gray,
                         fontSize = 14.sp
                     )
                 }
             } else {
-                // Si NO està carregant, mostra la llista o el missatge de buit
+                // Si NO está cargando, muestra la lista o el mensaje de vacío
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
@@ -156,7 +158,7 @@ fun GestionGuiasPorcinos(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    "No hay guías para editar o confirmar",
+                                    stringResource(R.string.gest_porcinos_no_guias),
                                     fontSize = 16.sp,
                                     color = Color.Gray
                                 )
@@ -210,11 +212,11 @@ fun GuiaCard(
                 }
                 Column {
                     Text(
-                        text = "Fecha Salida: " + formatearFecha(guia.dataSortida.toLong()),
+                        text = stringResource(R.string.form_porcino_entradas_fecha_salida) + formatearFecha(guia.dataSortida.toLong()),
                         fontSize = 16.sp
                     )
                     Text(
-                        text = "Fecha Llegada: " + formatearFecha(guia.dataArribada.toLong()),
+                        text = stringResource(R.string.form_porcinos_entradas_fecha_llegada) + formatearFecha(guia.dataArribada.toLong()),
                         fontSize = 16.sp
                     )
                 }
@@ -235,7 +237,7 @@ fun GuiaCard(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Edit,
-                        contentDescription = "Editar",
+                        contentDescription = stringResource(R.string.content_description_edit),
                         tint = Color.White
                     )
                 }
