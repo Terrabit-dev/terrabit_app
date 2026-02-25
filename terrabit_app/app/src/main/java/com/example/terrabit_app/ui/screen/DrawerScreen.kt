@@ -54,15 +54,16 @@ import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
 import com.example.terrabit_app.ui.theme.WhiteBackground
 import com.example.terrabit_app.utils.UserPreferences
+import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 import com.example.terrabit_app.viewmodel.DrawerViewModel
 import com.example.terrabit_app.viewmodel.MainViewmodel
 import kotlinx.coroutines.launch
 
 @Composable
 fun DrawerScreen(
+    bluetooth: BluetoothViewModel,
     mainNavController: androidx.navigation.NavController,
-    drawerViewModel: DrawerViewModel,
-    mainViewModel: MainViewmodel
+    drawerViewModel: DrawerViewModel
 ) {
     val drawerNavController = rememberNavController()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -111,8 +112,7 @@ fun DrawerScreen(
         }
     ) {
         NavigationDrawer(
-            myViewmodel = mainViewModel,
-            drawerViewModel = drawerViewModel,
+            bluetooth = bluetooth,
             navController = drawerNavController,
             onMenuClick = { scope.launch { drawerState.open() } }
         )

@@ -26,6 +26,7 @@ import com.example.terrabit_app.ui.screen.bovinos.Nacimiento
 import com.example.terrabit_app.ui.screen.porcinos.EntradasPorcinos
 import com.example.terrabit_app.ui.screen.porcinos.GestionGuiasPorcinos
 import com.example.terrabit_app.ui.screen.porcinos.HomePorcinos
+import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 import com.example.terrabit_app.viewmodel.BorradorViewModel
 import com.example.terrabit_app.viewmodel.CorrecionSexoViewModel
 import com.example.terrabit_app.viewmodel.DrawerViewModel
@@ -40,8 +41,7 @@ import com.example.terrabit_app.viewmodel.ViewModelMuerteBovi
 
 @Composable
 fun NavigationDrawer(
-    myViewmodel: MainViewmodel,
-    drawerViewModel: DrawerViewModel,
+    bluetooth : BluetoothViewModel,
     navController: NavHostController,
     onMenuClick: () -> Unit
 ) {
@@ -120,9 +120,8 @@ fun NavigationDrawer(
                 nullable = true
             })
         ) { backStackEntry ->
-            val nacimientos: NacimientoViewmodel = viewModel()
             val borradorId = backStackEntry.arguments?.getString("borradorId") ?: ""
-            Nacimiento(navController = navController, nacimientos, borradorId)
+            Nacimiento(navController = navController, bluetooth, borradorId)
         }
 
         composable(

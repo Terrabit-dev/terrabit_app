@@ -1,5 +1,6 @@
 package com.example.terrabit_app.ui.screen.bovinos
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.outlined.Bluetooth
 import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -84,17 +86,22 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.viewmodel.BorradorViewModel
 import com.example.terrabit_app.ui.screen.bovinos.components.AutoCompleteBovinoField
 import com.example.terrabit_app.ui.screen.bovinos.components.useDebounce
 import com.example.terrabit_app.utils.DropdownField
+import com.example.terrabit_app.utils.bluetooth.BluetoothScanDialog
+import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Nacimiento(navController: NavController,
-               viewModel: NacimientoViewmodel,
-               borradorId: String = "") {
+               bluetooth : BluetoothViewModel,
+               borradorId: String = "")
+{
+    val viewModel = viewModel<NacimientoViewmodel>()
     val idMadre by viewModel.idMadre.observeAsState("")
     val idCria by viewModel.idCria.observeAsState("")
     val fechaNacimiento by viewModel.fechaNacimiento.observeAsState("")
@@ -127,6 +134,10 @@ fun Nacimiento(navController: NavController,
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
+    // control de bluethooth
+    var mostrarBluetooth by remember { mutableStateOf(false) }
+
+
     // ============================================
     // INICIALIZACIÓN Y DETECCIÓN DE BORRADORES
     // ============================================
@@ -137,6 +148,19 @@ fun Nacimiento(navController: NavController,
             return@LaunchedEffect
         }
         val borradores = viewModel.obtenerBorradoresNacimiento()
+    }
+
+    if (mostrarBluetooth) {
+        BluetoothScanDialog(
+            bluetoothViewModel = bluetooth,
+            onMensajeRecibido = { mensaje ->
+                viewModel.actualizarIdCria(mensaje)   // directo, sin condición
+                mostrarBluetooth = false
+            },
+            onDismiss = {
+                mostrarBluetooth = false
+            }
+        )
     }
 
 
@@ -443,12 +467,12 @@ fun Nacimiento(navController: NavController,
                                     )
                                 },
                                 trailingIcon = {
-                                    IconButton(onClick = { /* Acción de cámara */ }) {
-                                        Icon(
-                                            Icons.Outlined.CameraAlt,
-                                            contentDescription = "Escanear",
-                                            tint = MainGreen
-                                        )
+
+                                    IconButton(onClick = {
+                                        bluetooth.iniciarEscaneo(context)
+                                        mostrarBluetooth = true
+                                    }) {
+                                        Icon(Icons.Outlined.Bluetooth, contentDescription = "Leer crotal")
                                     }
 
                                 },

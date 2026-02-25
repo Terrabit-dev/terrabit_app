@@ -11,9 +11,10 @@ import com.example.terrabit_app.utils.UserPreferences
 import com.example.terrabit_app.viewmodel.DrawerViewModel
 import com.example.terrabit_app.viewmodel.MainViewmodel
 import androidx.compose.ui.platform.LocalContext
+import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 
 @Composable
-fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel) {
+fun Navigation(bluetooth: BluetoothViewModel, drawerViewModel: DrawerViewModel) {
     val mainNavController = rememberNavController()
     val context = LocalContext.current
 
@@ -38,9 +39,9 @@ fun Navigation(myViewmodel: MainViewmodel, drawerViewModel: DrawerViewModel) {
 
         composable(Routes.Drawer.route) {
             DrawerScreen(
+                bluetooth = bluetooth,
                 mainNavController = mainNavController,
-                drawerViewModel = drawerViewModel,
-                mainViewModel = myViewmodel
+                drawerViewModel = drawerViewModel
             )
         }
     }

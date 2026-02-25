@@ -13,6 +13,7 @@ import com.example.terrabit_app.ui.theme.Terrabit_appTheme
 import com.example.terrabit_app.viewmodel.DrawerViewModel  // ← NUEVO IMPORT
 import com.example.terrabit_app.viewmodel.MainViewmodel
 import androidx.appcompat.app.AppCompatActivity
+import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,9 +25,9 @@ class MainActivity : AppCompatActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    val myViewModel: MainViewmodel = viewModel()
+                    val bluetoothViewModel: BluetoothViewModel = viewModel()
                     val drawerViewModel: DrawerViewModel = viewModel()
-                    Navigation(myViewModel, drawerViewModel)
+                    Navigation(bluetoothViewModel, drawerViewModel)
                 }
             }
         }

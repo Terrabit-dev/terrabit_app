@@ -18,6 +18,7 @@ class UserPreferences(context: Context) {
         private const val KEY_SESSION_PASSWORD = "session_password"
         private const val KEY_SESSION_CODI_MO = "session_codi_mo"
         private const val KEY_SESSION_ACTIVE = "session_active"
+        private const val ARDUINO_MAC_KEY = "arduino_mac"
     }
 
     fun saveCredentials(nif: String, password: String, codiMO: String,rememberMe: Boolean) {
@@ -41,6 +42,18 @@ class UserPreferences(context: Context) {
             }
             apply()
         }
+    }
+
+    fun saveArduinoMac(mac: String?) {
+        prefs.edit().apply {
+            if (mac != null) putString(ARDUINO_MAC_KEY, mac)
+            else remove(ARDUINO_MAC_KEY)
+            apply()
+        }
+    }
+
+    fun getArduinoMac(): String? {
+        return prefs.getString(ARDUINO_MAC_KEY, null)
     }
 
 
