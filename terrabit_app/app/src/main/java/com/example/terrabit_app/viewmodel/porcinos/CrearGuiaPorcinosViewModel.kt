@@ -2,6 +2,7 @@ package com.example.terrabit_app.viewmodel.porcinos
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -17,11 +18,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
-class CrearGuiaPorcinosViewModel: ViewModel() {
+class CrearGuiaPorcinosViewModel(
+    context: Context
+): ViewModel() {
     private val _uiState = MutableStateFlow(CrearGuiasPorcinosUiState())
     val uiState: StateFlow<CrearGuiasPorcinosUiState> = _uiState.asStateFlow()
 
-    private val repositorio = Repositorio()
+    private val repositorio = Repositorio(context)
     private lateinit var userPreferences: UserPreferences
 
     fun inicializarUserPreferences(context: Context) {

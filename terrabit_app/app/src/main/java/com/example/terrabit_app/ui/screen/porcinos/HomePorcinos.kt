@@ -60,8 +60,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
-import com.example.terrabit_app.ui.pantallas.TarjetaMenu
-import com.example.terrabit_app.ui.pantallas.cambiarIdioma
+import com.example.terrabit_app.ui.screen.bovinos.TarjetaMenu
+import com.example.terrabit_app.ui.screen.bovinos.cambiarIdioma
 import com.example.terrabit_app.ui.theme.BlueGrey
 import com.example.terrabit_app.ui.theme.DarkBlueGrey
 import com.example.terrabit_app.ui.theme.DarkWhiteBackground

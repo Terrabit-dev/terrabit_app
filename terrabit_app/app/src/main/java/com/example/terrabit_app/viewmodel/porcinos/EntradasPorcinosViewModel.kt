@@ -20,11 +20,13 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
-class EntradasPorcinosViewModel : ViewModel() {
+class EntradasPorcinosViewModel(
+    context: Context
+) : ViewModel() {
     private val _uiState = MutableStateFlow(EntradasPorcinosUiState())
     val uiState : StateFlow<EntradasPorcinosUiState> = _uiState.asStateFlow()
 
-    private val repositorio = Repositorio()
+    private val repositorio = Repositorio(context)
 
     private lateinit var userPreferences: UserPreferences
 

@@ -24,11 +24,13 @@ import java.time.ZoneId
 import java.util.Locale
 
 
-class EditarGuiaPorcinosViewModel : ViewModel() {
+class EditarGuiaPorcinosViewModel(
+    context: Context
+) : ViewModel() {
     private val _uiState = MutableStateFlow(EditarGuiasPorcionsUiState())
     val uiState: StateFlow<EditarGuiasPorcionsUiState> = _uiState.asStateFlow()
 
-    private val repositorio = Repositorio()
+    private val repositorio = Repositorio(context)
 
     // --- CATEGORÍA ---
     fun seleccionarCategoria(nombre: String, codigo: String) {
