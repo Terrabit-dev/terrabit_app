@@ -261,5 +261,6 @@
     <string name="gest_porcinos_cargando_mov">Càrrega de moviments...</string>
     <string name="gest_porcinos_no_guias">No hi ha guies per a l\'edició o la confirmació.</string>
     <string name="content_description_edit">Editar</string>
+    <string name="gest_porcinos_cargando_entradas">Càrrega de entrades...</string>
 
 </resources>

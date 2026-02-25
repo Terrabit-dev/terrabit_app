@@ -101,7 +101,7 @@ fun EntradasPorcinos(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Cargando entradas...",
+                        text = stringResource(R.string.gest_porcinos_cargando_entradas),
                         color = Color.Gray,
                         fontSize = 14.sp
                     )
@@ -202,7 +202,7 @@ fun EntradaCard(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Check,
-                        contentDescription = stringResource(R.string.confirmar),
+                        contentDescription = stringResource(R.string.form_porcinos_but_confirmar),
                         tint = Color.White
                     )
                 }
