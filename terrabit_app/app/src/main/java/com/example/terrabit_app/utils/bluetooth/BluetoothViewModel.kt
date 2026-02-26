@@ -6,6 +6,7 @@ import android.app.Application
 import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.terrabit_app.R
 import com.example.terrabit_app.utils.UserPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,7 +23,7 @@ sealed class BluetoothScanState {
     // Mensaje recibido correctamente
     data class Recibido(val mensaje: String) : BluetoothScanState()
     // Error durante la conexión o lectura
-    data class Error(val mensaje: String) : BluetoothScanState()
+    data class Error(val mensaje: Int) : BluetoothScanState()
     // Bluetooth no disponible o sin permisos
     object SinBluetooth : BluetoothScanState()
     // Mostrar selector de dispositivos emparejados
@@ -68,7 +69,7 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
         }
 
         if (!ArduinoBluetoothManager.tienePermisos(context)) {
-            _scanState.value = BluetoothScanState.Error("Permisos Bluetooth no concedidos. Actívalos en Ajustes.")
+            _scanState.value = BluetoothScanState.Error(R.string.bluethooth_error_permissions)
             return
         }
 
@@ -113,12 +114,12 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
                 onFailure = { error ->
                     val mensajeError = when {
                         error.message?.contains("Unable to connect") == true ->
-                            "No se pudo conectar al Arduino. Verifica que esté encendido y emparejado."
+                            R.string.bluetooth_error_unable_to_connect
                         error.message?.contains("Permission") == true ||
                                 error is SecurityException ->
-                            "Sin permisos Bluetooth. Actívalos en Ajustes del dispositivo."
+                            R.string.bluetooth_error_no_permissions
                         else ->
-                            "Error de conexión: ${error.message ?: "Error desconocido"}"
+                            R.string.bluetooth_error_unknown
                     }
                     _scanState.value = BluetoothScanState.Error(mensajeError)
                 }
