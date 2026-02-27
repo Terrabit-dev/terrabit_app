@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Drafts
 import androidx.compose.material.icons.filled.EmojiNature
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerValue
@@ -55,6 +56,7 @@ import com.example.terrabit_app.ui.theme.MainOrange
 import com.example.terrabit_app.ui.theme.WhiteBackground
 import com.example.terrabit_app.utils.UserPreferences
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
+import com.example.terrabit_app.viewmodel.ConfigurationViewModel
 import com.example.terrabit_app.viewmodel.DrawerViewModel
 import com.example.terrabit_app.viewmodel.MainViewmodel
 import kotlinx.coroutines.launch
@@ -63,7 +65,8 @@ import kotlinx.coroutines.launch
 fun DrawerScreen(
     bluetooth: BluetoothViewModel,
     mainNavController: androidx.navigation.NavController,
-    drawerViewModel: DrawerViewModel
+    drawerViewModel: DrawerViewModel,
+    configViewModel: ConfigurationViewModel
 ) {
     val drawerNavController = rememberNavController()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -102,8 +105,15 @@ fun DrawerScreen(
                     }
                     scope.launch { drawerState.close() }
                 },
+                onConfigClick = {
+                    drawerNavController.navigate(Routes.Configuration.route) {
+                        popUpTo(drawerNavController.graph.startDestinationId)
+                        launchSingleTop = true
+                    }
+                    scope.launch { drawerState.close() }
+                },
                 onLogout = {
-                    userPreferences.logout()  // ← Borrar sesión al hacer logout
+                    userPreferences.logout()
                     mainNavController.navigate(Routes.Login.route) {
                         popUpTo(0) { inclusive = true }
                     }
@@ -114,7 +124,8 @@ fun DrawerScreen(
         NavigationDrawer(
             bluetooth = bluetooth,
             navController = drawerNavController,
-            onMenuClick = { scope.launch { drawerState.open() } }
+            onMenuClick = { scope.launch { drawerState.open() } },
+            configViewModel = configViewModel
         )
     }
 }
@@ -125,6 +136,7 @@ fun DrawerContent(
     currentRoute: String?,
     onTipoSeleccionado: (String) -> Unit,
     onBorradoresClick: () -> Unit,
+    onConfigClick: () -> Unit,
     onLogout: () -> Unit
 ) {
     // Color dinámico según el tipo de animal
@@ -205,6 +217,17 @@ fun DrawerContent(
                 onClick = onBorradoresClick,
                 colorSeleccion = colorPrincipal
             )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OpcionDrawer(
+                icono = Icons.Default.Settings,
+                titulo = "Configuración",
+                seleccionado = currentRoute == Routes.Configuration.route,
+                onClick = onConfigClick,
+                colorSeleccion = colorPrincipal
+            )
+
 
             Spacer(modifier = Modifier.weight(1f))
 

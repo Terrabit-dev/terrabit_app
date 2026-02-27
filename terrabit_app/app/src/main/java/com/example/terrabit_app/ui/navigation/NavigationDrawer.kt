@@ -38,12 +38,15 @@ import com.example.terrabit_app.viewmodel.MaterialViewModel
 import com.example.terrabit_app.viewmodel.MovimientosViewModel
 import com.example.terrabit_app.viewmodel.NacimientoViewmodel
 import com.example.terrabit_app.viewmodel.ViewModelMuerteBovi
+import com.example.terrabit_app.ui.screen.bovinos.ConfigurationScreen
+import com.example.terrabit_app.viewmodel.ConfigurationViewModel
 
 @Composable
 fun NavigationDrawer(
     bluetooth : BluetoothViewModel,
     navController: NavHostController,
-    onMenuClick: () -> Unit
+    onMenuClick: () -> Unit,
+    configViewModel: ConfigurationViewModel
 ) {
     NavHost(
         navController = navController,
@@ -64,7 +67,7 @@ fun NavigationDrawer(
         composable(Routes.HomePorcinos.route) {
             HomePorcinos(
                 navController = navController,
-                onMenuClick = onMenuClick  // Solo necesita esto
+                onMenuClick = onMenuClick
             )
         }
 
@@ -74,6 +77,15 @@ fun NavigationDrawer(
             BorradoresScreen(
                 viewModel = borradorViewModel,
                 onMenuClick = onMenuClick,
+                navController = navController
+            )
+        }
+
+        // Configuracion
+        composable(Routes.Configuration.route) {
+            ConfigurationScreen(
+                onMenuClick = onMenuClick,
+                viewModel = configViewModel,
                 navController = navController
             )
         }

@@ -77,6 +77,10 @@ class UserPreferences(context: Context) {
     }
 
 
+    fun getDarkTheme(): Boolean = prefs.getBoolean("dark_theme", false)
+    fun saveDarkTheme(isDark: Boolean) = prefs.edit().putBoolean("dark_theme", isDark).apply()
+
+
 
 
 

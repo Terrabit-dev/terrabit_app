@@ -51,4 +51,6 @@ sealed class Routes(val route: String) {
     object Drawer : Routes("drawer_screen")
 
     object MaterialDuplicado : Routes("material_duplicado")
+
+    object Configuration : Routes("configuration")
 }
