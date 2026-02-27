@@ -39,7 +39,11 @@ import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
 import com.example.terrabit_app.ui.screen.bovinos.components.AutoCompleteBovinoField
+import com.example.terrabit_app.ui.screen.bovinos.components.CampoIdentificadorAutoComplete
 import com.example.terrabit_app.ui.screen.bovinos.components.useDebounce
+import com.example.terrabit_app.utils.CampoTexto
+import com.example.terrabit_app.utils.DropdownField
+import com.example.terrabit_app.utils.bluetooth.BluetoothScanDialog
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -86,6 +90,28 @@ fun Movimientos(navController: NavController, bluetoothViewModel: BluetoothViewM
     val suggestionsBovinos by viewModel.suggestionsBovinos.observeAsState(emptyList())
     val isLoadingBovinos by viewModel.isLoadingBovinos.observeAsState(false)
     val activeIndex by viewModel.activeFieldIndex.observeAsState(-1)
+
+    var indiceBluetooth by remember { mutableStateOf<Int?>(null) }
+    var mostrarBluetooth by remember { mutableStateOf(false) }
+
+    if (mostrarBluetooth) {
+        BluetoothScanDialog(
+            bluetoothViewModel = bluetoothViewModel,
+            onMensajeRecibido = { mensaje ->
+                // Aquí decides qué campo actualizar con el mensaje
+                val indice = indiceBluetooth
+                if (indice != null) {
+                    viewModel.actualizarIdentificadorAnimal(indice, mensaje)  // para lista
+                }
+                mostrarBluetooth = false
+                indiceBluetooth = null
+            },
+            onDismiss = {
+                mostrarBluetooth = false
+                indiceBluetooth = null
+            }
+        )
+    }
 
     // ============================================
     // INICIALIZACIÓN Y DETECCIÓN DE BORRADORES
@@ -998,111 +1024,36 @@ fun Movimientos(navController: NavController, bluetoothViewModel: BluetoothViewM
                                         }
                                     }
 
-                                    Column(modifier = Modifier.fillMaxWidth()) {
-                                        Text(
-                                            stringResource(R.string.form_id_animal),
-                                            fontSize = 14.sp,
-                                            fontWeight = FontWeight.SemiBold,
-                                            color = Color(0xFF1E293B),
-                                            letterSpacing = 0.15.sp
-                                        )
-                                        Spacer(modifier = Modifier.height(8.dp))
-
-                                        useDebounce(animal.identificador, delayMillis = 300L) { query ->
-                                            viewModel.searchBovinos(index, query)  // Pasar el índice
-                                        }
-
-                                        AutoCompleteBovinoField(
-                                            value = animal.identificador,
-                                            onValueChange = {
-                                                viewModel.actualizarIdentificadorAnimal(index, it)
-                                            },
-                                            suggestions = if (activeIndex == index) suggestionsBovinos else emptyList(),  // Solo mostrar si es el campo activo
-                                            onAnimalSelected = { viewModel.onBovinoSelected(index, it) },
-                                            isLoading = isLoadingBovinos,
-                                            label = stringResource(R.string.form_id_animal),
-                                            placeholder = stringResource(R.string.form_id_animal_description),
-                                            modifier = Modifier.fillMaxWidth()
-                                        )
+                                    useDebounce(animal.identificador, delayMillis = 300L) { query ->
+                                        viewModel.searchBovinos(index, query)  // Pasar el índice
                                     }
-
-                                    Column(modifier = Modifier.fillMaxWidth()) {
-                                        Text(
-                                            stringResource(R.string.form_state_arrival),
-                                            fontSize = 14.sp,
-                                            fontWeight = FontWeight.SemiBold,
-                                            color = Color(0xFF1E293B),
-                                            letterSpacing = 0.15.sp
-                                        )
-                                        Spacer(modifier = Modifier.height(8.dp))
-                                        ExposedDropdownMenuBox(
-                                            expanded = estatExpandidoPorIndice[index] ?: false,
-                                            onExpandedChange = {
-                                                viewModel.toggleEstatArribadaExpandido(index)
-                                            }
-                                        ) {
-                                            OutlinedTextField(
-                                                value = elementosConCodigos.estadosLlegada()[animal.estatArribada] ?: "",
-                                                onValueChange = {},
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .menuAnchor(),
-                                                readOnly = true,
-                                                placeholder = {
-                                                    Text(
-                                                        stringResource(R.string.form_state_arrival_description),
-                                                        color = Color(0xFF94A3B8),
-                                                        fontSize = 14.sp
-                                                    )
-                                                },
-                                                trailingIcon = {
-                                                    ExposedDropdownMenuDefaults.TrailingIcon(
-                                                        expanded = estatExpandidoPorIndice[index] ?: false
-                                                    )
-                                                },
-                                                singleLine = true,
-                                                shape = MaterialTheme.shapes.medium,
-                                                colors = OutlinedTextFieldDefaults.colors(
-                                                    focusedBorderColor = Color(0xFFE28F41),
-                                                    unfocusedBorderColor = Color(0xFFCBD5E1),
-                                                    focusedTextColor = Color(0xFF1E293B),
-                                                    unfocusedTextColor = Color(0xFF1E293B),
-                                                    focusedContainerColor = Color.White,
-                                                    unfocusedContainerColor = Color.White
-                                                )
-                                            )
-                                            ExposedDropdownMenu(
-                                                expanded = estatExpandidoPorIndice[index] ?: false,
-                                                onDismissRequest = {
-                                                    viewModel.cerrarEstatArribadaMenu(index)
-                                                },
-                                                modifier = Modifier.background(Color.White)
-                                            ) {
-                                                elementosConCodigos.estadosLlegada().forEach { (codigo, estat) ->
-                                                    DropdownMenuItem(
-                                                        text = {
-                                                            Text(
-                                                                estat,
-                                                                fontSize = 14.sp,
-                                                                color = Color(0xFF1E293B),
-                                                                fontWeight = FontWeight.Normal
-                                                            )
-                                                        },
-                                                        onClick = {
-                                                            viewModel.seleccionarEstatArribadaAnimal(
-                                                                index, estat, codigo
-                                                            )
-                                                        },
-                                                        contentPadding = PaddingValues(
-                                                            horizontal = 16.dp,
-                                                            vertical = 12.dp
-                                                        )
-                                                    )
-                                                }
-                                            }
+                                    CampoIdentificadorAutoComplete(
+                                        label = stringResource(R.string.form_id_animal),
+                                        valor = animal.identificador,
+                                        placeholder = stringResource(R.string.form_animal_id_example),
+                                        onValueChange = { viewModel.actualizarIdentificadorAnimal(index,it) },
+                                        suggestions = if (activeIndex == index) suggestionsBovinos else emptyList(),
+                                        onAnimalSelected = { viewModel.onBovinoSelected(index,it) },
+                                        isLoadingSuggestions = isLoadingBovinos,
+                                        defectColor = false,
+                                        onClickBluetooth = {
+                                            indiceBluetooth = index
+                                            bluetoothViewModel.iniciarEscaneo(context)
+                                            mostrarBluetooth = true
                                         }
-                                    }
+                                    )
 
+                                    DropdownField(
+                                        label = stringResource(R.string.form_state_arrival),
+                                        selectedValue = elementosConCodigos.estadosLlegada()[animal.estatArribada] ?: "",
+                                        expanded = estatExpandidoPorIndice[index] ?: false,
+                                        placeholder = stringResource(R.string.form_state_arrival_description),
+                                        opciones = elementosConCodigos.estadosLlegada(),
+                                        onExpandedChange = { viewModel.toggleEstatArribadaExpandido(index) },
+                                        onDismissRequest = { viewModel.cerrarEstatArribadaMenu(index) },
+                                        onSeleccionar = { codigo, nombre -> viewModel.seleccionarEstatArribadaAnimal(index,nombre, codigo) },
+                                        defectColor = true
+                                    )
                                     if (animal.estatArribada == "80") {
                                         HorizontalDivider(
                                             color = Color(0xFFE2E8F0),
@@ -1165,157 +1116,33 @@ fun Movimientos(navController: NavController, bluetoothViewModel: BluetoothViewM
                                                 )
                                             }
                                         }
+                                        CampoTexto(
+                                            label = stringResource(R.string.form_weight_canal),
+                                            valor = animal.pesCanal ?:"0",
+                                            placeholder = stringResource(R.string.form_weight_canal_description),
+                                            onValueChange = { viewModel.actualizarPesCanal(index,it) },
+                                            defectColor = false,
+                                            keyboardType = KeyboardType.Decimal
+                                        )
+                                        CampoTexto(
+                                            label = stringResource(R.string.form_class_canal),
+                                            valor = animal.classCanal ?:"",
+                                            placeholder = stringResource(R.string.form_class_canal_description),
+                                            onValueChange = { viewModel.actualizarClassCanal(index,it) },
+                                            defectColor = false
+                                        )
 
-                                        Column(modifier = Modifier.fillMaxWidth()) {
-                                            Text(
-                                                stringResource(R.string.form_weight_canal),
-                                                fontSize = 14.sp,
-                                                fontWeight = FontWeight.SemiBold,
-                                                color = Color(0xFF1E293B),
-                                                letterSpacing = 0.15.sp
-                                            )
-                                            Spacer(modifier = Modifier.height(8.dp))
-                                            OutlinedTextField(
-                                                value = animal.pesCanal?:"",
-                                                onValueChange = {
-                                                    viewModel.actualizarPesCanal(index, it)
-                                                },
-                                                modifier = Modifier.fillMaxWidth(),
-                                                placeholder = {
-                                                    Text(
-                                                        stringResource(R.string.form_weight_canal_description),
-                                                        color = Color(0xFF94A3B8),
-                                                        fontSize = 14.sp
-                                                    )
-                                                },
-                                                singleLine = true,
-                                                shape = MaterialTheme.shapes.medium,
-                                                colors = OutlinedTextFieldDefaults.colors(
-                                                    focusedBorderColor = Color(0xFFE28F41),
-                                                    unfocusedBorderColor = Color(0xFFCBD5E1),
-                                                    focusedTextColor = Color(0xFF1E293B),
-                                                    unfocusedTextColor = Color(0xFF1E293B),
-                                                    cursorColor = Color(0xFFE28F41),
-                                                    focusedContainerColor = Color.White,
-                                                    unfocusedContainerColor = Color.White
-                                                ),
-                                                keyboardOptions = KeyboardOptions(
-                                                    keyboardType = KeyboardType.Decimal,
-                                                    imeAction = ImeAction.Next
-                                                )
-                                            )
-                                        }
-
-                                        Column(modifier = Modifier.fillMaxWidth()) {
-                                            Text(
-                                                stringResource(R.string.form_class_canal),
-                                                fontSize = 14.sp,
-                                                fontWeight = FontWeight.SemiBold,
-                                                color = Color(0xFF1E293B),
-                                                letterSpacing = 0.15.sp
-                                            )
-                                            Spacer(modifier = Modifier.height(8.dp))
-                                            OutlinedTextField(
-                                                value = animal.classCanal?:"",
-                                                onValueChange = {
-                                                    viewModel.actualizarClassCanal(index, it)
-                                                },
-                                                modifier = Modifier
-                                                    .fillMaxWidth(),
-                                                placeholder = {
-                                                    Text(
-                                                        stringResource(R.string.form_class_canal_description),
-                                                        color = Color(0xFF94A3B8),
-                                                        fontSize = 14.sp
-                                                    )
-                                                },
-                                                singleLine = true,
-                                                shape = MaterialTheme.shapes.medium,
-                                                colors = OutlinedTextFieldDefaults.colors(
-                                                    focusedBorderColor = Color(0xFFE28F41),
-                                                    unfocusedBorderColor = Color(0xFFCBD5E1),
-                                                    focusedTextColor = Color(0xFF1E293B),
-                                                    unfocusedTextColor = Color(0xFF1E293B),
-                                                    focusedContainerColor = Color.White,
-                                                    unfocusedContainerColor = Color.White
-                                                )
-                                            )
-                                        }
-
-                                        Column(modifier = Modifier.fillMaxWidth()) {
-                                            Text(
-                                                stringResource(R.string.form_type_presentation),
-                                                fontSize = 14.sp,
-                                                fontWeight = FontWeight.SemiBold,
-                                                color = Color(0xFF1E293B),
-                                                letterSpacing = 0.15.sp
-                                            )
-                                            Spacer(modifier = Modifier.height(8.dp))
-                                            ExposedDropdownMenuBox(
-                                                expanded = tipusExpandidoPorIndice[index] ?: false,
-                                                onExpandedChange = {
-                                                    viewModel.toggleTipusPresentacioExpandido(index)
-                                                }
-                                            ) {
-                                                OutlinedTextField(
-                                                    value = elementosConCodigos.tiposPresentacion()[animal.tipusPresentacio] ?: "",
-                                                    onValueChange = {},
-                                                    modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .menuAnchor(),
-                                                    readOnly = true,
-                                                    placeholder = {
-                                                        Text(
-                                                            stringResource(R.string.form_type_presentation_description),
-                                                            color = Color(0xFF94A3B8),
-                                                            fontSize = 14.sp
-                                                        )
-                                                    },
-                                                    trailingIcon = {
-                                                        ExposedDropdownMenuDefaults.TrailingIcon(
-                                                            expanded = tipusExpandidoPorIndice[index] ?: false
-                                                        )
-                                                    },
-                                                    singleLine = true,
-                                                    shape = MaterialTheme.shapes.medium,
-                                                    colors = OutlinedTextFieldDefaults.colors(
-                                                        focusedBorderColor = Color(0xFFE28F41),
-                                                        unfocusedBorderColor = Color(0xFFCBD5E1),
-                                                        focusedTextColor = Color(0xFF1E293B),
-                                                        unfocusedTextColor = Color(0xFF1E293B),
-                                                        focusedContainerColor = Color.White,
-                                                        unfocusedContainerColor = Color.White
-                                                    )
-                                                )
-                                                ExposedDropdownMenu(
-                                                    expanded = tipusExpandidoPorIndice[index] ?: false,
-                                                    onDismissRequest = {
-                                                        viewModel.cerrarTipusPresentacioMenu(index)
-                                                    },
-                                                    modifier = Modifier.background(Color.White)
-                                                ) {
-                                                    elementosConCodigos.tiposPresentacion().forEach { (codigo, tipo) ->
-                                                        DropdownMenuItem(
-                                                            text = {
-                                                                Text(
-                                                                    tipo,
-                                                                    fontSize = 14.sp,
-                                                                    color = Color(0xFF1E293B),
-                                                                    fontWeight = FontWeight.Normal
-                                                                )
-                                                            },
-                                                            onClick = {
-                                                                viewModel.seleccionarTipusPresentacio(index, codigo)
-                                                            },
-                                                            contentPadding = PaddingValues(
-                                                                horizontal = 16.dp,
-                                                                vertical = 12.dp
-                                                            )
-                                                        )
-                                                    }
-                                                }
-                                            }
-                                        }
+                                        DropdownField(
+                                            label = stringResource(R.string.form_type_presentation),
+                                            selectedValue = elementosConCodigos.tiposPresentacion()[animal.tipusPresentacio] ?: "",
+                                            expanded = tipusExpandidoPorIndice[index] ?: false,
+                                            placeholder = stringResource(R.string.form_type_presentation_description),
+                                            opciones = elementosConCodigos.tiposPresentacion(),
+                                            onExpandedChange = { viewModel.toggleTipusPresentacioExpandido(index) },
+                                            onDismissRequest = { viewModel.cerrarTipusPresentacioMenu(index) },
+                                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarTipusPresentacio(index,codigo ) },
+                                            defectColor = false
+                                        )
                                     }
                                 }
                             }

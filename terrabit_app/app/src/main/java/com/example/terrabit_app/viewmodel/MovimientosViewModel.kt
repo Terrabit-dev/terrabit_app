@@ -390,11 +390,7 @@ class MovimientosViewModel(application: Application) : AndroidViewModel(applicat
         CodigoAtes("D", "D - Transportista")
     )
 
-    val listaEstatArribada = listOf(
-        "80 - Sacrificat",
-        "93 - Mort durant transport",
-        "92 - Arribat"
-    )
+
 
     // ============================================
     // FUNCIONES PARA ACTUALIZAR CAMPOS
