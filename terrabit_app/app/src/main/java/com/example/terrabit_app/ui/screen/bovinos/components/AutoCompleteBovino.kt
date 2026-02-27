@@ -20,17 +20,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.terrabit_app.R
 import com.example.terrabit_app.data.network.lista_bovinos.Animal
+import com.example.terrabit_app.ui.theme.MainGreen
+import com.example.terrabit_app.ui.theme.MainOrange
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import com.example.terrabit_app.R
-import com.example.terrabit_app.ui.theme.BlueGrey
-import com.example.terrabit_app.ui.theme.DarkBlueGrey
-import com.example.terrabit_app.ui.theme.DarkWhiteBackground
-import com.example.terrabit_app.ui.theme.MainGreen
-import com.example.terrabit_app.ui.theme.MainOrange
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,7 +44,6 @@ fun AutoCompleteBovinoField(
     var expanded by remember { mutableStateOf(false) }
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    // Auto-expandir cuando hay sugerencias
     LaunchedEffect(suggestions, value) {
         expanded = value.isNotBlank() && suggestions.isNotEmpty()
     }
@@ -56,11 +51,9 @@ fun AutoCompleteBovinoField(
     Column(modifier = modifier) {
         OutlinedTextField(
             value = value,
-            onValueChange = {
-                onValueChange(it)
-            },
-            label = { Text(label) },
-            placeholder = { Text(placeholder) },
+            onValueChange = { onValueChange(it) },
+            label = { Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant) },
+            placeholder = { Text(placeholder, color = MaterialTheme.colorScheme.onSurfaceVariant) },
             enabled = enabled,
             singleLine = true,
             trailingIcon = {
@@ -68,25 +61,31 @@ fun AutoCompleteBovinoField(
                     if (isLoading) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(20.dp),
-                            strokeWidth = 2.dp
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                     if (value.isNotBlank()) {
-                        IconButton(onClick = {
-                            onValueChange("")
-                            expanded = false
-                        }) {
-                            Icon(Icons.Default.Clear, "Limpiar")
+                        IconButton(onClick = { onValueChange(""); expanded = false }) {
+                            Icon(
+                                Icons.Default.Clear,
+                                contentDescription = "Limpiar",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                     }
                 }
             },
             modifier = Modifier.fillMaxWidth(),
-            // Estilo mejorado
             shape = RoundedCornerShape(8.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                cursorColor = MaterialTheme.colorScheme.primary
             )
         )
 
@@ -98,12 +97,10 @@ fun AutoCompleteBovinoField(
                     .padding(top = 4.dp),
                 shape = RoundedCornerShape(8.dp),
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-                // Elevación para mejor visual
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
-                LazyColumn(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
+                LazyColumn(modifier = Modifier.fillMaxWidth()) {
                     items(suggestions) { animal ->
                         SuggestionItem(
                             animal = animal,
@@ -137,7 +134,6 @@ private fun SuggestionItem(
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurface
         )
-
         if (animal.identificadorMare != null) {
             Text(
                 text = "Madre: ${animal.identificadorMare}",
@@ -145,17 +141,14 @@ private fun SuggestionItem(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-
         Text(
             text = "Sexo: ${getSexoTexto(animal.sexe)} | Raza: ${animal.raca}",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
-
-    HorizontalDivider()
+    HorizontalDivider(color = MaterialTheme.colorScheme.outline)
 }
-
 
 @Composable
 fun <T> useDebounce(
@@ -174,6 +167,7 @@ fun <T> useDebounce(
         }
     }
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CampoIdentificadorAutoComplete(
@@ -185,50 +179,43 @@ fun CampoIdentificadorAutoComplete(
     modifier: Modifier = Modifier,
     keyboardType: KeyboardType = KeyboardType.Text,
     defectColor: Boolean = true,
-    // Parámetros opcionales de autocompletado
-    // Si no se pasan, el campo funciona como campo simple con BT
     suggestions: List<Animal> = emptyList(),
     onAnimalSelected: ((Animal) -> Unit)? = null,
     isLoadingSuggestions: Boolean = false,
 ) {
     var expanded by remember { mutableStateOf(false) }
     val keyboardController = LocalSoftwareKeyboardController.current
-
     val accentColor = if (defectColor) MainGreen else MainOrange
 
-    // Expandir la lista solo si hay sugerencias y hay texto escrito
     LaunchedEffect(suggestions, valor) {
         expanded = valor.isNotBlank() && suggestions.isNotEmpty() && onAnimalSelected != null
     }
 
     Column(modifier = modifier.fillMaxWidth()) {
-
-        // ---- Label ----
         Text(
             text = label,
             fontSize = 15.sp,
             fontWeight = FontWeight.SemiBold,
-            color = DarkBlueGrey,
+            color = MaterialTheme.colorScheme.onSurface,
             letterSpacing = 0.15.sp
         )
         Spacer(modifier = Modifier.height(8.dp))
 
-        // ---- TextField ----
         OutlinedTextField(
             value = valor,
-            onValueChange = {
-                onValueChange(it)
-            },
+            onValueChange = { onValueChange(it) },
             modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text(placeholder, color = BlueGrey) },
+            placeholder = { Text(placeholder, color = MaterialTheme.colorScheme.onSurfaceVariant) },
             singleLine = true,
             shape = MaterialTheme.shapes.medium,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = accentColor,
-                unfocusedBorderColor = DarkWhiteBackground,
-                focusedTextColor = DarkBlueGrey,
-                unfocusedTextColor = DarkBlueGrey,
-                cursorColor = accentColor
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                cursorColor = accentColor,
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface
             ),
             keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
                 keyboardType = keyboardType,
@@ -236,31 +223,23 @@ fun CampoIdentificadorAutoComplete(
             ),
             trailingIcon = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    // Spinner de carga de sugerencias
                     if (isLoadingSuggestions) {
                         CircularProgressIndicator(
-                            modifier = Modifier
-                                .size(20.dp)
-                                .padding(end = 4.dp),
+                            modifier = Modifier.size(20.dp).padding(end = 4.dp),
                             strokeWidth = 2.dp,
                             color = accentColor
                         )
                     }
-                    // Botón limpiar — solo si hay texto y hay autocompletado activo
                     if (valor.isNotBlank() && onAnimalSelected != null) {
-                        IconButton(onClick = {
-                            onValueChange("")
-                            expanded = false
-                        }) {
+                        IconButton(onClick = { onValueChange(""); expanded = false }) {
                             Icon(
                                 Icons.Default.Clear,
                                 contentDescription = "Limpiar",
-                                tint = BlueGrey,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
                     }
-                    // Botón Bluetooth — siempre visible
                     IconButton(onClick = onClickBluetooth) {
                         Icon(
                             Icons.Outlined.Bluetooth,
@@ -272,7 +251,6 @@ fun CampoIdentificadorAutoComplete(
             }
         )
 
-        // ---- Lista de sugerencias (autocompletado) ----
         AnimatedVisibility(visible = expanded && suggestions.isNotEmpty()) {
             Card(
                 modifier = Modifier
@@ -281,7 +259,8 @@ fun CampoIdentificadorAutoComplete(
                     .padding(top = 4.dp),
                 shape = RoundedCornerShape(8.dp),
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
                     items(suggestions) { animal ->
@@ -300,12 +279,6 @@ fun CampoIdentificadorAutoComplete(
         }
     }
 }
-
-// ============================================
-// ITEM INTERNO DE SUGERENCIA
-// ============================================
-
-
 
 @Composable
 private fun getSexoTexto(sexe: String): String {
