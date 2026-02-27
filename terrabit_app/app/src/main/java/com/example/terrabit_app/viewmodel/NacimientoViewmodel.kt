@@ -111,10 +111,15 @@ class NacimientoViewmodel(application: Application) : AndroidViewModel(applicati
     // ============================================
     // FUNCIÓN AL SELECCIONAR BOVINO
     // ============================================
-    fun onBovinoSelected(animal: Animal) {
+    fun onMotherselected(animal: Animal) {
         _idMadre.value = animal.identificador
         _suggestionsBovinos.value = emptyList()
         Log.d("NacimientoVM", "Bovino seleccionado: ${animal.identificador}")
+    }
+
+    fun onBreedingSelected(animal: Animal){
+        _idCria.value = animal.identificador
+        _suggestionsBovinos.value = emptyList()
     }
 
     fun tieneContenido(): Boolean {

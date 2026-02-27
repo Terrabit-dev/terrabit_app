@@ -1,12 +1,10 @@
 package com.example.terrabit_app.ui.screen.bovinos
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,14 +13,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.outlined.Bluetooth
-import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -32,15 +26,10 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -66,8 +55,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -88,8 +75,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.terrabit_app.ui.navigation.Routes
-import com.example.terrabit_app.viewmodel.BorradorViewModel
-import com.example.terrabit_app.ui.screen.bovinos.components.AutoCompleteBovinoField
+import com.example.terrabit_app.ui.screen.bovinos.components.CampoIdentificadorAutoComplete
 import com.example.terrabit_app.ui.screen.bovinos.components.useDebounce
 import com.example.terrabit_app.utils.DropdownField
 import com.example.terrabit_app.utils.bluetooth.BluetoothScanDialog
@@ -137,6 +123,13 @@ fun Nacimiento(navController: NavController,
     // control de bluethooth
     var mostrarBluetooth by remember { mutableStateOf(false) }
 
+    val suggestionsBovinos by viewModel.suggestionsBovinos.observeAsState(emptyList())
+    val isLoadingBovinos by viewModel.isLoadingBovinos.observeAsState(false)
+
+    var madreBluetooth by remember { mutableStateOf(false) }
+    var criaBluetooth by remember { mutableStateOf(false) }
+
+
 
     // ============================================
     // INICIALIZACIÓN Y DETECCIÓN DE BORRADORES
@@ -154,8 +147,15 @@ fun Nacimiento(navController: NavController,
         BluetoothScanDialog(
             bluetoothViewModel = bluetooth,
             onMensajeRecibido = { mensaje ->
-                viewModel.actualizarIdCria(mensaje)   // directo, sin condición
+                if (criaBluetooth){
+                    viewModel.actualizarIdCria(mensaje)
+                }
+                else {
+                    viewModel.actualizarIdMadre(mensaje)
+                }
                 mostrarBluetooth = false
+                madreBluetooth = false
+                criaBluetooth = false
             },
             onDismiss = {
                 mostrarBluetooth = false
@@ -418,80 +418,49 @@ fun Nacimiento(navController: NavController,
                             .padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                stringResource(R.string.form_id_mother),
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = DarkBlueGrey,
-                                letterSpacing = 0.15.sp
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
 
-                            val suggestionsBovinos by viewModel.suggestionsBovinos.observeAsState(emptyList())
-                            val isLoadingBovinos by viewModel.isLoadingBovinos.observeAsState(false)
+
+
 
                             useDebounce(idMadre, delayMillis = 300L) { query ->
                                 viewModel.searchBovinos(query)
                             }
 
-                            AutoCompleteBovinoField(
-                                value = idMadre,
+                            CampoIdentificadorAutoComplete(
+                                label = stringResource(R.string.form_id_mother),
+                                valor = idMadre,
+                                placeholder = stringResource(R.string.form_mother_description),
                                 onValueChange = { viewModel.actualizarIdMadre(it) },
                                 suggestions = suggestionsBovinos,
-                                onAnimalSelected = { viewModel.onBovinoSelected(it) },
-                                isLoading = isLoadingBovinos,
-                                label = stringResource(R.string.form_id_mother),
-                                placeholder = stringResource(R.string.form_mother_description),
-                                modifier = Modifier.fillMaxWidth()
+                                onAnimalSelected = { viewModel.onMotherselected(it) },
+                                isLoadingSuggestions = isLoadingBovinos,
+                                onClickBluetooth = {
+                                    madreBluetooth = true
+                                    criaBluetooth = false
+                                    bluetooth.iniciarEscaneo(context)
+                                    mostrarBluetooth = true
+                                }
                             )
+
+                        useDebounce(idCria, delayMillis = 300L) { query ->
+                            viewModel.searchBovinos(query)
                         }
 
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                stringResource(R.string.form_id_breeding),
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = DarkBlueGrey,
-                                letterSpacing = 0.15.sp
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            OutlinedTextField(
-                                value = idCria,
-                                onValueChange = { viewModel.actualizarIdCria(it) },
-                                modifier = Modifier.fillMaxWidth(),
-                                placeholder = {
-                                    Text(
-                                        stringResource(R.string.form_id_breeding_description),
-                                        color = BlueGrey
-                                    )
-                                },
-                                trailingIcon = {
-
-                                    IconButton(onClick = {
-                                        bluetooth.iniciarEscaneo(context)
-                                        mostrarBluetooth = true
-                                    }) {
-                                        Icon(Icons.Outlined.Bluetooth, contentDescription = "Leer crotal")
-                                    }
-
-                                },
-                                singleLine = true,
-                                shape = MaterialTheme.shapes.medium,
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = MainGreen,
-                                    unfocusedBorderColor = DarkWhiteBackground,
-                                    focusedTextColor = DarkBlueGrey,
-                                    unfocusedTextColor = DarkBlueGrey,
-                                    cursorColor = MainGreen
-                                ),
-                                keyboardOptions = KeyboardOptions(
-                                    keyboardType = KeyboardType.Text,
-                                    imeAction = ImeAction.Next,
-                                    autoCorrect = false
-                                )
-                            )
-                        }
+                        CampoIdentificadorAutoComplete(
+                            label = stringResource(R.string.form_id_breeding),
+                            valor = idCria,
+                            placeholder = stringResource(R.string.form_id_breeding_description),
+                            onValueChange = { viewModel.actualizarIdCria(it) },
+                            suggestions = suggestionsBovinos,
+                            onAnimalSelected = { viewModel.onBreedingSelected(it) },
+                            isLoadingSuggestions = isLoadingBovinos,
+                            onClickBluetooth = {
+                                madreBluetooth = false
+                                criaBluetooth = true
+                                bluetooth.iniciarEscaneo(context)
+                                mostrarBluetooth = true
+                            }
+                        )
 
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(

@@ -1,5 +1,6 @@
 package com.example.terrabit_app.utils
 
+import android.graphics.drawable.Icon
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -11,6 +12,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -27,6 +29,15 @@ import com.example.terrabit_app.ui.theme.DarkBlueGrey
 import com.example.terrabit_app.ui.theme.DarkWhiteBackground
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.outlined.Bluetooth
+import androidx.compose.material.icons.outlined.CameraAlt
+import androidx.compose.material3.SegmentedButtonDefaults.Icon
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -122,6 +133,51 @@ fun CampoTexto(
                 cursorColor = if (defectColor) MainGreen else MainOrange
             ),
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType)
+        )
+    }
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CampoTextoIdentificador(
+    label: String,
+    valor: String,
+    placeholder: String,
+    keyboardType: KeyboardType = KeyboardType.Text,
+    onValueChange: (String) -> Unit,
+    onClickIcon: () -> Unit,
+    defectColor: Boolean
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = label,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = DarkBlueGrey,
+            letterSpacing = 0.15.sp
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedTextField(
+            value = valor,
+            onValueChange = onValueChange,
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text(placeholder, color = BlueGrey) },
+            singleLine = true,
+            shape = MaterialTheme.shapes.medium,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = if (defectColor) MainGreen else MainOrange,
+                unfocusedBorderColor = DarkWhiteBackground,
+                focusedTextColor = DarkBlueGrey,
+                unfocusedTextColor = DarkBlueGrey,
+                cursorColor = if (defectColor) MainGreen else MainOrange
+            ),
+            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+            trailingIcon = {
+                IconButton(
+                    onClick = onClickIcon
+                    ) {
+                    Icon(Icons.Outlined.Bluetooth, contentDescription = "Leer crotal")
+                }
+            }
         )
     }
 }
