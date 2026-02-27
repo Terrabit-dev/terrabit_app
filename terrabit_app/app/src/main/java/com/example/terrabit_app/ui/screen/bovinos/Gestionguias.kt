@@ -960,34 +960,24 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
                                             }
                                         }
 
-                                        Column(modifier = Modifier.fillMaxWidth()) {
-                                            Text(
-                                                stringResource(R.string.form_animal_identifiers),
-                                                fontSize = 14.sp,
-                                                fontWeight = FontWeight.SemiBold,
-                                                color = DarkBlueGrey,
-                                                letterSpacing = 0.15.sp
-                                            )
-                                            Spacer(modifier = Modifier.height(8.dp))
-
-                                            useDebounce(identificador, delayMillis = 300L) { query ->
-                                                viewModel.searchBovinos(index, query)
-                                            }
-                                            CampoIdentificadorAutoComplete(
-                                                label = stringResource(R.string.form_animal_identifiers),
-                                                valor = identificador,
-                                                placeholder = stringResource(R.string.form_animal_id_example),
-                                                onValueChange = { viewModel.actualizarIdentificador(index,it) },
-                                                suggestions = suggestionsBovinos,
-                                                onAnimalSelected = { viewModel.onBovinoSelected(index,it) },
-                                                isLoadingSuggestions = isLoadingBovinos,
-                                                onClickBluetooth = {
-                                                    indiceBluetooth = index
-                                                    bluetoothViewModel.iniciarEscaneo(context)
-                                                    mostrarBluetooth = true
-                                                }
-                                            )
+                                        useDebounce(identificador, delayMillis = 300L) { query ->
+                                            viewModel.searchBovinos(index, query)
                                         }
+                                        CampoIdentificadorAutoComplete(
+                                            label = stringResource(R.string.form_id_animal),
+                                            valor = identificador,
+                                            placeholder = stringResource(R.string.form_animal_id_example),
+                                            onValueChange = { viewModel.actualizarIdentificador(index,it) },
+                                            suggestions = if (activeIndex == index) suggestionsBovinos else emptyList(),
+                                            onAnimalSelected = { viewModel.onBovinoSelected(index,it) },
+                                            isLoadingSuggestions = isLoadingBovinos,
+                                            defectColor = false,
+                                            onClickBluetooth = {
+                                                indiceBluetooth = index
+                                                bluetoothViewModel.iniciarEscaneo(context)
+                                                mostrarBluetooth = true
+                                            }
+                                        )
                                     }
                                 }
                             }
