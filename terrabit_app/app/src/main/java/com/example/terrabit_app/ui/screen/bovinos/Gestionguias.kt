@@ -95,9 +95,11 @@ import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
 import com.example.terrabit_app.ui.screen.bovinos.components.AutoCompleteBovinoField
+import com.example.terrabit_app.ui.screen.bovinos.components.CampoIdentificadorAutoComplete
 import com.example.terrabit_app.ui.screen.bovinos.components.useDebounce
 import com.example.terrabit_app.utils.CampoTexto
 import com.example.terrabit_app.utils.DropdownField
+import com.example.terrabit_app.utils.bluetooth.BluetoothScanDialog
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -155,6 +157,27 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
 
     val elementosConCodigos = ElementosConCodigos()
 
+    var indiceBluetooth by remember { mutableStateOf<Int?>(null) }
+    var mostrarBluetooth by remember { mutableStateOf(false) }
+
+    if (mostrarBluetooth) {
+        BluetoothScanDialog(
+            bluetoothViewModel = bluetoothViewModel,
+            onMensajeRecibido = { mensaje ->
+                // Aquí decides qué campo actualizar con el mensaje
+                val indice = indiceBluetooth
+                if (indice != null) {
+                    viewModel.actualizarIdentificador(indice, mensaje)  // para lista
+                }
+                mostrarBluetooth = false
+                indiceBluetooth = null
+            },
+            onDismiss = {
+                mostrarBluetooth = false
+                indiceBluetooth = null
+            }
+        )
+    }
     // ============================================
     // INICIALIZACIÓN Y DETECCIÓN DE BORRADORES
     // ============================================
@@ -950,16 +973,19 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
                                             useDebounce(identificador, delayMillis = 300L) { query ->
                                                 viewModel.searchBovinos(index, query)
                                             }
-
-                                            AutoCompleteBovinoField(
-                                                value = identificador,
-                                                onValueChange = { viewModel.actualizarIdentificador(index, it) },
-                                                suggestions = if (activeIndex == index) suggestionsBovinos else emptyList(),
-                                                onAnimalSelected = { viewModel.onBovinoSelected(index, it) },
-                                                isLoading = isLoadingBovinos,
+                                            CampoIdentificadorAutoComplete(
                                                 label = stringResource(R.string.form_animal_identifiers),
+                                                valor = identificador,
                                                 placeholder = stringResource(R.string.form_animal_id_example),
-                                                modifier = Modifier.fillMaxWidth()
+                                                onValueChange = { viewModel.actualizarIdentificador(index,it) },
+                                                suggestions = suggestionsBovinos,
+                                                onAnimalSelected = { viewModel.onBovinoSelected(index,it) },
+                                                isLoadingSuggestions = isLoadingBovinos,
+                                                onClickBluetooth = {
+                                                    indiceBluetooth = index
+                                                    bluetoothViewModel.iniciarEscaneo(context)
+                                                    mostrarBluetooth = true
+                                                }
                                             )
                                         }
                                     }
