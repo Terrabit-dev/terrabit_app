@@ -2,71 +2,20 @@ package com.example.terrabit_app.ui.screen.bovinos
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDefaults
-import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TimePicker
-import androidx.compose.material3.TimePickerDefaults
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberDatePickerState
-import androidx.compose.material3.rememberTimePickerState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -74,38 +23,30 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.terrabit_app.ui.theme.BlueGrey
-import com.example.terrabit_app.ui.theme.DarkBlueGrey
-import com.example.terrabit_app.ui.theme.DarkWhiteBackground
+import com.example.terrabit_app.R
+import com.example.terrabit_app.ui.navigation.Routes
+import com.example.terrabit_app.ui.screen.bovinos.components.CampoIdentificadorAutoComplete
+import com.example.terrabit_app.ui.screen.bovinos.components.useDebounce
 import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
-import com.example.terrabit_app.ui.theme.WhiteBackground
-import com.example.terrabit_app.viewmodel.GuiasViewModel
-import com.example.terrabit_app.R
-import com.example.terrabit_app.ui.navigation.Routes
-import com.example.terrabit_app.utils.ElementosConCodigos
-import com.example.terrabit_app.utils.alertsErrosScreens
-import com.example.terrabit_app.ui.screen.bovinos.components.AutoCompleteBovinoField
-import com.example.terrabit_app.ui.screen.bovinos.components.CampoIdentificadorAutoComplete
-import com.example.terrabit_app.ui.screen.bovinos.components.useDebounce
 import com.example.terrabit_app.utils.CampoTexto
 import com.example.terrabit_app.utils.DropdownField
+import com.example.terrabit_app.utils.ElementosConCodigos
+import com.example.terrabit_app.utils.alertsErrosScreens
 import com.example.terrabit_app.utils.bluetooth.BluetoothScanDialog
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
+import com.example.terrabit_app.viewmodel.GuiasViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothViewModel, borradorId: String = "") {
-
     val viewModel = viewModel<GuiasViewModel>()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -118,7 +59,6 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
     val dataArribada by viewModel.dataArribada.observeAsState("")
     val horaArribada by viewModel.horaArribada.observeAsState("")
     val mobilitat by viewModel.mobilitat.observeAsState("")
-
     val codiAtes by viewModel.codiAtes.observeAsState("")
     val nomTransportista by viewModel.nomTransportista.observeAsState("")
     val mitjaTransport by viewModel.mitjaTransport.observeAsState("")
@@ -126,209 +66,119 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
     val nifConductor by viewModel.nifConductor.observeAsState("")
     val nomConductor by viewModel.nomConductor.observeAsState("")
     val identificadors by viewModel.identificadors.observeAsState(listOf(""))
-
     val temporalExpandido by viewModel.temporalExpandido.observeAsState(false)
     val mobilitatExpandido by viewModel.mobilitatExpandido.observeAsState(false)
     val mitjaTransportExpandido by viewModel.mitjaTransportExpandido.observeAsState(false)
-
     val mostrarDatePickerSortida by viewModel.mostrarDatePickerSortida.observeAsState(false)
     val mostrarTimePickerSortida by viewModel.mostrarTimePickerSortida.observeAsState(false)
     val mostrarDatePickerArribada by viewModel.mostrarDatePickerArribada.observeAsState(false)
     val mostrarTimePickerArribada by viewModel.mostrarTimePickerArribada.observeAsState(false)
-
     val registroExitoso by viewModel.registroExitoso.observeAsState(false)
     val mensajeError by viewModel.mensajeError.observeAsState("")
     val estadoCarga by viewModel.cargandoGuia.observeAsState(false)
+    val codiError by viewModel.codiError.observeAsState()
+    val suggestionsBovinos by viewModel.suggestionsBovinos.observeAsState(emptyList())
+    val isLoadingBovinos by viewModel.isLoadingBovinos.observeAsState(false)
+    val activeIndex by viewModel.activeFieldIndex.observeAsState(-1)
 
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
     var mostrarDialogoAviso by remember { mutableStateOf(false) }
     var cantidadBorradores by remember { mutableStateOf(0) }
-
-    val codiError by viewModel.codiError.observeAsState()
+    var indiceBluetooth by remember { mutableStateOf<Int?>(null) }
+    var mostrarBluetooth by remember { mutableStateOf(false) }
 
     val successMessage = stringResource(R.string.success_create_guide)
     val datePlaceholder = stringResource(R.string.form_date_description)
     val hourPlaceholder = stringResource(R.string.form_hour_arrival_description)
-
-    val suggestionsBovinos by viewModel.suggestionsBovinos.observeAsState(emptyList())
-    val isLoadingBovinos by viewModel.isLoadingBovinos.observeAsState(false)
-    val activeIndex by viewModel.activeFieldIndex.observeAsState(-1)
-
     val elementosConCodigos = ElementosConCodigos()
-
-    var indiceBluetooth by remember { mutableStateOf<Int?>(null) }
-    var mostrarBluetooth by remember { mutableStateOf(false) }
 
     if (mostrarBluetooth) {
         BluetoothScanDialog(
             bluetoothViewModel = bluetoothViewModel,
             onMensajeRecibido = { mensaje ->
-                // Aquí decides qué campo actualizar con el mensaje
-                val indice = indiceBluetooth
-                if (indice != null) {
-                    viewModel.actualizarIdentificador(indice, mensaje)  // para lista
-                }
+                indiceBluetooth?.let { viewModel.actualizarIdentificador(it, mensaje) }
                 mostrarBluetooth = false
                 indiceBluetooth = null
             },
-            onDismiss = {
-                mostrarBluetooth = false
-                indiceBluetooth = null
-            }
+            onDismiss = { mostrarBluetooth = false; indiceBluetooth = null }
         )
     }
-    // ============================================
-    // INICIALIZACIÓN Y DETECCIÓN DE BORRADORES
-    // ============================================
+
     LaunchedEffect(Unit) {
         viewModel.inicializarSharedPreferences(context)
-
         if (borradorId.isNotEmpty()) {
             viewModel.cargarBorradorPorId(borradorId)
             return@LaunchedEffect
         }
-
         val borradores = viewModel.obtenerBorradoresGuia()
         cantidadBorradores = borradores.size
-        if (cantidadBorradores >= 2) {
-            mostrarDialogoAviso = true
-        }
+        if (cantidadBorradores >= 2) mostrarDialogoAviso = true
     }
 
-    // ============================================
-    // DIÁLOGO DE AVISO DE BORRADORES
-    // ============================================
-    if (mostrarDialogoAviso) {
-        AlertDialog(
-            onDismissRequest = { },
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.Description,
-                    contentDescription = null,
-                    tint = MainOrange,
-                    modifier = Modifier.size(48.dp)
-                )
-            },
-            title = {
-                Text(
-                    text = "Borradores pendientes",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
-                    color = DarkBlueGrey
-                )
-            },
-            text = {
-                Text(
-                    text = "Tienes $cantidadBorradores borradores guardados de este formulario. Puedes verlos en la página de Borradores.\n\n¿Deseas crear uno nuevo?",
-                    fontSize = 16.sp,
-                    color = BlueGrey,
-                    lineHeight = 24.sp
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        mostrarDialogoAviso = false
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFE28F41)
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text("Crear nuevo", fontWeight = FontWeight.SemiBold)
-                }
-            },
-            containerColor = Color.White,
-            shape = RoundedCornerShape(16.dp)
-        )
-    }
-
-    // ============================================
-    // DETECCIÓN DE CICLO DE VIDA (AUTOGUARDADO)
-    // ============================================
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
-            when (event) {
-                Lifecycle.Event.ON_PAUSE -> {
-                    if (viewModel.tieneContenido()) {
-                        viewModel.guardarBorradorAutomatico()
-                    }
-                }
-                else -> {}
+            if (event == Lifecycle.Event.ON_PAUSE && viewModel.tieneContenido()) {
+                viewModel.guardarBorradorAutomatico()
             }
         }
-
         lifecycleOwner.lifecycle.addObserver(observer)
-
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-        }
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     LaunchedEffect(registroExitoso) {
         if (registroExitoso) {
-            snackbarHostState.showSnackbar(
-                message = successMessage,
-                duration = SnackbarDuration.Short
-            )
+            snackbarHostState.showSnackbar(successMessage, duration = SnackbarDuration.Short)
             viewModel.resetearEstadoRegistro()
         }
     }
 
     LaunchedEffect(mensajeError, codiError) {
-        if (mensajeError.isNotEmpty() || codiError != null) {
-            mostrarDialogoError = true
-        }
+        if (mensajeError.isNotEmpty() || codiError != null) mostrarDialogoError = true
     }
 
-    if (mostrarDialogoError) {
+    if (mostrarDialogoAviso) {
         AlertDialog(
-            onDismissRequest = {
-                mostrarDialogoError = false
-                viewModel.resetearEstadoRegistro()
-            },
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = null,
-                    tint = MainOrange,
-                    modifier = Modifier.size(48.dp)
-                )
-            },
-            title = {
-                Text(
-                    text = stringResource(R.string.error_create_guide),
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
-                    color = DarkBlueGrey
-                )
-            },
+            onDismissRequest = {},
+            icon = { Icon(Icons.Default.Description, contentDescription = null, tint = MainOrange, modifier = Modifier.size(48.dp)) },
+            title = { Text("Borradores pendientes", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface) },
             text = {
                 Text(
-                    text = if (codiError != null) {
-                        alertsErrosScreens(codiError!!)
-                    } else mensajeError,
-                    fontSize = 16.sp,
-                    color = BlueGrey,
-                    lineHeight = 24.sp
+                    "Tienes $cantidadBorradores borradores guardados de este formulario. Puedes verlos en la página de Borradores.\n\n¿Deseas crear uno nuevo?",
+                    fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 24.sp
                 )
             },
             confirmButton = {
                 Button(
-                    onClick = {
-                        mostrarDialogoError = false
-                        viewModel.resetearEstadoRegistro()
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MainOrange
-                    ),
+                    onClick = { mostrarDialogoAviso = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = MainOrange),
                     shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(stringResource(R.string.error_buttom), fontWeight = FontWeight.SemiBold)
-                }
+                ) { Text("Crear nuevo", fontWeight = FontWeight.SemiBold) }
             },
-            containerColor = Color.White,
+            containerColor = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(16.dp)
+        )
+    }
+
+    if (mostrarDialogoError) {
+        AlertDialog(
+            onDismissRequest = { mostrarDialogoError = false; viewModel.resetearEstadoRegistro() },
+            icon = { Icon(Icons.Default.ArrowBack, contentDescription = null, tint = MainOrange, modifier = Modifier.size(48.dp)) },
+            title = { Text(stringResource(R.string.error_create_guide), fontWeight = FontWeight.Bold, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface) },
+            text = {
+                Text(
+                    if (codiError != null) alertsErrosScreens(codiError!!) else mensajeError,
+                    fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 24.sp
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = { mostrarDialogoError = false; viewModel.resetearEstadoRegistro() },
+                    colors = ButtonDefaults.buttonColors(containerColor = MainOrange),
+                    shape = RoundedCornerShape(8.dp)
+                ) { Text(stringResource(R.string.error_buttom), fontWeight = FontWeight.SemiBold) }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
             shape = RoundedCornerShape(16.dp)
         )
     }
@@ -338,29 +188,17 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
         DatePickerDialog(
             onDismissRequest = { viewModel.ocultarDatePickerSortida() },
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        datePickerState.selectedDateMillis?.let { millis ->
-                            viewModel.seleccionarFechaSortida(millis)
-                        }
-                    }
-                ) {
+                TextButton(onClick = { datePickerState.selectedDateMillis?.let { viewModel.seleccionarFechaSortida(it) } }) {
                     Text(stringResource(R.string.accept_buttom), color = MainOrange)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.ocultarDatePickerSortida() }) {
-                    Text(stringResource(R.string.cancel_buttom), color = BlueGrey)
+                    Text(stringResource(R.string.cancel_buttom), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         ) {
-            DatePicker(
-                state = datePickerState,
-                colors = DatePickerDefaults.colors(
-                    selectedDayContainerColor = MainOrange,
-                    todayDateBorderColor = MainOrange
-                )
-            )
+            DatePicker(state = datePickerState, colors = DatePickerDefaults.colors(selectedDayContainerColor = MainOrange, todayDateBorderColor = MainOrange))
         }
     }
 
@@ -369,31 +207,19 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
         AlertDialog(
             onDismissRequest = { viewModel.ocultarTimePickerSortida() },
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        viewModel.actualizarHoraSortida(
-                            timePickerState.hour.toString(),
-                            timePickerState.minute.toString()
-                        )
-                        viewModel.ocultarTimePickerSortida()
-                    }
-                ) {
-                    Text(stringResource(R.string.accept_buttom), color = MainOrange)
-                }
+                TextButton(onClick = {
+                    viewModel.actualizarHoraSortida(timePickerState.hour.toString(), timePickerState.minute.toString())
+                    viewModel.ocultarTimePickerSortida()
+                }) { Text(stringResource(R.string.accept_buttom), color = MainOrange) }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.ocultarTimePickerSortida() }) {
-                    Text(stringResource(R.string.cancel_buttom), color = BlueGrey)
+                    Text(stringResource(R.string.cancel_buttom), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             },
+            containerColor = MaterialTheme.colorScheme.surface,
             text = {
-                TimePicker(
-                    state = timePickerState,
-                    colors = TimePickerDefaults.colors(
-                        clockDialSelectedContentColor = Color.White,
-                        selectorColor = MainOrange
-                    )
-                )
+                TimePicker(state = timePickerState, colors = TimePickerDefaults.colors(clockDialSelectedContentColor = Color.White, selectorColor = MainOrange))
             }
         )
     }
@@ -403,29 +229,17 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
         DatePickerDialog(
             onDismissRequest = { viewModel.ocultarDatePickerArribada() },
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        datePickerState.selectedDateMillis?.let { millis ->
-                            viewModel.seleccionarFechaArribada(millis)
-                        }
-                    }
-                ) {
+                TextButton(onClick = { datePickerState.selectedDateMillis?.let { viewModel.seleccionarFechaArribada(it) } }) {
                     Text(stringResource(R.string.accept_buttom), color = MainOrange)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.ocultarDatePickerArribada() }) {
-                    Text(stringResource(R.string.cancel_buttom), color = BlueGrey)
+                    Text(stringResource(R.string.cancel_buttom), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         ) {
-            DatePicker(
-                state = datePickerState,
-                colors = DatePickerDefaults.colors(
-                    selectedDayContainerColor = MainOrange,
-                    todayDateBorderColor = MainOrange
-                )
-            )
+            DatePicker(state = datePickerState, colors = DatePickerDefaults.colors(selectedDayContainerColor = MainOrange, todayDateBorderColor = MainOrange))
         }
     }
 
@@ -434,31 +248,19 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
         AlertDialog(
             onDismissRequest = { viewModel.ocultarTimePickerArribada() },
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        viewModel.actualizarHoraArribada(
-                            timePickerState.hour.toString(),
-                            timePickerState.minute.toString()
-                        )
-                        viewModel.ocultarTimePickerArribada()
-                    }
-                ) {
-                    Text(stringResource(R.string.accept_buttom), color = MainOrange)
-                }
+                TextButton(onClick = {
+                    viewModel.actualizarHoraArribada(timePickerState.hour.toString(), timePickerState.minute.toString())
+                    viewModel.ocultarTimePickerArribada()
+                }) { Text(stringResource(R.string.accept_buttom), color = MainOrange) }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.ocultarTimePickerArribada() }) {
-                    Text(stringResource(R.string.cancel_buttom), color = BlueGrey)
+                    Text(stringResource(R.string.cancel_buttom), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             },
+            containerColor = MaterialTheme.colorScheme.surface,
             text = {
-                TimePicker(
-                    state = timePickerState,
-                    colors = TimePickerDefaults.colors(
-                        clockDialSelectedContentColor = Color.White,
-                        selectorColor = MainOrange
-                    )
-                )
+                TimePicker(state = timePickerState, colors = TimePickerDefaults.colors(clockDialSelectedContentColor = Color.White, selectorColor = MainOrange))
             }
         )
     }
@@ -468,35 +270,20 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Black.copy(alpha = 0.5f))
-                .clickable(enabled = false) { },
+                .clickable(enabled = false) {},
             contentAlignment = Alignment.Center
         ) {
             Card(
                 modifier = Modifier.size(120.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
                 shape = RoundedCornerShape(16.dp)
             ) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(48.dp),
-                            color = MainOrange,
-                            strokeWidth = 4.dp
-                        )
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                        CircularProgressIndicator(modifier = Modifier.size(48.dp), color = MainOrange, strokeWidth = 4.dp)
                         Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            "Procesando...",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = BlueGrey
-                        )
+                        Text("Procesando...", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
@@ -505,15 +292,7 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = {
-                        Column {
-                            Text(
-                                stringResource(R.string.name_manage_guides),
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
-                    },
+                    title = { Text(stringResource(R.string.name_manage_guides), fontSize = 20.sp, fontWeight = FontWeight.SemiBold) },
                     navigationIcon = {
                         IconButton(onClick = { navController.navigate(Routes.GuiasMovimientos.route) }) {
                             Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
@@ -528,15 +307,10 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
             },
             snackbarHost = {
                 SnackbarHost(hostState = snackbarHostState) { data ->
-                    Snackbar(
-                        snackbarData = data,
-                        containerColor = MainGreen,
-                        contentColor = Color.White,
-                        shape = RoundedCornerShape(12.dp)
-                    )
+                    Snackbar(snackbarData = data, containerColor = MainGreen, contentColor = Color.White, shape = RoundedCornerShape(12.dp))
                 }
             },
-            containerColor = WhiteBackground
+            containerColor = MaterialTheme.colorScheme.background
         ) { padding ->
             Column(
                 modifier = Modifier
@@ -546,50 +320,25 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
             ) {
                 Spacer(modifier = Modifier.height(20.dp))
 
+                // ---- Card datos obligatorios ----
                 Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                     shape = MaterialTheme.shapes.large
                 ) {
                     Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(24.dp),
+                        modifier = Modifier.fillMaxWidth().padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
-                        Text(
-                            stringResource(R.string.form_movs_title_necessary),
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = DarkBlueGrey
-                        )
+                        Text(stringResource(R.string.form_movs_title_necessary), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
 
-                        // Expltación de origen
-                        CampoTexto(
-                            label = stringResource(R.string.form_origin_exploitation) ,
-                            valor = explotacioOrigen,
-                            placeholder = stringResource(R.string.form_format_mo_rega),
-                            onValueChange = { viewModel.actualizarExplotacioOrigen(it) },
-                            defectColor = false
-                        )
-
-                        // Explotación destino
-                        CampoTexto(
-                            label = stringResource(R.string.form_exploitation_destination) ,
-                            valor = explotacioDestinacio,
-                            placeholder = stringResource(R.string.form_format_mo_rega),
-                            onValueChange = { viewModel.actualizarExplotacioDestinacio(it) },
-                            defectColor = false
-                        )
-
+                        CampoTexto(label = stringResource(R.string.form_origin_exploitation), valor = explotacioOrigen, placeholder = stringResource(R.string.form_format_mo_rega), onValueChange = { viewModel.actualizarExplotacioOrigen(it) }, defectColor = false)
+                        CampoTexto(label = stringResource(R.string.form_exploitation_destination), valor = explotacioDestinacio, placeholder = stringResource(R.string.form_format_mo_rega), onValueChange = { viewModel.actualizarExplotacioDestinacio(it) }, defectColor = false)
 
                         DropdownField(
-                            label = stringResource(R.string.form_temporal) ,
-                            selectedValue = temporal,
-                            expanded = temporalExpandido,
+                            label = stringResource(R.string.form_temporal),
+                            selectedValue = temporal, expanded = temporalExpandido,
                             placeholder = stringResource(R.string.form_yes_no),
                             opciones = elementosConCodigos.opcionesSiNo(),
                             onExpandedChange = { viewModel.toggleTemporalExpandido() },
@@ -598,201 +347,49 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
                             defectColor = true
                         )
 
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    stringResource(R.string.form_date_departure),
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = DarkBlueGrey,
-                                    letterSpacing = 0.15.sp
-                                )
-                                Spacer(modifier = Modifier.height(10.dp))
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable { viewModel.mostrarDatePickerSortida() }
-                                ) {
-                                    OutlinedTextField(
-                                        value = dataSortida,
-                                        onValueChange = {},
-                                        modifier = Modifier.fillMaxWidth(),
-                                        placeholder = {
-                                            Text(
-                                                datePlaceholder,
-                                                color = BlueGrey
-                                            )
-                                        },
-                                        leadingIcon = {
-                                            Icon(
-                                                Icons.Default.DateRange,
-                                                contentDescription = datePlaceholder,
-                                                tint = MainOrange
-                                            )
-                                        },
-                                        readOnly = true,
-                                        enabled = false,
-                                        shape = MaterialTheme.shapes.medium,
-                                        colors = OutlinedTextFieldDefaults.colors(
-                                            disabledTextColor = DarkBlueGrey,
-                                            disabledBorderColor = DarkWhiteBackground,
-                                            disabledLeadingIconColor = MainOrange,
-                                            disabledPlaceholderColor = BlueGrey
-                                        ),
-                                        singleLine = true
-                                    )
-                                }
-                            }
-
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    stringResource(R.string.form_hour_arrival),
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = DarkBlueGrey,
-                                    letterSpacing = 0.15.sp
-                                )
-                                Spacer(modifier = Modifier.height(10.dp))
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable { viewModel.mostrarTimePickerSortida() }
-                                ) {
-                                    OutlinedTextField(
-                                        value = horaSortida,
-                                        onValueChange = {},
-                                        modifier = Modifier.fillMaxWidth(),
-                                        placeholder = {
-                                            Text(
-                                                hourPlaceholder,
-                                                color = BlueGrey
-                                            )
-                                        },
-                                        leadingIcon = {
-                                            Icon(
-                                                Icons.Default.Schedule,
-                                                contentDescription = hourPlaceholder,
-                                                tint = MainOrange
-                                            )
-                                        },
-                                        readOnly = true,
-                                        enabled = false,
-                                        shape = MaterialTheme.shapes.medium,
-                                        colors = OutlinedTextFieldDefaults.colors(
-                                            disabledTextColor = DarkBlueGrey,
-                                            disabledBorderColor = DarkWhiteBackground,
-                                            disabledLeadingIconColor = MainOrange,
-                                            disabledPlaceholderColor = BlueGrey
-                                        ),
-                                        singleLine = true
-                                    )
-                                }
-                            }
+                        // Fecha y hora salida
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            DateTimeField(
+                                modifier = Modifier.weight(1f),
+                                label = stringResource(R.string.form_date_departure),
+                                value = dataSortida,
+                                placeholder = datePlaceholder,
+                                icon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = MainOrange) },
+                                onClick = { viewModel.mostrarDatePickerSortida() }
+                            )
+                            DateTimeField(
+                                modifier = Modifier.weight(1f),
+                                label = stringResource(R.string.form_hour_arrival),
+                                value = horaSortida,
+                                placeholder = hourPlaceholder,
+                                icon = { Icon(Icons.Default.Schedule, contentDescription = null, tint = MainOrange) },
+                                onClick = { viewModel.mostrarTimePickerSortida() }
+                            )
                         }
 
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    stringResource(R.string.form_date_arrival),
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = DarkBlueGrey,
-                                    letterSpacing = 0.15.sp
-                                )
-                                Spacer(modifier = Modifier.height(10.dp))
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable { viewModel.mostrarDatePickerArribada() }
-                                ) {
-                                    OutlinedTextField(
-                                        value = dataArribada,
-                                        onValueChange = {},
-                                        modifier = Modifier.fillMaxWidth(),
-                                        placeholder = {
-                                            Text(
-                                                datePlaceholder,
-                                                color = BlueGrey
-                                            )
-                                        },
-                                        leadingIcon = {
-                                            Icon(
-                                                Icons.Default.DateRange,
-                                                contentDescription = datePlaceholder,
-                                                tint = MainOrange
-                                            )
-                                        },
-                                        readOnly = true,
-                                        enabled = false,
-                                        shape = MaterialTheme.shapes.medium,
-                                        colors = OutlinedTextFieldDefaults.colors(
-                                            disabledTextColor = DarkBlueGrey,
-                                            disabledBorderColor = DarkWhiteBackground,
-                                            disabledLeadingIconColor = MainOrange,
-                                            disabledPlaceholderColor = BlueGrey
-                                        ),
-                                        singleLine = true
-                                    )
-                                }
-                            }
-
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    stringResource(R.string.form_hour_arrival),
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = DarkBlueGrey,
-                                    letterSpacing = 0.15.sp
-                                )
-                                Spacer(modifier = Modifier.height(10.dp))
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable { viewModel.mostrarTimePickerArribada() }
-                                ) {
-                                    OutlinedTextField(
-                                        value = horaArribada,
-                                        onValueChange = {},
-                                        modifier = Modifier.fillMaxWidth(),
-                                        placeholder = {
-                                            Text(
-                                                hourPlaceholder,
-                                                color = BlueGrey
-                                            )
-                                        },
-                                        leadingIcon = {
-                                            Icon(
-                                                Icons.Default.Schedule,
-                                                contentDescription = hourPlaceholder,
-                                                tint =MainOrange
-                                            )
-                                        },
-                                        readOnly = true,
-                                        enabled = false,
-                                        shape = MaterialTheme.shapes.medium,
-                                        colors = OutlinedTextFieldDefaults.colors(
-                                            disabledTextColor = DarkBlueGrey,
-                                            disabledBorderColor = DarkWhiteBackground,
-                                            disabledLeadingIconColor = MainOrange,
-                                            disabledPlaceholderColor = BlueGrey
-                                        ),
-                                        singleLine = true
-                                    )
-                                }
-                            }
+                        // Fecha y hora llegada
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            DateTimeField(
+                                modifier = Modifier.weight(1f),
+                                label = stringResource(R.string.form_date_arrival),
+                                value = dataArribada,
+                                placeholder = datePlaceholder,
+                                icon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = MainOrange) },
+                                onClick = { viewModel.mostrarDatePickerArribada() }
+                            )
+                            DateTimeField(
+                                modifier = Modifier.weight(1f),
+                                label = stringResource(R.string.form_hour_arrival),
+                                value = horaArribada,
+                                placeholder = hourPlaceholder,
+                                icon = { Icon(Icons.Default.Schedule, contentDescription = null, tint = MainOrange) },
+                                onClick = { viewModel.mostrarTimePickerArribada() }
+                            )
                         }
 
-                        //Guia por movilidad
                         DropdownField(
-                            label = stringResource(R.string.form_mobility_guide) ,
-                            selectedValue = mobilitat,
-                            expanded = mobilitatExpandido,
+                            label = stringResource(R.string.form_mobility_guide),
+                            selectedValue = mobilitat, expanded = mobilitatExpandido,
                             placeholder = stringResource(R.string.form_yes_no),
                             opciones = elementosConCodigos.opcionesSiNo(),
                             onExpandedChange = { viewModel.toggleMobilitatExpandido() },
@@ -807,50 +404,25 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // ---- Card datos opcionales ----
                 Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                     shape = MaterialTheme.shapes.large
                 ) {
                     Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(24.dp),
+                        modifier = Modifier.fillMaxWidth().padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
-                        Text(
-                            stringResource(R.string.form_movs_title_optionals),
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = DarkBlueGrey
-                        )
+                        Text(stringResource(R.string.form_movs_title_optionals), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
 
-                        // Codigo ates
-                        CampoTexto(
-                            label = stringResource(R.string.form_codi_ates) ,
-                            valor = codiAtes,
-                            placeholder = stringResource(R.string.form_codi_ates_description),
-                            onValueChange = { viewModel.campoCodiAtes(it) },
-                            defectColor = false
-                        )
+                        CampoTexto(label = stringResource(R.string.form_codi_ates), valor = codiAtes, placeholder = stringResource(R.string.form_codi_ates_description), onValueChange = { viewModel.campoCodiAtes(it) }, defectColor = false)
+                        CampoTexto(label = stringResource(R.string.form_name_transportits), valor = nomTransportista, placeholder = stringResource(R.string.form_name_transportits_description), onValueChange = { viewModel.actualizarNomTransportista(it) }, defectColor = false)
 
-                        // Nombre transportista
-                        CampoTexto(
-                            label = stringResource(R.string.form_name_transportits) ,
-                            valor = nomTransportista,
-                            placeholder = stringResource(R.string.form_name_transportits_description),
-                            onValueChange = { viewModel.actualizarNomTransportista(it) },
-                            defectColor = false
-                        )
-
-                        //Medio transporte
                         DropdownField(
-                            label = stringResource(R.string.form_ways_transports) ,
-                            selectedValue = mitjaTransport,
-                            expanded = mitjaTransportExpandido,
+                            label = stringResource(R.string.form_ways_transports),
+                            selectedValue = mitjaTransport, expanded = mitjaTransportExpandido,
                             placeholder = stringResource(R.string.form_ways_transports_description),
                             opciones = elementosConCodigos.transporte(),
                             onExpandedChange = { viewModel.toggleMitjaTransportExpandido() },
@@ -859,31 +431,11 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
                             defectColor = true
                         )
 
-                        // Matricula
-                        CampoTexto(
-                            label = stringResource(R.string.form_matricule_transport) ,
-                            valor = matricula,
-                            placeholder = stringResource(R.string.form_matricule_transports_description),
-                            onValueChange = { viewModel.actualizarMatricula(it) },
-                            defectColor = false
-                        )
+                        CampoTexto(label = stringResource(R.string.form_matricule_transport), valor = matricula, placeholder = stringResource(R.string.form_matricule_transports_description), onValueChange = { viewModel.actualizarMatricula(it) }, defectColor = false)
+                        CampoTexto(label = stringResource(R.string.form_nif_driver), valor = nifConductor, placeholder = stringResource(R.string.form_nif_driver_description), onValueChange = { viewModel.actualizarNifConductor(it) }, defectColor = false)
+                        CampoTexto(label = stringResource(R.string.form_name_driver), valor = nomConductor, placeholder = stringResource(R.string.form_name_driver_description), onValueChange = { viewModel.actualizarNomConductor(it) }, defectColor = false)
 
-                        // NIF conductor
-                        CampoTexto(
-                            label = stringResource(R.string.form_nif_driver) ,
-                            valor = nifConductor,
-                            placeholder = stringResource(R.string.form_nif_driver_description),
-                            onValueChange = { viewModel.actualizarNifConductor(it) },
-                            defectColor = false
-                        )
-                        // Nombre conductor
-                        CampoTexto(
-                            label = stringResource(R.string.form_name_driver) ,
-                            valor = nomConductor,
-                            placeholder = stringResource(R.string.form_name_driver_description),
-                            onValueChange = { viewModel.actualizarNomConductor(it) },
-                            defectColor = false
-                        )
+                        // Lista de identificadores
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -892,26 +444,14 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
                             ) {
                                 Text(
                                     stringResource(R.string.form_animal_identifiers),
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = DarkBlueGrey,
-                                    letterSpacing = 0.15.sp
+                                    fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp
                                 )
                                 IconButton(
                                     onClick = { viewModel.agregarIdentificador() },
-                                    modifier = Modifier
-                                        .size(36.dp)
-                                        .background(
-                                            color = MainOrange,
-                                            shape = RoundedCornerShape(8.dp)
-                                        )
+                                    modifier = Modifier.size(36.dp).background(color = MainOrange, shape = RoundedCornerShape(8.dp))
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Add,
-                                        contentDescription = stringResource(R.string.content_desc_add_id),
-                                        tint = Color.White,
-                                        modifier = Modifier.size(20.dp)
-                                    )
+                                    Icon(Icons.Default.Add, contentDescription = stringResource(R.string.content_desc_add_id), tint = Color.White, modifier = Modifier.size(20.dp))
                                 }
                             }
 
@@ -919,19 +459,13 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
 
                             identificadors.forEachIndexed { index, identificador ->
                                 Card(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(bottom = 12.dp),
-                                    colors = CardDefaults.cardColors(
-                                        containerColor = Color(0xFFF8FAFC)
-                                    ),
+                                    modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                                     shape = RoundedCornerShape(12.dp),
                                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                                 ) {
                                     Column(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(16.dp),
+                                        modifier = Modifier.fillMaxWidth().padding(16.dp),
                                         verticalArrangement = Arrangement.spacedBy(12.dp)
                                     ) {
                                         Row(
@@ -939,37 +473,22 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
                                             horizontalArrangement = Arrangement.SpaceBetween,
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            Text(
-                                                "Animal ${index + 1}",
-                                                fontSize = 16.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = MainOrange
-                                            )
+                                            Text("Animal ${index + 1}", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MainOrange)
                                             if (identificadors.size > 1) {
-                                                IconButton(
-                                                    onClick = { viewModel.eliminarIdentificador(index) },
-                                                    modifier = Modifier.size(32.dp)
-                                                ) {
-                                                    Icon(
-                                                        imageVector = Icons.Default.Delete,
-                                                        contentDescription = stringResource(R.string.content_desc_remove_id),
-                                                        tint = ErrorRed,
-                                                        modifier = Modifier.size(20.dp)
-                                                    )
+                                                IconButton(onClick = { viewModel.eliminarIdentificador(index) }, modifier = Modifier.size(32.dp)) {
+                                                    Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.content_desc_remove_id), tint = ErrorRed, modifier = Modifier.size(20.dp))
                                                 }
                                             }
                                         }
 
-                                        useDebounce(identificador, delayMillis = 300L) { query ->
-                                            viewModel.searchBovinos(index, query)
-                                        }
+                                        useDebounce(identificador, delayMillis = 300L) { viewModel.searchBovinos(index, it) }
                                         CampoIdentificadorAutoComplete(
                                             label = stringResource(R.string.form_id_animal),
                                             valor = identificador,
                                             placeholder = stringResource(R.string.form_animal_id_example),
-                                            onValueChange = { viewModel.actualizarIdentificador(index,it) },
+                                            onValueChange = { viewModel.actualizarIdentificador(index, it) },
                                             suggestions = if (activeIndex == index) suggestionsBovinos else emptyList(),
-                                            onAnimalSelected = { viewModel.onBovinoSelected(index,it) },
+                                            onAnimalSelected = { viewModel.onBovinoSelected(index, it) },
                                             isLoadingSuggestions = isLoadingBovinos,
                                             defectColor = false,
                                             onClickBluetooth = {
@@ -981,37 +500,22 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
                                     }
                                 }
                             }
-
-
-
-
                         }
                     }
                 }
 
                 Button(
                     onClick = { viewModel.confirmarAltaGuia() },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 24.dp)
-                        .height(56.dp),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 24.dp).height(56.dp),
                     enabled = !estadoCarga,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MainOrange,
-                        disabledContainerColor = DarkWhiteBackground
+                        disabledContainerColor = MaterialTheme.colorScheme.outline
                     ),
                     shape = MaterialTheme.shapes.medium,
-                    elevation = ButtonDefaults.buttonElevation(
-                        defaultElevation = 2.dp,
-                        pressedElevation = 6.dp
-                    )
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp, pressedElevation = 6.dp)
                 ) {
-                    Text(
-                        stringResource(R.string.btn_create_guide),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        letterSpacing = 0.5.sp
-                    )
+                    Text(stringResource(R.string.btn_create_guide), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.5.sp)
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -1020,48 +524,63 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
     }
 }
 
+// Helper privado para reutilizar campos de fecha/hora
+@Composable
+private fun DateTimeField(
+    modifier: Modifier = Modifier,
+    label: String,
+    value: String,
+    placeholder: String,
+    icon: @Composable () -> Unit,
+    onClick: () -> Unit
+) {
+    Column(modifier = modifier) {
+        Text(label, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
+        Spacer(modifier = Modifier.height(10.dp))
+        Box(modifier = Modifier.fillMaxWidth().clickable { onClick() }) {
+            OutlinedTextField(
+                value = value, onValueChange = {},
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text(placeholder, color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                leadingIcon = icon,
+                readOnly = true, enabled = false,
+                shape = MaterialTheme.shapes.medium,
+                colors = OutlinedTextFieldDefaults.colors(
+                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                    disabledBorderColor = MaterialTheme.colorScheme.outline,
+                    disabledLeadingIconColor = MainOrange,
+                    disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    disabledContainerColor = MaterialTheme.colorScheme.surface
+                ),
+                singleLine = true
+            )
+        }
+    }
+}
+
 @Composable
 fun ParametrosCentroInspeccion(viewModel: GuiasViewModel) {
-
     val pais by viewModel.pais.observeAsState("")
     val codiExplotacio by viewModel.codiExplotacio.observeAsState("")
     val (isChecked, setChecked) = remember { mutableStateOf(false) }
 
     Column(Modifier.fillMaxWidth()) {
-        Row(modifier = Modifier.fillMaxWidth(),
+        Row(
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
-        )
-        {
-            Checkbox(
-                checked = isChecked,
-                onCheckedChange = { setChecked(it) }
-            )
-            Text("El destino es centro de inspección?",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF1E293B),
-                letterSpacing = 0.15.sp
+        ) {
+            Checkbox(checked = isChecked, onCheckedChange = { setChecked(it) })
+            Text(
+                "El destino es centro de inspección?",
+                fontSize = 14.sp, fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp
             )
         }
 
         if (isChecked) {
-
-            CampoTexto(
-                label = stringResource(R.string.form_pif_country) ,
-                valor = pais,
-                placeholder = stringResource(R.string.form_pif_country_desc),
-                onValueChange = { viewModel.actualizarPais(it) },
-                defectColor = false
-            )
-            CampoTexto(
-                label = stringResource(R.string.form_pif_exploitation) ,
-                valor = codiExplotacio,
-                placeholder = stringResource(R.string.form_pif_exploitation_desc),
-                onValueChange = { viewModel.actualizarCodiExplotacio(it) },
-                defectColor = false
-            )
-
+            CampoTexto(label = stringResource(R.string.form_pif_country), valor = pais, placeholder = stringResource(R.string.form_pif_country_desc), onValueChange = { viewModel.actualizarPais(it) }, defectColor = false)
+            CampoTexto(label = stringResource(R.string.form_pif_exploitation), valor = codiExplotacio, placeholder = stringResource(R.string.form_pif_exploitation_desc), onValueChange = { viewModel.actualizarCodiExplotacio(it) }, defectColor = false)
         }
     }
 }
