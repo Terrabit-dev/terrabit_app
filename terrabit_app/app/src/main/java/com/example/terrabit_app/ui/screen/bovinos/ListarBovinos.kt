@@ -9,7 +9,6 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -20,13 +19,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.terrabit_app.R
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.terrabit_app.R
 import com.example.terrabit_app.data.network.lista_bovinos.Animal
 import com.example.terrabit_app.ui.navigation.Routes
+import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.viewmodel.ListarBovinosViewModel
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,25 +56,24 @@ fun ListarBovinos(navController: NavController, viewModel: ListarBovinosViewMode
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF4A7C59),
+                    containerColor = MainGreen,
                     titleContentColor = Color.White,
                     navigationIconContentColor = Color.White
                 )
             )
         },
-        containerColor = Color(0xFFF5F7FA)
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Barra de búsqueda
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                 shape = RoundedCornerShape(12.dp)
             ) {
@@ -85,25 +83,33 @@ fun ListarBovinos(navController: NavController, viewModel: ListarBovinosViewMode
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp),
-                    placeholder = { Text(stringResource(R.string.search_bar_list_bovinos)) },
+                    placeholder = {
+                        Text(
+                            stringResource(R.string.search_bar_list_bovinos),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    },
                     leadingIcon = {
                         Icon(
                             Icons.Default.Search,
                             contentDescription = "Buscar",
-                            tint = Color(0xFF4A7C59)
+                            tint = MainGreen
                         )
                     },
                     singleLine = true,
                     shape = RoundedCornerShape(8.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFF4A7C59),
-                        unfocusedBorderColor = Color(0xFFCBD5E1),
-                        cursorColor = Color(0xFF4A7C59)
+                        focusedBorderColor = MainGreen,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        cursorColor = MainGreen,
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                     )
                 )
             }
 
-            // Pull to Refresh
             PullToRefreshBox(
                 isRefreshing = refrescando,
                 onRefresh = { viewModel.refrescar() },
@@ -115,7 +121,7 @@ fun ListarBovinos(navController: NavController, viewModel: ListarBovinosViewMode
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
-                            CircularProgressIndicator(color = Color(0xFF4A7C59))
+                            CircularProgressIndicator(color = MainGreen)
                         }
                     }
                     error != null -> {
@@ -126,15 +132,13 @@ fun ListarBovinos(navController: NavController, viewModel: ListarBovinosViewMode
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(
                                     text = error ?: stringResource(R.string.error_loading_list_bovinos),
-                                    color = Color.Red,
+                                    color = MaterialTheme.colorScheme.error,
                                     fontSize = 16.sp
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
                                 Button(
                                     onClick = { viewModel.cargarBovinos() },
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color(0xFF4A7C59)
-                                    )
+                                    colors = ButtonDefaults.buttonColors(containerColor = MainGreen)
                                 ) {
                                     Text(stringResource(R.string.retry_loading_list_bovinos))
                                 }
@@ -147,8 +151,9 @@ fun ListarBovinos(navController: NavController, viewModel: ListarBovinosViewMode
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = if (busqueda.isEmpty()) stringResource(R.string.empty_list_bovinos) else "No se encontraron resultados",
-                                color = Color(0xFF64748B),
+                                text = if (busqueda.isEmpty()) stringResource(R.string.empty_list_bovinos)
+                                else "No se encontraron resultados",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 16.sp
                             )
                         }
@@ -174,7 +179,7 @@ fun ListarBovinos(navController: NavController, viewModel: ListarBovinosViewMode
 fun TarjetaBovino(animal: Animal) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(12.dp)
     ) {
@@ -188,7 +193,7 @@ fun TarjetaBovino(animal: Animal) {
                 text = animal.identificador,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1E293B)
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             Row(
@@ -210,11 +215,11 @@ fun TarjetaBovino(animal: Animal) {
             }
 
             if (!animal.identificadorMare.isNullOrEmpty()) {
-                HorizontalDivider(color = Color(0xFFE2E8F0), thickness = 1.dp)
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline, thickness = 1.dp)
                 Text(
                     text = "${stringResource(R.string.card_info_mom)} ${animal.identificadorMare}",
                     fontSize = 14.sp,
-                    color = Color(0xFF64748B)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -227,13 +232,13 @@ fun InfoItem(label: String, value: String) {
         Text(
             text = label,
             fontSize = 12.sp,
-            color = Color(0xFF64748B),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontWeight = FontWeight.Medium
         )
         Text(
             text = value,
             fontSize = 14.sp,
-            color = Color(0xFF1E293B),
+            color = MaterialTheme.colorScheme.onSurface,
             fontWeight = FontWeight.SemiBold
         )
     }

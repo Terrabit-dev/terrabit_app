@@ -2,57 +2,16 @@ package com.example.terrabit_app.ui.screen.bovinos
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.outlined.CameraAlt
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDefaults
-import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberDatePickerState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -60,8 +19,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
@@ -70,20 +27,16 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
-import com.example.terrabit_app.ui.theme.BlueGrey
-import com.example.terrabit_app.ui.theme.DarkBlueGrey
-import com.example.terrabit_app.ui.theme.DarkWhiteBackground
-import com.example.terrabit_app.ui.theme.MainGreen
-import com.example.terrabit_app.ui.theme.WhiteBackground
-import com.example.terrabit_app.utils.alertsErrosScreens
-import com.example.terrabit_app.viewmodel.IdentificacionAplazaViewModel
 import com.example.terrabit_app.ui.screen.bovinos.components.AutoCompleteBovinoField
 import com.example.terrabit_app.ui.screen.bovinos.components.useDebounce
+import com.example.terrabit_app.ui.theme.MainGreen
+import com.example.terrabit_app.utils.alertsErrosScreens
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
+import com.example.terrabit_app.viewmodel.IdentificacionAplazaViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun IdentificacionApalzada(navController: NavController, bluetoothViewModel: BluetoothViewModel, borradorId: String = ""){
+fun IdentificacionApalzada(navController: NavController, bluetoothViewModel: BluetoothViewModel, borradorId: String = "") {
     val viewModel = viewModel<IdentificacionAplazaViewModel>()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -95,114 +48,63 @@ fun IdentificacionApalzada(navController: NavController, bluetoothViewModel: Blu
     val estadoCarga by viewModel.estadoCarga.observeAsState(false)
     val fechaIdentificacion by viewModel.fechaIdentificacion.observeAsState("")
     val mostrarDatePickerIdentificadores by viewModel.mostrarDatePickerIdentificacion.observeAsState(false)
+    val suggestionsBovinos by viewModel.suggestionsBovinos.observeAsState(emptyList())
+    val isLoadingBovinos by viewModel.isLoadingBovinos.observeAsState(false)
 
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
 
-    val tituloExito = stringResource(id = R.string.successful_message_identification_postpone)
-    val titulloError = stringResource(id = R.string.error_message_identification_postpone)
-
-    // Debouncing para búsqueda
-    val suggestionsBovinos by viewModel.suggestionsBovinos.observeAsState(emptyList())
-    val isLoadingBovinos by viewModel.isLoadingBovinos.observeAsState(false)
-
-    // ============================================
-    // INICIALIZACIÓN Y DETECCIÓN DE BORRADORES
-    // ============================================
+    val tituloExito = stringResource(R.string.successful_message_identification_postpone)
+    val titulloError = stringResource(R.string.error_message_identification_postpone)
 
     LaunchedEffect(Unit) {
         viewModel.inicializarSharedPreferences(context)
-
         if (borradorId.isNotEmpty()) {
             viewModel.cargarBorradorPorId(borradorId)
             return@LaunchedEffect
         }
     }
 
-
-    // ============================================
-    // DETECCIÓN DE CICLO DE VIDA (AUTOGUARDADO)
-    // ============================================
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
-            when (event) {
-                Lifecycle.Event.ON_PAUSE -> {
-                    if (viewModel.tieneContenido()) {
-                        viewModel.guardarBorradorAutomatico()
-                    }
-                }
-                else -> {}
+            if (event == Lifecycle.Event.ON_PAUSE && viewModel.tieneContenido()) {
+                viewModel.guardarBorradorAutomatico()
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-        }
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     LaunchedEffect(identifiacionExitosa) {
         if (identifiacionExitosa) {
-            snackbarHostState.showSnackbar(
-                message = tituloExito,
-                duration = SnackbarDuration.Short
-            )
+            snackbarHostState.showSnackbar(tituloExito, duration = SnackbarDuration.Short)
             viewModel.resetearEstadoIdentificacion()
         }
     }
 
     LaunchedEffect(mensajeError, codiError) {
-        if (mensajeError.isNotEmpty() || codiError != null) {
-            mostrarDialogoError = true
-        }
+        if (mensajeError.isNotEmpty() || codiError != null) mostrarDialogoError = true
     }
 
     if (mostrarDialogoError) {
         AlertDialog(
-            onDismissRequest = {
-                mostrarDialogoError = false
-                viewModel.resetearEstadoIdentificacion()
-            },
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = null,
-                    tint = MainGreen,
-                    modifier = Modifier.size(48.dp)
-                )
-            },
-            title = {
-                Text(
-                    text = titulloError,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
-                    color = DarkBlueGrey
-                )
-            },
+            onDismissRequest = { mostrarDialogoError = false; viewModel.resetearEstadoIdentificacion() },
+            icon = { Icon(Icons.Default.ArrowBack, contentDescription = null, tint = MainGreen, modifier = Modifier.size(48.dp)) },
+            title = { Text(titulloError, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface) },
             text = {
                 Text(
-                    text = if (codiError != null) {
-                        alertsErrosScreens(codiError!!)
-                    } else mensajeError,
-                    fontSize = 16.sp,
-                    color = BlueGrey,
-                    lineHeight = 24.sp
+                    if (codiError != null) alertsErrosScreens(codiError!!) else mensajeError,
+                    fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 24.sp
                 )
             },
             confirmButton = {
                 Button(
-                    onClick = {
-                        mostrarDialogoError = false
-                        viewModel.resetearEstadoIdentificacion()
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MainGreen
-                    ),
+                    onClick = { mostrarDialogoError = false; viewModel.resetearEstadoIdentificacion() },
+                    colors = ButtonDefaults.buttonColors(containerColor = MainGreen),
                     shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(stringResource(R.string.error_buttom), fontWeight = FontWeight.SemiBold)
-                }
+                ) { Text(stringResource(R.string.error_buttom), fontWeight = FontWeight.SemiBold) }
             },
-            containerColor = Color.White,
+            containerColor = MaterialTheme.colorScheme.surface,
             shape = RoundedCornerShape(16.dp)
         )
     }
@@ -212,28 +114,19 @@ fun IdentificacionApalzada(navController: NavController, bluetoothViewModel: Blu
         DatePickerDialog(
             onDismissRequest = { viewModel.ocultarDatePickerIdentificacion() },
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        datePickerState.selectedDateMillis?.let { millis ->
-                            viewModel.seleccionarFechaIdentificacion(millis)
-                        }
-                    }
-                ) {
+                TextButton(onClick = { datePickerState.selectedDateMillis?.let { viewModel.seleccionarFechaIdentificacion(it) } }) {
                     Text(stringResource(R.string.accept_buttom), color = MainGreen)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.ocultarDatePickerIdentificacion() }) {
-                    Text(stringResource(R.string.cancel_buttom), color = BlueGrey)
+                    Text(stringResource(R.string.cancel_buttom), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         ) {
             DatePicker(
                 state = datePickerState,
-                colors = DatePickerDefaults.colors(
-                    selectedDayContainerColor = MainGreen,
-                    todayDateBorderColor = MainGreen
-                )
+                colors = DatePickerDefaults.colors(selectedDayContainerColor = MainGreen, todayDateBorderColor = MainGreen)
             )
         }
     }
@@ -243,60 +136,32 @@ fun IdentificacionApalzada(navController: NavController, bluetoothViewModel: Blu
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Black.copy(alpha = 0.5f))
-                .clickable(enabled = false) { },
+                .clickable(enabled = false) {},
             contentAlignment = Alignment.Center
         ) {
             Card(
-                modifier = Modifier
-                    .size(120.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.White
-                ),
+                modifier = Modifier.size(120.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
                 shape = RoundedCornerShape(16.dp)
             ) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(48.dp),
-                            color = MainGreen,
-                            strokeWidth = 4.dp
-                        )
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                        CircularProgressIndicator(modifier = Modifier.size(48.dp), color = MainGreen, strokeWidth = 4.dp)
                         Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            "Procesando...",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = BlueGrey
-                        )
+                        Text("Procesando...", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
         }
-    }
-    else {
+    } else {
         Scaffold(
             topBar = {
                 TopAppBar(
                     title = {
                         Column {
-                            Text(
-                                stringResource(R.string.name_identification_postpone),
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Text(
-                                stringResource(R.string.subtitle_identification_postpone),
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Normal,
-                                color = Color.White.copy(alpha = 0.9f)
-                            )
+                            Text(stringResource(R.string.name_identification_postpone), fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
+                            Text(stringResource(R.string.subtitle_identification_postpone), fontSize = 13.sp, fontWeight = FontWeight.Normal, color = Color.White.copy(alpha = 0.9f))
                         }
                     },
                     navigationIcon = {
@@ -313,15 +178,10 @@ fun IdentificacionApalzada(navController: NavController, bluetoothViewModel: Blu
             },
             snackbarHost = {
                 SnackbarHost(hostState = snackbarHostState) { data ->
-                    Snackbar(
-                        snackbarData = data,
-                        containerColor = MainGreen,
-                        contentColor = Color.White,
-                        shape = RoundedCornerShape(12.dp)
-                    )
+                    Snackbar(snackbarData = data, containerColor = MainGreen, contentColor = Color.White, shape = RoundedCornerShape(12.dp))
                 }
             },
-            containerColor = WhiteBackground
+            containerColor = MaterialTheme.colorScheme.background
         ) { padding ->
             Column(
                 modifier = Modifier
@@ -332,36 +192,23 @@ fun IdentificacionApalzada(navController: NavController, bluetoothViewModel: Blu
                 Spacer(modifier = Modifier.height(20.dp))
 
                 Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color.White
-                    ),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                     shape = MaterialTheme.shapes.large
                 ) {
                     Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(24.dp),
+                        modifier = Modifier.fillMaxWidth().padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 stringResource(R.string.form_id_animal),
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = DarkBlueGrey,
-                                letterSpacing = 0.15.sp
+                                fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
-
-
-                            useDebounce(identificadorAnimal, delayMillis = 300L) { query ->
-                                viewModel.searchBovinos(query)
-                            }
-
+                            useDebounce(identificadorAnimal, delayMillis = 300L) { viewModel.searchBovinos(it) }
                             AutoCompleteBovinoField(
                                 value = identificadorAnimal,
                                 onValueChange = { viewModel.actualizarIdentificadorAnimal(it) },
@@ -377,42 +224,25 @@ fun IdentificacionApalzada(navController: NavController, bluetoothViewModel: Blu
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 stringResource(R.string.form_date_identification),
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = DarkBlueGrey,
-                                letterSpacing = 0.15.sp
+                                fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { viewModel.mostrarDatePickerIdentificacion() }
-                            ) {
+                            Box(modifier = Modifier.fillMaxWidth().clickable { viewModel.mostrarDatePickerIdentificacion() }) {
                                 OutlinedTextField(
                                     value = fechaIdentificacion,
                                     onValueChange = {},
                                     modifier = Modifier.fillMaxWidth(),
-                                    placeholder = {
-                                        Text(
-                                            stringResource(R.string.form_date_description),
-                                            color = BlueGrey
-                                        )
-                                    },
-                                    leadingIcon = {
-                                        Icon(
-                                            imageVector = Icons.Default.DateRange,
-                                            contentDescription = "Calendario",
-                                            tint = MainGreen
-                                        )
-                                    },
-                                    readOnly = true,
-                                    enabled = false,
+                                    placeholder = { Text(stringResource(R.string.form_date_description), color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                                    leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = MainGreen) },
+                                    readOnly = true, enabled = false,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        disabledTextColor = DarkBlueGrey,
-                                        disabledBorderColor = DarkWhiteBackground,
+                                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                        disabledBorderColor = MaterialTheme.colorScheme.outline,
                                         disabledLeadingIconColor = MainGreen,
-                                        disabledPlaceholderColor = BlueGrey
+                                        disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        disabledContainerColor = MaterialTheme.colorScheme.surface
                                     ),
                                     singleLine = true
                                 )
@@ -423,27 +253,16 @@ fun IdentificacionApalzada(navController: NavController, bluetoothViewModel: Blu
 
                 Button(
                     onClick = { viewModel.corregirIdentificacion() },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 24.dp)
-                        .height(56.dp),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 24.dp).height(56.dp),
                     enabled = !estadoCarga,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MainGreen,
-                        disabledContainerColor = DarkWhiteBackground
+                        disabledContainerColor = MaterialTheme.colorScheme.outline
                     ),
                     shape = MaterialTheme.shapes.medium,
-                    elevation = ButtonDefaults.buttonElevation(
-                        defaultElevation = 2.dp,
-                        pressedElevation = 6.dp
-                    )
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp, pressedElevation = 6.dp)
                 ) {
-                    Text(
-                        stringResource(R.string.buttom_form_identification_postpone),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        letterSpacing = 0.5.sp
-                    )
+                    Text(stringResource(R.string.buttom_form_identification_postpone), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.5.sp)
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
