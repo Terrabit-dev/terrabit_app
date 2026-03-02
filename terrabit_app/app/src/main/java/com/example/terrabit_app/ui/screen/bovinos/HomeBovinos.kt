@@ -358,7 +358,7 @@ fun HeaderBienvenida(
                             .size(40.dp)
                             .background(color = Color.White.copy(alpha = 0.2f), shape = CircleShape)
                     ) {
-                        Icon(Icons.Default.Settings, contentDescription = "Idioma", tint = Color.White)
+                        Icon(Icons.Default.Language, contentDescription = "Idioma", tint = Color.White)
                     }
                     DropdownMenu(
                         expanded = expanded,
