@@ -18,6 +18,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -27,15 +28,20 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
+import com.example.terrabit_app.ui.screen.bovinos.components.CampoIdentificadorAutoComplete
+import com.example.terrabit_app.ui.screen.bovinos.components.useDebounce
 import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.ui.theme.MainGreen
+import com.example.terrabit_app.utils.CampoTexto
 import com.example.terrabit_app.utils.DropdownField
 import com.example.terrabit_app.utils.ElementosConCodigos
+import com.example.terrabit_app.utils.bluetooth.BluetoothScanDialog
+import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 import com.example.terrabit_app.viewmodel.MaterialDuplicadoViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MaterialDupplicadosScreen(navController: NavController) {
+fun MaterialDuplicadosScreen(navController: NavController, bluetoothViewModel: BluetoothViewModel) {
     val viewModel = viewModel<MaterialDuplicadoViewModel>()
     val elementosConCodigos = ElementosConCodigos()
 
@@ -48,8 +54,8 @@ fun MaterialDupplicadosScreen(navController: NavController) {
     val municipio by viewModel.municipio.observeAsState("")
     val codigoPostal by viewModel.codigoPostal.observeAsState("")
     val telefono by viewModel.telefonoContacto.observeAsState("")
-    val listaIdentificadores by viewModel.listaIdentificadores.observeAsState(emptyList())
-    val tipoMaterialExpandidoMap by viewModel.tipoMaterialExpandido.observeAsState(emptyMap())
+
+
     val empresaExpandida by viewModel.empresaExpandida.observeAsState(false)
     val tipoEnviamientoExpandido by viewModel.tipoEnviamientoExpandido.observeAsState(false)
     val direccionEnvioExpandido by viewModel.direccionEnvioExpandido.observeAsState(false)
@@ -57,6 +63,13 @@ fun MaterialDupplicadosScreen(navController: NavController) {
     val registroExitoso by viewModel.registroExitoso.observeAsState(false)
     val mensajeError by viewModel.mensajeError.observeAsState("")
     val cargando by viewModel.cargando.observeAsState(false)
+
+    val suggestionsBovinos by viewModel.suggestionsBovinos.observeAsState(emptyList())
+    val isLoadingBovinos by viewModel.isLoadingBovinos.observeAsState(false)
+    val activeIndex by viewModel.activeFieldIndex.observeAsState(-1)
+    var indiceBluetooth by remember { mutableStateOf<Int?>(null) }
+    var mostrarBluetooth by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
@@ -77,6 +90,18 @@ fun MaterialDupplicadosScreen(navController: NavController) {
 
     LaunchedEffect(mensajeError) {
         if (mensajeError.isNotEmpty()) mostrarDialogoError = true
+    }
+
+    if (mostrarBluetooth) {
+        BluetoothScanDialog(
+            bluetoothViewModel = bluetoothViewModel,
+            onMensajeRecibido = { mensaje ->
+                indiceBluetooth?.let { viewModel.actualizarIdentificador(it, mensaje) }
+                mostrarBluetooth = false
+                indiceBluetooth = null
+            },
+            onDismiss = { mostrarBluetooth = false; indiceBluetooth = null }
+        )
     }
 
     if (mostrarDialogoError && mensajeError.isNotEmpty()) {
@@ -175,11 +200,11 @@ fun MaterialDupplicadosScreen(navController: NavController) {
                             if (viewModel.getCodigoDirecioEnvio() == direccionExplotacion) {
                                 Text(stringResource(R.string.mesagge_send_dades), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant, letterSpacing = 0.15.sp)
                             }
-                            CampoTextoDupli(label = stringResource(R.string.form_address) + " *", valor = direccionEnvio, placeholder = stringResource(R.string.form_address_description), onValueChange = { viewModel.actualizarDireccionEnvio(it) })
-                            CampoTextoDupli(label = stringResource(R.string.form_poblacion) + " *", valor = poblacion, placeholder = stringResource(R.string.form_poblacion_description), onValueChange = { viewModel.actualizarPoblacion(it) })
-                            CampoTextoDupli(label = stringResource(R.string.form_postal_code) + " *", valor = codigoPostal, placeholder = stringResource(R.string.form_postal_code_description), keyboardType = KeyboardType.Number, onValueChange = { viewModel.actualizarCodigoPostal(it) })
-                            CampoTextoDupli(label = stringResource(R.string.form_municipality) + " *", valor = municipio, placeholder = stringResource(R.string.form_municipality_description), onValueChange = { viewModel.actualizarMunicipio(it) })
-                            CampoTextoDupli(label = stringResource(R.string.form_contact_phone) + " *", valor = telefono, placeholder = stringResource(R.string.form_contact_phone_description), keyboardType = KeyboardType.Phone, onValueChange = { viewModel.actualizarTelefonoContacto(it) })
+                            CampoTexto(label = stringResource(R.string.form_address) + " *", valor = direccionEnvio, placeholder = stringResource(R.string.form_address_description), onValueChange = { viewModel.actualizarDireccionEnvio(it) }, defectColor = false)
+                            CampoTexto(label = stringResource(R.string.form_poblacion) + " *", valor = poblacion, placeholder = stringResource(R.string.form_poblacion_description), onValueChange = { viewModel.actualizarPoblacion(it) }, defectColor = false)
+                            CampoTexto(label = stringResource(R.string.form_postal_code) + " *", valor = codigoPostal, placeholder = stringResource(R.string.form_postal_code_description), keyboardType = KeyboardType.Number, onValueChange = { viewModel.actualizarCodigoPostal(it) }, defectColor = false)
+                            CampoTexto(label = stringResource(R.string.form_municipality) + " *", valor = municipio, placeholder = stringResource(R.string.form_municipality_description), onValueChange = { viewModel.actualizarMunicipio(it) }, defectColor = false)
+                            CampoTexto(label = stringResource(R.string.form_contact_phone) + " *", valor = telefono, placeholder = stringResource(R.string.form_contact_phone_description), keyboardType = KeyboardType.Phone, onValueChange = { viewModel.actualizarTelefonoContacto(it) }, defectColor = false)
                         }
                     }
                 }
@@ -204,7 +229,7 @@ fun MaterialDupplicadosScreen(navController: NavController) {
                         ) {
                             Text(stringResource(R.string.title_identifiers), fontSize = 17.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                             TextButton(
-                                onClick = { viewModel.agregarIdentificador() },
+                                onClick = { viewModel.agregarAnimal() },
                                 colors = ButtonDefaults.textButtonColors(contentColor = MainGreen)
                             ) {
                                 Icon(Icons.Default.Add, contentDescription = stringResource(R.string.action_add), modifier = Modifier.size(18.dp))
@@ -215,23 +240,55 @@ fun MaterialDupplicadosScreen(navController: NavController) {
 
                         HorizontalDivider(color = MaterialTheme.colorScheme.outline, thickness = 1.dp)
 
-                        listaIdentificadores.forEachIndexed { indice, item ->
-                            IdentificadorItem(
-                                indice = indice,
-                                identificador = item.identificador,
-                                tipusMaterial = item.tipusMaterial,
-                                tiposMaterial = tiposMaterial,
-                                tipoMaterialExpandido = tipoMaterialExpandidoMap[indice] ?: false,
-                                mostrarEliminar = listaIdentificadores.size > 1,
-                                onIdentificadorChange = { viewModel.actualizarIdentificador(indice, it) },
-                                onTipoMaterialExpandedChange = { viewModel.toggleTipoMaterialExpandido(indice) },
-                                onTipoMaterialDismiss = { viewModel.cerrarTipoMaterialMenu(indice) },
-                                onTipoMaterialSeleccionado = { codigo -> viewModel.seleccionarTipoMaterialIdentificador(indice, codigo) },
-                                onEliminar = { viewModel.eliminarIdentificador(indice) }
-                            )
-                            if (indice < listaIdentificadores.lastIndex) {
-                                HorizontalDivider(color = MaterialTheme.colorScheme.outline, thickness = 1.dp, modifier = Modifier.padding(vertical = 4.dp))
-                            }
+                        val animales by viewModel.listaAnimales.observeAsState(emptyList())
+                        val materialesExpandidoPorIndice by viewModel.tipoMaterialExpandidoPorIndice.observeAsState(emptyMap())
+
+
+                        animales.forEachIndexed { indice, animal ->
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(stringResource(R.string.label_identifier_count) + " ${indice + 1}", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    if (animales.size > 1) {
+                                        IconButton(onClick = { viewModel.eliminarAnimal(indice) }, modifier = Modifier.size(32.dp)) {
+                                            Icon(Icons.Default.Delete, contentDescription = "Eliminar identificador", tint = ErrorRed, modifier = Modifier.size(20.dp))
+                                        }
+                                    }
+                                }
+                                useDebounce(animal.identificador, delayMillis = 300L) { viewModel.searchBovinos(indice, it) }
+                                CampoIdentificadorAutoComplete(
+                                    label = stringResource(R.string.form_id_animal),
+                                    valor = animal.identificador,
+                                    placeholder = stringResource(R.string.form_animal_id_example),
+                                    onValueChange = { viewModel.actualizarIdentificador(indice, it) },
+                                    suggestions = if (activeIndex == indice) suggestionsBovinos else emptyList(),
+                                    onAnimalSelected = { viewModel.onBovinoSelected(indice, it) },
+                                    isLoadingSuggestions = isLoadingBovinos,
+                                    defectColor = true,
+                                    onClickBluetooth = {
+                                        indiceBluetooth = indice
+                                        bluetoothViewModel.iniciarEscaneo(context)
+                                        mostrarBluetooth = true
+                                    }
+                                )
+                                DropdownField(
+                                    label =  stringResource(R.string.form_material_type) + " *",
+                                    selectedValue = elementosConCodigos.tiposMaterialDuplicados()[animal.tipusMaterial] ?: "",
+                                    expanded = materialesExpandidoPorIndice[indice] ?: false,
+                                    placeholder = stringResource(R.string.form_state_arrival_description),
+                                    opciones = elementosConCodigos.tiposMaterialDuplicados(),
+                                    onExpandedChange = { viewModel.toggleTipoMaterialExpandido(indice) },
+                                    onDismissRequest = { viewModel.cerrarTipoMaterialMenu(indice) },
+                                    onSeleccionar = { codigo, _ -> viewModel.seleccionarTipoMaterialIdentificador(indice, codigo) },
+                                    defectColor = true
+                                )
+                                if (indice < animales.size - 1) Spacer(modifier = Modifier.height(8.dp))
                         }
                     }
                 }
@@ -254,141 +311,5 @@ fun MaterialDupplicadosScreen(navController: NavController) {
             }
         }
     }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun IdentificadorItem(
-    indice: Int,
-    identificador: String,
-    tipusMaterial: String,
-    tiposMaterial: Map<String, String>,
-    tipoMaterialExpandido: Boolean,
-    mostrarEliminar: Boolean,
-    onIdentificadorChange: (String) -> Unit,
-    onTipoMaterialExpandedChange: () -> Unit,
-    onTipoMaterialDismiss: () -> Unit,
-    onTipoMaterialSeleccionado: (String) -> Unit,
-    onEliminar: () -> Unit
-) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(stringResource(R.string.label_identifier_count) + " ${indice + 1}", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            if (mostrarEliminar) {
-                IconButton(onClick = onEliminar, modifier = Modifier.size(32.dp)) {
-                    Icon(Icons.Default.Delete, contentDescription = "Eliminar identificador", tint = ErrorRed, modifier = Modifier.size(20.dp))
-                }
-            }
-        }
-
-        // Campo Identificador
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Text(stringResource(R.string.form_id_animal), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(
-                value = identificador,
-                onValueChange = onIdentificadorChange,
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text(stringResource(R.string.form_id_scan_description), color = MaterialTheme.colorScheme.onSurfaceVariant) },
-                trailingIcon = {
-                    IconButton(onClick = {}) {
-                        Icon(Icons.Outlined.CameraAlt, contentDescription = "Escanear", tint = MainGreen)
-                    }
-                },
-                singleLine = true,
-                shape = MaterialTheme.shapes.medium,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MainGreen,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    cursorColor = MainGreen,
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface
-                ),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, autoCorrect = false)
-            )
-        }
-
-        // Dropdown Tipo de Material
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Text(stringResource(R.string.form_material_type) + " *", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
-            Spacer(modifier = Modifier.height(8.dp))
-            ExposedDropdownMenuBox(
-                expanded = tipoMaterialExpandido,
-                onExpandedChange = { onTipoMaterialExpandedChange() }
-            ) {
-                OutlinedTextField(
-                    value = tiposMaterial[tipusMaterial] ?: "",
-                    onValueChange = {},
-                    modifier = Modifier.fillMaxWidth().menuAnchor(),
-                    readOnly = true,
-                    placeholder = { Text(stringResource(R.string.form_material_type_description), color = MaterialTheme.colorScheme.onSurfaceVariant) },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(tipoMaterialExpandido) },
-                    singleLine = true,
-                    shape = MaterialTheme.shapes.medium,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MainGreen,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                        focusedContainerColor = MaterialTheme.colorScheme.surface,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surface
-                    )
-                )
-                ExposedDropdownMenu(
-                    expanded = tipoMaterialExpandido,
-                    onDismissRequest = { onTipoMaterialDismiss() },
-                    modifier = Modifier.background(MaterialTheme.colorScheme.surface)
-                ) {
-                    tiposMaterial.forEach { (codigo, nombre) ->
-                        DropdownMenuItem(
-                            text = { Text(nombre, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface) },
-                            onClick = { onTipoMaterialSeleccionado(codigo) },
-                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun CampoTextoDupli(
-    label: String,
-    valor: String,
-    placeholder: String,
-    keyboardType: KeyboardType = KeyboardType.Text,
-    onValueChange: (String) -> Unit
-) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(label, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
-        Spacer(modifier = Modifier.height(8.dp))
-        OutlinedTextField(
-            value = valor,
-            onValueChange = onValueChange,
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text(placeholder, color = MaterialTheme.colorScheme.onSurfaceVariant) },
-            singleLine = true,
-            shape = MaterialTheme.shapes.medium,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MainGreen,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                cursorColor = MainGreen,
-                focusedContainerColor = MaterialTheme.colorScheme.surface,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surface
-            ),
-            keyboardOptions = KeyboardOptions(keyboardType = keyboardType)
-        )
     }
 }

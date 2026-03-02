@@ -7,13 +7,16 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.network.Identificadores.IdenSolicitudDupli
 import com.example.terrabit_app.data.network.Repositorio
+import com.example.terrabit_app.data.network.lista_bovinos.Animal
 import com.example.terrabit_app.data.network.material.PetSolicitudDuplicado
 import com.example.terrabit_app.data.network.respuestas.RespuestaUnificada
 import com.example.terrabit_app.utils.UserPreferences
 import com.google.gson.Gson
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.collections.plus
 
 class MaterialDuplicadoViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -22,6 +25,35 @@ class MaterialDuplicadoViewModel(application: Application) : AndroidViewModel(ap
 
     val nif = userPreferences.getNif() ?: ""
     val password = userPreferences.getPassword() ?: ""
+    val codiMo = userPreferences.getCodiMO() ?: ""
+
+
+    // ============================================
+    // AUTOCOMPLETADO
+    // ============================================
+    private val _suggestionsBovinos = MutableLiveData<List<Animal>>(emptyList())
+    val suggestionsBovinos = _suggestionsBovinos
+
+    private val _isLoadingBovinos = MutableLiveData(false)
+    val isLoadingBovinos = _isLoadingBovinos
+
+    private val _bovinosCargados = MutableLiveData(false)
+    val bovinosCargados = _bovinosCargados
+
+    private val _activeFieldIndex = MutableLiveData<Int>(-1)
+    val activeFieldIndex = _activeFieldIndex
+
+    private val _listaAnimales = MutableLiveData<List<IdenSolicitudDupli>>(
+        listOf(
+            IdenSolicitudDupli(
+                identificador = "",
+                tipusMaterial = ""
+            )
+        )
+    )
+
+    val listaAnimales = _listaAnimales
+
 
     // ============================================
     // ESTADOS DEL FORMULARIO
@@ -62,59 +94,114 @@ class MaterialDuplicadoViewModel(application: Application) : AndroidViewModel(ap
     // LISTA DE IDENTIFICADORES (soporte múltiple)
     // ============================================
 
-    private val _listaIdentificadores = MutableLiveData<List<IdenSolicitudDupli>>(
-        listOf(IdenSolicitudDupli(identificador = "", tipusMaterial = ""))
-    )
-    val listaIdentificadores = _listaIdentificadores
+
 
     // Mapa para controlar la expansión del dropdown de tipo material por índice
-    private val _tipoMaterialExpandido = MutableLiveData<Map<Int, Boolean>>(emptyMap())
-    val tipoMaterialExpandido = _tipoMaterialExpandido
 
-    fun agregarIdentificador() {
-        val listaActual = _listaIdentificadores.value?.toMutableList() ?: mutableListOf()
-        listaActual.add(IdenSolicitudDupli(identificador = "", tipusMaterial = ""))
-        _listaIdentificadores.value = listaActual
-    }
+    private val _tipoMaterialExpandidoPorIndice = MutableLiveData<Map<Int, Boolean>>(emptyMap())
+    val tipoMaterialExpandidoPorIndice = _tipoMaterialExpandidoPorIndice
 
-    fun eliminarIdentificador(indice: Int) {
-        val listaActual = _listaIdentificadores.value?.toMutableList() ?: return
-        if (listaActual.size > 1) {
-            listaActual.removeAt(indice)
-            // Limpiar estado de expansión del índice eliminado
-            val mapaActual = _tipoMaterialExpandido.value?.toMutableMap() ?: mutableMapOf()
-            mapaActual.remove(indice)
-            _tipoMaterialExpandido.value = mapaActual
-            _listaIdentificadores.value = listaActual
-        }
-    }
 
-    fun actualizarIdentificador(indice: Int, valor: String) {
-        val listaActual = _listaIdentificadores.value?.toMutableList() ?: return
-        if (indice < listaActual.size) {
-            listaActual[indice] = listaActual[indice].copy(identificador = valor)
-            _listaIdentificadores.value = listaActual
+    fun actualizarIdentificador(indice: Int, identificador: String) {
+        val listaActual = _listaAnimales.value ?: emptyList()
+        _listaAnimales.value = listaActual.mapIndexed { index, animal ->
+            if (index == indice) animal.copy(identificador = identificador)
+            else animal
         }
     }
 
     fun seleccionarTipoMaterialIdentificador(indice: Int, codigoTipo: String) {
-        val listaActual = _listaIdentificadores.value?.toMutableList() ?: return
-        if (indice < listaActual.size) {
-            listaActual[indice] = listaActual[indice].copy(tipusMaterial = codigoTipo)
-            _listaIdentificadores.value = listaActual
-            cerrarTipoMaterialMenu(indice)
+        val listaActual = _listaAnimales.value ?: emptyList()
+        _listaAnimales.value = listaActual.mapIndexed { index, animal ->
+            if (index == indice) animal.copy(tipusMaterial = codigoTipo)
+            else animal
         }
+
+        val mapaActual = _tipoMaterialExpandidoPorIndice.value ?: emptyMap()
+        _tipoMaterialExpandidoPorIndice.value = mapaActual + (indice to false)
     }
 
     fun toggleTipoMaterialExpandido(indice: Int) {
-        val mapaActual = _tipoMaterialExpandido.value ?: emptyMap()
+        val mapaActual = _tipoMaterialExpandidoPorIndice.value ?: emptyMap()
         val valorActual = mapaActual[indice] ?: false
-        _tipoMaterialExpandido.value = mapaActual + (indice to !valorActual)
+        _tipoMaterialExpandidoPorIndice.value = mapaActual + (indice to !valorActual)
     }
 
     fun cerrarTipoMaterialMenu(indice: Int) {
-        val mapaActual = _tipoMaterialExpandido.value ?: emptyMap()
-        _tipoMaterialExpandido.value = mapaActual + (indice to false)
+        val mapaActual = _tipoMaterialExpandidoPorIndice.value ?: emptyMap()
+        _tipoMaterialExpandidoPorIndice.value = mapaActual + (indice to false)
+    }
+
+    // ============================================
+    // FUNCIONES AUTOCOMPLETADO
+    // ============================================
+    private fun cargarBovinosEnCache() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                _isLoadingBovinos.postValue(true)
+
+                repositorio.getBovinosWithCache(
+                    nif = nif,
+                    password = password,
+                    tipusVinculacio = "1",
+                    explotacio = codiMo,
+                    forceRefresh = false
+                )
+
+                _bovinosCargados.postValue(true)
+                _isLoadingBovinos.postValue(false)
+                Log.d("MovimientosVM", "Bovinos cargados en caché")
+            } catch (e: Exception) {
+                _isLoadingBovinos.postValue(false)
+                _bovinosCargados.postValue(false)
+                Log.e("MovimientosVM", "Error al cargar bovinos: ${e.message}", e)
+            }
+        }
+    }
+
+    fun searchBovinos(index: Int, query: String) {
+        _activeFieldIndex.value = index
+
+        if (query.isBlank()) {
+            _suggestionsBovinos.value = emptyList()
+            return
+        }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val resultados = repositorio.searchBovinosLocal(query)
+                _suggestionsBovinos.postValue(resultados)
+                Log.d("MovimientosVM", "Búsqueda en índice $index: '$query' - ${resultados.size} resultados")
+            } catch (e: Exception) {
+                _suggestionsBovinos.postValue(emptyList())
+                Log.e("MovimientosVM", "Error en búsqueda: ${e.message}", e)
+            }
+        }
+    }
+
+    fun onBovinoSelected(index: Int, animal: Animal) {
+        actualizarIdentificador(index, animal.identificador)
+        _suggestionsBovinos.value = emptyList()
+        _activeFieldIndex.value = -1
+        Log.d("MovimientosVM", "Bovino seleccionado en índice $index: ${animal.identificador}")
+    }
+
+    fun agregarAnimal() {
+        val listaActual = _listaAnimales.value ?: emptyList()
+        val nuevoAnimal = IdenSolicitudDupli(
+            identificador = "",
+            tipusMaterial = ""
+        )
+        _listaAnimales.value = listaActual + nuevoAnimal
+    }
+
+    fun eliminarAnimal(indice: Int) {
+        val listaActual = _listaAnimales.value ?: emptyList()
+        if (listaActual.size > 1) {
+            _listaAnimales.value = listaActual.filterIndexed { index, _ -> index != indice }
+            _tipoMaterialExpandidoPorIndice.value = _tipoMaterialExpandidoPorIndice.value?.minus(indice)
+
+        }
     }
 
     // ============================================
@@ -255,7 +342,7 @@ class MaterialDuplicadoViewModel(application: Application) : AndroidViewModel(ap
             }
         }
 
-        val identificadores = _listaIdentificadores.value ?: return false
+        val identificadores = _listaAnimales.value ?: return false
         if (identificadores.isEmpty()) return false
         if (identificadores.any { it.identificador.isEmpty() || it.tipusMaterial.isEmpty() }) return false
 
@@ -279,8 +366,8 @@ class MaterialDuplicadoViewModel(application: Application) : AndroidViewModel(ap
                 codigoDireccionEnvio == "03" && _codigoPostal.value.isNullOrEmpty() -> "Por favor, introduzca el código postal"
                 codigoDireccionEnvio == "03" && _municipio.value.isNullOrEmpty() -> "Por favor, introduzca el municipio"
                 codigoDireccionEnvio == "03" && _telefonoContacto.value.isNullOrEmpty() -> "Por favor, introduzca el teléfono de contacto"
-                (_listaIdentificadores.value?.any { it.identificador.isEmpty() } == true) -> "Por favor, complete todos los identificadores"
-                (_listaIdentificadores.value?.any { it.tipusMaterial.isEmpty() } == true) -> "Por favor, seleccione el tipo de material para cada identificador"
+                (_listaAnimales.value?.any { it.identificador.isEmpty() } == true) -> "Por favor, complete todos los identificadores"
+                (_listaAnimales.value?.any { it.tipusMaterial.isEmpty() } == true) -> "Por favor, seleccione el tipo de material para cada identificador"
                 else -> "Por favor, complete todos los campos obligatorios"
             }
             _mensajeError.value = mensajeError
@@ -310,7 +397,7 @@ class MaterialDuplicadoViewModel(application: Application) : AndroidViewModel(ap
                     cp = cpFinal,
                     municipi = municipioFinal,
                     telefonContacte = telefonoFinal,
-                    identificadors = _listaIdentificadores.value ?: emptyList()
+                    identificadors = _listaAnimales.value ?: emptyList()
                 )
 
                 Log.d("Solicitud Duplicado", "Request: $request")
@@ -391,8 +478,8 @@ class MaterialDuplicadoViewModel(application: Application) : AndroidViewModel(ap
         _codigoPostal.value = ""
         _municipio.value = ""
         _telefonoContacto.value = ""
-        _listaIdentificadores.value = listOf(IdenSolicitudDupli(identificador = "", tipusMaterial = ""))
-        _tipoMaterialExpandido.value = emptyMap()
+        _listaAnimales.value = listOf(IdenSolicitudDupli(identificador = "", tipusMaterial = ""))
+        _tipoMaterialExpandidoPorIndice.value = emptyMap()
     }
 
     fun resetearEstado() {

@@ -20,7 +20,7 @@ import com.example.terrabit_app.ui.screen.bovinos.Home
 import com.example.terrabit_app.ui.screen.bovinos.IdentificacionApalzada
 import com.example.terrabit_app.ui.screen.bovinos.ListarBovinos
 import com.example.terrabit_app.ui.screen.bovinos.Material
-import com.example.terrabit_app.ui.screen.bovinos.MaterialDupplicadosScreen
+import com.example.terrabit_app.ui.screen.bovinos.MaterialDuplicadosScreen
 import com.example.terrabit_app.ui.screen.bovinos.Movimientos
 import com.example.terrabit_app.ui.screen.bovinos.Nacimiento
 import com.example.terrabit_app.ui.screen.porcinos.EntradasPorcinos
@@ -28,16 +28,8 @@ import com.example.terrabit_app.ui.screen.porcinos.GestionGuiasPorcinos
 import com.example.terrabit_app.ui.screen.porcinos.HomePorcinos
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 import com.example.terrabit_app.viewmodel.BorradorViewModel
-import com.example.terrabit_app.viewmodel.CorrecionSexoViewModel
-import com.example.terrabit_app.viewmodel.DrawerViewModel
-import com.example.terrabit_app.viewmodel.GuiasViewModel
-import com.example.terrabit_app.viewmodel.IdentificacionAplazaViewModel
 import com.example.terrabit_app.viewmodel.ListarBovinosViewModel
-import com.example.terrabit_app.viewmodel.MainViewmodel
 import com.example.terrabit_app.viewmodel.MaterialViewModel
-import com.example.terrabit_app.viewmodel.MovimientosViewModel
-import com.example.terrabit_app.viewmodel.NacimientoViewmodel
-import com.example.terrabit_app.viewmodel.ViewModelMuerteBovi
 import com.example.terrabit_app.ui.screen.bovinos.ConfigurationScreen
 import com.example.terrabit_app.viewmodel.ConfigurationViewModel
 
@@ -178,7 +170,7 @@ fun NavigationDrawer(
         }
 
         composable(Routes.MaterialDuplicado.route){
-            MaterialDupplicadosScreen(navController)
+            MaterialDuplicadosScreen(navController, bluetooth)
         }
 
         composable(
@@ -201,7 +193,6 @@ fun NavigationDrawer(
                 nullable = true
             })
         ) { backStackEntry ->
-            val identificacion: IdentificacionAplazaViewModel = viewModel()
             val borradorId = backStackEntry.arguments?.getString("borradorId") ?: ""
             IdentificacionApalzada(navController, bluetooth, borradorId)
         }
