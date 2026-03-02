@@ -343,4 +343,16 @@
     <string name="bluetooth_error_no_permissions">Sin permisos Bluetooth. Actívalos en Ajustes del dispositivo.</string>
     <string name="bluetooth_error_prefix">Error de conexión: %1$s</string>
     <string name="bluetooth_error_unknown">Error desconocido</string>
+
+
+
+    <string name="configuration_title">Configuración</string>
+    <string name="actual_user_title">USUARIO</string>
+    <string name="appearance_title">APARIENCIA</string>
+    <string name="dark_theme_title">Tema oscuro</string>
+    <string name="activated_theme_subtitle">Activado</string>
+    <string name="desactivated_theme_subtitle">Desactivado</string>
+
+    <string name="close_session_title">Cerrar Sesión</string>
+    <string name="version_title">Versión</string>
 </resources>

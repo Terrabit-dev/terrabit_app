@@ -340,4 +340,14 @@
     <string name="bluetooth_error_prefix">Error de connexió: %1$s</string>
     <string name="bluetooth_error_unknown">Error desconegut</string>
 
+
+    <string name="configuration_title">Configuració</string>
+    <string name="actual_user_title">USUARI</string>
+    <string name="appearance_title">APARENÇA</string>
+    <string name="dark_theme_title">Tema Fosc</string>
+    <string name="activated_theme_subtitle">Activat</string>
+    <string name="desactivated_theme_subtitle">Desactivat</string>
+
+    <string name="close_session_title">Tancar Sessió</string>
+    <string name="version_title">Versió</string>
 </resources>

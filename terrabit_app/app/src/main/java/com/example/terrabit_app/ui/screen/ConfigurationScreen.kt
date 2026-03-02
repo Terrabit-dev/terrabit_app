@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -28,6 +29,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.viewmodel.ConfigurationViewModel
+import com.example.terrabit_app.R
 
 @Composable
 fun ConfigurationScreen(
@@ -119,7 +121,7 @@ fun ConfigurationScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Text(
-                    text = "Configuración",
+                    text = stringResource(R.string.configuration_title),
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
@@ -134,7 +136,7 @@ fun ConfigurationScreen(
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             Text(
-                text = "USUARIO",
+                text = stringResource(R.string.actual_user_title),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -187,7 +189,7 @@ fun ConfigurationScreen(
             HorizontalDivider(color = MaterialTheme.colorScheme.outline)
 
             Text(
-                text = "APARIENCIA",
+                text = stringResource(R.string.appearance_title),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -227,13 +229,13 @@ fun ConfigurationScreen(
                         }
                         Column {
                             Text(
-                                text = "Tema oscuro",
+                                text = stringResource(R.string.dark_theme_title),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Medium,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                text = if (isDark) "Activado" else "Desactivado",
+                                text = if (isDark) stringResource(R.string.activated_theme_subtitle) else stringResource(R.string.desactivated_theme_subtitle),
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

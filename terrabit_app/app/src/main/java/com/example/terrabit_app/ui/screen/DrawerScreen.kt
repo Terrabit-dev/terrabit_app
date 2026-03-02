@@ -178,7 +178,7 @@ fun DrawerContent(
 
             OpcionDrawer(
                 icono = Icons.Default.Settings,
-                titulo = "Configuración",
+                titulo = stringResource(R.string.configuration_title),
                 seleccionado = currentRoute == Routes.Configuration.route,
                 onClick = onConfigClick,
                 colorSeleccion = colorPrincipal
@@ -188,7 +188,7 @@ fun DrawerContent(
 
             OpcionDrawer(
                 icono = Icons.AutoMirrored.Filled.ExitToApp,
-                titulo = "Cerrar sesión",
+                titulo = stringResource(R.string.close_session_title),
                 seleccionado = false,
                 onClick = onLogout,
                 colorSeleccion = colorPrincipal
@@ -202,7 +202,7 @@ fun DrawerContent(
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Versión 1.0.0", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
+                    Text("${stringResource(R.string.version_title)} 2.61.2", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
                     Text("© 2026 Terrabit", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 4.dp))
                 }
             }
