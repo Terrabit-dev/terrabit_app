@@ -2,55 +2,16 @@ package com.example.terrabit_app.ui.pantallas
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Badge
-import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -67,12 +28,9 @@ import com.example.terrabit_app.data.Borrador
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.screen.bovinos.cambiarIdioma
 import com.example.terrabit_app.ui.theme.Blue
-import com.example.terrabit_app.ui.theme.BlueGrey
-import com.example.terrabit_app.ui.theme.DarkBlueGrey
 import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
-import com.example.terrabit_app.ui.theme.WhiteBackground
 import com.example.terrabit_app.viewmodel.BorradorViewModel
 import kotlinx.coroutines.launch
 
@@ -96,12 +54,10 @@ fun BorradoresScreen(
     }
 
     Scaffold(
-        containerColor = WhiteBackground
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
+            modifier = Modifier.fillMaxSize().padding(padding),
             verticalArrangement = Arrangement.spacedBy(0.dp)
         ) {
             item {
@@ -114,37 +70,20 @@ fun BorradoresScreen(
 
             item {
                 Spacer(modifier = Modifier.height(24.dp))
-                BarraBusqueda(
-                    texto = textoBusqueda,
-                    onTextoChange = { viewModel.actualizarBusqueda(it) }
-                )
+                BarraBusqueda(texto = textoBusqueda, onTextoChange = { viewModel.actualizarBusqueda(it) })
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
             if (borradoresFiltered.isEmpty()) {
                 item {
                     Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp)
-                            .padding(top = 48.dp),
+                        modifier = Modifier.fillMaxWidth().padding(20.dp).padding(top = 48.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Icon(
-                                Icons.Default.Description,
-                                contentDescription = null,
-                                modifier = Modifier.size(64.dp),
-                                tint = BlueGrey
-                            )
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(Icons.Default.Description, contentDescription = null, modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                             Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                stringResource(R.string.no_results_description_draft),
-                                fontSize = 16.sp,
-                                color = BlueGrey
-                            )
+                            Text(stringResource(R.string.no_results_description_draft), fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 }
@@ -171,9 +110,7 @@ fun BorradoresScreen(
                     Spacer(modifier = Modifier.height(12.dp))
                 }
 
-                item {
-                    Spacer(modifier = Modifier.height(24.dp))
-                }
+                item { Spacer(modifier = Modifier.height(24.dp)) }
             }
         }
     }
@@ -209,9 +146,7 @@ fun HeaderBorradores(
             .background(color = MainGreen)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(20.dp)
+            modifier = Modifier.fillMaxSize().padding(20.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -220,54 +155,30 @@ fun HeaderBorradores(
             ) {
                 IconButton(
                     onClick = onMenuClick,
-                    modifier = Modifier
-                        .size(40.dp)
-                        .background(
-                            color = Color.White.copy(alpha = 0.2f),
-                            shape = CircleShape
-                        )
+                    modifier = Modifier.size(40.dp).background(color = Color.White.copy(alpha = 0.2f), shape = CircleShape)
                 ) {
-                    Icon(
-                        Icons.Default.Menu,
-                        contentDescription = "Menú",
-                        tint = Color.White
-                    )
+                    Icon(Icons.Default.Menu, contentDescription = "Menú", tint = Color.White)
                 }
 
                 Box(contentAlignment = Alignment.Center) {
                     IconButton(
                         onClick = { expandedConfig = true },
-                        modifier = Modifier
-                            .size(40.dp)
-                            .background(
-                                color = Color.White.copy(alpha = 0.2f),
-                                shape = CircleShape
-                            )
+                        modifier = Modifier.size(40.dp).background(color = Color.White.copy(alpha = 0.2f), shape = CircleShape)
                     ) {
-                        Icon(
-                            Icons.Default.Settings,
-                            contentDescription = "Configuración",
-                            tint = Color.White
-                        )
+                        Icon(Icons.Default.Settings, contentDescription = "Configuración", tint = Color.White)
                     }
-
                     DropdownMenu(
                         expanded = expandedConfig,
-                        onDismissRequest = { expandedConfig = false }
+                        onDismissRequest = { expandedConfig = false },
+                        modifier = Modifier.background(MaterialTheme.colorScheme.surface)
                     ) {
                         DropdownMenuItem(
-                            text = { Text("Castellano") },
-                            onClick = {
-                                expandedConfig = false
-                                cambiarIdioma("es")
-                            }
+                            text = { Text("Castellano", color = MaterialTheme.colorScheme.onSurface) },
+                            onClick = { expandedConfig = false; cambiarIdioma("es") }
                         )
                         DropdownMenuItem(
-                            text = { Text("Català") },
-                            onClick = {
-                                expandedConfig = false
-                                cambiarIdioma("ca")
-                            }
+                            text = { Text("Català", color = MaterialTheme.colorScheme.onSurface) },
+                            onClick = { expandedConfig = false; cambiarIdioma("ca") }
                         )
                     }
                 }
@@ -275,12 +186,7 @@ fun HeaderBorradores(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Text(
-                stringResource(R.string.title_draft),
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
+            Text(stringResource(R.string.title_draft), fontSize = 32.sp, fontWeight = FontWeight.Bold, color = Color.White)
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -297,61 +203,33 @@ fun HeaderBorradores(
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            Icons.Default.Description,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(16.dp)
-                        )
+                        Icon(Icons.Default.Description, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            "$totalBorradores ${stringResource(R.string.counter_draft)}",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = Color.White
-                        )
+                        Text("$totalBorradores ${stringResource(R.string.counter_draft)}", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color.White)
                     }
                 }
 
                 Box {
                     IconButton(
                         onClick = { expandedOpciones = true },
-                        modifier = Modifier
-                            .size(32.dp)
-                            .background(
-                                color = Color.White.copy(alpha = 0.2f),
-                                shape = CircleShape
-                            )
+                        modifier = Modifier.size(32.dp).background(color = Color.White.copy(alpha = 0.2f), shape = CircleShape)
                     ) {
-                        Icon(
-                            Icons.Default.MoreVert,
-                            contentDescription = "Opciones",
-                            tint = Color.White,
-                            modifier = Modifier.size(20.dp)
-                        )
+                        Icon(Icons.Default.MoreVert, contentDescription = "Opciones", tint = Color.White, modifier = Modifier.size(20.dp))
                     }
-
                     DropdownMenu(
                         expanded = expandedOpciones,
-                        onDismissRequest = { expandedOpciones = false }
+                        onDismissRequest = { expandedOpciones = false },
+                        modifier = Modifier.background(MaterialTheme.colorScheme.surface)
                     ) {
                         DropdownMenuItem(
                             text = {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        Icons.Default.Delete,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(20.dp),
-                                        tint = ErrorRed
-                                    )
+                                    Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(20.dp), tint = ErrorRed)
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Text(stringResource(R.string.delete_all_option), color = ErrorRed)
                                 }
                             },
-                            onClick = {
-                                expandedOpciones = false
-                                onEliminarTodos()
-                            }
+                            onClick = { expandedOpciones = false; onEliminarTodos() }
                         )
                     }
                 }
@@ -369,30 +247,25 @@ fun DialogoConfirmacion(
     onCancelar: () -> Unit
 ) {
     if (mostrar) {
-        androidx.compose.material3.AlertDialog(
+        AlertDialog(
             onDismissRequest = onCancelar,
-            title = {
-                Text(titulo, fontWeight = FontWeight.Bold, color = DarkBlueGrey)
-            },
-            text = {
-                Text(mensaje, color = BlueGrey)
-            },
+            title = { Text(titulo, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
+            text = { Text(mensaje, color = MaterialTheme.colorScheme.onSurfaceVariant) },
             confirmButton = {
-                androidx.compose.material3.TextButton(onClick = onConfirmar) {
+                TextButton(onClick = onConfirmar) {
                     Text(stringResource(R.string.confirm_delete_option_general), color = ErrorRed, fontWeight = FontWeight.SemiBold)
                 }
             },
             dismissButton = {
-                androidx.compose.material3.TextButton(onClick = onCancelar) {
-                    Text(stringResource(R.string.cancel_delete_option_general), color = BlueGrey)
+                TextButton(onClick = onCancelar) {
+                    Text(stringResource(R.string.cancel_delete_option_general), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             },
-            containerColor = Color.White,
+            containerColor = MaterialTheme.colorScheme.surface,
             shape = RoundedCornerShape(16.dp)
         )
     }
 }
-
 
 @Composable
 fun BarraBusqueda(
@@ -402,19 +275,13 @@ fun BarraBusqueda(
     OutlinedTextField(
         value = texto,
         onValueChange = onTextoChange,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp),
-        placeholder = {
-            Text(stringResource(R.string.search_bar_text), color = BlueGrey)
-        },
-        leadingIcon = {
-            Icon(Icons.Default.Search, contentDescription = null, tint = BlueGrey)
-        },
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+        placeholder = { Text(stringResource(R.string.search_bar_text), color = MaterialTheme.colorScheme.onSurfaceVariant) },
+        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
         trailingIcon = {
             if (texto.isNotEmpty()) {
                 IconButton(onClick = { onTextoChange("") }) {
-                    Icon(Icons.Default.Clear, contentDescription = "Limpiar", tint = BlueGrey)
+                    Icon(Icons.Default.Clear, contentDescription = "Limpiar", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         },
@@ -422,9 +289,11 @@ fun BarraBusqueda(
         shape = RoundedCornerShape(12.dp),
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = MainGreen,
-            unfocusedBorderColor = BlueGrey.copy(alpha = 0.3f),
-            focusedContainerColor = Color.White,
-            unfocusedContainerColor = Color.White
+            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+            focusedContainerColor = MaterialTheme.colorScheme.surface,
+            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
         )
     )
 }
@@ -439,40 +308,32 @@ fun TarjetaBorrador(
     var mostrarMenu by remember { mutableStateOf(false) }
 
     @Composable
-    fun obtenerNombreTipo(tipo: String): String {
-        return when (tipo) {
-            "MUERTE" -> stringResource(R.string.type_draft_title_death)
-            "MATERIAL" -> stringResource(R.string.type_draft_title_material)
-            "NACIMIENTO" -> stringResource(R.string.type_draft_title_born)
-            "CORRECCION_SEXO" -> stringResource(R.string.type_draft_title_sex)
-            "IDENTIFICACION_APLAZADA" -> stringResource(R.string.type_draft_title_id)
-            else -> tipo
-        }
+    fun obtenerNombreTipo(tipo: String): String = when (tipo) {
+        "MUERTE" -> stringResource(R.string.type_draft_title_death)
+        "MATERIAL" -> stringResource(R.string.type_draft_title_material)
+        "NACIMIENTO" -> stringResource(R.string.type_draft_title_born)
+        "CORRECCION_SEXO" -> stringResource(R.string.type_draft_title_sex)
+        "IDENTIFICACION_APLAZADA" -> stringResource(R.string.type_draft_title_id)
+        else -> tipo
     }
 
     @Composable
-    fun obtenerEstadoLegible(estado: String): String {
-        return when (estado) {
-            "BORRADOR_AUTO" -> stringResource(R.string.status_draft_saved)
-            "PENDIENTE" -> stringResource(R.string.status_draft_pending)
-            "ENVIANDO" -> stringResource(R.string.status_draft_sending)
-            "ERROR" -> stringResource(R.string.status_draft_error)
-            else -> estado
-        }
+    fun obtenerEstadoLegible(estado: String): String = when (estado) {
+        "BORRADOR_AUTO" -> stringResource(R.string.status_draft_saved)
+        "PENDIENTE" -> stringResource(R.string.status_draft_pending)
+        "ENVIANDO" -> stringResource(R.string.status_draft_sending)
+        "ERROR" -> stringResource(R.string.status_draft_error)
+        else -> estado
     }
 
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(96.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        modifier = modifier.fillMaxWidth().height(96.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
         shape = RoundedCornerShape(16.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxSize().padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Surface(
@@ -483,14 +344,11 @@ fun TarjetaBorrador(
                     "NACIMIENTO" -> MainGreen.copy(alpha = 0.15f)
                     "CORRECCION_SEXO" -> Blue.copy(alpha = 0.15f)
                     "IDENTIFICACION_APLAZADA" -> MainGreen.copy(alpha = 0.15f)
-                    else -> BlueGrey.copy(alpha = 0.15f)
+                    else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.15f)
                 },
                 modifier = Modifier.size(56.dp)
             ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxSize()
-                ) {
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                     Icon(
                         imageVector = when (borrador.tipo) {
                             "MUERTE" -> Icons.Default.Clear
@@ -507,7 +365,7 @@ fun TarjetaBorrador(
                             "NACIMIENTO" -> MainGreen
                             "CORRECCION_SEXO" -> Blue
                             "IDENTIFICACION_APLAZADA" -> MainGreen
-                            else -> BlueGrey
+                            else -> MaterialTheme.colorScheme.onSurfaceVariant
                         },
                         modifier = Modifier.size(28.dp)
                     )
@@ -517,9 +375,7 @@ fun TarjetaBorrador(
             Spacer(modifier = Modifier.width(16.dp))
 
             Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight(),
+                modifier = Modifier.weight(1f).fillMaxHeight(),
                 verticalArrangement = Arrangement.Center
             ) {
                 Row(
@@ -529,39 +385,30 @@ fun TarjetaBorrador(
                 ) {
                     Text(
                         obtenerNombreTipo(borrador.tipo),
-                        fontSize = 17.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = DarkBlueGrey,
-                        letterSpacing = 0.2.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
+                        fontSize = 17.sp, fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.2.sp,
+                        maxLines = 1, overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f, fill = false)
                     )
-
                     Spacer(modifier = Modifier.width(8.dp))
-
                     Surface(
                         color = when (borrador.estado) {
                             "ENVIANDO" -> MainOrange.copy(alpha = 0.15f)
                             "ERROR" -> ErrorRed.copy(alpha = 0.15f)
                             "BORRADOR_AUTO" -> MainGreen.copy(alpha = 0.15f)
-                            "PENDIENTE" -> BlueGrey.copy(alpha = 0.15f)
-                            else -> BlueGrey.copy(alpha = 0.15f)
+                            else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.15f)
                         },
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
                             obtenerEstadoLegible(borrador.estado),
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Medium,
-                            maxLines = 1,
+                            fontSize = 11.sp, fontWeight = FontWeight.Medium, maxLines = 1,
                             color = when (borrador.estado) {
                                 "ENVIANDO" -> MainOrange
                                 "ERROR" -> ErrorRed
                                 "BORRADOR_AUTO" -> MainGreen
-                                "PENDIENTE" -> BlueGrey
-                                else -> BlueGrey
+                                else -> MaterialTheme.colorScheme.onSurfaceVariant
                             }
                         )
                     }
@@ -570,92 +417,44 @@ fun TarjetaBorrador(
                 Spacer(modifier = Modifier.height(6.dp))
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.CalendarToday,
-                        contentDescription = null,
-                        modifier = Modifier.size(14.dp),
-                        tint = BlueGrey
-                    )
+                    Icon(Icons.Default.CalendarToday, contentDescription = null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        borrador.fecha,
-                        fontSize = 14.sp,
-                        color = BlueGrey,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-
+                    Text(borrador.fecha, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     Spacer(modifier = Modifier.width(8.dp))
-
-                    Icon(
-                        Icons.Default.AccessTime,
-                        contentDescription = null,
-                        modifier = Modifier.size(14.dp),
-                        tint = BlueGrey
-                    )
+                    Icon(Icons.Default.AccessTime, contentDescription = null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        borrador.hora ?: stringResource(R.string.no_hour_value),
-                        fontSize = 14.sp,
-                        color = BlueGrey,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                    Text(borrador.hora ?: stringResource(R.string.no_hour_value), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             }
 
             Box {
-                IconButton(
-                    onClick = { mostrarMenu = true },
-                    modifier = Modifier.size(40.dp)
-                ) {
-                    Icon(
-                        Icons.Default.MoreVert,
-                        contentDescription = "Opciones",
-                        tint = BlueGrey,
-                        modifier = Modifier.size(24.dp)
-                    )
+                IconButton(onClick = { mostrarMenu = true }, modifier = Modifier.size(40.dp)) {
+                    Icon(Icons.Default.MoreVert, contentDescription = "Opciones", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
                 }
-
                 DropdownMenu(
                     expanded = mostrarMenu,
-                    onDismissRequest = { mostrarMenu = false }
+                    onDismissRequest = { mostrarMenu = false },
+                    modifier = Modifier.background(MaterialTheme.colorScheme.surface)
                 ) {
                     DropdownMenuItem(
                         text = {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    Icons.Default.Edit,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(20.dp),
-                                    tint = Blue
-                                )
+                                Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(20.dp), tint = Blue)
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Text(stringResource(R.string.edit_button_individual_card), color = Blue)
                             }
                         },
-                        onClick = {
-                            mostrarMenu = false
-                            onEditarClick()
-                        }
+                        onClick = { mostrarMenu = false; onEditarClick() }
                     )
                     DropdownMenuItem(
                         text = {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    Icons.Default.Delete,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(20.dp),
-                                    tint = ErrorRed
-                                )
+                                Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(20.dp), tint = ErrorRed)
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Text(stringResource(R.string.delete_button_individual_card), color = ErrorRed)
                             }
                         },
-                        onClick = {
-                            mostrarMenu = false
-                            onEliminarClick()
-                        }
+                        onClick = { mostrarMenu = false; onEliminarClick() }
                     )
                 }
             }
