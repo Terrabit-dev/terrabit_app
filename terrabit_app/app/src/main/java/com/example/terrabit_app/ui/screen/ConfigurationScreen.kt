@@ -11,7 +11,6 @@ import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -34,7 +33,6 @@ import androidx.navigation.NavController
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.viewmodel.ConfigurationViewModel
 import com.example.terrabit_app.R
-
 @Composable
 fun ConfigurationScreen(
     onMenuClick: () -> Unit = {},

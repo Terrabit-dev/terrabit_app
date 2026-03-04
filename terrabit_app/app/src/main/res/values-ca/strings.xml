@@ -350,4 +350,5 @@
 
     <string name="close_session_title">Tancar Sessió</string>
     <string name="version_title">Versió</string>
+    <string name="connect_new_devices">connectar nou dispositiu</string>
 </resources>

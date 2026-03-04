@@ -145,4 +145,11 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
         super.onCleared()
         ArduinoBluetoothManager.cerrarSocket()
     }
+
+    fun buscarDispositivos() {
+        userPreferences.deleteArduinoMac()
+        val dispositivos = ArduinoBluetoothManager.dispositivosEmparejados(getApplication())
+        _dispositivosEmparejados.value = dispositivos
+        _scanState.value = BluetoothScanState.SeleccionandoDispositivo
+    }
 }

@@ -338,7 +338,8 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
 
                         DropdownField(
                             label = stringResource(R.string.form_temporal),
-                            selectedValue = temporal, expanded = temporalExpandido,
+                            selectedValue = temporal,
+                            expanded = temporalExpandido,
                             placeholder = stringResource(R.string.form_yes_no),
                             opciones = elementosConCodigos.opcionesSiNo(),
                             onExpandedChange = { viewModel.toggleTemporalExpandido() },

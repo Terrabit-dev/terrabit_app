@@ -354,6 +354,7 @@
 
     <string name="close_session_title">Cerrar Sesión</string>
     <string name="version_title">Versión</string>
+    <string name="connect_new_devices">conectar nuevo dispositivo</string>
 
 
 </resources>

@@ -22,7 +22,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material.icons.filled.BluetoothDisabled
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -241,13 +240,14 @@ fun BluetoothScanDialog(
                             color = DarkBlueGrey
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            errorMsg,
-                            fontSize = 14.sp,
-                            color = BlueGrey,
-                            textAlign = TextAlign.Center,
-                            lineHeight = 20.sp
-                        )
+                        OutlinedButton(
+                            onClick = {
+                                bluetoothViewModel.buscarDispositivos()
+                            },
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = BlueGrey)
+                        ) {
+                            Text(stringResource(R.string.connect_new_devices))
+                        }
                         Spacer(modifier = Modifier.height(24.dp))
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
