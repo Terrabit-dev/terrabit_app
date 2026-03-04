@@ -1,22 +1,19 @@
 package com.example.terrabit_app.viewmodel
 
-import android.content.Context
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.Borrador
 import com.example.terrabit_app.data.SharedPreferencesManager
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-
-class BorradorViewModel : ViewModel() {
-
-    private lateinit var sharedPreferencesManager: SharedPreferencesManager
-
-    fun inicializarSharedPreferences(context: Context) {
-        sharedPreferencesManager = SharedPreferencesManager(context)
-    }
+@HiltViewModel
+class BorradorViewModel @Inject constructor(
+    private val sharedPreferencesManager: SharedPreferencesManager
+) : ViewModel() {
 
     private val _borradores = MutableLiveData<List<Borrador>>()
     val borradores = _borradores
@@ -33,15 +30,8 @@ class BorradorViewModel : ViewModel() {
     fun cargarBorradores() {
         viewModelScope.launch {
             try {
-                if (!::sharedPreferencesManager.isInitialized) {
-                    Log.e("BorradorViewModel", "SharedPreferencesManager no inicializado")
-                    _borradores.postValue(emptyList())
-                    _borradoresFiltrados.postValue(emptyList())
-                    return@launch
-                }
                 val listaBorradores = sharedPreferencesManager.obtenerBorradores()
                 _borradores.postValue(listaBorradores)
-
                 val texto = _textoBusqueda.value ?: ""
                 if (texto.isBlank()) {
                     _borradoresFiltrados.postValue(listaBorradores)
@@ -80,25 +70,21 @@ class BorradorViewModel : ViewModel() {
         }
     }
 
-    private fun obtenerNombreTipo(tipo: String): String {
-        return when (tipo) {
-            "MUERTE" -> "Muerte"
-            "MATERIAL" -> "Material"
-            "NACIMIENTO" -> "Nacimiento"
-            "CORRECCION_SEXO" -> "Corrección Sexo"
-            "IDENTIFICACION_APLAZADA" -> "ID Aplazada"
-            else -> tipo
-        }
+    private fun obtenerNombreTipo(tipo: String): String = when (tipo) {
+        "MUERTE" -> "Muerte"
+        "MATERIAL" -> "Material"
+        "NACIMIENTO" -> "Nacimiento"
+        "CORRECCION_SEXO" -> "Corrección Sexo"
+        "IDENTIFICACION_APLAZADA" -> "ID Aplazada"
+        else -> tipo
     }
 
-    private fun obtenerEstadoLegible(estado: String): String {
-        return when (estado) {
-            "BORRADOR_AUTO" -> "Guardado"
-            "PENDIENTE" -> "Pendiente"
-            "ENVIANDO" -> "Enviando"
-            "ERROR" -> "Error"
-            else -> estado
-        }
+    private fun obtenerEstadoLegible(estado: String): String = when (estado) {
+        "BORRADOR_AUTO" -> "Guardado"
+        "PENDIENTE" -> "Pendiente"
+        "ENVIANDO" -> "Enviando"
+        "ERROR" -> "Error"
+        else -> estado
     }
 
     fun eliminarBorrador(id: String) {
@@ -113,20 +99,13 @@ class BorradorViewModel : ViewModel() {
         }
     }
 
-
-    fun seleccionarBorradorParaEditar(id: String) {
-        _borradorIdParaEditar.value = id
-    }
-
-    fun limpiarBorradorParaEditar() {
-        _borradorIdParaEditar.value = null
-    }
+    fun seleccionarBorradorParaEditar(id: String) { _borradorIdParaEditar.value = id }
+    fun limpiarBorradorParaEditar() { _borradorIdParaEditar.value = null }
 
     suspend fun eliminarTodosBorradores() {
         try {
-            val listaBorradores = sharedPreferencesManager.obtenerBorradores()
-            listaBorradores.forEach { borrador ->
-                sharedPreferencesManager.eliminarBorrador(borrador.id)
+            sharedPreferencesManager.obtenerBorradores().forEach {
+                sharedPreferencesManager.eliminarBorrador(it.id)
             }
             val listaVacia = sharedPreferencesManager.obtenerBorradores()
             _borradores.postValue(listaVacia)
@@ -136,5 +115,4 @@ class BorradorViewModel : ViewModel() {
             Log.e("Error Borrador", "Error al eliminar todos: ${e.message}", e)
         }
     }
-
 }

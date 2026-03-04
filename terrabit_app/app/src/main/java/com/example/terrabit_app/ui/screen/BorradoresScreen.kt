@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.data.Borrador
@@ -36,9 +37,9 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun BorradoresScreen(
-    viewModel: BorradorViewModel,
     onMenuClick: () -> Unit,
-    navController: NavController
+    navController: NavController,
+    viewModel: BorradorViewModel = hiltViewModel()
 ) {
     val borradores by viewModel.borradores.observeAsState(emptyList())
     val borradoresFiltered by viewModel.borradoresFiltrados.observeAsState(emptyList())
@@ -49,7 +50,6 @@ fun BorradoresScreen(
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        viewModel.inicializarSharedPreferences(context)
         viewModel.cargarBorradores()
     }
 

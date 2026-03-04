@@ -38,6 +38,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
@@ -50,7 +51,7 @@ import com.example.terrabit_app.viewmodel.LoginViewModel
 @Composable
 fun Login(
     navController: NavController,
-    viewModel: LoginViewModel = viewModel()
+    viewModel: LoginViewModel = hiltViewModel()
 ) {
     val loginState by viewModel.loginState.collectAsState()
     var mostrarDialogoError by remember { mutableStateOf(false) }
