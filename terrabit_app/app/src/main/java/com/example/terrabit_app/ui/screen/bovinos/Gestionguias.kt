@@ -25,9 +25,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
@@ -47,7 +47,7 @@ import com.example.terrabit_app.viewmodel.GuiasViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothViewModel, borradorId: String = "") {
-    val viewModel = viewModel<GuiasViewModel>()
+    val viewModel = hiltViewModel<GuiasViewModel>()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -98,15 +98,13 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
             bluetoothViewModel = bluetoothViewModel,
             onMensajeRecibido = { mensaje ->
                 indiceBluetooth?.let { viewModel.actualizarIdentificador(it, mensaje) }
-                mostrarBluetooth = false
-                indiceBluetooth = null
+                mostrarBluetooth = false; indiceBluetooth = null
             },
             onDismiss = { mostrarBluetooth = false; indiceBluetooth = null }
         )
     }
 
     LaunchedEffect(Unit) {
-        viewModel.inicializarSharedPreferences(context)
         if (borradorId.isNotEmpty()) {
             viewModel.cargarBorradorPorId(borradorId)
             return@LaunchedEffect
@@ -187,40 +185,19 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
         val datePickerState = rememberDatePickerState()
         DatePickerDialog(
             onDismissRequest = { viewModel.ocultarDatePickerSortida() },
-            confirmButton = {
-                TextButton(onClick = { datePickerState.selectedDateMillis?.let { viewModel.seleccionarFechaSortida(it) } }) {
-                    Text(stringResource(R.string.accept_buttom), color = MainOrange)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { viewModel.ocultarDatePickerSortida() }) {
-                    Text(stringResource(R.string.cancel_buttom), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            }
-        ) {
-            DatePicker(state = datePickerState, colors = DatePickerDefaults.colors(selectedDayContainerColor = MainOrange, todayDateBorderColor = MainOrange))
-        }
+            confirmButton = { TextButton(onClick = { datePickerState.selectedDateMillis?.let { viewModel.seleccionarFechaSortida(it) } }) { Text(stringResource(R.string.accept_buttom), color = MainOrange) } },
+            dismissButton = { TextButton(onClick = { viewModel.ocultarDatePickerSortida() }) { Text(stringResource(R.string.cancel_buttom), color = MaterialTheme.colorScheme.onSurfaceVariant) } }
+        ) { DatePicker(state = datePickerState, colors = DatePickerDefaults.colors(selectedDayContainerColor = MainOrange, todayDateBorderColor = MainOrange)) }
     }
 
     if (mostrarTimePickerSortida) {
         val timePickerState = rememberTimePickerState()
         AlertDialog(
             onDismissRequest = { viewModel.ocultarTimePickerSortida() },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.actualizarHoraSortida(timePickerState.hour.toString(), timePickerState.minute.toString())
-                    viewModel.ocultarTimePickerSortida()
-                }) { Text(stringResource(R.string.accept_buttom), color = MainOrange) }
-            },
-            dismissButton = {
-                TextButton(onClick = { viewModel.ocultarTimePickerSortida() }) {
-                    Text(stringResource(R.string.cancel_buttom), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            },
+            confirmButton = { TextButton(onClick = { viewModel.actualizarHoraSortida(timePickerState.hour.toString(), timePickerState.minute.toString()); viewModel.ocultarTimePickerSortida() }) { Text(stringResource(R.string.accept_buttom), color = MainOrange) } },
+            dismissButton = { TextButton(onClick = { viewModel.ocultarTimePickerSortida() }) { Text(stringResource(R.string.cancel_buttom), color = MaterialTheme.colorScheme.onSurfaceVariant) } },
             containerColor = MaterialTheme.colorScheme.surface,
-            text = {
-                TimePicker(state = timePickerState, colors = TimePickerDefaults.colors(clockDialSelectedContentColor = Color.White, selectorColor = MainOrange))
-            }
+            text = { TimePicker(state = timePickerState, colors = TimePickerDefaults.colors(clockDialSelectedContentColor = Color.White, selectorColor = MainOrange)) }
         )
     }
 
@@ -228,49 +205,25 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
         val datePickerState = rememberDatePickerState()
         DatePickerDialog(
             onDismissRequest = { viewModel.ocultarDatePickerArribada() },
-            confirmButton = {
-                TextButton(onClick = { datePickerState.selectedDateMillis?.let { viewModel.seleccionarFechaArribada(it) } }) {
-                    Text(stringResource(R.string.accept_buttom), color = MainOrange)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { viewModel.ocultarDatePickerArribada() }) {
-                    Text(stringResource(R.string.cancel_buttom), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            }
-        ) {
-            DatePicker(state = datePickerState, colors = DatePickerDefaults.colors(selectedDayContainerColor = MainOrange, todayDateBorderColor = MainOrange))
-        }
+            confirmButton = { TextButton(onClick = { datePickerState.selectedDateMillis?.let { viewModel.seleccionarFechaArribada(it) } }) { Text(stringResource(R.string.accept_buttom), color = MainOrange) } },
+            dismissButton = { TextButton(onClick = { viewModel.ocultarDatePickerArribada() }) { Text(stringResource(R.string.cancel_buttom), color = MaterialTheme.colorScheme.onSurfaceVariant) } }
+        ) { DatePicker(state = datePickerState, colors = DatePickerDefaults.colors(selectedDayContainerColor = MainOrange, todayDateBorderColor = MainOrange)) }
     }
 
     if (mostrarTimePickerArribada) {
         val timePickerState = rememberTimePickerState()
         AlertDialog(
             onDismissRequest = { viewModel.ocultarTimePickerArribada() },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.actualizarHoraArribada(timePickerState.hour.toString(), timePickerState.minute.toString())
-                    viewModel.ocultarTimePickerArribada()
-                }) { Text(stringResource(R.string.accept_buttom), color = MainOrange) }
-            },
-            dismissButton = {
-                TextButton(onClick = { viewModel.ocultarTimePickerArribada() }) {
-                    Text(stringResource(R.string.cancel_buttom), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            },
+            confirmButton = { TextButton(onClick = { viewModel.actualizarHoraArribada(timePickerState.hour.toString(), timePickerState.minute.toString()); viewModel.ocultarTimePickerArribada() }) { Text(stringResource(R.string.accept_buttom), color = MainOrange) } },
+            dismissButton = { TextButton(onClick = { viewModel.ocultarTimePickerArribada() }) { Text(stringResource(R.string.cancel_buttom), color = MaterialTheme.colorScheme.onSurfaceVariant) } },
             containerColor = MaterialTheme.colorScheme.surface,
-            text = {
-                TimePicker(state = timePickerState, colors = TimePickerDefaults.colors(clockDialSelectedContentColor = Color.White, selectorColor = MainOrange))
-            }
+            text = { TimePicker(state = timePickerState, colors = TimePickerDefaults.colors(clockDialSelectedContentColor = Color.White, selectorColor = MainOrange)) }
         )
     }
 
     if (estadoCarga) {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.5f))
-                .clickable(enabled = false) {},
+            modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)).clickable(enabled = false) {},
             contentAlignment = Alignment.Center
         ) {
             Card(
@@ -298,11 +251,7 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
                             Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
                         }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MainOrange,
-                        titleContentColor = Color.White,
-                        navigationIconContentColor = Color.White
-                    )
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = MainOrange, titleContentColor = Color.White, navigationIconContentColor = Color.White)
                 )
             },
             snackbarHost = {
@@ -313,90 +262,44 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
             containerColor = MaterialTheme.colorScheme.background
         ) { padding ->
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .verticalScroll(rememberScrollState())
+                modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())
             ) {
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // ---- Card datos obligatorios ----
                 Card(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                     shape = MaterialTheme.shapes.large
                 ) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth().padding(24.dp),
-                        verticalArrangement = Arrangement.spacedBy(24.dp)
-                    ) {
+                    Column(modifier = Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(24.dp)) {
                         Text(stringResource(R.string.form_movs_title_necessary), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
 
                         CampoTexto(label = stringResource(R.string.form_origin_exploitation), valor = explotacioOrigen, placeholder = stringResource(R.string.form_format_mo_rega), onValueChange = { viewModel.actualizarExplotacioOrigen(it) }, defectColor = false)
                         CampoTexto(label = stringResource(R.string.form_exploitation_destination), valor = explotacioDestinacio, placeholder = stringResource(R.string.form_format_mo_rega), onValueChange = { viewModel.actualizarExplotacioDestinacio(it) }, defectColor = false)
 
                         DropdownField(
-                            label = stringResource(R.string.form_temporal),
-                            selectedValue = temporal,
-                            expanded = temporalExpandido,
-                            placeholder = stringResource(R.string.form_yes_no),
-                            opciones = elementosConCodigos.opcionesSiNo(),
-                            onExpandedChange = { viewModel.toggleTemporalExpandido() },
-                            onDismissRequest = { viewModel.cerrarTemporalMenu() },
-                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarTemporal(nombre, codigo) },
-                            defectColor = true
+                            label = stringResource(R.string.form_temporal), selectedValue = temporal, expanded = temporalExpandido,
+                            placeholder = stringResource(R.string.form_yes_no), opciones = elementosConCodigos.opcionesSiNo(),
+                            onExpandedChange = { viewModel.toggleTemporalExpandido() }, onDismissRequest = { viewModel.cerrarTemporalMenu() },
+                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarTemporal(nombre, codigo) }, defectColor = true
                         )
 
-                        // Fecha y hora salida
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            DateTimeField(
-                                modifier = Modifier.weight(1f),
-                                label = stringResource(R.string.form_date_departure),
-                                value = dataSortida,
-                                placeholder = datePlaceholder,
-                                icon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = MainOrange) },
-                                onClick = { viewModel.mostrarDatePickerSortida() }
-                            )
-                            DateTimeField(
-                                modifier = Modifier.weight(1f),
-                                label = stringResource(R.string.form_hour_arrival),
-                                value = horaSortida,
-                                placeholder = hourPlaceholder,
-                                icon = { Icon(Icons.Default.Schedule, contentDescription = null, tint = MainOrange) },
-                                onClick = { viewModel.mostrarTimePickerSortida() }
-                            )
+                            DateTimeField(modifier = Modifier.weight(1f), label = stringResource(R.string.form_date_departure), value = dataSortida, placeholder = datePlaceholder, icon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = MainOrange) }, onClick = { viewModel.mostrarDatePickerSortida() })
+                            DateTimeField(modifier = Modifier.weight(1f), label = stringResource(R.string.form_hour_arrival), value = horaSortida, placeholder = hourPlaceholder, icon = { Icon(Icons.Default.Schedule, contentDescription = null, tint = MainOrange) }, onClick = { viewModel.mostrarTimePickerSortida() })
                         }
 
-                        // Fecha y hora llegada
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            DateTimeField(
-                                modifier = Modifier.weight(1f),
-                                label = stringResource(R.string.form_date_arrival),
-                                value = dataArribada,
-                                placeholder = datePlaceholder,
-                                icon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = MainOrange) },
-                                onClick = { viewModel.mostrarDatePickerArribada() }
-                            )
-                            DateTimeField(
-                                modifier = Modifier.weight(1f),
-                                label = stringResource(R.string.form_hour_arrival),
-                                value = horaArribada,
-                                placeholder = hourPlaceholder,
-                                icon = { Icon(Icons.Default.Schedule, contentDescription = null, tint = MainOrange) },
-                                onClick = { viewModel.mostrarTimePickerArribada() }
-                            )
+                            DateTimeField(modifier = Modifier.weight(1f), label = stringResource(R.string.form_date_arrival), value = dataArribada, placeholder = datePlaceholder, icon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = MainOrange) }, onClick = { viewModel.mostrarDatePickerArribada() })
+                            DateTimeField(modifier = Modifier.weight(1f), label = stringResource(R.string.form_hour_arrival), value = horaArribada, placeholder = hourPlaceholder, icon = { Icon(Icons.Default.Schedule, contentDescription = null, tint = MainOrange) }, onClick = { viewModel.mostrarTimePickerArribada() })
                         }
 
                         DropdownField(
-                            label = stringResource(R.string.form_mobility_guide),
-                            selectedValue = mobilitat, expanded = mobilitatExpandido,
-                            placeholder = stringResource(R.string.form_yes_no),
-                            opciones = elementosConCodigos.opcionesSiNo(),
-                            onExpandedChange = { viewModel.toggleMobilitatExpandido() },
-                            onDismissRequest = { viewModel.cerrarMobilitatMenu() },
-                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarMobilitat(nombre, codigo) },
-                            defectColor = true
+                            label = stringResource(R.string.form_mobility_guide), selectedValue = mobilitat, expanded = mobilitatExpandido,
+                            placeholder = stringResource(R.string.form_yes_no), opciones = elementosConCodigos.opcionesSiNo(),
+                            onExpandedChange = { viewModel.toggleMobilitatExpandido() }, onDismissRequest = { viewModel.cerrarMobilitatMenu() },
+                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarMobilitat(nombre, codigo) }, defectColor = true
                         )
 
                         ParametrosCentroInspeccion(viewModel)
@@ -405,53 +308,33 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // ---- Card datos opcionales ----
                 Card(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                     shape = MaterialTheme.shapes.large
                 ) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth().padding(24.dp),
-                        verticalArrangement = Arrangement.spacedBy(24.dp)
-                    ) {
+                    Column(modifier = Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(24.dp)) {
                         Text(stringResource(R.string.form_movs_title_optionals), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
 
                         CampoTexto(label = stringResource(R.string.form_codi_ates), valor = codiAtes, placeholder = stringResource(R.string.form_codi_ates_description), onValueChange = { viewModel.campoCodiAtes(it) }, defectColor = false)
                         CampoTexto(label = stringResource(R.string.form_name_transportits), valor = nomTransportista, placeholder = stringResource(R.string.form_name_transportits_description), onValueChange = { viewModel.actualizarNomTransportista(it) }, defectColor = false)
 
                         DropdownField(
-                            label = stringResource(R.string.form_ways_transports),
-                            selectedValue = mitjaTransport, expanded = mitjaTransportExpandido,
-                            placeholder = stringResource(R.string.form_ways_transports_description),
-                            opciones = elementosConCodigos.transporte(),
-                            onExpandedChange = { viewModel.toggleMitjaTransportExpandido() },
-                            onDismissRequest = { viewModel.cerrarMitjaTransportMenu() },
-                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarMitjaTransport(nombre, codigo) },
-                            defectColor = true
+                            label = stringResource(R.string.form_ways_transports), selectedValue = mitjaTransport, expanded = mitjaTransportExpandido,
+                            placeholder = stringResource(R.string.form_ways_transports_description), opciones = elementosConCodigos.transporte(),
+                            onExpandedChange = { viewModel.toggleMitjaTransportExpandido() }, onDismissRequest = { viewModel.cerrarMitjaTransportMenu() },
+                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarMitjaTransport(nombre, codigo) }, defectColor = true
                         )
 
                         CampoTexto(label = stringResource(R.string.form_matricule_transport), valor = matricula, placeholder = stringResource(R.string.form_matricule_transports_description), onValueChange = { viewModel.actualizarMatricula(it) }, defectColor = false)
                         CampoTexto(label = stringResource(R.string.form_nif_driver), valor = nifConductor, placeholder = stringResource(R.string.form_nif_driver_description), onValueChange = { viewModel.actualizarNifConductor(it) }, defectColor = false)
                         CampoTexto(label = stringResource(R.string.form_name_driver), valor = nomConductor, placeholder = stringResource(R.string.form_name_driver_description), onValueChange = { viewModel.actualizarNomConductor(it) }, defectColor = false)
 
-                        // Lista de identificadores
                         Column(modifier = Modifier.fillMaxWidth()) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    stringResource(R.string.form_animal_identifiers),
-                                    fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp
-                                )
-                                IconButton(
-                                    onClick = { viewModel.agregarIdentificador() },
-                                    modifier = Modifier.size(36.dp).background(color = MainOrange, shape = RoundedCornerShape(8.dp))
-                                ) {
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                                Text(stringResource(R.string.form_animal_identifiers), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
+                                IconButton(onClick = { viewModel.agregarIdentificador() }, modifier = Modifier.size(36.dp).background(color = MainOrange, shape = RoundedCornerShape(8.dp))) {
                                     Icon(Icons.Default.Add, contentDescription = stringResource(R.string.content_desc_add_id), tint = Color.White, modifier = Modifier.size(20.dp))
                                 }
                             }
@@ -465,15 +348,8 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
                                     shape = RoundedCornerShape(12.dp),
                                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                                 ) {
-                                    Column(
-                                        modifier = Modifier.fillMaxWidth().padding(16.dp),
-                                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                                    ) {
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            horizontalArrangement = Arrangement.SpaceBetween,
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
+                                    Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                                             Text("Animal ${index + 1}", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MainOrange)
                                             if (identificadors.size > 1) {
                                                 IconButton(onClick = { viewModel.eliminarIdentificador(index) }, modifier = Modifier.size(32.dp)) {
@@ -481,7 +357,6 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
                                                 }
                                             }
                                         }
-
                                         useDebounce(identificador, delayMillis = 300L) { viewModel.searchBovinos(index, it) }
                                         CampoIdentificadorAutoComplete(
                                             label = stringResource(R.string.form_id_animal),
@@ -509,10 +384,7 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
                     onClick = { viewModel.confirmarAltaGuia() },
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 24.dp).height(56.dp),
                     enabled = !estadoCarga,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MainOrange,
-                        disabledContainerColor = MaterialTheme.colorScheme.outline
-                    ),
+                    colors = ButtonDefaults.buttonColors(containerColor = MainOrange, disabledContainerColor = MaterialTheme.colorScheme.outline),
                     shape = MaterialTheme.shapes.medium,
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp, pressedElevation = 6.dp)
                 ) {
@@ -525,7 +397,6 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
     }
 }
 
-// Helper privado para reutilizar campos de fecha/hora
 @Composable
 private fun DateTimeField(
     modifier: Modifier = Modifier,
@@ -566,19 +437,10 @@ fun ParametrosCentroInspeccion(viewModel: GuiasViewModel) {
     val (isChecked, setChecked) = remember { mutableStateOf(false) }
 
     Column(Modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
             Checkbox(checked = isChecked, onCheckedChange = { setChecked(it) })
-            Text(
-                "El destino es centro de inspección?",
-                fontSize = 14.sp, fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp
-            )
+            Text("El destino es centro de inspección?", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
         }
-
         if (isChecked) {
             CampoTexto(label = stringResource(R.string.form_pif_country), valor = pais, placeholder = stringResource(R.string.form_pif_country_desc), onValueChange = { viewModel.actualizarPais(it) }, defectColor = false)
             CampoTexto(label = stringResource(R.string.form_pif_exploitation), valor = codiExplotacio, placeholder = stringResource(R.string.form_pif_exploitation_desc), onValueChange = { viewModel.actualizarCodiExplotacio(it) }, defectColor = false)

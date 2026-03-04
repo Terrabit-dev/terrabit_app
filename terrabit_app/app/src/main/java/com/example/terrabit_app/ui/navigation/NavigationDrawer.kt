@@ -162,8 +162,7 @@ fun NavigationDrawer(
         }
 
         composable(Routes.Material.route) {
-            val materialV: MaterialViewModel = viewModel()
-            Material(navController = navController, materialV)
+            Material(navController)
         }
 
         composable(Routes.MaterialDuplicado.route){

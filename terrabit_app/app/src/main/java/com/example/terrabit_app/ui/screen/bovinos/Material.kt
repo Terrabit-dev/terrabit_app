@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
@@ -34,7 +35,8 @@ import com.example.terrabit_app.viewmodel.MaterialViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Material(navController: NavController, viewModel: MaterialViewModel) {
+fun Material(navController: NavController) {
+    val viewModel = hiltViewModel<MaterialViewModel>()
 
     val empresaSubministradora by viewModel.empresaSubministradora.observeAsState("")
     val tipoEnviamiento by viewModel.tipoEnviamiento.observeAsState("")
@@ -94,10 +96,7 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
 
     if (estadoCarga) {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.5f))
-                .clickable(enabled = false) {},
+            modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)).clickable(enabled = false) {},
             contentAlignment = Alignment.Center
         ) {
             Card(
@@ -125,11 +124,7 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                             Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
                         }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MainGreen,
-                        titleContentColor = Color.White,
-                        navigationIconContentColor = Color.White
-                    )
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = MainGreen, titleContentColor = Color.White, navigationIconContentColor = Color.White)
                 )
             },
             snackbarHost = {
@@ -139,25 +134,16 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
             },
             containerColor = MaterialTheme.colorScheme.background
         ) { padding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .verticalScroll(rememberScrollState())
-            ) {
+            Column(modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())) {
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // ---- Card datos de envío ----
                 Card(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                     shape = MaterialTheme.shapes.large
                 ) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth().padding(24.dp),
-                        verticalArrangement = Arrangement.spacedBy(24.dp)
-                    ) {
+                    Column(modifier = Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(24.dp)) {
                         DropdownField(label = stringResource(R.string.form_suply_company) + " *", selectedValue = empresaSubministradora, expanded = empresaExpandida, placeholder = stringResource(R.string.form_suply_company_description), opciones = elementosConCodigos.tipoEmpresaSubministradora(), onExpandedChange = { viewModel.toggleEmpresaExpandida() }, onDismissRequest = { viewModel.cerrarEmpresaMenu() }, onSeleccionar = { codigo, nombre -> viewModel.seleccionarEmpresa(nombre, codigo) }, defectColor = true)
                         DropdownField(label = stringResource(R.string.form_send_type) + " *", selectedValue = tipoEnviamiento, expanded = tipoEnviamientoExpandido, placeholder = stringResource(R.string.form_send_type_description), opciones = elementosConCodigos.tiposEnvios(), onExpandedChange = { viewModel.toggleTipoEnviamientoExpandido() }, onDismissRequest = { viewModel.cerrarTipoEnviamientoMenu() }, onSeleccionar = { codigo, nombre -> viewModel.seleccionarTipoEnviamiento(nombre, codigo) }, defectColor = true)
                         DropdownField(label = stringResource(R.string.form_send_address) + " *", selectedValue = destinoLliurament, expanded = destinoExpandido, placeholder = stringResource(R.string.form_send_address_description), opciones = elementosConCodigos.tiposDireccionEnvio(), onExpandedChange = { viewModel.toggleDestinoExpandido() }, onDismissRequest = { viewModel.cerrarDestinoMenu() }, onSeleccionar = { codigo, nombre -> viewModel.seleccionarDestino(nombre, codigo) }, defectColor = true)
@@ -184,27 +170,16 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // ---- Card unidades ----
                 Card(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                     shape = MaterialTheme.shapes.large
                 ) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth().padding(24.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+                    Column(modifier = Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                             Text(stringResource(R.string.title_identifiers), fontSize = 17.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-                            TextButton(
-                                onClick = { viewModel.agregarUnidades() },
-                                colors = ButtonDefaults.textButtonColors(contentColor = MainGreen)
-                            ) {
+                            TextButton(onClick = { viewModel.agregarUnidades() }, colors = ButtonDefaults.textButtonColors(contentColor = MainGreen)) {
                                 Icon(Icons.Default.Add, contentDescription = stringResource(R.string.action_add), modifier = Modifier.size(18.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(stringResource(R.string.action_add), fontWeight = FontWeight.SemiBold)
@@ -239,10 +214,7 @@ fun Material(navController: NavController, viewModel: MaterialViewModel) {
                     onClick = { viewModel.solicitarMaterial() },
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 24.dp).height(56.dp),
                     enabled = !estadoCarga,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MainGreen,
-                        disabledContainerColor = MaterialTheme.colorScheme.outline
-                    ),
+                    colors = ButtonDefaults.buttonColors(containerColor = MainGreen, disabledContainerColor = MaterialTheme.colorScheme.outline),
                     shape = MaterialTheme.shapes.medium,
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp, pressedElevation = 6.dp)
                 ) {
@@ -266,15 +238,8 @@ private fun UnidadesItem(
     onUnidadesChange: (String) -> Unit,
     onEliminar: () -> Unit
 ) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Text(stringResource(R.string.form_unitats) + " ${indice + 1}", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant)
             if (mostrarEliminar) {
                 IconButton(onClick = onEliminar, modifier = Modifier.size(32.dp)) {
@@ -283,12 +248,10 @@ private fun UnidadesItem(
             }
         }
 
-        // Codi MO
         Column(modifier = Modifier.fillMaxWidth()) {
             Text(
                 text = stringResource(R.string.label_codimo) + if (codiMoObligatorio) " *" else "",
-                fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp
+                fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp
             )
             Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
@@ -315,7 +278,6 @@ private fun UnidadesItem(
             }
         }
 
-        // Unidades
         Column(modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(R.string.form_unitats) + " *", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
             Spacer(modifier = Modifier.height(8.dp))

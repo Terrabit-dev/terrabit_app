@@ -28,6 +28,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -47,10 +48,12 @@ import com.example.terrabit_app.utils.bluetooth.BluetoothScanDialog
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 import com.example.terrabit_app.viewmodel.MovimientosViewModel
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Movimientos(navController: NavController, bluetoothViewModel: BluetoothViewModel, borradorId: String = "") {
-    val viewModel = viewModel<MovimientosViewModel>()
+
+    val viewModel = hiltViewModel<MovimientosViewModel>()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -99,7 +102,6 @@ fun Movimientos(navController: NavController, bluetoothViewModel: BluetoothViewM
     }
 
     LaunchedEffect(Unit) {
-        viewModel.inicializarSharedPreferences(context)
         if (borradorId.isNotEmpty()) {
             viewModel.cargarBorradorPorId(borradorId)
             return@LaunchedEffect

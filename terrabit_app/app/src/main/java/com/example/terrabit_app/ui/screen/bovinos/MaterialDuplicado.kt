@@ -24,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
@@ -42,7 +43,7 @@ import com.example.terrabit_app.viewmodel.MaterialDuplicadoViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MaterialDuplicadosScreen(navController: NavController, bluetoothViewModel: BluetoothViewModel) {
-    val viewModel = viewModel<MaterialDuplicadoViewModel>()
+    val viewModel = hiltViewModel<MaterialDuplicadoViewModel>()
     val elementosConCodigos = ElementosConCodigos()
 
     val empresaSubministradora by viewModel.empresaSubministradora.observeAsState("")

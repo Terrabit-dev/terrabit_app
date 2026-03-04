@@ -1,10 +1,9 @@
 package com.example.terrabit_app.viewmodel
 
-import android.app.Application
-import android.content.Context
 import android.util.Log
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.Borrador
 import com.example.terrabit_app.data.SharedPreferencesManager
 import com.example.terrabit_app.data.network.Repositorio
@@ -17,7 +16,7 @@ import com.example.terrabit_app.utils.DateUtils.convertirFechaAFormatoAPI
 import com.example.terrabit_app.utils.UserPreferences
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import kotlinx.coroutines.CoroutineScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -25,22 +24,21 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import javax.inject.Inject
 
-class MovimientosViewModel(application: Application) : AndroidViewModel(application) {
+@HiltViewModel
+class MovimientosViewModel @Inject constructor(
+    private val repositorio: Repositorio,
+    private val userPreferences: UserPreferences,
+    private val sharedPreferencesManager: SharedPreferencesManager
+) : ViewModel() {
 
-    private var repositorio = Repositorio(application)
-    private lateinit var sharedPreferencesManager: SharedPreferencesManager
-
-    // Instanciar UserPreferences directamente con la Application
-    private val userPreferences = UserPreferences(application)
-
-    // Leer las credenciales del login guardadas automáticamente
     val nif = userPreferences.getNif() ?: ""
     val password = userPreferences.getPassword() ?: ""
-
     val codiMo = userPreferences.getCodiMO() ?: ""
 
-    // Autocompletado/sugerencias para animales
+    private var borradorSesionId: String = ""
+
     private val _suggestionsBovinos = MutableLiveData<List<Animal>>(emptyList())
     val suggestionsBovinos = _suggestionsBovinos
 
@@ -53,37 +51,19 @@ class MovimientosViewModel(application: Application) : AndroidViewModel(applicat
     private val _activeFieldIndex = MutableLiveData<Int>(-1)
     val activeFieldIndex = _activeFieldIndex
 
-
-    // ID unico para la sesión actual del formulario
-    private var borradorSesionId: String = ""
-
-    // ============================================
-    // SECCIÓN: AUTOGUARDADO
-    // ============================================
-
-    fun inicializarSharedPreferences(context: Context) {
-        sharedPreferencesManager = SharedPreferencesManager(context)
-
-        // Generar nuevo ID de sesión si no existe
-        if (borradorSesionId.isEmpty()) {
-            borradorSesionId = "movimiento_auto_${System.currentTimeMillis()}"
-        }
+    init {
+        borradorSesionId = "movimiento_auto_${System.currentTimeMillis()}"
         cargarBovinosEnCache()
     }
 
     private fun cargarBovinosEnCache() {
-        CoroutineScope(Dispatchers.IO).launch {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
                 _isLoadingBovinos.postValue(true)
-
                 repositorio.getBovinosWithCache(
-                    nif = nif,
-                    password = password,
-                    tipusVinculacio = "1",
-                    explotacio = codiMo,
-                    forceRefresh = false
+                    nif = nif, password = password,
+                    tipusVinculacio = "1", explotacio = codiMo, forceRefresh = false
                 )
-
                 _bovinosCargados.postValue(true)
                 _isLoadingBovinos.postValue(false)
                 Log.d("MovimientosVM", "Bovinos cargados en caché")
@@ -97,13 +77,8 @@ class MovimientosViewModel(application: Application) : AndroidViewModel(applicat
 
     fun searchBovinos(index: Int, query: String) {
         _activeFieldIndex.value = index
-
-        if (query.isBlank()) {
-            _suggestionsBovinos.value = emptyList()
-            return
-        }
-
-        CoroutineScope(Dispatchers.IO).launch {
+        if (query.isBlank()) { _suggestionsBovinos.value = emptyList(); return }
+        viewModelScope.launch(Dispatchers.IO) {
             try {
                 val resultados = repositorio.searchBovinosLocal(query)
                 _suggestionsBovinos.postValue(resultados)
@@ -122,67 +97,40 @@ class MovimientosViewModel(application: Application) : AndroidViewModel(applicat
         Log.d("MovimientosVM", "Bovino seleccionado en índice $index: ${animal.identificador}")
     }
 
-
-
-
     fun tieneContenido(): Boolean {
-        return !_codiRemo.value.isNullOrEmpty() ||
-                !_dataArribada.value.isNullOrEmpty() ||
-                !_horaArribada.value.isNullOrEmpty() ||
-                !_codiAtes.value.isNullOrEmpty() ||
-                !_nomTransportista.value.isNullOrEmpty() ||
-                !_matricula.value.isNullOrEmpty() ||
-                !_mitjaTransport.value.isNullOrEmpty() ||
-                !_nifConductor.value.isNullOrEmpty() ||
-                !_nomConductor.value.isNullOrEmpty() ||
-                !_explotacioDestinacio.value.isNullOrEmpty() ||
+        return !_codiRemo.value.isNullOrEmpty() || !_dataArribada.value.isNullOrEmpty() ||
+                !_horaArribada.value.isNullOrEmpty() || !_codiAtes.value.isNullOrEmpty() ||
+                !_nomTransportista.value.isNullOrEmpty() || !_matricula.value.isNullOrEmpty() ||
+                !_mitjaTransport.value.isNullOrEmpty() || !_nifConductor.value.isNullOrEmpty() ||
+                !_nomConductor.value.isNullOrEmpty() || !_explotacioDestinacio.value.isNullOrEmpty() ||
                 (_listaAnimales.value?.any { it.identificador.isNotEmpty() } == true)
     }
 
     fun guardarBorradorAutomatico() {
-        if (!tieneContenido()) {
-            Log.d("Autoguardado Movimiento", "No hay contenido para guardar")
-            return
-        }
-
+        if (!tieneContenido()) { Log.d("Autoguardado Movimiento", "No hay contenido para guardar"); return }
         try {
             val datosMovimiento = mapOf(
-                "codiRemo" to _codiRemo.value,
-                "dataArribada" to _dataArribada.value,
-                "horaArribada" to _horaArribada.value,
-                "codiAtes" to _codiAtes.value,
-                "nomTransportista" to _nomTransportista.value,
-                "matricula" to _matricula.value,
-                "mitjaTransport" to _mitjaTransport.value,
-                "nifConductor" to _nifConductor.value,
-                "nomConductor" to _nomConductor.value,
-                "explotacioDestinacio" to _explotacioDestinacio.value,
-                "listaAnimales" to _listaAnimales.value,
-                "codiTransport" to _codiTransport.value
+                "codiRemo" to _codiRemo.value, "dataArribada" to _dataArribada.value,
+                "horaArribada" to _horaArribada.value, "codiAtes" to _codiAtes.value,
+                "nomTransportista" to _nomTransportista.value, "matricula" to _matricula.value,
+                "mitjaTransport" to _mitjaTransport.value, "nifConductor" to _nifConductor.value,
+                "nomConductor" to _nomConductor.value, "explotacioDestinacio" to _explotacioDestinacio.value,
+                "listaAnimales" to _listaAnimales.value, "codiTransport" to _codiTransport.value
             )
-
-            // Buscar si ya existe este borrador específico de la sesión actual
-            val borradorExistente = sharedPreferencesManager.obtenerBorradores()
-                .find { it.id == borradorSesionId }
-
+            val borradorExistente = sharedPreferencesManager.obtenerBorradores().find { it.id == borradorSesionId }
             val borrador = if (borradorExistente != null) {
-                // Actualizar borrador de esta sesión
                 borradorExistente.copy(
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
                     datos = Gson().toJson(datosMovimiento)
                 )
             } else {
-                // Crear nuevo borrador con ID de sesión
                 Borrador(
-                    id = borradorSesionId,
-                    tipo = "MOVIMIENTO",
+                    id = borradorSesionId, tipo = "MOVIMIENTO",
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
                     hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
-                    datos = Gson().toJson(datosMovimiento),
-                    estado = "BORRADOR_AUTO"
+                    datos = Gson().toJson(datosMovimiento), estado = "BORRADOR_AUTO"
                 )
             }
-
             sharedPreferencesManager.guardarBorrador(borrador)
             Log.d("Autoguardado Movimiento", "Borrador guardado: $borradorSesionId")
         } catch (e: Exception) {
@@ -192,16 +140,9 @@ class MovimientosViewModel(application: Application) : AndroidViewModel(applicat
 
     fun cargarBorradorPorId(id: String) {
         try {
-            val borrador = sharedPreferencesManager.obtenerBorradores()
-                .find { it.id == id } ?: return
-
+            val borrador = sharedPreferencesManager.obtenerBorradores().find { it.id == id } ?: return
             borradorSesionId = borrador.id
-
-            val datos: Map<String, Any?> = Gson().fromJson(
-                borrador.datos,
-                object : TypeToken<Map<String, Any?>>() {}.type
-            )
-
+            val datos: Map<String, Any?> = Gson().fromJson(borrador.datos, object : TypeToken<Map<String, Any?>>() {}.type)
             _codiRemo.value = datos["codiRemo"] as? String ?: ""
             _dataArribada.value = datos["dataArribada"] as? String ?: ""
             _horaArribada.value = datos["horaArribada"] as? String ?: ""
@@ -213,7 +154,6 @@ class MovimientosViewModel(application: Application) : AndroidViewModel(applicat
             _nomConductor.value = datos["nomConductor"] as? String ?: ""
             _explotacioDestinacio.value = datos["explotacioDestinacio"] as? String ?: ""
             _codiTransport.value = datos["codiTransport"] as? String ?: ""
-
             val listaAnimalesJson = datos["listaAnimales"] as? List<*>
             if (listaAnimalesJson != null) {
                 val listaRestaurada = listaAnimalesJson.mapNotNull { item ->
@@ -230,32 +170,21 @@ class MovimientosViewModel(application: Application) : AndroidViewModel(applicat
                     } catch (e: Exception) { null }
                 }
                 _listaAnimales.value = listaRestaurada.ifEmpty {
-                    listOf(
-                        IdenMovimiento(
-                            identificador = "",
-                            estatArribada = null,
-                            classCanal = null,
-                            dataSacrMort = null,
-                            pesCanal = null,
-                            tipusPresentacio = null
-                        )
-                    )
+                    listOf(IdenMovimiento(identificador = "", estatArribada = null, classCanal = null, dataSacrMort = null, pesCanal = null, tipusPresentacio = null))
                 }
             }
-
             Log.d("MovimientosVM", "Borrador cargado por ID: $id")
         } catch (e: Exception) {
             Log.e("MovimientosVM", "Error al cargar borrador por ID: ${e.message}", e)
         }
     }
 
-
     fun eliminarBorradorAutomatico() {
         try {
             if (borradorSesionId.isNotEmpty()) {
                 sharedPreferencesManager.eliminarBorrador(borradorSesionId)
                 Log.d("Eliminar Borrador", "Borrador eliminado: $borradorSesionId")
-                borradorSesionId = "" // Resetear el ID de sesión
+                borradorSesionId = ""
             }
         } catch (e: Exception) {
             Log.e("Error Eliminar Borrador", "Error: ${e.message}", e)
@@ -264,17 +193,12 @@ class MovimientosViewModel(application: Application) : AndroidViewModel(applicat
 
     fun obtenerBorradoresMovimiento(): List<Borrador> {
         return try {
-            sharedPreferencesManager.obtenerBorradores()
-                .filter { it.tipo == "MOVIMIENTO" && it.estado == "BORRADOR_AUTO" }
+            sharedPreferencesManager.obtenerBorradores().filter { it.tipo == "MOVIMIENTO" && it.estado == "BORRADOR_AUTO" }
         } catch (e: Exception) {
             Log.e("Error", "Error al obtener borradores: ${e.message}", e)
             emptyList()
         }
     }
-
-    // ============================================
-    // SECCIÓN: LISTA DE MOVIMIENTOS PENDIENTES
-    // ============================================
 
     private val _movimientosPendientes = MutableLiveData<Movimientos?>()
     val movimientosPendientes = _movimientosPendientes
@@ -282,19 +206,9 @@ class MovimientosViewModel(application: Application) : AndroidViewModel(applicat
     private val _cargandoLista = MutableLiveData(false)
     val cargandoLista = _cargandoLista
 
-    fun obtenerMovimientosPendientes(
-        nif: String,
-        password: String,
-        explotacioDestinacio: String,
-        dataSortida: String
-    ) {
-        CoroutineScope(Dispatchers.IO).launch {
-            val response = repositorio.getConfirmacionMovimientos(
-                nif,
-                password,
-                explotacioDestinacio,
-                dataSortida
-            )
+    fun obtenerMovimientosPendientes(nif: String, password: String, explotacioDestinacio: String, dataSortida: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val response = repositorio.getConfirmacionMovimientos(nif, password, explotacioDestinacio, dataSortida)
             withContext(Dispatchers.Main) {
                 if (response.isSuccessful) {
                     _movimientosPendientes.value = response.body()
@@ -306,10 +220,6 @@ class MovimientosViewModel(application: Application) : AndroidViewModel(applicat
             }
         }
     }
-
-    // ============================================
-    // SECCIÓN: FORMULARIO DE CONFIRMACIÓN
-    // ============================================
 
     private val _codiRemo = MutableLiveData("")
     val codiRemo = _codiRemo
@@ -380,152 +290,43 @@ class MovimientosViewModel(application: Application) : AndroidViewModel(applicat
     private val _cargandoMovimiento = MutableLiveData(false)
     val cargandoMovimiento = _cargandoMovimiento
 
-    // ============================================
-    // LISTAS DE OPCIONES
-    // ============================================
-
     data class CodigoAtes(val codigo: String, val nombre: String)
+    val listaCodigosAtes = listOf(CodigoAtes("D", "D - Transportista"))
 
-    val listaCodigosAtes = listOf(
-        CodigoAtes("D", "D - Transportista")
-    )
-
-
-
-    // ============================================
-    // FUNCIONES PARA ACTUALIZAR CAMPOS
-    // ============================================
-
-    fun actualizarCodiRemo(nuevoValor: String) {
-        _codiRemo.value = nuevoValor
-    }
-
-    fun actualizarDataArribada(nuevaFecha: String) {
-        _dataArribada.value = nuevaFecha
-    }
-
-    fun actualizarHoraArribada(hora: String, minutos: String) {
-        _horaArribada.value = String.format("%02d:%02d", hora.toInt(), minutos.toInt())
-    }
-
-    fun seleccionarCodiAtes(codigo: String) {
-        _codiAtes.value = codigo
-        _codiAtesExpandido.value = false
-    }
-
-    fun actualizarNomTransportista(nombre: String) {
-        _nomTransportista.value = nombre
-    }
-
-    fun actualizarMatricula(matricula: String) {
-        _matricula.value = matricula
-    }
-
-    fun seleccionarMitjaTransport(medio: String, codigo: String) {
-        _mitjaTransport.value = medio
-        _codiTransport.value = codigo
-        _mitjaTransportExpandido.value = false
-    }
-
-    fun actualizarNifConductor(nif: String) {
-        _nifConductor.value = nif
-    }
-
-    fun actualizarNomConductor(nombre: String) {
-        _nomConductor.value = nombre
-    }
-
-    fun actualizarExplotacioDestinacio(explotacion: String) {
-        _explotacioDestinacio.value = explotacion
-    }
-
-    fun actualizarIdentificadorAnimal(identificador: String) {
-        _identificadorAnimal.value = identificador
-    }
-
-    fun seleccionarEstatArribada(estat: String, codigo: String) {
-        _estatArribada.value = estat
-        _codiEstats.value = codigo
-        _estatArribadaExpandido.value = false
-    }
-
-    // ============================================
-    // FUNCIONES PARA CONTROLAR EXPANSIÓN DE MENÚS
-    // ============================================
-
-    fun toggleCodiAtesExpandido() {
-        _codiAtesExpandido.value = !(_codiAtesExpandido.value ?: false)
-    }
-
-    fun toggleMitjaTransportExpandido() {
-        _mitjaTransportExpandido.value = !(_mitjaTransportExpandido.value ?: false)
-    }
-
-    fun toggleEstatArribadaExpandido() {
-        _estatArribadaExpandido.value = !(_estatArribadaExpandido.value ?: false)
-    }
-
-    fun cerrarCodiAtesMenu() {
-        _codiAtesExpandido.value = false
-    }
-
-    fun cerrarMitjaTransportMenu() {
-        _mitjaTransportExpandido.value = false
-    }
-
-    fun cerrarEstatArribadaMenu() {
-        _estatArribadaExpandido.value = false
-    }
-
-    // ============================================
-    // FUNCIONES PARA CONTROLAR DATE/TIME PICKER
-    // ============================================
-
-    fun mostrarDatePickerArribada() {
-        _mostrarDatePickerArribada.value = true
-    }
-
-    fun ocultarDatePickerArribada() {
-        _mostrarDatePickerArribada.value = false
-    }
-
-    fun mostrarTimePickerArribada() {
-        _mostrarTimePickerArribada.value = true
-    }
-
-    fun ocultarTimePickerArribada() {
-        _mostrarTimePickerArribada.value = false
-    }
+    fun actualizarCodiRemo(nuevoValor: String) { _codiRemo.value = nuevoValor }
+    fun actualizarDataArribada(nuevaFecha: String) { _dataArribada.value = nuevaFecha }
+    fun actualizarHoraArribada(hora: String, minutos: String) { _horaArribada.value = String.format("%02d:%02d", hora.toInt(), minutos.toInt()) }
+    fun seleccionarCodiAtes(codigo: String) { _codiAtes.value = codigo; _codiAtesExpandido.value = false }
+    fun actualizarNomTransportista(nombre: String) { _nomTransportista.value = nombre }
+    fun actualizarMatricula(matricula: String) { _matricula.value = matricula }
+    fun seleccionarMitjaTransport(medio: String, codigo: String) { _mitjaTransport.value = medio; _codiTransport.value = codigo; _mitjaTransportExpandido.value = false }
+    fun actualizarNifConductor(nif: String) { _nifConductor.value = nif }
+    fun actualizarNomConductor(nombre: String) { _nomConductor.value = nombre }
+    fun actualizarExplotacioDestinacio(explotacion: String) { _explotacioDestinacio.value = explotacion }
+    fun actualizarIdentificadorAnimal(identificador: String) { _identificadorAnimal.value = identificador }
+    fun seleccionarEstatArribada(estat: String, codigo: String) { _estatArribada.value = estat; _codiEstats.value = codigo; _estatArribadaExpandido.value = false }
+    fun toggleCodiAtesExpandido() { _codiAtesExpandido.value = !(_codiAtesExpandido.value ?: false) }
+    fun toggleMitjaTransportExpandido() { _mitjaTransportExpandido.value = !(_mitjaTransportExpandido.value ?: false) }
+    fun toggleEstatArribadaExpandido() { _estatArribadaExpandido.value = !(_estatArribadaExpandido.value ?: false) }
+    fun cerrarCodiAtesMenu() { _codiAtesExpandido.value = false }
+    fun cerrarMitjaTransportMenu() { _mitjaTransportExpandido.value = false }
+    fun cerrarEstatArribadaMenu() { _estatArribadaExpandido.value = false }
+    fun mostrarDatePickerArribada() { _mostrarDatePickerArribada.value = true }
+    fun ocultarDatePickerArribada() { _mostrarDatePickerArribada.value = false }
+    fun mostrarTimePickerArribada() { _mostrarTimePickerArribada.value = true }
+    fun ocultarTimePickerArribada() { _mostrarTimePickerArribada.value = false }
 
     fun seleccionarFechaArribada(fechaMillis: Long) {
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = fechaMillis
-        val dia = calendar.get(Calendar.DAY_OF_MONTH)
-        val mes = calendar.get(Calendar.MONTH) + 1
-        val anio = calendar.get(Calendar.YEAR)
-
-        _dataArribada.value = String.format("%02d/%02d/%04d", dia, mes, anio)
+        _dataArribada.value = String.format("%02d/%02d/%04d", calendar.get(Calendar.DAY_OF_MONTH), calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.YEAR))
         _mostrarDatePickerArribada.value = false
     }
 
-    // ============================================
-    // SECCIÓN: LISTA DE ANIMALES
-    // ============================================
-
-    private val limitePesoCanal = 5
     private val limiteClassCanel = 5
 
     private val _listaAnimales = MutableLiveData<List<IdenMovimiento>>(
-        listOf(
-            IdenMovimiento(
-                identificador = "",
-                estatArribada = "",
-                classCanal = null,
-                dataSacrMort = null,
-                pesCanal = null,
-                tipusPresentacio = null
-            )
-        )
+        listOf(IdenMovimiento(identificador = "", estatArribada = "", classCanal = null, dataSacrMort = null, pesCanal = null, tipusPresentacio = null))
     )
     val listaAnimales = _listaAnimales
 
@@ -544,28 +345,15 @@ class MovimientosViewModel(application: Application) : AndroidViewModel(applicat
     private val _textoEstatArribadaPorIndice = MutableLiveData<Map<Int, String>>(emptyMap())
     val textoEstatArribadaPorIndice = _textoEstatArribadaPorIndice
 
-    // ============================================
-    // FUNCIONES PARA GESTIONAR ANIMALES
-    // ============================================
-
     fun agregarAnimal() {
-        val listaActual = _listaAnimales.value ?: emptyList()
-        val nuevoAnimal = IdenMovimiento(
-            identificador = "",
-            estatArribada = "",
-            classCanal = null,
-            dataSacrMort = null,
-            pesCanal = null,
-            tipusPresentacio = null
-        )
-        _listaAnimales.value = listaActual + nuevoAnimal
+        _listaAnimales.value = (_listaAnimales.value ?: emptyList()) +
+                IdenMovimiento(identificador = "", estatArribada = "", classCanal = null, dataSacrMort = null, pesCanal = null, tipusPresentacio = null)
     }
 
     fun eliminarAnimal(indice: Int) {
         val listaActual = _listaAnimales.value ?: emptyList()
         if (listaActual.size > 1) {
             _listaAnimales.value = listaActual.filterIndexed { index, _ -> index != indice }
-
             _estatArribadaExpandidoPorIndice.value = _estatArribadaExpandidoPorIndice.value?.minus(indice)
             _classCanalExpandidoPorIndice.value = _classCanalExpandidoPorIndice.value?.minus(indice)
             _tipusPresentacioExpandidoPorIndice.value = _tipusPresentacioExpandidoPorIndice.value?.minus(indice)
@@ -575,156 +363,101 @@ class MovimientosViewModel(application: Application) : AndroidViewModel(applicat
     }
 
     fun actualizarIdentificadorAnimal(indice: Int, identificador: String) {
-        val listaActual = _listaAnimales.value ?: emptyList()
-        _listaAnimales.value = listaActual.mapIndexed { index, animal ->
-            if (index == indice) animal.copy(identificador = identificador)
-            else animal
+        _listaAnimales.value = (_listaAnimales.value ?: emptyList()).mapIndexed { index, animal ->
+            if (index == indice) animal.copy(identificador = identificador) else animal
         }
     }
 
     fun actualizarClassCanal(indice: Int, clase: String) {
-        val listaActual = _listaAnimales.value ?: emptyList()
-        if (clase.length <= limiteClassCanel){
-            _listaAnimales.value = listaActual.mapIndexed { index, animal ->
-                if (index == indice) animal.copy(classCanal = clase)
-                else animal
+        if (clase.length <= limiteClassCanel) {
+            _listaAnimales.value = (_listaAnimales.value ?: emptyList()).mapIndexed { index, animal ->
+                if (index == indice) animal.copy(classCanal = clase) else animal
             }
         }
     }
 
     fun seleccionarEstatArribadaAnimal(indice: Int, estatTexto: String, estatCodigo: String) {
-        val listaActual = _listaAnimales.value ?: emptyList()
-        _listaAnimales.value = listaActual.mapIndexed { index, animal ->
+        _listaAnimales.value = (_listaAnimales.value ?: emptyList()).mapIndexed { index, animal ->
             if (index == indice) {
-                if (estatCodigo != "80") {
-                    animal.copy(
-                        estatArribada = estatCodigo,
-                        classCanal = null,
-                        dataSacrMort = null,
-                        pesCanal = null,
-                        tipusPresentacio = null
-                    )
-                } else {
-                    animal.copy(estatArribada = estatCodigo)
-                }
+                if (estatCodigo != "80") animal.copy(estatArribada = estatCodigo, classCanal = null, dataSacrMort = null, pesCanal = null, tipusPresentacio = null)
+                else animal.copy(estatArribada = estatCodigo)
             } else animal
         }
-
-        val mapaTexto = _textoEstatArribadaPorIndice.value ?: emptyMap()
-        _textoEstatArribadaPorIndice.value = mapaTexto + (indice to estatCodigo)
-
-        val mapaActual = _estatArribadaExpandidoPorIndice.value ?: emptyMap()
-        _estatArribadaExpandidoPorIndice.value = mapaActual + (indice to false)
+        _textoEstatArribadaPorIndice.value = (_textoEstatArribadaPorIndice.value ?: emptyMap()) + (indice to estatCodigo)
+        _estatArribadaExpandidoPorIndice.value = (_estatArribadaExpandidoPorIndice.value ?: emptyMap()) + (indice to false)
     }
 
     fun actualizarDataSacrMort(indice: Int, fecha: String) {
-        val listaActual = _listaAnimales.value ?: emptyList()
-        _listaAnimales.value = listaActual.mapIndexed { index, animal ->
-            if (index == indice) animal.copy(dataSacrMort = fecha)
-            else animal
+        _listaAnimales.value = (_listaAnimales.value ?: emptyList()).mapIndexed { index, animal ->
+            if (index == indice) animal.copy(dataSacrMort = fecha) else animal
         }
     }
 
     fun actualizarPesCanal(indice: Int, peso: String) {
-        val listaActual = _listaAnimales.value ?: emptyList()
         if (peso.length <= 5) {
-            _listaAnimales.value = listaActual.mapIndexed { index, animal ->
-                if (index == indice) animal.copy(pesCanal = peso)
-                else animal
+            _listaAnimales.value = (_listaAnimales.value ?: emptyList()).mapIndexed { index, animal ->
+                if (index == indice) animal.copy(pesCanal = peso) else animal
             }
         }
     }
 
     fun seleccionarTipusPresentacio(indice: Int, codigo: String) {
-        val listaActual = _listaAnimales.value ?: emptyList()
-        _listaAnimales.value = listaActual.mapIndexed { index, animal ->
-            if (index == indice) animal.copy(tipusPresentacio = codigo)
-            else animal
+        _listaAnimales.value = (_listaAnimales.value ?: emptyList()).mapIndexed { index, animal ->
+            if (index == indice) animal.copy(tipusPresentacio = codigo) else animal
         }
-
-        val mapaActual = _tipusPresentacioExpandidoPorIndice.value ?: emptyMap()
-        _tipusPresentacioExpandidoPorIndice.value = mapaActual + (indice to false)
+        _tipusPresentacioExpandidoPorIndice.value = (_tipusPresentacioExpandidoPorIndice.value ?: emptyMap()) + (indice to false)
     }
 
     fun toggleEstatArribadaExpandido(indice: Int) {
-        val mapaActual = _estatArribadaExpandidoPorIndice.value ?: emptyMap()
-        val valorActual = mapaActual[indice] ?: false
-        _estatArribadaExpandidoPorIndice.value = mapaActual + (indice to !valorActual)
+        val mapa = _estatArribadaExpandidoPorIndice.value ?: emptyMap()
+        _estatArribadaExpandidoPorIndice.value = mapa + (indice to !(mapa[indice] ?: false))
     }
 
     fun toggleTipusPresentacioExpandido(indice: Int) {
-        val mapaActual = _tipusPresentacioExpandidoPorIndice.value ?: emptyMap()
-        val valorActual = mapaActual[indice] ?: false
-        _tipusPresentacioExpandidoPorIndice.value = mapaActual + (indice to !valorActual)
+        val mapa = _tipusPresentacioExpandidoPorIndice.value ?: emptyMap()
+        _tipusPresentacioExpandidoPorIndice.value = mapa + (indice to !(mapa[indice] ?: false))
     }
 
     fun cerrarEstatArribadaMenu(indice: Int) {
-        val mapaActual = _estatArribadaExpandidoPorIndice.value ?: emptyMap()
-        _estatArribadaExpandidoPorIndice.value = mapaActual + (indice to false)
+        _estatArribadaExpandidoPorIndice.value = (_estatArribadaExpandidoPorIndice.value ?: emptyMap()) + (indice to false)
     }
 
     fun cerrarTipusPresentacioMenu(indice: Int) {
-        val mapaActual = _tipusPresentacioExpandidoPorIndice.value ?: emptyMap()
-        _tipusPresentacioExpandidoPorIndice.value = mapaActual + (indice to false)
+        _tipusPresentacioExpandidoPorIndice.value = (_tipusPresentacioExpandidoPorIndice.value ?: emptyMap()) + (indice to false)
     }
 
     fun mostrarDatePickerSacrMort(indice: Int) {
-        val mapaActual = _mostrarDatePickerPorIndice.value ?: emptyMap()
-        _mostrarDatePickerPorIndice.value = mapaActual + (indice to true)
+        _mostrarDatePickerPorIndice.value = (_mostrarDatePickerPorIndice.value ?: emptyMap()) + (indice to true)
     }
 
     fun ocultarDatePickerSacrMort(indice: Int) {
-        val mapaActual = _mostrarDatePickerPorIndice.value ?: emptyMap()
-        _mostrarDatePickerPorIndice.value = mapaActual + (indice to false)
+        _mostrarDatePickerPorIndice.value = (_mostrarDatePickerPorIndice.value ?: emptyMap()) + (indice to false)
     }
 
     fun seleccionarFechaSacrMort(indice: Int, fechaMillis: Long) {
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = fechaMillis
-        val dia = calendar.get(Calendar.DAY_OF_MONTH)
-        val mes = calendar.get(Calendar.MONTH) + 1
-        val anio = calendar.get(Calendar.YEAR)
-
-        val fechaFormateada = String.format("%02d/%02d/%04d", dia, mes, anio)
-        actualizarDataSacrMort(indice, fechaFormateada)
+        actualizarDataSacrMort(indice, String.format("%02d/%02d/%04d", calendar.get(Calendar.DAY_OF_MONTH), calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.YEAR)))
         ocultarDatePickerSacrMort(indice)
     }
 
-    // ============================================
-    // VALIDACIÓN Y CONFIRMACIÓN
-    // ============================================
-
     fun esFormularioValido(): Boolean {
-        val codiRemoValido = !_codiRemo.value.isNullOrEmpty()
-        val dataArribadaValida = !_dataArribada.value.isNullOrEmpty()
-        val horaArribadaValida = !_horaArribada.value.isNullOrEmpty()
-        val codiAtesValido = !_codiAtes.value.isNullOrEmpty()
-        val explotacioDestinacioValida = !_explotacioDestinacio.value.isNullOrEmpty()
-
-        val listaAnimales = _listaAnimales.value ?: emptyList()
-        val animalesValidos = listaAnimales.all { animal ->
-            val identificadorValido = animal.identificador.isNotEmpty()
-            val estatValido = animal.estatArribada?.isNotEmpty()
-
+        val animalesValidos = (_listaAnimales.value ?: emptyList()).all { animal ->
             val camposAdicionales = if (animal.estatArribada == "80") {
-                !animal.dataSacrMort.isNullOrEmpty() &&
-                        !animal.pesCanal.isNullOrEmpty() &&
-                        !animal.classCanal.isNullOrEmpty() &&
-                        !animal.tipusPresentacio.isNullOrEmpty()
+                !animal.dataSacrMort.isNullOrEmpty() && !animal.pesCanal.isNullOrEmpty() &&
+                        !animal.classCanal.isNullOrEmpty() && !animal.tipusPresentacio.isNullOrEmpty()
             } else true
-
-            identificadorValido && estatValido == true && camposAdicionales
+            animal.identificador.isNotEmpty() && animal.estatArribada?.isNotEmpty() == true && camposAdicionales
         }
-
-        return codiRemoValido && dataArribadaValida && horaArribadaValida &&
-                codiAtesValido && explotacioDestinacioValida && animalesValidos
+        return !_codiRemo.value.isNullOrEmpty() && !_dataArribada.value.isNullOrEmpty() &&
+                !_horaArribada.value.isNullOrEmpty() && !_codiAtes.value.isNullOrEmpty() &&
+                !_explotacioDestinacio.value.isNullOrEmpty() && animalesValidos
     }
 
     fun confirmarMovimiento() {
         _codiError.value = null
-
         if (!esFormularioValido()) {
-            val mensajeError = when {
+            _codiError.value = when {
                 _codiRemo.value.isNullOrEmpty() -> 14
                 _dataArribada.value.isNullOrEmpty() -> 15
                 _horaArribada.value.isNullOrEmpty() -> 16
@@ -734,38 +467,22 @@ class MovimientosViewModel(application: Application) : AndroidViewModel(applicat
                 _estatArribada.value.isNullOrEmpty() -> 19
                 else -> 0
             }
-            _codiError.value = mensajeError
-            Log.e("Validación Movimiento", "Error: $mensajeError")
+            Log.e("Validación Movimiento", "Error: ${_codiError.value}")
             return
         }
-
-        CoroutineScope(Dispatchers.IO).launch {
-            withContext(Dispatchers.Main) {
-                _cargandoMovimiento.value = true
-            }
-
+        viewModelScope.launch {
+            _cargandoMovimiento.postValue(true)
             try {
-                val fechaHoraArribadaAPI = convertirFechaHoraAFormatoAPI(
-                    _dataArribada.value ?: "",
-                    _horaArribada.value ?: ""
-                )
-
-                val listaIdentificadores = _listaAnimales.value ?: emptyList()
-
-                val listaIdentificadoresAPI = listaIdentificadores.map { animal ->
+                val listaIdentificadoresAPI = (_listaAnimales.value ?: emptyList()).map { animal ->
                     animal.copy(
-                        dataSacrMort = if (animal.estatArribada == "80" && animal.dataSacrMort != null) {
-                            convertirFechaAFormatoAPI(animal.dataSacrMort)
-                        } else null
+                        dataSacrMort = if (animal.estatArribada == "80" && animal.dataSacrMort != null)
+                            convertirFechaAFormatoAPI(animal.dataSacrMort) else null
                     )
                 }
-
                 val request = PetConfirmacionMovi(
-                    nif = nif,
-                    passwordMobilitat = password,
-                    especie = "01",
+                    nif = nif, passwordMobilitat = password, especie = "01",
                     codiRemo = _codiRemo.value ?: "",
-                    dataArribada = fechaHoraArribadaAPI,
+                    dataArribada = convertirFechaHoraAFormatoAPI(_dataArribada.value ?: "", _horaArribada.value ?: ""),
                     codiAtes = _codiAtes.value ?: "",
                     nomTransportista = _nomTransportista.value ?: "",
                     mitjaTransport = _codiTransport.value ?: "",
@@ -776,24 +493,16 @@ class MovimientosViewModel(application: Application) : AndroidViewModel(applicat
                     identificadors = listaIdentificadoresAPI
                 )
                 Log.d("Confirmar Movimiento", "Request: $request")
-
                 val response = repositorio.putConfirmarMovi(request)
-
                 withContext(Dispatchers.Main) {
                     _cargandoMovimiento.value = false
-
                     when {
                         response.isSuccessful && response.body() != null -> {
                             val body = response.body()!!
-
                             if (body.codiRemo == "0" || body.descripcio?.contains("correcte", ignoreCase = true) == true) {
-                                _registroExitoso.value = true
-                                _mensajeError.value = ""
-
+                                _registroExitoso.value = true; _mensajeError.value = ""
                                 Log.d("Confirmar Movimiento", "Movimiento confirmado exitosamente")
-
-                                eliminarBorradorAutomatico()
-                                limpiarFormulario()
+                                eliminarBorradorAutomatico(); limpiarFormulario()
                             } else {
                                 _registroExitoso.value = false
                                 _mensajeError.value = "Respuesta inesperada del servidor: ${body.descripcio ?: "Sin descripción"}"
@@ -805,111 +514,65 @@ class MovimientosViewModel(application: Application) : AndroidViewModel(applicat
                             if (errorBody != null) {
                                 try {
                                     val errorObj = Gson().fromJson(errorBody, RespuestaUnificada::class.java)
-                                    _mensajeError.value = errorObj.errors?.firstOrNull()?.descripcio
-                                        ?: "Error desconocido"
-                                } catch (e: Exception) {
-                                    _mensajeError.value = "Error al procesar respuesta"
-                                }
+                                    _mensajeError.value = errorObj.errors?.firstOrNull()?.descripcio ?: "Error desconocido"
+                                } catch (e: Exception) { _mensajeError.value = "Error al procesar respuesta" }
                             }
                             _registroExitoso.value = false
                             Log.e("Error Movimiento", "HTTP ${response.code()}")
-                            if (errorBody != null) {
-                                Log.e("Error Movimiento", "Body: $errorBody")
-                            }
                         }
                         else -> {
-                            _registroExitoso.value = false
-                            _mensajeError.value = "Error: Respuesta vacía del servidor"
+                            _registroExitoso.value = false; _mensajeError.value = "Error: Respuesta vacía del servidor"
                             Log.e("Error Movimiento", "Respuesta vacía del servidor")
                         }
                     }
                 }
             } catch (e: java.net.SocketTimeoutException) {
                 withContext(Dispatchers.Main) {
-                    _cargandoMovimiento.value = false
-                    _registroExitoso.value = false
+                    _cargandoMovimiento.value = false; _registroExitoso.value = false
                     _mensajeError.value = "Tiempo de espera agotado. La operación puede haberse completado, por favor verifique."
                     Log.e("Error Movimiento", "Timeout: ${e.message}", e)
                 }
             } catch (e: java.io.IOException) {
                 withContext(Dispatchers.Main) {
-                    _cargandoMovimiento.value = false
-                    _registroExitoso.value = false
+                    _cargandoMovimiento.value = false; _registroExitoso.value = false
                     _mensajeError.value = "Error de conexión. Verifique su conexión a internet."
                     Log.e("Error Movimiento", "Error de red: ${e.message}", e)
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    _cargandoMovimiento.value = false
-                    _registroExitoso.value = false
+                    _cargandoMovimiento.value = false; _registroExitoso.value = false
                     _mensajeError.value = "Error inesperado: ${e.message ?: "Error desconocido"}"
-                    Log.e("Error Movimiento", "Error general: ${e.message}", e)
-                    e.printStackTrace()
+                    Log.e("Error Movimiento", "Error general: ${e.message}", e); e.printStackTrace()
                 }
             }
         }
     }
 
-    // ============================================
-    // FUNCIONES AUXILIARES
-    // ============================================
-
     fun limpiarFormulario() {
-        _codiRemo.value = ""
-        _dataArribada.value = ""
-        _horaArribada.value = ""
-        _codiAtes.value = ""
-        _nomTransportista.value = ""
-        _matricula.value = ""
-        _mitjaTransport.value = ""
-        _nifConductor.value = ""
-        _nomConductor.value = ""
-        _explotacioDestinacio.value = ""
-        _codiTransport.value = ""
-
-        _listaAnimales.value = listOf(
-            IdenMovimiento(
-                identificador = "",
-                estatArribada = null,
-                classCanal = null,
-                dataSacrMort = null,
-                pesCanal = null,
-                tipusPresentacio = null
-            )
-        )
+        _codiRemo.value = ""; _dataArribada.value = ""; _horaArribada.value = ""
+        _codiAtes.value = ""; _nomTransportista.value = ""; _matricula.value = ""
+        _mitjaTransport.value = ""; _nifConductor.value = ""; _nomConductor.value = ""
+        _explotacioDestinacio.value = ""; _codiTransport.value = ""
+        _listaAnimales.value = listOf(IdenMovimiento(identificador = "", estatArribada = null, classCanal = null, dataSacrMort = null, pesCanal = null, tipusPresentacio = null))
         _estatArribadaExpandidoPorIndice.value = emptyMap()
         _classCanalExpandidoPorIndice.value = emptyMap()
         _tipusPresentacioExpandidoPorIndice.value = emptyMap()
         _mostrarDatePickerPorIndice.value = emptyMap()
         _textoEstatArribadaPorIndice.value = emptyMap()
-
-        // Generar nuevo ID de sesión para el próximo formulario
         borradorSesionId = ""
     }
 
-    fun resetearEstadoRegistro() {
-        _registroExitoso.value = false
-        _mensajeError.value = ""
-        _codiError.value = null
-    }
+    fun resetearEstadoRegistro() { _registroExitoso.value = false; _mensajeError.value = ""; _codiError.value = null }
 
     private fun convertirFechaHoraAFormatoAPI(fecha: String, hora: String): String {
         return try {
             if (fecha.length == 10 && hora.length == 5) {
-                val partesFecha = fecha.split("/")
-                val partesHora = hora.split(":")
-                val dia = partesFecha[0]
-                val mes = partesFecha[1]
-                val anio = partesFecha[2]
-                val horas = partesHora[0]
-                val minutos = partesHora[1]
+                val (dia, mes, anio) = fecha.split("/")
+                val (horas, minutos) = hora.split(":")
                 "$anio$mes$dia$horas$minutos"
-            } else {
-                ""
-            }
+            } else ""
         } catch (e: Exception) {
-            Log.e("Error conversión fecha/hora", e.message ?: "Error desconocido")
-            ""
+            Log.e("Error conversión fecha/hora", e.message ?: "Error desconocido"); ""
         }
     }
 }
