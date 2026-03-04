@@ -38,7 +38,6 @@ fun NavigationDrawer(
     bluetooth : BluetoothViewModel,
     navController: NavHostController,
     onMenuClick: () -> Unit,
-    configViewModel: ConfigurationViewModel
 ) {
     NavHost(
         navController = navController,
@@ -77,8 +76,7 @@ fun NavigationDrawer(
         composable(Routes.Configuration.route) {
             ConfigurationScreen(
                 onMenuClick = onMenuClick,
-                viewModel = configViewModel,
-                navController = navController
+                navController = navController,
             )
         }
 

@@ -8,7 +8,6 @@ import androidx.navigation.compose.rememberNavController
 import com.example.terrabit_app.ui.screen.DrawerScreen
 import com.example.terrabit_app.ui.screen.Login
 import com.example.terrabit_app.utils.UserPreferences
-import com.example.terrabit_app.viewmodel.ConfigurationViewModel
 import com.example.terrabit_app.viewmodel.DrawerViewModel
 import androidx.compose.ui.platform.LocalContext
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
@@ -16,8 +15,7 @@ import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 @Composable
 fun Navigation(
     bluetooth: BluetoothViewModel,
-    drawerViewModel: DrawerViewModel,
-    configViewModel: ConfigurationViewModel
+    drawerViewModel: DrawerViewModel
 ) {
     val mainNavController = rememberNavController()
     val context = LocalContext.current
@@ -38,8 +36,7 @@ fun Navigation(
             DrawerScreen(
                 bluetooth = bluetooth,
                 mainNavController = mainNavController,
-                drawerViewModel = drawerViewModel,
-                configViewModel = configViewModel
+                drawerViewModel = drawerViewModel
             )
         }
     }

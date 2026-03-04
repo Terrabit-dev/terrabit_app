@@ -25,9 +25,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
@@ -47,7 +47,7 @@ import com.example.terrabit_app.viewmodel.ViewModelMuerteBovi
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Fallecimiento(navController: NavController, bluetoothViewModel: BluetoothViewModel, borradorId: String = "") {
-    val viewModel = viewModel<ViewModelMuerteBovi>()
+    val viewModel = hiltViewModel<ViewModelMuerteBovi>()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -88,10 +88,8 @@ fun Fallecimiento(navController: NavController, bluetoothViewModel: BluetoothVie
     }
 
     LaunchedEffect(Unit) {
-        viewModel.inicializarSharedPreferences(context)
         if (borradorId.isNotEmpty()) {
             viewModel.cargarBorradorPorId(borradorId)
-            return@LaunchedEffect
         }
     }
 
@@ -216,7 +214,6 @@ fun Fallecimiento(navController: NavController, bluetoothViewModel: BluetoothVie
             ) {
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // ---- Card principal: tipo, identificador, fecha, gestación ----
                 Card(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -227,7 +224,6 @@ fun Fallecimiento(navController: NavController, bluetoothViewModel: BluetoothVie
                         modifier = Modifier.fillMaxWidth().padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
-                        // Tipo de muerte
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 stringResource(R.string.form_type_dead),
@@ -273,7 +269,6 @@ fun Fallecimiento(navController: NavController, bluetoothViewModel: BluetoothVie
                             }
                         }
 
-                        // Identificador animal
                         useDebounce(identificadorAnimal, delayMillis = 300L) { viewModel.searchBovinos(it) }
                         CampoIdentificadorAutoComplete(
                             label = if (tipoMuerte.contains("01")) stringResource(R.string.form_id_animal) else stringResource(R.string.form_id_mother),
@@ -289,7 +284,6 @@ fun Fallecimiento(navController: NavController, bluetoothViewModel: BluetoothVie
                             }
                         )
 
-                        // Fecha de muerte
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 stringResource(R.string.form_dead_date),
@@ -317,7 +311,6 @@ fun Fallecimiento(navController: NavController, bluetoothViewModel: BluetoothVie
                             }
                         }
 
-                        // Meses gestación (solo tipo 02)
                         if (tipoMuerte.contains("02")) {
                             Column(modifier = Modifier.fillMaxWidth()) {
                                 Text(
@@ -351,7 +344,6 @@ fun Fallecimiento(navController: NavController, bluetoothViewModel: BluetoothVie
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // ---- Card cadáver inaccesible ----
                 Card(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -395,9 +387,7 @@ fun Fallecimiento(navController: NavController, bluetoothViewModel: BluetoothVie
                                         Spacer(modifier = Modifier.width(8.dp))
                                         Text(stringResource(R.string.title_gps), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = ErrorRed)
                                     }
-
                                     Spacer(modifier = Modifier.height(16.dp))
-
                                     Button(
                                         onClick = { viewModel.obtenerUbicacionActual() },
                                         modifier = Modifier.fillMaxWidth(),
@@ -409,9 +399,7 @@ fun Fallecimiento(navController: NavController, bluetoothViewModel: BluetoothVie
                                         Spacer(modifier = Modifier.width(8.dp))
                                         Text(stringResource(R.string.buttom_gps), color = ErrorRed, fontWeight = FontWeight.SemiBold)
                                     }
-
                                     Spacer(modifier = Modifier.height(16.dp))
-
                                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                                         Column(modifier = Modifier.weight(1f)) {
                                             Text(stringResource(R.string.gps_laltitud), fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = ErrorRed)
@@ -423,10 +411,8 @@ fun Fallecimiento(navController: NavController, bluetoothViewModel: BluetoothVie
                                                 singleLine = true,
                                                 shape = RoundedCornerShape(8.dp),
                                                 colors = OutlinedTextFieldDefaults.colors(
-                                                    focusedBorderColor = MainOrange,
-                                                    unfocusedBorderColor = Yellow,
-                                                    focusedTextColor = ErrorRed,
-                                                    unfocusedTextColor = ErrorRed,
+                                                    focusedBorderColor = MainOrange, unfocusedBorderColor = Yellow,
+                                                    focusedTextColor = ErrorRed, unfocusedTextColor = ErrorRed,
                                                     cursorColor = MainOrange,
                                                     focusedContainerColor = MaterialTheme.colorScheme.surface,
                                                     unfocusedContainerColor = MaterialTheme.colorScheme.surface
@@ -445,10 +431,8 @@ fun Fallecimiento(navController: NavController, bluetoothViewModel: BluetoothVie
                                                 singleLine = true,
                                                 shape = RoundedCornerShape(8.dp),
                                                 colors = OutlinedTextFieldDefaults.colors(
-                                                    focusedBorderColor = MainOrange,
-                                                    unfocusedBorderColor = Yellow,
-                                                    focusedTextColor = ErrorRed,
-                                                    unfocusedTextColor = ErrorRed,
+                                                    focusedBorderColor = MainOrange, unfocusedBorderColor = Yellow,
+                                                    focusedTextColor = ErrorRed, unfocusedTextColor = ErrorRed,
                                                     cursorColor = MainOrange,
                                                     focusedContainerColor = MaterialTheme.colorScheme.surface,
                                                     unfocusedContainerColor = MaterialTheme.colorScheme.surface

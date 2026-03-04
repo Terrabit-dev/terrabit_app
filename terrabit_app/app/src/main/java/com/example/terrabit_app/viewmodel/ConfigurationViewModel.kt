@@ -1,14 +1,16 @@
 package com.example.terrabit_app.viewmodel
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import com.example.terrabit_app.utils.UserPreferences
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import javax.inject.Inject
 
-class ConfigurationViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val userPreferences = UserPreferences(application)
+@HiltViewModel
+class ConfigurationViewModel @Inject constructor(
+    private val userPreferences: UserPreferences
+) : ViewModel() {
 
     private val _isDarkTheme = MutableStateFlow(userPreferences.getDarkTheme())
     val isDarkTheme: StateFlow<Boolean> = _isDarkTheme

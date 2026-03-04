@@ -21,16 +21,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.data.network.Identificadores.Identificadores
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.screen.bovinos.components.CampoIdentificadorAutoComplete
 import com.example.terrabit_app.ui.screen.bovinos.components.useDebounce
-import com.example.terrabit_app.ui.theme.BlueGrey
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.utils.DropdownField
 import com.example.terrabit_app.utils.ElementosConCodigos
@@ -42,7 +41,7 @@ import com.example.terrabit_app.viewmodel.NacimientoViewmodel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Nacimiento(navController: NavController, bluetooth: BluetoothViewModel, borradorId: String = "") {
-    val viewModel = viewModel<NacimientoViewmodel>()
+    val viewModel = hiltViewModel<NacimientoViewmodel>()
     val idMadre by viewModel.idMadre.observeAsState("")
     val idCria by viewModel.idCria.observeAsState("")
     val fechaNacimiento by viewModel.fechaNacimiento.observeAsState("")
@@ -76,7 +75,6 @@ fun Nacimiento(navController: NavController, bluetooth: BluetoothViewModel, borr
     val lifecycleOwner = LocalLifecycleOwner.current
 
     LaunchedEffect(Unit) {
-        viewModel.inicializarSharedPreferences(context)
         if (borradorId.isNotEmpty()) {
             viewModel.cargarBorradorPorId(borradorId)
             return@LaunchedEffect

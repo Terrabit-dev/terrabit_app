@@ -37,7 +37,6 @@ fun DrawerScreen(
     bluetooth: BluetoothViewModel,
     mainNavController: androidx.navigation.NavController,
     drawerViewModel: DrawerViewModel,
-    configViewModel: ConfigurationViewModel
 ) {
     val drawerNavController = rememberNavController()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -94,8 +93,7 @@ fun DrawerScreen(
         NavigationDrawer(
             bluetooth = bluetooth,
             navController = drawerNavController,
-            onMenuClick = { scope.launch { drawerState.open() } },
-            configViewModel = configViewModel
+            onMenuClick = { scope.launch { drawerState.open() } }
         )
     }
 }
