@@ -1,18 +1,25 @@
 package com.example.terrabit_app.viewmodel
 
-import android.app.Application
 import android.util.Log
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.lista_bovinos.Animal
 import com.example.terrabit_app.utils.UserPreferences
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class ListarBovinosViewModel(application: Application) : AndroidViewModel(application) {
+@HiltViewModel
+class ListarBovinosViewModel @Inject constructor(
+    private val repositorio: Repositorio,
+    private val userPreferences: UserPreferences
+) : ViewModel() {
 
-    private val repositorio = Repositorio(application)
+    val nif = userPreferences.getNif() ?: ""
+    val password = userPreferences.getPassword() ?: ""
+    val codiMo = userPreferences.getCodiMO() ?: ""
 
     private val _listaBovinos = MutableLiveData<List<Animal>>()
     val listaBovinos = _listaBovinos
@@ -32,12 +39,6 @@ class ListarBovinosViewModel(application: Application) : AndroidViewModel(applic
     private val _busqueda = MutableLiveData("")
     val busqueda = _busqueda
 
-    private val userPreferences = UserPreferences(application)
-
-    val nif = userPreferences.getNif() ?: ""
-    val password = userPreferences.getPassword() ?: ""
-    val codiMo = userPreferences.getCodiMO() ?: ""
-
     fun actualizarBusqueda(texto: String) {
         _busqueda.value = texto
         filtrarBovinos(texto)
@@ -45,11 +46,10 @@ class ListarBovinosViewModel(application: Application) : AndroidViewModel(applic
 
     private fun filtrarBovinos(query: String) {
         val lista = _listaBovinos.value ?: emptyList()
-
-        if (query.isEmpty()) {
-            _listaFiltrada.value = lista
+        _listaFiltrada.value = if (query.isEmpty()) {
+            lista
         } else {
-            _listaFiltrada.value = lista.filter { animal ->
+            lista.filter { animal ->
                 animal.identificador.contains(query, ignoreCase = true) ||
                         animal.identificadorMare?.contains(query, ignoreCase = true) == true
             }
@@ -62,25 +62,16 @@ class ListarBovinosViewModel(application: Application) : AndroidViewModel(applic
 
     fun cargarBovinos(esRefresh: Boolean = false) {
         viewModelScope.launch {
-            if (esRefresh) {
-                _refrescando.value = true
-            } else {
-                _cargando.value = true
-            }
+            if (esRefresh) _refrescando.value = true else _cargando.value = true
             _error.value = null
-
             try {
                 val response = repositorio.getListaBovinos(nif, password, "1", codiMo)
-
                 Log.d("PARSEO", "Response code: ${response.code()}")
-
                 if (response.isSuccessful) {
                     val body = response.body()
-
                     Log.d("PARSEO", "Body: $body")
                     Log.d("PARSEO", "Codi: ${body?.codi}")
                     Log.d("PARSEO", "Identificadors size: ${body?.identificadors?.size}")
-
                     if (body != null && !body.identificadors.isNullOrEmpty()) {
                         _listaBovinos.value = body.identificadors
                         filtrarBovinos(_busqueda.value ?: "")

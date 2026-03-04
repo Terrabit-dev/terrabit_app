@@ -19,10 +19,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
@@ -39,7 +39,7 @@ import com.example.terrabit_app.viewmodel.CorrecionSexoViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CorregirSexoBovi(navController: NavController, bluetoothViewModel: BluetoothViewModel, borradorId: String = "") {
-    val viewModel = viewModel<CorrecionSexoViewModel>()
+    val viewModel = hiltViewModel<CorrecionSexoViewModel>()
     val identificadorCorreccionSexo by viewModel.identificadorCorreccionSexo.observeAsState("")
     val sexoCorreccionSeleccionado by viewModel.sexoCorreccionSeleccionado.observeAsState("")
     val sexoCorreccionExpandido by viewModel.sexoCorreccionExpandido.observeAsState(false)
@@ -52,7 +52,6 @@ fun CorregirSexoBovi(navController: NavController, bluetoothViewModel: Bluetooth
 
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
-    var cantidadBorradores by remember { mutableStateOf(0) }
     var mostrarBluetooth by remember { mutableStateOf(false) }
 
     val mensajeCorreccionSexoExitosa = stringResource(R.string.successful_message_correct_sex)
@@ -73,13 +72,11 @@ fun CorregirSexoBovi(navController: NavController, bluetoothViewModel: Bluetooth
     }
 
     LaunchedEffect(Unit) {
-        viewModel.initSharedPreferences(context)
         if (borradorId.isNotEmpty()) {
             viewModel.cargarBorradorPorId(borradorId)
             return@LaunchedEffect
         }
-        val borradores = viewModel.obtenerBorradoresCorreccionSexo()
-        cantidadBorradores = borradores.size
+        viewModel.obtenerBorradoresCorreccionSexo()
     }
 
     DisposableEffect(lifecycleOwner) {

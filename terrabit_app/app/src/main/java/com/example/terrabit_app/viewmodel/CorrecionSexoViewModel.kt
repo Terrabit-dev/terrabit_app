@@ -1,9 +1,6 @@
 package com.example.terrabit_app.viewmodel
 
-import android.app.Application
-import android.content.Context
 import android.util.Log
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -15,24 +12,33 @@ import com.example.terrabit_app.data.network.lista_bovinos.Animal
 import com.example.terrabit_app.data.network.respuestas.RespuestaUnificada
 import com.example.terrabit_app.utils.UserPreferences
 import com.google.gson.Gson
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import javax.inject.Inject
 
-class CorrecionSexoViewModel(application: Application): AndroidViewModel(application) {
+@HiltViewModel
+class CorrecionSexoViewModel @Inject constructor(
+    private val repositorio: Repositorio,
+    private val userPreferences: UserPreferences,
+    private val sharedPreferencesManager: SharedPreferencesManager
+) : ViewModel() {
 
-    private  var repositorio = Repositorio(application)
-    private lateinit var sharedPreferencesManager: SharedPreferencesManager
-
-    // ID único para la sesión actual del formulario
     private var borradorSesionId: String = ""
 
-    // ============================================
-    //  ESTADOS PARA AUTOCOMPLETADO
-    // ============================================
+    val nif = userPreferences.getNif() ?: ""
+    val password = userPreferences.getPassword() ?: ""
+    val codiMo = userPreferences.getCodiMO() ?: ""
+
+    init {
+        borradorSesionId = "correccion_sexo_auto_${System.currentTimeMillis()}"
+        cargarBovinosEnCache()
+    }
+
     private val _suggestionsBovinos = MutableLiveData<List<Animal>>(emptyList())
     val suggestionsBovinos = _suggestionsBovinos
 
@@ -42,37 +48,10 @@ class CorrecionSexoViewModel(application: Application): AndroidViewModel(applica
     private val _bovinosCargados = MutableLiveData(false)
     val bovinosCargados = _bovinosCargados
 
-    // Instanciar UserPreferences directamente con la Application
-    private val userPreferences = UserPreferences(application)
-
-    // Leer las credenciales del login guardadas automáticamente
-    val nif = userPreferences.getNif() ?: ""
-    val password = userPreferences.getPassword() ?: ""
-    val codiMo = userPreferences.getCodiMO() ?: ""
-
-
-    fun initSharedPreferences(context: Context){
-        repositorio = Repositorio(context)
-        sharedPreferencesManager = SharedPreferencesManager(context)
-
-        // Generar nuevo ID de sesión si no existe
-        if (borradorSesionId.isEmpty()) {
-            borradorSesionId = "correccion_sexo_auto_${System.currentTimeMillis()}"
-        }
-
-        // Cargar bovinos en caché al iniciar
-        cargarBovinosEnCache()
-    }
-
-    // ============================================
-    // FUNCIÓN PARA CARGAR BOVINOS EN CACHÉ
-    // ============================================
     private fun cargarBovinosEnCache() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 _isLoadingBovinos.postValue(true)
-
-                // Reemplaza con tus credenciales reales o desde SharedPreferences
                 repositorio.getBovinosWithCache(
                     nif = nif,
                     password = password,
@@ -80,7 +59,6 @@ class CorrecionSexoViewModel(application: Application): AndroidViewModel(applica
                     explotacio = codiMo,
                     forceRefresh = false
                 )
-
                 _bovinosCargados.postValue(true)
                 _isLoadingBovinos.postValue(false)
                 Log.d("CorrecionSexoVM", "Bovinos cargados en caché")
@@ -92,37 +70,11 @@ class CorrecionSexoViewModel(application: Application): AndroidViewModel(applica
         }
     }
 
-    fun cargarBorradorPorId(id: String) {
-        try {
-            val borrador = sharedPreferencesManager.obtenerBorradores()
-                .find { it.id == id } ?: return
-
-            borradorSesionId = borrador.id
-
-            val datos: Map<String, Any?> = Gson().fromJson(
-                borrador.datos,
-                object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
-            )
-
-            _identificadorCorreccionSexo.value = datos["identificador"] as? String ?: ""
-            _sexoCorreccionSeleccionado.value = datos["sexoSeleccionado"] as? String ?: ""
-            codigoSexo = datos["codigoSexo"] as? String ?: ""
-
-            Log.d("CorrecionSexoVM", "Borrador cargado por ID: $id")
-        } catch (e: Exception) {
-            Log.e("CorrecionSexoVM", "Error al cargar borrador por ID: ${e.message}", e)
-        }
-    }
-
-    // ============================================
-    // FUNCIÓN PARA BUSCAR BOVINOS (AUTOCOMPLETADO)
-    // ============================================
     fun searchBovinos(query: String) {
         if (query.isBlank()) {
             _suggestionsBovinos.value = emptyList()
             return
         }
-
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val resultados = repositorio.searchBovinosLocal(query)
@@ -135,37 +87,31 @@ class CorrecionSexoViewModel(application: Application): AndroidViewModel(applica
         }
     }
 
-    // ============================================
-    // FUNCIÓN AL SELECCIONAR BOVINO
-    // ============================================
     fun onBovinoSelected(animal: Animal) {
         _identificadorCorreccionSexo.value = animal.identificador
         _suggestionsBovinos.value = emptyList()
         Log.d("CorrecionSexoVM", "Bovino seleccionado: ${animal.identificador}")
     }
 
-    fun tieneContenido(): Boolean{
-        return !_identificadorCorreccionSexo.value.isNullOrEmpty()||
+    fun tieneContenido(): Boolean {
+        return !_identificadorCorreccionSexo.value.isNullOrEmpty() ||
                 !_sexoCorreccionSeleccionado.value.isNullOrEmpty()
     }
 
-    fun guardarBorradorAutomatico(){
-        if (!tieneContenido()){
+    fun guardarBorradorAutomatico() {
+        if (!tieneContenido()) {
             Log.d("Autoguardado CorrecionSexo", "No hay contenido para guardar")
             return
         }
-
-        try{
+        try {
             val datosCorregirSexo = mapOf(
                 "identificador" to _identificadorCorreccionSexo.value,
                 "sexoSeleccionado" to _sexoCorreccionSeleccionado.value,
                 "codigoSexo" to codigoSexo
             )
-
             val borradorExistente = sharedPreferencesManager.obtenerBorradores()
                 .find { it.id == borradorSesionId }
-
-            val borrador = if (borradorExistente != null){
+            val borrador = if (borradorExistente != null) {
                 borradorExistente.copy(
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
                     datos = Gson().toJson(datosCorregirSexo)
@@ -180,40 +126,48 @@ class CorrecionSexoViewModel(application: Application): AndroidViewModel(applica
                     estado = "BORRADOR_AUTO"
                 )
             }
-
             sharedPreferencesManager.guardarBorrador(borrador)
             Log.d("Autoguardado Correcion Sexo", "Borrador guardado: $borradorSesionId")
-        }catch (e: Exception){
+        } catch (e: Exception) {
             Log.e("Error Autoguardado Correcion Sexo", "Error al guardar: ${e.message}", e)
         }
     }
 
-    fun cargarBorradorExistente(){
+    fun cargarBorradorPorId(id: String) {
         try {
-            val borradores = sharedPreferencesManager.obtenerBorradores()
+            val borrador = sharedPreferencesManager.obtenerBorradores()
+                .find { it.id == id } ?: return
+            borradorSesionId = borrador.id
+            val datos: Map<String, Any?> = Gson().fromJson(
+                borrador.datos,
+                object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
+            )
+            _identificadorCorreccionSexo.value = datos["identificador"] as? String ?: ""
+            _sexoCorreccionSeleccionado.value = datos["sexoSeleccionado"] as? String ?: ""
+            codigoSexo = datos["codigoSexo"] as? String ?: ""
+            Log.d("CorrecionSexoVM", "Borrador cargado por ID: $id")
+        } catch (e: Exception) {
+            Log.e("CorrecionSexoVM", "Error al cargar borrador por ID: ${e.message}", e)
+        }
+    }
 
-            val borradoresCorreccionSexo = borradores.filter {
-                it.tipo == "CORRECCION_SEXO" && it.estado == "BORRADOR_AUTO"
-            }
-
+    fun cargarBorradorExistente() {
+        try {
+            val borradoresCorreccionSexo = sharedPreferencesManager.obtenerBorradores()
+                .filter { it.tipo == "CORRECCION_SEXO" && it.estado == "BORRADOR_AUTO" }
             if (borradoresCorreccionSexo.isNotEmpty()) {
                 val borradorCorreccionSexo = borradoresCorreccionSexo.maxByOrNull {
                     it.id.substringAfter("correccion_sexo_auto_").toLongOrNull() ?: 0L
                 }
-
                 if (borradorCorreccionSexo != null) {
                     borradorSesionId = borradorCorreccionSexo.id
-
-                    val gson = Gson()
-                    val datos: Map<String, Any?> = gson.fromJson(
+                    val datos: Map<String, Any?> = Gson().fromJson(
                         borradorCorreccionSexo.datos,
                         object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
                     )
-
                     _identificadorCorreccionSexo.value = datos["identificador"] as? String ?: ""
                     _sexoCorreccionSeleccionado.value = datos["sexoSeleccionado"] as? String ?: ""
                     codigoSexo = datos["codigoSexo"] as? String ?: ""
-
                     Log.d("Cargar Borrador", "Borrador cargado: $borradorSesionId")
                 }
             }
@@ -222,7 +176,7 @@ class CorrecionSexoViewModel(application: Application): AndroidViewModel(applica
         }
     }
 
-    fun eliminarBorradorAutomatico(){
+    fun eliminarBorradorAutomatico() {
         try {
             if (borradorSesionId.isNotEmpty()) {
                 sharedPreferencesManager.eliminarBorrador(borradorSesionId)
@@ -268,9 +222,7 @@ class CorrecionSexoViewModel(application: Application): AndroidViewModel(applica
     val listaSexos = listOf("Macho", "Hembra")
     private var codigoSexo = ""
 
-    fun actualizarIdentificadorCorreccionSexo(nuevoId: String) {
-        _identificadorCorreccionSexo.value = nuevoId
-    }
+    fun actualizarIdentificadorCorreccionSexo(nuevoId: String) { _identificadorCorreccionSexo.value = nuevoId }
 
     fun seleccionarSexoCorreccion(sexo: String, codigo: String) {
         _sexoCorreccionSeleccionado.value = sexo
@@ -278,34 +230,25 @@ class CorrecionSexoViewModel(application: Application): AndroidViewModel(applica
         _sexoCorreccionExpandido.value = false
     }
 
-    fun toggleSexoCorreccionExpandido() {
-        _sexoCorreccionExpandido.value = !(_sexoCorreccionExpandido.value ?: false)
-    }
-
-    fun cerrarSexoCorreccionMenu() {
-        _sexoCorreccionExpandido.value = false
-    }
+    fun toggleSexoCorreccionExpandido() { _sexoCorreccionExpandido.value = !(_sexoCorreccionExpandido.value ?: false) }
+    fun cerrarSexoCorreccionMenu() { _sexoCorreccionExpandido.value = false }
 
     fun esFormularioCorreccionSexoValido(): Boolean {
-        val identificadorValido = !_identificadorCorreccionSexo.value.isNullOrEmpty()
-        val sexoValido = !_sexoCorreccionSeleccionado.value.isNullOrEmpty()
-        return identificadorValido && sexoValido
+        return !_identificadorCorreccionSexo.value.isNullOrEmpty() &&
+                !_sexoCorreccionSeleccionado.value.isNullOrEmpty()
     }
 
     fun corregirSexoAnimal() {
         _codiError.value = null
-
         if (!esFormularioCorreccionSexoValido()) {
-            val mensajeError = when {
+            _codiError.value = when {
                 _identificadorCorreccionSexo.value.isNullOrEmpty() -> 12
                 _sexoCorreccionSeleccionado.value.isNullOrEmpty() -> 4
                 else -> 0
             }
-            _codiError.value = mensajeError
-            Log.e("Validación Corrección Sexo", "Formulario no válido: $mensajeError")
+            Log.e("Validación Corrección Sexo", "Formulario no válido: ${_codiError.value}")
             return
         }
-
         viewModelScope.launch {
             _estadoCarga.value = true
             try {
@@ -315,11 +258,8 @@ class CorrecionSexoViewModel(application: Application): AndroidViewModel(applica
                     passwordMobilitat = password,
                     sexe = codigoSexo
                 )
-
                 Log.d("Corrección Sexo", "Request: $request")
-
                 val response = repositorio.putMoficarAnimal(request)
-
                 withContext(Dispatchers.Main) {
                     _estadoCarga.value = false
                     when {
@@ -328,9 +268,7 @@ class CorrecionSexoViewModel(application: Application): AndroidViewModel(applica
                             if (body.codi == "0" || body.descripcio == "OK") {
                                 _correccionSexoExitosa.value = true
                                 _mensajeErrorCorreccionSexo.value = ""
-
                                 Log.d("Corrección Sexo", "Sexo corregido exitosamente")
-
                                 eliminarBorradorAutomatico()
                                 limpiarFormularioCorreccionSexo()
                             } else {
@@ -344,16 +282,13 @@ class CorrecionSexoViewModel(application: Application): AndroidViewModel(applica
                             if (errorBody != null) {
                                 try {
                                     val errorObj = Gson().fromJson(errorBody, RespuestaUnificada::class.java)
-                                    _mensajeErrorCorreccionSexo.value = errorObj.errors?.firstOrNull()?.descripcio
-                                        ?: "Error desconocido del servidor"
+                                    _mensajeErrorCorreccionSexo.value = errorObj.errors?.firstOrNull()?.descripcio ?: "Error desconocido del servidor"
                                 } catch (e: Exception) {
                                     _mensajeErrorCorreccionSexo.value = "Error al procesar respuesta"
                                 }
-                            }
-                            _correccionSexoExitosa.value = false
-                            if (errorBody != null) {
                                 Log.e("Error Corrección Sexo", "Body: $errorBody")
                             }
+                            _correccionSexoExitosa.value = false
                         }
                         else -> {
                             _correccionSexoExitosa.value = false
@@ -364,22 +299,19 @@ class CorrecionSexoViewModel(application: Application): AndroidViewModel(applica
                 }
             } catch (e: java.net.SocketTimeoutException) {
                 withContext(Dispatchers.Main) {
-                    _estadoCarga.value = false
-                    _correccionSexoExitosa.value = false
+                    _estadoCarga.value = false; _correccionSexoExitosa.value = false
                     _mensajeErrorCorreccionSexo.value = "Tiempo de espera agotado. La operación puede haberse completado, por favor verifique."
                     Log.e("Error Corrección Sexo", "Timeout: ${e.message}", e)
                 }
             } catch (e: java.io.IOException) {
                 withContext(Dispatchers.Main) {
-                    _estadoCarga.value = false
-                    _correccionSexoExitosa.value = false
+                    _estadoCarga.value = false; _correccionSexoExitosa.value = false
                     _mensajeErrorCorreccionSexo.value = "Error de conexión. Verifique su conexión a internet."
                     Log.e("Error Corrección Sexo", "Error de red: ${e.message}", e)
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    _estadoCarga.value = false
-                    _correccionSexoExitosa.value = false
+                    _estadoCarga.value = false; _correccionSexoExitosa.value = false
                     _mensajeErrorCorreccionSexo.value = "Error inesperado: ${e.message ?: "Error desconocido"}"
                     Log.e("Error Corrección Sexo", "Error general: ${e.message}", e)
                     e.printStackTrace()

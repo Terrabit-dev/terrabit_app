@@ -20,6 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.data.network.lista_bovinos.Animal
@@ -29,7 +30,8 @@ import com.example.terrabit_app.viewmodel.ListarBovinosViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ListarBovinos(navController: NavController, viewModel: ListarBovinosViewModel) {
+fun ListarBovinos(navController: NavController) {
+    val viewModel = hiltViewModel<ListarBovinosViewModel>()
     val listaFiltrada by viewModel.listaFiltrada.observeAsState(emptyList())
     val cargando by viewModel.cargando.observeAsState(false)
     val refrescando by viewModel.refrescando.observeAsState(false)
@@ -43,13 +45,7 @@ fun ListarBovinos(navController: NavController, viewModel: ListarBovinosViewMode
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        stringResource(R.string.list_bovinos_title),
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                },
+                title = { Text(stringResource(R.string.list_bovinos_title), fontSize = 20.sp, fontWeight = FontWeight.SemiBold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigate(Routes.HomeBovinos.route) }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
@@ -70,9 +66,7 @@ fun ListarBovinos(navController: NavController, viewModel: ListarBovinosViewMode
                 .padding(padding)
         ) {
             Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                 shape = RoundedCornerShape(12.dp)
@@ -80,22 +74,9 @@ fun ListarBovinos(navController: NavController, viewModel: ListarBovinosViewMode
                 OutlinedTextField(
                     value = busqueda,
                     onValueChange = { viewModel.actualizarBusqueda(it) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    placeholder = {
-                        Text(
-                            stringResource(R.string.search_bar_list_bovinos),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    },
-                    leadingIcon = {
-                        Icon(
-                            Icons.Default.Search,
-                            contentDescription = "Buscar",
-                            tint = MainGreen
-                        )
-                    },
+                    modifier = Modifier.fillMaxWidth().padding(8.dp),
+                    placeholder = { Text(stringResource(R.string.search_bar_list_bovinos), color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar", tint = MainGreen) },
                     singleLine = true,
                     shape = RoundedCornerShape(8.dp),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -117,42 +98,25 @@ fun ListarBovinos(navController: NavController, viewModel: ListarBovinosViewMode
             ) {
                 when {
                     cargando -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             CircularProgressIndicator(color = MainGreen)
                         }
                     }
                     error != null -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(
-                                    text = error ?: stringResource(R.string.error_loading_list_bovinos),
-                                    color = MaterialTheme.colorScheme.error,
-                                    fontSize = 16.sp
-                                )
+                                Text(text = error ?: stringResource(R.string.error_loading_list_bovinos), color = MaterialTheme.colorScheme.error, fontSize = 16.sp)
                                 Spacer(modifier = Modifier.height(16.dp))
-                                Button(
-                                    onClick = { viewModel.cargarBovinos() },
-                                    colors = ButtonDefaults.buttonColors(containerColor = MainGreen)
-                                ) {
+                                Button(onClick = { viewModel.cargarBovinos() }, colors = ButtonDefaults.buttonColors(containerColor = MainGreen)) {
                                     Text(stringResource(R.string.retry_loading_list_bovinos))
                                 }
                             }
                         }
                     }
                     listaFiltrada.isEmpty() -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             Text(
-                                text = if (busqueda.isEmpty()) stringResource(R.string.empty_list_bovinos)
-                                else "No se encontraron resultados",
+                                text = if (busqueda.isEmpty()) stringResource(R.string.empty_list_bovinos) else "No se encontraron resultados",
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 16.sp
                             )
@@ -164,9 +128,7 @@ fun ListarBovinos(navController: NavController, viewModel: ListarBovinosViewMode
                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            items(listaFiltrada) { animal ->
-                                TarjetaBovino(animal)
-                            }
+                            items(listaFiltrada) { animal -> TarjetaBovino(animal) }
                         }
                     }
                 }
@@ -184,22 +146,11 @@ fun TarjetaBovino(animal: Animal) {
         shape = RoundedCornerShape(12.dp)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(
-                text = animal.identificador,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
+            Text(text = animal.identificador, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 InfoItem(
                     label = stringResource(R.string.card_info_sex),
                     value = when (animal.sexe) {
@@ -208,19 +159,11 @@ fun TarjetaBovino(animal: Animal) {
                         else -> animal.sexe
                     }
                 )
-                InfoItem(
-                    label = stringResource(R.string.card_info_date_born),
-                    value = formatearFecha(animal.dataNaixement)
-                )
+                InfoItem(label = stringResource(R.string.card_info_date_born), value = formatearFecha(animal.dataNaixement))
             }
-
             if (!animal.identificadorMare.isNullOrEmpty()) {
                 HorizontalDivider(color = MaterialTheme.colorScheme.outline, thickness = 1.dp)
-                Text(
-                    text = "${stringResource(R.string.card_info_mom)} ${animal.identificadorMare}",
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Text(text = "${stringResource(R.string.card_info_mom)} ${animal.identificadorMare}", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }
@@ -229,18 +172,8 @@ fun TarjetaBovino(animal: Animal) {
 @Composable
 fun InfoItem(label: String, value: String) {
     Column {
-        Text(
-            text = label,
-            fontSize = 12.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontWeight = FontWeight.Medium
-        )
-        Text(
-            text = value,
-            fontSize = 14.sp,
-            color = MaterialTheme.colorScheme.onSurface,
-            fontWeight = FontWeight.SemiBold
-        )
+        Text(text = label, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Medium)
+        Text(text = value, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold)
     }
 }
 
@@ -252,10 +185,6 @@ fun formatearFecha(fecha: String): String {
             val mes = fecha.substring(4, 6)
             val anio = fecha.substring(0, 4)
             "$dia/$mes/$anio"
-        } else {
-            fecha
-        }
-    } catch (e: Exception) {
-        fecha
-    }
+        } else fecha
+    } catch (e: Exception) { fecha }
 }

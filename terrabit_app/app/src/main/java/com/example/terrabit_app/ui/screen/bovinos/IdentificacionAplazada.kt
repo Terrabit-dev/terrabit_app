@@ -20,10 +20,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
@@ -38,7 +38,7 @@ import com.example.terrabit_app.viewmodel.IdentificacionAplazaViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun IdentificacionApalzada(navController: NavController, bluetoothViewModel: BluetoothViewModel, borradorId: String = "") {
-    val viewModel = viewModel<IdentificacionAplazaViewModel>()
+    val viewModel = hiltViewModel<IdentificacionAplazaViewModel>()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -71,10 +71,8 @@ fun IdentificacionApalzada(navController: NavController, bluetoothViewModel: Blu
     }
 
     LaunchedEffect(Unit) {
-        viewModel.inicializarSharedPreferences(context)
         if (borradorId.isNotEmpty()) {
             viewModel.cargarBorradorPorId(borradorId)
-            return@LaunchedEffect
         }
     }
 

@@ -85,8 +85,7 @@ fun NavigationDrawer(
 
         // Listado de Bovinos
         composable(Routes.ListarBovinos.route) {
-            val viewmodel: ListarBovinosViewModel = viewModel()
-            ListarBovinos(navController = navController, viewmodel)
+            ListarBovinos(navController)
         }
 
         // Gestión de Bovinos
