@@ -165,7 +165,7 @@ fun HeaderBorradores(
                         onClick = { expandedConfig = true },
                         modifier = Modifier.size(40.dp).background(color = Color.White.copy(alpha = 0.2f), shape = CircleShape)
                     ) {
-                        Icon(Icons.Default.Settings, contentDescription = "Configuración", tint = Color.White)
+                        Icon(Icons.Default.Language, contentDescription = "Language", tint = Color.White)
                     }
                     DropdownMenu(
                         expanded = expandedConfig,

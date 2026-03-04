@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
@@ -90,8 +91,8 @@ fun ConfigurationScreen(
                                 )
                         ) {
                             Icon(
-                                Icons.Default.Settings,
-                                contentDescription = "Idioma",
+                                Icons.Default.Language,
+                                contentDescription = "Language",
                                 tint = Color.White
                             )
                         }
