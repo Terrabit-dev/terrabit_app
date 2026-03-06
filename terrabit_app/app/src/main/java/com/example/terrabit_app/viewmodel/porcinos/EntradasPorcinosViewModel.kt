@@ -1,10 +1,13 @@
 package com.example.terrabit_app.viewmodel.porcinos
 
+import android.app.Application
 import android.content.Context
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.network.DataClassPorcinos.ConfirmarMovimientosRequest
 import com.example.terrabit_app.data.network.DataClassPorcinos.MovimentPteDetail
@@ -20,18 +23,16 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
-class EntradasPorcinosViewModel(
-    context: Context
-) : ViewModel() {
+class EntradasPorcinosViewModel(application: Application): AndroidViewModel(application){
     private val _uiState = MutableStateFlow(EntradasPorcinosUiState())
     val uiState : StateFlow<EntradasPorcinosUiState> = _uiState.asStateFlow()
 
-    private val repositorio = Repositorio(context)
+    private val repositorio = Repositorio(application)
 
     private lateinit var userPreferences: UserPreferences
 
-    fun inicializarUserPreferences(context: Context) {
-        userPreferences = UserPreferences(context)
+    fun inicializarUserPreferences(application: Context) {
+        userPreferences = UserPreferences(application)
 
         cargarGuiasPendientes()
     }

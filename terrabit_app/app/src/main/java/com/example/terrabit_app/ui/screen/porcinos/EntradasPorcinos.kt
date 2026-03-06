@@ -55,9 +55,10 @@ import java.time.format.DateTimeFormatter
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EntradasPorcinos(
-    navController: NavController,
-    viewModelEntradasGuias: EntradasPorcinosViewModel = viewModel(),
+    navController: NavController
 ) {
+
+    val viewModelEntradasGuias = viewModel<EntradasPorcinosViewModel>()
     val uiState by viewModelEntradasGuias.uiState.collectAsState()
     val context = LocalContext.current
 

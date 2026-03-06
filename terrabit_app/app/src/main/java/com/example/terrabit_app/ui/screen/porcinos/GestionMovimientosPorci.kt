@@ -1,4 +1,5 @@
 package com.example.terrabit_app.ui.screen.porcinos
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -37,13 +38,13 @@ import com.example.terrabit_app.ui.theme.WhiteBackground
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PorcinosGestionGuias(navController: NavController) {
+fun GestionMovimientosPorci(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        "Gestion de Guias Porcinos",
+                        "Gestion de Movimientos Porcinos",
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
@@ -113,6 +114,7 @@ fun PorcinosGestionGuias(navController: NavController) {
                         onClick = { navController.navigate(Routes.EditarGuiaPorcinos.route) }
                     )
                 }
+
             }
 
             Spacer(modifier = Modifier.height(24.dp))
