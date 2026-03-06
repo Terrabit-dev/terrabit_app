@@ -99,6 +99,18 @@ class BorradorViewModel @Inject constructor(
         }
     }
 
+    fun eliminarBorradores(ids: Set<String>) {
+        viewModelScope.launch {
+            try {
+                ids.forEach { sharedPreferencesManager.eliminarBorrador(it) }
+                cargarBorradores()
+                Log.d("Borrador", "Eliminados ${ids.size} borradores")
+            } catch (e: Exception) {
+                Log.e("Error Borrador", "Error al eliminar seleccionados: ${e.message}", e)
+            }
+        }
+    }
+
     fun seleccionarBorradorParaEditar(id: String) { _borradorIdParaEditar.value = id }
     fun limpiarBorradorParaEditar() { _borradorIdParaEditar.value = null }
 

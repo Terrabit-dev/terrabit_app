@@ -1,7 +1,10 @@
 package com.example.terrabit_app.ui.pantallas
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -16,7 +19,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -46,8 +48,11 @@ fun BorradoresScreen(
     val textoBusqueda by viewModel.textoBusqueda.observeAsState("")
 
     var mostrarDialogoEliminarTodos by remember { mutableStateOf(false) }
+    var mostrarDialogoEliminarSeleccion by remember { mutableStateOf(false) }
+    var selectedIds by remember { mutableStateOf<Set<String>>(emptySet()) }
+    val enModoSeleccion = selectedIds.isNotEmpty()
+
     val scope = rememberCoroutineScope()
-    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         viewModel.cargarBorradores()
@@ -57,40 +62,66 @@ fun BorradoresScreen(
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(padding),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
             verticalArrangement = Arrangement.spacedBy(0.dp)
         ) {
             item {
                 HeaderBorradores(
                     totalBorradores = borradores.size,
-                    onMenuClick = onMenuClick,
-                    onEliminarTodos = { mostrarDialogoEliminarTodos = true }
+                    onMenuClick = if (enModoSeleccion) {
+                        { selectedIds = emptySet() }
+                    } else {
+                        onMenuClick
+                    },
+                    onEliminarTodos = { mostrarDialogoEliminarTodos = true },
+                    enModoSeleccion = enModoSeleccion,
+                    totalSeleccionados = selectedIds.size,
+                    onEliminarSeleccionados = { mostrarDialogoEliminarSeleccion = true }
                 )
             }
 
             item {
                 Spacer(modifier = Modifier.height(24.dp))
-                BarraBusqueda(texto = textoBusqueda, onTextoChange = { viewModel.actualizarBusqueda(it) })
+                BarraBusqueda(
+                    texto = textoBusqueda,
+                    onTextoChange = { viewModel.actualizarBusqueda(it) }
+                )
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
             if (borradoresFiltered.isEmpty()) {
                 item {
                     Box(
-                        modifier = Modifier.fillMaxWidth().padding(20.dp).padding(top = 48.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp)
+                            .padding(top = 48.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(Icons.Default.Description, contentDescription = null, modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Icon(
+                                Icons.Default.Description,
+                                contentDescription = null,
+                                modifier = Modifier.size(64.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                             Spacer(modifier = Modifier.height(16.dp))
-                            Text(stringResource(R.string.no_results_description_draft), fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(
+                                stringResource(R.string.no_results_description_draft),
+                                fontSize = 16.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                     }
                 }
             } else {
-                items(borradoresFiltered) { borrador ->
+                items(borradoresFiltered, key = { it.id }) { borrador ->
                     TarjetaBorrador(
                         borrador = borrador,
+                        enModoSeleccion = enModoSeleccion,
+                        estaSeleccionado = borrador.id in selectedIds,
                         onEliminarClick = { viewModel.eliminarBorrador(borrador.id) },
                         onEditarClick = {
                             navController.navigate(
@@ -104,6 +135,13 @@ fun BorradoresScreen(
                                     else -> return@TarjetaBorrador
                                 }
                             )
+                        },
+                        onToggleSeleccion = {
+                            selectedIds = if (borrador.id in selectedIds) {
+                                selectedIds - borrador.id
+                            } else {
+                                selectedIds + borrador.id
+                            }
                         },
                         modifier = Modifier.padding(horizontal = 20.dp)
                     )
@@ -122,10 +160,23 @@ fun BorradoresScreen(
         onConfirmar = {
             scope.launch {
                 viewModel.eliminarTodosBorradores()
+                selectedIds = emptySet()
                 mostrarDialogoEliminarTodos = false
             }
         },
         onCancelar = { mostrarDialogoEliminarTodos = false }
+    )
+
+    DialogoConfirmacion(
+        mostrar = mostrarDialogoEliminarSeleccion,
+        titulo = "Eliminar seleccionados",
+        mensaje = "¿Eliminar ${selectedIds.size} borrador${if (selectedIds.size > 1) "es" else ""}?",
+        onConfirmar = {
+            viewModel.eliminarBorradores(selectedIds)
+            selectedIds = emptySet()
+            mostrarDialogoEliminarSeleccion = false
+        },
+        onCancelar = { mostrarDialogoEliminarSeleccion = false }
     )
 }
 
@@ -133,7 +184,10 @@ fun BorradoresScreen(
 fun HeaderBorradores(
     totalBorradores: Int,
     onMenuClick: () -> Unit,
-    onEliminarTodos: () -> Unit
+    onEliminarTodos: () -> Unit,
+    enModoSeleccion: Boolean = false,
+    totalSeleccionados: Int = 0,
+    onEliminarSeleccionados: () -> Unit = {}
 ) {
     var expandedConfig by remember { mutableStateOf(false) }
     var expandedOpciones by remember { mutableStateOf(false) }
@@ -146,7 +200,9 @@ fun HeaderBorradores(
             .background(color = MainGreen)
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(20.dp)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(20.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -155,15 +211,23 @@ fun HeaderBorradores(
             ) {
                 IconButton(
                     onClick = onMenuClick,
-                    modifier = Modifier.size(40.dp).background(color = Color.White.copy(alpha = 0.2f), shape = CircleShape)
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(color = Color.White.copy(alpha = 0.2f), shape = CircleShape)
                 ) {
-                    Icon(Icons.Default.Menu, contentDescription = "Menú", tint = Color.White)
+                    Icon(
+                        imageVector = if (enModoSeleccion) Icons.Default.Close else Icons.Default.Menu,
+                        contentDescription = if (enModoSeleccion) "Cancelar selección" else "Menú",
+                        tint = Color.White
+                    )
                 }
 
                 Box(contentAlignment = Alignment.Center) {
                     IconButton(
                         onClick = { expandedConfig = true },
-                        modifier = Modifier.size(40.dp).background(color = Color.White.copy(alpha = 0.2f), shape = CircleShape)
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(color = Color.White.copy(alpha = 0.2f), shape = CircleShape)
                     ) {
                         Icon(Icons.Default.Language, contentDescription = "Language", tint = Color.White)
                     }
@@ -186,7 +250,15 @@ fun HeaderBorradores(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Text(stringResource(R.string.title_draft), fontSize = 32.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Text(
+                text = if (enModoSeleccion)
+                    "$totalSeleccionados seleccionado${if (totalSeleccionados > 1) "s" else ""}"
+                else
+                    stringResource(R.string.title_draft),
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -203,34 +275,80 @@ fun HeaderBorradores(
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Default.Description, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                        Icon(
+                            Icons.Default.Description,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(16.dp)
+                        )
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("$totalBorradores ${stringResource(R.string.counter_draft)}", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color.White)
+                        Text(
+                            "$totalBorradores ${stringResource(R.string.counter_draft)}",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.White
+                        )
                     }
                 }
 
-                Box {
-                    IconButton(
-                        onClick = { expandedOpciones = true },
-                        modifier = Modifier.size(32.dp).background(color = Color.White.copy(alpha = 0.2f), shape = CircleShape)
-                    ) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "Opciones", tint = Color.White, modifier = Modifier.size(20.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    if (enModoSeleccion) {
+                        IconButton(
+                            onClick = onEliminarSeleccionados,
+                            modifier = Modifier
+                                .size(32.dp)
+                                .background(color = Color.White.copy(alpha = 0.2f), shape = CircleShape)
+                        ) {
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = "Eliminar seleccionados",
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     }
-                    DropdownMenu(
-                        expanded = expandedOpciones,
-                        onDismissRequest = { expandedOpciones = false },
-                        modifier = Modifier.background(MaterialTheme.colorScheme.surface)
-                    ) {
-                        DropdownMenuItem(
-                            text = {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(20.dp), tint = ErrorRed)
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Text(stringResource(R.string.delete_all_option), color = ErrorRed)
-                                }
-                            },
-                            onClick = { expandedOpciones = false; onEliminarTodos() }
-                        )
+
+                    Spacer(modifier = Modifier.width(10.dp))
+
+
+                    Box {
+                        IconButton(
+                            onClick = { expandedOpciones = true },
+                            modifier = Modifier
+                                .size(32.dp)
+                                .background(color = Color.White.copy(alpha = 0.2f), shape = CircleShape)
+                        ) {
+                            Icon(
+                                Icons.Default.MoreVert,
+                                contentDescription = "Opciones",
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = expandedOpciones,
+                            onDismissRequest = { expandedOpciones = false },
+                            modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+                        ) {
+                            DropdownMenuItem(
+                                text = {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            Icons.Default.Delete,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(20.dp),
+                                            tint = ErrorRed
+                                        )
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Text(stringResource(R.string.delete_all_option), color = ErrorRed)
+                                    }
+                                },
+                                onClick = { expandedOpciones = false; onEliminarTodos() }
+                            )
+                        }
                     }
                 }
             }
@@ -275,9 +393,18 @@ fun BarraBusqueda(
     OutlinedTextField(
         value = texto,
         onValueChange = onTextoChange,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
-        placeholder = { Text(stringResource(R.string.search_bar_text), color = MaterialTheme.colorScheme.onSurfaceVariant) },
-        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp),
+        placeholder = {
+            Text(
+                stringResource(R.string.search_bar_text),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        },
+        leadingIcon = {
+            Icon(Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        },
         trailingIcon = {
             if (texto.isNotEmpty()) {
                 IconButton(onClick = { onTextoChange("") }) {
@@ -298,14 +425,24 @@ fun BarraBusqueda(
     )
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TarjetaBorrador(
     borrador: Borrador,
+    enModoSeleccion: Boolean,
+    estaSeleccionado: Boolean,
     onEliminarClick: () -> Unit,
     onEditarClick: () -> Unit,
+    onToggleSeleccion: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var mostrarMenu by remember { mutableStateOf(false) }
+
+    val cardColor by animateColorAsState(
+        targetValue = MaterialTheme.colorScheme.surface,
+        animationSpec = tween(200),
+        label = "cardColor"
+    )
 
     @Composable
     fun obtenerNombreTipo(tipo: String): String = when (tipo) {
@@ -327,135 +464,201 @@ fun TarjetaBorrador(
     }
 
     Card(
-        modifier = modifier.fillMaxWidth().height(96.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
-        shape = RoundedCornerShape(16.dp)
+        modifier = modifier
+            .fillMaxWidth()
+            .height(96.dp)
+            .combinedClickable(
+                onClick = { if (enModoSeleccion) onToggleSeleccion() },
+                onLongClick = onToggleSeleccion
+            ),
+        colors = CardDefaults.cardColors(containerColor = cardColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (estaSeleccionado) 0.dp else 3.dp),
+        shape = RoundedCornerShape(24.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxSize().padding(16.dp),
+            modifier = Modifier.fillMaxSize(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = when (borrador.tipo) {
-                    "MUERTE" -> ErrorRed.copy(alpha = 0.15f)
-                    "MATERIAL" -> MainGreen.copy(alpha = 0.15f)
-                    "NACIMIENTO" -> MainGreen.copy(alpha = 0.15f)
-                    "CORRECCION_SEXO" -> Blue.copy(alpha = 0.15f)
-                    "IDENTIFICACION_APLAZADA" -> MainGreen.copy(alpha = 0.15f)
-                    else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.15f)
-                },
-                modifier = Modifier.size(56.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                    Icon(
-                        imageVector = when (borrador.tipo) {
-                            "MUERTE" -> Icons.Default.Clear
-                            "MATERIAL" -> Icons.Default.ShoppingCart
-                            "NACIMIENTO" -> Icons.Default.Add
-                            "CORRECCION_SEXO" -> Icons.Default.Edit
-                            "IDENTIFICACION_APLAZADA" -> Icons.Default.Badge
-                            else -> Icons.Default.Description
-                        },
-                        contentDescription = null,
-                        tint = when (borrador.tipo) {
-                            "MUERTE" -> ErrorRed
-                            "MATERIAL" -> MainGreen
-                            "NACIMIENTO" -> MainGreen
-                            "CORRECCION_SEXO" -> Blue
-                            "IDENTIFICACION_APLAZADA" -> MainGreen
-                            else -> MaterialTheme.colorScheme.onSurfaceVariant
-                        },
-                        modifier = Modifier.size(28.dp)
-                    )
-                }
+            // Barra lateral de selección
+            if (estaSeleccionado) {
+                Box(
+                    modifier = Modifier
+                        .width(4.dp)
+                        .fillMaxHeight()
+                        .padding(vertical = 12.dp)
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(MainGreen)
+                )
+            } else {
+                Spacer(modifier = Modifier.width(4.dp))
             }
 
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Column(
-                modifier = Modifier.weight(1f).fillMaxHeight(),
-                verticalArrangement = Arrangement.Center
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 12.dp, vertical = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = if (estaSeleccionado) MainGreen.copy(alpha = 0.15f) else when (borrador.tipo) {
+                        "MUERTE" -> ErrorRed.copy(alpha = 0.15f)
+                        "MATERIAL" -> MainGreen.copy(alpha = 0.15f)
+                        "NACIMIENTO" -> MainGreen.copy(alpha = 0.15f)
+                        "CORRECCION_SEXO" -> Blue.copy(alpha = 0.15f)
+                        "IDENTIFICACION_APLAZADA" -> MainGreen.copy(alpha = 0.15f)
+                        else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.15f)
+                    },
+                    modifier = Modifier.size(56.dp)
                 ) {
-                    Text(
-                        obtenerNombreTipo(borrador.tipo),
-                        fontSize = 17.sp, fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.2.sp,
-                        maxLines = 1, overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f, fill = false)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Surface(
-                        color = when (borrador.estado) {
-                            "ENVIANDO" -> MainOrange.copy(alpha = 0.15f)
-                            "ERROR" -> ErrorRed.copy(alpha = 0.15f)
-                            "BORRADOR_AUTO" -> MainGreen.copy(alpha = 0.15f)
-                            else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.15f)
-                        },
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text(
-                            obtenerEstadoLegible(borrador.estado),
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            fontSize = 11.sp, fontWeight = FontWeight.Medium, maxLines = 1,
-                            color = when (borrador.estado) {
-                                "ENVIANDO" -> MainOrange
-                                "ERROR" -> ErrorRed
-                                "BORRADOR_AUTO" -> MainGreen
+                    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                        Icon(
+                            imageVector = if (estaSeleccionado) Icons.Default.CheckCircle else when (borrador.tipo) {
+                                "MUERTE" -> Icons.Default.Clear
+                                "MATERIAL" -> Icons.Default.ShoppingCart
+                                "NACIMIENTO" -> Icons.Default.Add
+                                "CORRECCION_SEXO" -> Icons.Default.Edit
+                                "IDENTIFICACION_APLAZADA" -> Icons.Default.Badge
+                                else -> Icons.Default.Description
+                            },
+                            contentDescription = null,
+                            tint = if (estaSeleccionado) MainGreen else when (borrador.tipo) {
+                                "MUERTE" -> ErrorRed
+                                "MATERIAL" -> MainGreen
+                                "NACIMIENTO" -> MainGreen
+                                "CORRECCION_SEXO" -> Blue
+                                "IDENTIFICACION_APLAZADA" -> MainGreen
                                 else -> MaterialTheme.colorScheme.onSurfaceVariant
-                            }
+                            },
+                            modifier = Modifier.size(28.dp)
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.width(16.dp))
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.CalendarToday, contentDescription = null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(borrador.fecha, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Icon(Icons.Default.AccessTime, contentDescription = null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(borrador.hora ?: stringResource(R.string.no_hour_value), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                }
-            }
-
-            Box {
-                IconButton(onClick = { mostrarMenu = true }, modifier = Modifier.size(40.dp)) {
-                    Icon(Icons.Default.MoreVert, contentDescription = "Opciones", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
-                }
-                DropdownMenu(
-                    expanded = mostrarMenu,
-                    onDismissRequest = { mostrarMenu = false },
-                    modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
+                    verticalArrangement = Arrangement.Center
                 ) {
-                    DropdownMenuItem(
-                        text = {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(20.dp), tint = Blue)
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Text(stringResource(R.string.edit_button_individual_card), color = Blue)
-                            }
-                        },
-                        onClick = { mostrarMenu = false; onEditarClick() }
-                    )
-                    DropdownMenuItem(
-                        text = {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(20.dp), tint = ErrorRed)
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Text(stringResource(R.string.delete_button_individual_card), color = ErrorRed)
-                            }
-                        },
-                        onClick = { mostrarMenu = false; onEliminarClick() }
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            obtenerNombreTipo(borrador.tipo),
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            letterSpacing = 0.2.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f, fill = false)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Surface(
+                            color = when (borrador.estado) {
+                                "ENVIANDO" -> MainOrange.copy(alpha = 0.15f)
+                                "ERROR" -> ErrorRed.copy(alpha = 0.15f)
+                                "BORRADOR_AUTO" -> MainGreen.copy(alpha = 0.15f)
+                                else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.15f)
+                            },
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text(
+                                obtenerEstadoLegible(borrador.estado),
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Medium,
+                                maxLines = 1,
+                                color = when (borrador.estado) {
+                                    "ENVIANDO" -> MainOrange
+                                    "ERROR" -> ErrorRed
+                                    "BORRADOR_AUTO" -> MainGreen
+                                    else -> MaterialTheme.colorScheme.onSurfaceVariant
+                                }
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Default.CalendarToday,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            borrador.fecha,
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(
+                            Icons.Default.AccessTime,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            borrador.hora ?: stringResource(R.string.no_hour_value),
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+
+                if (!enModoSeleccion) {
+                    Box {
+                        IconButton(
+                            onClick = { mostrarMenu = true },
+                            modifier = Modifier.size(40.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.MoreVert,
+                                contentDescription = "Opciones",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = mostrarMenu,
+                            onDismissRequest = { mostrarMenu = false },
+                            modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+                        ) {
+                            DropdownMenuItem(
+                                text = {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(20.dp), tint = Blue)
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Text(stringResource(R.string.edit_button_individual_card), color = Blue)
+                                    }
+                                },
+                                onClick = { mostrarMenu = false; onEditarClick() }
+                            )
+                            DropdownMenuItem(
+                                text = {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(20.dp), tint = ErrorRed)
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Text(stringResource(R.string.delete_button_individual_card), color = ErrorRed)
+                                    }
+                                },
+                                onClick = { mostrarMenu = false; onEliminarClick() }
+                            )
+                        }
+                    }
                 }
             }
         }
