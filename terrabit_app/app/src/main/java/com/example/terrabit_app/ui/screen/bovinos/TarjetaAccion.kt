@@ -1,24 +1,9 @@
 package com.example.terrabit_app.ui.components
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Badge
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,8 +13,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.terrabit_app.ui.theme.BlueGrey
-import com.example.terrabit_app.ui.theme.DarkBlueGrey
 import com.example.terrabit_app.ui.theme.ErrorRed
 
 @Composable
@@ -47,7 +30,7 @@ fun TarjetaAccion(
             .aspectRatio(1f)
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 3.dp,
@@ -66,7 +49,6 @@ fun TarjetaAccion(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                // Icono con badge
                 Box(contentAlignment = Alignment.TopEnd) {
                     Surface(
                         shape = RoundedCornerShape(16.dp),
@@ -83,13 +65,10 @@ fun TarjetaAccion(
                                 .padding(18.dp)
                         )
                     }
-
-                    // Badge de notificación
                     if (contadorBadge != null) {
                         Badge(
                             containerColor = ErrorRed,
-                            modifier = Modifier
-                                .offset(x = 6.dp, y = (-6).dp)
+                            modifier = Modifier.offset(x = 6.dp, y = (-6).dp)
                         ) {
                             Text(
                                 contadorBadge.toString(),
@@ -103,12 +82,11 @@ fun TarjetaAccion(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Título
                 Text(
                     titulo,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 15.sp,
-                    color = DarkBlueGrey,
+                    color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center,
                     lineHeight = 20.sp,
                     letterSpacing = 0.2.sp,
@@ -120,7 +98,7 @@ fun TarjetaAccion(
                     Text(
                         subtitulo,
                         fontSize = 13.sp,
-                        color = BlueGrey,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
                         fontWeight = FontWeight.Normal,
                         letterSpacing = 0.1.sp

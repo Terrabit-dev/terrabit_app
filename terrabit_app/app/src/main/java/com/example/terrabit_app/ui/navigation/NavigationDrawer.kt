@@ -3,6 +3,7 @@ package com.example.terrabit_app.ui.navigation
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -22,7 +23,7 @@ import com.example.terrabit_app.ui.screen.bovinos.Home
 import com.example.terrabit_app.ui.screen.bovinos.IdentificacionApalzada
 import com.example.terrabit_app.ui.screen.bovinos.ListarBovinos
 import com.example.terrabit_app.ui.screen.bovinos.Material
-import com.example.terrabit_app.ui.screen.bovinos.MaterialDupplicadosScreen
+import com.example.terrabit_app.ui.screen.bovinos.MaterialDuplicadosScreen
 import com.example.terrabit_app.ui.screen.bovinos.Movimientos
 import com.example.terrabit_app.ui.screen.bovinos.Nacimiento
 import com.example.terrabit_app.ui.screen.porcinos.EditarGuiaPorcinos
@@ -36,6 +37,8 @@ import com.example.terrabit_app.viewmodel.DrawerViewModel
 import com.example.terrabit_app.viewmodel.IdentificacionAplazaViewModel
 import com.example.terrabit_app.viewmodel.ListarBovinosViewModel
 import com.example.terrabit_app.viewmodel.MaterialViewModel
+import com.example.terrabit_app.ui.screen.bovinos.ConfigurationScreen
+import com.example.terrabit_app.viewmodel.ConfigurationViewModel
 import com.example.terrabit_app.viewmodel.porcinos.EditarGuiaPorcinosViewModel
 import com.example.terrabit_app.viewmodel.porcinos.GestionarGuiasViewModel
 
@@ -45,7 +48,6 @@ fun NavigationDrawer(
     bluetooth : BluetoothViewModel,
     navController: NavHostController,
     onMenuClick: () -> Unit,
-    drawerViewModel: DrawerViewModel
 ) {
     NavHost(
         navController = navController,
@@ -66,17 +68,24 @@ fun NavigationDrawer(
         composable(Routes.HomePorcinos.route) {
             HomePorcinos(
                 navController = navController,
-                onMenuClick = onMenuClick,
+                onMenuClick = onMenuClick
             )
         }
 
         // Borradores - CON botón de menú
         composable("borradores") {
-            val borradorViewModel: BorradorViewModel = viewModel()
             BorradoresScreen(
-                viewModel = borradorViewModel,
+                viewModel = hiltViewModel(),
                 onMenuClick = onMenuClick,
                 navController = navController
+            )
+        }
+
+        // Configuracion
+        composable(Routes.Configuration.route) {
+            ConfigurationScreen(
+                onMenuClick = onMenuClick,
+                navController = navController,
             )
         }
 
@@ -85,8 +94,7 @@ fun NavigationDrawer(
 
         // Listado de Bovinos
         composable(Routes.ListarBovinos.route) {
-            val viewmodel: ListarBovinosViewModel = viewModel()
-            ListarBovinos(navController = navController, viewmodel)
+            ListarBovinos(navController)
         }
 
         // Gestión de Bovinos
@@ -163,12 +171,11 @@ fun NavigationDrawer(
         }
 
         composable(Routes.Material.route) {
-            val materialV: MaterialViewModel = viewModel()
-            Material(navController = navController, materialV)
+            Material(navController)
         }
 
         composable(Routes.MaterialDuplicado.route){
-            MaterialDupplicadosScreen(navController)
+            MaterialDuplicadosScreen(navController, bluetooth)
         }
 
         composable(
@@ -191,16 +198,13 @@ fun NavigationDrawer(
                 nullable = true
             })
         ) { backStackEntry ->
-            val identificacion: IdentificacionAplazaViewModel = viewModel()
             val borradorId = backStackEntry.arguments?.getString("borradorId") ?: ""
             IdentificacionApalzada(navController, bluetooth, borradorId)
         }
 
         // Pantallas Porcinos
         composable(Routes.GestionGuiasPorcinos.route) {
-            GestionGuiasPorcinos(
-                navController = navController
-            )
+            GestionGuiasPorcinos(navController = navController)
         }
 
         composable(Routes.EntradasPorcinos.route) {

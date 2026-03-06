@@ -1,10 +1,8 @@
 package com.example.terrabit_app.viewmodel
 
-import android.app.Application
-import android.content.Context
 import android.util.Log
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.Borrador
 import com.example.terrabit_app.data.SharedPreferencesManager
@@ -15,28 +13,32 @@ import com.example.terrabit_app.data.network.respuestas.RespuestaUnificada
 import com.example.terrabit_app.utils.DateUtils
 import com.example.terrabit_app.utils.UserPreferences
 import com.google.gson.Gson
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
+import javax.inject.Inject
 
-class IdentificacionAplazaViewModel (application: Application): AndroidViewModel(application) {
-
-    private var repositorio = Repositorio(application)
-    private lateinit var sharedPreferencesManager: SharedPreferencesManager
+@HiltViewModel
+class IdentificacionAplazaViewModel @Inject constructor(
+    private val repositorio: Repositorio,
+    private val userPreferences: UserPreferences,
+    private val sharedPreferencesManager: SharedPreferencesManager
+) : ViewModel() {
 
     private var borradorSesionId: String = ""
-
-    private val userPreferences = UserPreferences(application)
 
     val nif = userPreferences.getNif() ?: ""
     val password = userPreferences.getPassword() ?: ""
     val codiMo = userPreferences.getCodiMO() ?: ""
 
-    // ============================================
-    // ESTADOS PARA AUTOCOMPLETADO
-    // ============================================
+    init {
+        borradorSesionId = "identificacion_aplazada_auto_${System.currentTimeMillis()}"
+        cargarBovinosEnCache()
+    }
+
     private val _suggestionsBovinos = MutableLiveData<List<Animal>>(emptyList())
     val suggestionsBovinos = _suggestionsBovinos
 
@@ -46,24 +48,10 @@ class IdentificacionAplazaViewModel (application: Application): AndroidViewModel
     private val _bovinosCargados = MutableLiveData(false)
     val bovinosCargados = _bovinosCargados
 
-    fun inicializarSharedPreferences(context: Context) {
-        sharedPreferencesManager = SharedPreferencesManager(context)
-
-        if (borradorSesionId.isEmpty()) {
-            borradorSesionId = "identificacion_aplazada_auto_${System.currentTimeMillis()}"
-        }
-
-        cargarBovinosEnCache()
-    }
-
-    // ============================================
-    // FUNCIÓN PARA CARGAR BOVINOS EN CACHÉ
-    // ============================================
     private fun cargarBovinosEnCache() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 _isLoadingBovinos.postValue(true)
-
                 repositorio.getBovinosWithCache(
                     nif = nif,
                     password = password,
@@ -71,7 +59,6 @@ class IdentificacionAplazaViewModel (application: Application): AndroidViewModel
                     explotacio = codiMo,
                     forceRefresh = false
                 )
-
                 _bovinosCargados.postValue(true)
                 _isLoadingBovinos.postValue(false)
                 Log.d("IdentificacionAplazaVM", "Bovinos cargados en caché")
@@ -83,15 +70,11 @@ class IdentificacionAplazaViewModel (application: Application): AndroidViewModel
         }
     }
 
-    // ============================================
-    // FUNCIÓN PARA BUSCAR BOVINOS (AUTOCOMPLETADO)
-    // ============================================
     fun searchBovinos(query: String) {
         if (query.isBlank()) {
             _suggestionsBovinos.value = emptyList()
             return
         }
-
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val resultados = repositorio.searchBovinosLocal(query)
@@ -104,9 +87,6 @@ class IdentificacionAplazaViewModel (application: Application): AndroidViewModel
         }
     }
 
-    // ============================================
-    // FUNCIÓN AL SELECCIONAR BOVINO
-    // ============================================
     fun onBovinoSelected(animal: Animal) {
         _identificadorAnimal.value = animal.identificador
         _suggestionsBovinos.value = emptyList()
@@ -123,16 +103,13 @@ class IdentificacionAplazaViewModel (application: Application): AndroidViewModel
             Log.d("Autoguardado Identificación", "No hay contenido para guardar")
             return
         }
-
         try {
             val datosIdentificacion = mapOf(
                 "identificador" to _identificadorAnimal.value,
                 "fechaIdentificacion" to _fechaIdentificacion.value
             )
-
             val borradorExistente = sharedPreferencesManager.obtenerBorradores()
                 .find { it.id == borradorSesionId }
-
             val borrador = if (borradorExistente != null) {
                 borradorExistente.copy(
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
@@ -148,7 +125,6 @@ class IdentificacionAplazaViewModel (application: Application): AndroidViewModel
                     estado = "BORRADOR_AUTO"
                 )
             }
-
             sharedPreferencesManager.guardarBorrador(borrador)
             Log.d("Autoguardado Identificación", "Borrador guardado: $borradorSesionId")
         } catch (e: Exception) {
@@ -160,17 +136,13 @@ class IdentificacionAplazaViewModel (application: Application): AndroidViewModel
         try {
             val borrador = sharedPreferencesManager.obtenerBorradores()
                 .find { it.id == id } ?: return
-
             borradorSesionId = borrador.id
-
             val datos: Map<String, Any?> = Gson().fromJson(
                 borrador.datos,
                 object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
             )
-
             _identificadorAnimal.value = datos["identificador"] as? String ?: ""
             _fechaIdentificacion.value = datos["fechaIdentificacion"] as? String ?: ""
-
             Log.d("IdentificacionAplazaVM", "Borrador cargado por ID: $id")
         } catch (e: Exception) {
             Log.e("IdentificacionAplazaVM", "Error al cargar borrador por ID: ${e.message}", e)
@@ -220,65 +192,49 @@ class IdentificacionAplazaViewModel (application: Application): AndroidViewModel
     private val _estadoCarga = MutableLiveData(false)
     val estadoCarga = _estadoCarga
 
-    fun actualizarIdentificadorAnimal(nuevoId: String) {
-        _identificadorAnimal.value = nuevoId
-    }
-
-    fun mostrarDatePickerIdentificacion() {
-        _mostrarDatePickerIdentificacion.value = true
-    }
-
-    fun ocultarDatePickerIdentificacion() {
-        _mostrarDatePickerIdentificacion.value = false
-    }
+    fun actualizarIdentificadorAnimal(nuevoId: String) { _identificadorAnimal.value = nuevoId }
+    fun mostrarDatePickerIdentificacion() { _mostrarDatePickerIdentificacion.value = true }
+    fun ocultarDatePickerIdentificacion() { _mostrarDatePickerIdentificacion.value = false }
 
     fun seleccionarFechaIdentificacion(fechaMillis: Long) {
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = fechaMillis
-        val dia = calendar.get(Calendar.DAY_OF_MONTH)
-        val mes = calendar.get(Calendar.MONTH) + 1
-        val anio = calendar.get(Calendar.YEAR)
-
-        _fechaIdentificacion.value = String.format("%02d/%02d/%04d", dia, mes, anio)
+        _fechaIdentificacion.value = String.format(
+            "%02d/%02d/%04d",
+            calendar.get(Calendar.DAY_OF_MONTH),
+            calendar.get(Calendar.MONTH) + 1,
+            calendar.get(Calendar.YEAR)
+        )
         _mostrarDatePickerIdentificacion.value = false
     }
 
     fun esFormularioIdentificacionValido(): Boolean {
-        val identificadorValido = !_identificadorAnimal.value.isNullOrEmpty()
-        val fechaValida = !_fechaIdentificacion.value.isNullOrEmpty()
-        return identificadorValido && fechaValida
+        return !_identificadorAnimal.value.isNullOrEmpty() &&
+                !_fechaIdentificacion.value.isNullOrEmpty()
     }
 
     fun corregirIdentificacion() {
         _codiError.value = null
-
         if (!esFormularioIdentificacionValido()) {
-            val mensajeError = when {
+            _codiError.value = when {
                 _identificadorAnimal.value.isNullOrEmpty() -> 12
                 _fechaIdentificacion.value.isNullOrEmpty() -> 13
                 else -> 0
             }
-            _codiError.value = mensajeError
-            Log.e("Validación de identificacion", "Error: $mensajeError")
+            Log.e("Validación de identificacion", "Error: ${_codiError.value}")
             return
         }
-
         viewModelScope.launch {
             _estadoCarga.value = true
             try {
-                val fechaIdentificacionAPI = DateUtils.convertirFechaAFormatoAPI(_fechaIdentificacion.value ?: "")
-
                 val request = PetIdentificacion(
                     identificador = _identificadorAnimal.value ?: "",
                     nif = nif,
                     passwordMobilitat = password,
-                    dataIdentificacio = fechaIdentificacionAPI
+                    dataIdentificacio = DateUtils.convertirFechaAFormatoAPI(_fechaIdentificacion.value ?: "")
                 )
-
                 Log.d("Corrección Identificacion", "Request: $request")
-
                 val response = repositorio.putIdentificacionPendiente(request)
-
                 withContext(Dispatchers.Main) {
                     _estadoCarga.value = false
                     when {
@@ -287,9 +243,7 @@ class IdentificacionAplazaViewModel (application: Application): AndroidViewModel
                             if (body.codi == "0" || body.descripcio == "OK") {
                                 _identificacionExitosa.value = true
                                 _mensajeErrorIdentificacion.value = ""
-
                                 Log.d("Corrección Identificacion", "Identificación corregida exitosamente")
-
                                 eliminarBorradorAutomatico()
                                 limpiarFormulario()
                             } else {
@@ -303,16 +257,13 @@ class IdentificacionAplazaViewModel (application: Application): AndroidViewModel
                             if (errorBody != null) {
                                 try {
                                     val errorObj = Gson().fromJson(errorBody, RespuestaUnificada::class.java)
-                                    _mensajeErrorIdentificacion.value = errorObj.errors?.firstOrNull()?.descripcio
-                                        ?: "Error desconocido del servidor"
+                                    _mensajeErrorIdentificacion.value = errorObj.errors?.firstOrNull()?.descripcio ?: "Error desconocido del servidor"
                                 } catch (e: Exception) {
                                     _mensajeErrorIdentificacion.value = "Error al procesar respuesta"
                                 }
-                            }
-                            _identificacionExitosa.value = false
-                            if (errorBody != null) {
                                 Log.e("Error Corrección Identificacion", "Body: $errorBody")
                             }
+                            _identificacionExitosa.value = false
                         }
                         else -> {
                             _identificacionExitosa.value = false
@@ -323,22 +274,19 @@ class IdentificacionAplazaViewModel (application: Application): AndroidViewModel
                 }
             } catch (e: java.net.SocketTimeoutException) {
                 withContext(Dispatchers.Main) {
-                    _estadoCarga.value = false
-                    _identificacionExitosa.value = false
+                    _estadoCarga.value = false; _identificacionExitosa.value = false
                     _mensajeErrorIdentificacion.value = "Tiempo de espera agotado. La operación puede haberse completado, por favor verifique."
                     Log.e("Error Corrección Identificacion", "Timeout: ${e.message}", e)
                 }
             } catch (e: java.io.IOException) {
                 withContext(Dispatchers.Main) {
-                    _estadoCarga.value = false
-                    _identificacionExitosa.value = false
+                    _estadoCarga.value = false; _identificacionExitosa.value = false
                     _mensajeErrorIdentificacion.value = "Error de conexión. Verifique su conexión a internet."
                     Log.e("Error Corrección Identificacion", "Error de red: ${e.message}", e)
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    _estadoCarga.value = false
-                    _identificacionExitosa.value = false
+                    _estadoCarga.value = false; _identificacionExitosa.value = false
                     _mensajeErrorIdentificacion.value = "Error inesperado: ${e.message ?: "Error desconocido"}"
                     Log.e("Error Corrección Identificacion", "Error general: ${e.message}", e)
                     e.printStackTrace()

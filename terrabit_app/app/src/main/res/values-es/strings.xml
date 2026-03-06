@@ -2,7 +2,6 @@
 <resources>
     <string name="app_name">Terrabit</string>
 
-    <string name="app_version">Versión 1.0.0</string>
     <string name="drawer_subtitle">Gestión Ganadera</string>
     <string name="drawer_explained">Tipo de Animal</string>
     <string name="bovinos_name">Bovinos</string>
@@ -364,4 +363,32 @@
     <string name="gest_porcinos_no_guias">No hay guías para editar o confirmar</string>
     <string name="content_description_edit">Editar</string>
     <string name="gest_porcinos_cargando_entradas">Cargando entradas...</string>
+    <string name="bluetooth_title_waiting">Esperando identificador</string>
+    <string name="bluetooth_desc_waiting">Acerca el lector al crotal o identificador del animal</string>
+    <string name="bluetooth_title_select_device">Seleccionar lector</string>
+    <string name="bluetooth_desc_select_device">Selecciona el dispositivo Arduino emparejado</string>
+    <string name="bluetooth_no_devices_found">No hay dispositivos Bluetooth emparejados.\nEmpareja el Arduino en los ajustes del sistema.</string>
+    <string name="bluetooth_error_connection">Error de conexión</string>
+    <string name="bluetooth_disabled_title">Bluetooth desactivado</string>
+    <string name="bluetooth_disabled_desc">Activa el Bluetooth del dispositivo para poder leer identificadores.</string>
+    <string name="bluetooth_btn_retry">Reintentar</string>
+    <string name="bluetooth_btn_grant_permissions">Conceder permisos</string>
+    <string name="bluethooth_error_permissions">Permisos Bluetooth no concedidos. Actívalos en Ajustes.</string>
+    <string name="bluetooth_error_unable_to_connect">No se pudo conectar al Arduino. Verifica que esté encendido y emparejado.</string>
+    <string name="bluetooth_error_no_permissions">Sin permisos Bluetooth. Actívalos en Ajustes del dispositivo.</string>
+    <string name="bluetooth_error_prefix">Error de conexión: %1$s</string>
+    <string name="bluetooth_error_unknown">Error desconocido</string>
+
+
+
+    <string name="configuration_title">Configuración</string>
+    <string name="actual_user_title">USUARIO</string>
+    <string name="appearance_title">APARIENCIA</string>
+    <string name="dark_theme_title">Tema oscuro</string>
+    <string name="activated_theme_subtitle">Activado</string>
+    <string name="desactivated_theme_subtitle">Desactivado</string>
+
+    <string name="close_session_title">Cerrar Sesión</string>
+    <string name="version_title">Versión</string>
+    <string name="connect_new_devices">conectar nuevo dispositivo</string>
 </resources>

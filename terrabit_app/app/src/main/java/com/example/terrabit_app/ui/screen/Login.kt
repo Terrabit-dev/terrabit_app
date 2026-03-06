@@ -4,16 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -25,28 +16,8 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Badge
 import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -67,22 +38,20 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
-import com.example.terrabit_app.ui.theme.BlueGrey
-import com.example.terrabit_app.ui.theme.DarkBlueGrey
 import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.ui.theme.MainGreen
-import com.example.terrabit_app.ui.theme.WhiteBackground
 import com.example.terrabit_app.viewmodel.LoginState
 import com.example.terrabit_app.viewmodel.LoginViewModel
 
 @Composable
 fun Login(
     navController: NavController,
-    viewModel: LoginViewModel = viewModel()
+    viewModel: LoginViewModel = hiltViewModel()
 ) {
     val loginState by viewModel.loginState.collectAsState()
     var mostrarDialogoError by remember { mutableStateOf(false) }
@@ -105,93 +74,43 @@ fun Login(
         }
     }
 
-    // Diálogo de Error
     if (mostrarDialogoError && mensajeError.isNotEmpty()) {
         AlertDialog(
-            onDismissRequest = {
-                mostrarDialogoError = false
-                viewModel.resetState()
-            },
-            icon = {
-                Icon(
-                    imageVector = Icons.Outlined.Lock,
-                    contentDescription = null,
-                    tint = MainGreen,
-                    modifier = Modifier.size(48.dp)
-                )
-            },
-            title = {
-                Text(
-                    text = stringResource(R.string.title_auth_error),
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
-                    color = DarkBlueGrey
-                )
-            },
-            text = {
-                Text(
-                    text = mensajeError,
-                    fontSize = 16.sp,
-                    color = BlueGrey,
-                    lineHeight = 24.sp
-                )
-            },
+            onDismissRequest = { mostrarDialogoError = false; viewModel.resetState() },
+            icon = { Icon(Icons.Outlined.Lock, contentDescription = null, tint = MainGreen, modifier = Modifier.size(48.dp)) },
+            title = { Text(stringResource(R.string.title_auth_error), fontWeight = FontWeight.Bold, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface) },
+            text = { Text(mensajeError, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 24.sp) },
             confirmButton = {
                 Button(
-                    onClick = {
-                        mostrarDialogoError = false
-                        viewModel.resetState()
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MainGreen
-                    ),
+                    onClick = { mostrarDialogoError = false; viewModel.resetState() },
+                    colors = ButtonDefaults.buttonColors(containerColor = MainGreen),
                     shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(stringResource(R.string.error_buttom), fontWeight = FontWeight.SemiBold)
-                }
+                ) { Text(stringResource(R.string.error_buttom), fontWeight = FontWeight.SemiBold) }
             },
-            containerColor = Color.White,
+            containerColor = MaterialTheme.colorScheme.surface,
             shape = RoundedCornerShape(16.dp)
         )
     }
 
-    // Indicador de carga en pantalla completa
     if (loginState is LoginState.Loading) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Black.copy(alpha = 0.5f))
-                .clickable(enabled = false) { },
+                .clickable(enabled = false) {},
             contentAlignment = Alignment.Center
         ) {
             Card(
                 modifier = Modifier.size(120.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.White
-                ),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
                 shape = RoundedCornerShape(16.dp)
             ) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(48.dp),
-                            color = MainGreen,
-                            strokeWidth = 4.dp
-                        )
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                        CircularProgressIndicator(modifier = Modifier.size(48.dp), color = MainGreen, strokeWidth = 4.dp)
                         Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            stringResource(R.string.loading_processing),
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = BlueGrey
-                        )
+                        Text(stringResource(R.string.loading_processing), fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
@@ -200,12 +119,8 @@ fun Login(
         Surface(
             modifier = Modifier
                 .fillMaxSize()
-                .pointerInput(Unit) {
-                    detectTapGestures(onTap = {
-                        focusManager.clearFocus()
-                    })
-                },
-            color = WhiteBackground
+                .pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
+            color = MaterialTheme.colorScheme.background
         ) {
             Column(
                 modifier = Modifier
@@ -222,23 +137,10 @@ fun Login(
                     contentDescription = "App logo",
                     modifier = Modifier.size(80.dp)
                 )
-                Text(
-                    text = "Terrabit",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 32.sp,
-                    color = Color.Black
-                )
-                Text(
-                    text = stringResource(R.string.subtitle_login),
-                    fontSize = 18.sp,
-                    color = Color.Gray
-                )
+                Text("Terrabit", fontWeight = FontWeight.Bold, fontSize = 32.sp, color = MaterialTheme.colorScheme.onBackground)
+                Text(stringResource(R.string.subtitle_login), fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 LoginCard(viewModel, loginState, uriHandler)
-                Text(
-                    text = stringResource(R.string.footer_copyright),
-                    fontSize = 12.sp,
-                    color = Color.Gray
-                )
+                Text(stringResource(R.string.footer_copyright), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
                 Spacer(modifier = Modifier.height(115.dp))
             }
@@ -257,13 +159,10 @@ fun LoginCard(
     val savedCodiMO by viewModel.savedCodiMO.collectAsState()
     val savedRememberMe by viewModel.savedRememberMe.collectAsState()
 
-    // Variables locales que mantienen el estado incluso con errores
     var nif by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var codiMO by remember { mutableStateOf("") }
     var rememberMe by remember { mutableStateOf(false) }
-
-    // Variable para controlar si ya se cargaron las credenciales guardadas
     var credencialesCargadas by remember { mutableStateOf(false) }
 
     val nifError by viewModel.nifError.collectAsState()
@@ -274,7 +173,6 @@ fun LoginCard(
     val passwordFocusRequester = remember { FocusRequester() }
     val codiMOFocusRequester = remember { FocusRequester() }
 
-    // Cargar credenciales guardadas SOLO una vez al iniciar
     LaunchedEffect(Unit) {
         if (!credencialesCargadas) {
             savedNif?.let { nif = it }
@@ -287,142 +185,71 @@ fun LoginCard(
 
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 20.dp),
+            modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Text(
-                    text = stringResource(R.string.title_login),
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = Color.Black
-                )
+                Text(stringResource(R.string.title_login), fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurface)
 
-                Text(
-                    text = "NIF",
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
+                Text("NIF", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                 CustomOutlinedTextField(
                     value = nif,
-                    onValueChange = {
-                        nif = it
-                        viewModel.clearFieldError("nif")
-                    },
+                    onValueChange = { nif = it; viewModel.clearFieldError("nif") },
                     placeholder = stringResource(R.string.hint_nif),
                     icon = Icons.Outlined.AccountCircle,
                     isError = nifError != null,
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Next,
-                        autoCorrect = false
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onNext = { passwordFocusRequester.requestFocus() }
-                    )
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next, autoCorrect = false),
+                    keyboardActions = KeyboardActions(onNext = { passwordFocusRequester.requestFocus() })
                 )
                 if (nifError != null) {
-                    Text(
-                        text = nifError ?: "",
-                        color = ErrorRed,
-                        fontSize = 12.sp,
-                        modifier = Modifier.padding(start = 16.dp)
-                    )
+                    Text(nifError ?: "", color = ErrorRed, fontSize = 12.sp, modifier = Modifier.padding(start = 16.dp))
                 }
 
-                Text(
-                    text = stringResource(R.string.label_password),
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
+                Text(stringResource(R.string.label_password), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                 CustomOutlinedTextField(
                     value = password,
-                    onValueChange = {
-                        password = it
-                        viewModel.clearFieldError("password")
-                    },
+                    onValueChange = { password = it; viewModel.clearFieldError("password") },
                     placeholder = stringResource(R.string.hint_password),
                     icon = Icons.Outlined.Lock,
                     isPassword = true,
                     isError = passwordError != null,
                     focusRequester = passwordFocusRequester,
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Password,
-                        imeAction = ImeAction.Next,
-                        autoCorrect = false
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onNext = { codiMOFocusRequester.requestFocus() }
-                    )
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Next, autoCorrect = false),
+                    keyboardActions = KeyboardActions(onNext = { codiMOFocusRequester.requestFocus() })
                 )
                 if (passwordError != null) {
-                    Text(
-                        text = passwordError ?: "",
-                        color = ErrorRed,
-                        fontSize = 12.sp,
-                        modifier = Modifier.padding(start = 16.dp)
-                    )
+                    Text(passwordError ?: "", color = ErrorRed, fontSize = 12.sp, modifier = Modifier.padding(start = 16.dp))
                 }
 
-                Text(
-                    text = stringResource(R.string.label_codimo),
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
+                Text(stringResource(R.string.label_codimo), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                 CustomOutlinedTextField(
                     value = codiMO,
-                    onValueChange = {
-                        codiMO = it
-                        viewModel.clearFieldError("codiMO")
-                    },
+                    onValueChange = { codiMO = it; viewModel.clearFieldError("codiMO") },
                     placeholder = stringResource(R.string.hint_codimo),
                     icon = Icons.Outlined.Badge,
                     isError = codiMOError != null,
                     focusRequester = codiMOFocusRequester,
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Done,
-                        autoCorrect = false
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onDone = {
-                            focusManager.clearFocus()
-                            viewModel.login(nif, password, codiMO, rememberMe)
-                        }
-                    )
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Done, autoCorrect = false),
+                    keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus(); viewModel.login(nif, password, codiMO, rememberMe) })
                 )
                 if (codiMOError != null) {
-                    Text(
-                        text = codiMOError ?: "",
-                        color = ErrorRed,
-                        fontSize = 12.sp,
-                        modifier = Modifier.padding(start = 16.dp)
-                    )
+                    Text(codiMOError ?: "", color = ErrorRed, fontSize = 12.sp, modifier = Modifier.padding(start = 16.dp))
                 }
             }
 
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(10.dp),
+                modifier = Modifier.fillMaxWidth().padding(10.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                CheckboxWithText(
-                    isChecked = rememberMe,
-                    onCheckedChange = { rememberMe = it }
-                )
+                CheckboxWithText(isChecked = rememberMe, onCheckedChange = { rememberMe = it })
                 Text(
                     text = stringResource(R.string.action_forgot_password),
                     fontWeight = FontWeight.Bold,
@@ -435,28 +262,21 @@ fun LoginCard(
             }
 
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Button(
                     modifier = Modifier.fillMaxWidth(),
-                    onClick = {
-                        viewModel.login(nif, password, codiMO, rememberMe)
-                    },
+                    onClick = { viewModel.login(nif, password, codiMO, rememberMe) },
                     enabled = loginState !is LoginState.Loading,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MainGreen,
                         contentColor = Color.White,
-                        disabledContainerColor = WhiteBackground
+                        disabledContainerColor = MaterialTheme.colorScheme.outline
                     ),
                     shape = RoundedCornerShape(10.dp)
                 ) {
-                    Text(
-                        text = stringResource(R.string.btn_login),
-                        fontWeight = FontWeight.Bold,
-                    )
+                    Text(stringResource(R.string.btn_login), fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -482,17 +302,9 @@ fun CustomOutlinedTextField(
         onValueChange = onValueChange,
         modifier = Modifier
             .fillMaxWidth()
-            .then(
-                if (focusRequester != null) Modifier.focusRequester(focusRequester)
-                else Modifier
-            ),
-        placeholder = { Text(text = placeholder) },
-        leadingIcon = {
-            Icon(
-                imageVector = icon,
-                contentDescription = null
-            )
-        },
+            .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier),
+        placeholder = { Text(placeholder, color = MaterialTheme.colorScheme.onSurfaceVariant) },
+        leadingIcon = { Icon(imageVector = icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
         visualTransformation = if (isPassword && !passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
@@ -501,7 +313,8 @@ fun CustomOutlinedTextField(
                 IconButton(onClick = { passwordVisible = !passwordVisible }) {
                     Icon(
                         imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                        contentDescription = if (passwordVisible) "Ocultar" else "Mostrar"
+                        contentDescription = if (passwordVisible) "Ocultar" else "Mostrar",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -510,15 +323,18 @@ fun CustomOutlinedTextField(
         singleLine = true,
         shape = RoundedCornerShape(16.dp),
         colors = TextFieldDefaults.colors(
-            unfocusedIndicatorColor = Color.LightGray,
-            unfocusedContainerColor = Color.White,
-            unfocusedPlaceholderColor = Color.LightGray,
-            unfocusedLeadingIconColor = Color.Gray,
-            focusedContainerColor = Color.White,
-            unfocusedTrailingIconColor = Color.Gray,
-            focusedTextColor = Color.Black,
+            unfocusedIndicatorColor = MaterialTheme.colorScheme.outline,
+            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+            unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            unfocusedLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            focusedContainerColor = MaterialTheme.colorScheme.surface,
+            focusedIndicatorColor = MainGreen,
+            focusedLeadingIconColor = MainGreen,
+            unfocusedTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
             errorIndicatorColor = ErrorRed,
-            errorContainerColor = Color.White,
+            errorContainerColor = MaterialTheme.colorScheme.surface,
             errorLeadingIconColor = ErrorRed
         )
     )
@@ -537,15 +353,10 @@ fun CheckboxWithText(
             checked = isChecked,
             onCheckedChange = onCheckedChange,
             colors = CheckboxDefaults.colors(
-                checkedColor = Color.Gray,
-                uncheckedColor = Color.Gray
+                checkedColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                uncheckedColor = MaterialTheme.colorScheme.onSurfaceVariant
             )
         )
-        Text(
-            text = stringResource(R.string.label_remember_me),
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.Gray
-        )
+        Text(stringResource(R.string.label_remember_me), fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }

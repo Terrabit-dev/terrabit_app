@@ -1,10 +1,8 @@
 package com.example.terrabit_app.viewmodel
 
-import android.app.Application
-import android.content.Context
 import android.util.Log
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.Borrador
 import com.example.terrabit_app.data.SharedPreferencesManager
@@ -15,30 +13,34 @@ import com.example.terrabit_app.data.network.respuestas.ResAltaGuia
 import com.example.terrabit_app.utils.UserPreferences
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.Dispatchers
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import javax.inject.Inject
 
-class GuiasViewModel (application: Application): AndroidViewModel(application) {
-
-    private var repositorio = Repositorio(application)
-    private lateinit var sharedPreferencesManager: SharedPreferencesManager
+@HiltViewModel
+class GuiasViewModel @Inject constructor(
+    private val repositorio: Repositorio,
+    private val userPreferences: UserPreferences,
+    private val sharedPreferencesManager: SharedPreferencesManager
+) : ViewModel() {
 
     private var borradorSesionId: String = ""
-
-    private val userPreferences = UserPreferences(application)
 
     val nif = userPreferences.getNif() ?: ""
     val password = userPreferences.getPassword() ?: ""
     val codiMo = userPreferences.getCodiMO() ?: ""
 
-    // ============================================
-    // ESTADOS PARA AUTOCOMPLETADO
-    // ============================================
+    init {
+        borradorSesionId = "guia_auto_${System.currentTimeMillis()}"
+        cargarBovinosEnCache()
+    }
+
     private val _suggestionsBovinos = MutableLiveData<List<Animal>>(emptyList())
     val suggestionsBovinos = _suggestionsBovinos
 
@@ -48,36 +50,17 @@ class GuiasViewModel (application: Application): AndroidViewModel(application) {
     private val _bovinosCargados = MutableLiveData(false)
     val bovinosCargados = _bovinosCargados
 
-
     private val _activeFieldIndex = MutableLiveData<Int>(-1)
     val activeFieldIndex = _activeFieldIndex
 
-    fun inicializarSharedPreferences(context: Context) {
-        sharedPreferencesManager = SharedPreferencesManager(context)
-
-        if (borradorSesionId.isEmpty()) {
-            borradorSesionId = "guia_auto_${System.currentTimeMillis()}"
-        }
-
-        cargarBovinosEnCache()
-    }
-
-    // ============================================
-    // FUNCIÓN PARA CARGAR BOVINOS EN CACHÉ
-    // ============================================
     private fun cargarBovinosEnCache() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 _isLoadingBovinos.postValue(true)
-
                 repositorio.getBovinosWithCache(
-                    nif = nif,
-                    password = password,
-                    tipusVinculacio = "1",
-                    explotacio = codiMo,
-                    forceRefresh = false
+                    nif = nif, password = password,
+                    tipusVinculacio = "1", explotacio = codiMo, forceRefresh = false
                 )
-
                 _bovinosCargados.postValue(true)
                 _isLoadingBovinos.postValue(false)
                 Log.d("GuiasVM", "Bovinos cargados en caché")
@@ -89,16 +72,9 @@ class GuiasViewModel (application: Application): AndroidViewModel(application) {
         }
     }
 
-    // ============================================
-    // FUNCIÓN PARA BUSCAR BOVINOS (AUTOCOMPLETADO)
-    // ============================================
     fun searchBovinos(index: Int, query: String) {
         _activeFieldIndex.value = index
-        if (query.isBlank()) {
-            _suggestionsBovinos.value = emptyList()
-            return
-        }
-
+        if (query.isBlank()) { _suggestionsBovinos.value = emptyList(); return }
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val resultados = repositorio.searchBovinosLocal(query)
@@ -111,9 +87,6 @@ class GuiasViewModel (application: Application): AndroidViewModel(application) {
         }
     }
 
-    // ============================================
-    // FUNCIÓN AL SELECCIONAR BOVINO
-    // ============================================
     fun onBovinoSelected(index: Int, animal: Animal) {
         actualizarIdentificador(index, animal.identificador)
         _suggestionsBovinos.value = emptyList()
@@ -122,31 +95,19 @@ class GuiasViewModel (application: Application): AndroidViewModel(application) {
     }
 
     fun tieneContenido(): Boolean {
-        return !_explotacioOrigen.value.isNullOrEmpty() ||
-                !_explotacioDestinacio.value.isNullOrEmpty() ||
-                !_temporal.value.isNullOrEmpty() ||
-                !_dataSortida.value.isNullOrEmpty() ||
-                !_horaSortida.value.isNullOrEmpty() ||
-                !_dataArribada.value.isNullOrEmpty() ||
-                !_horaArribada.value.isNullOrEmpty() ||
-                !_mobilitat.value.isNullOrEmpty() ||
-                !_pais.value.isNullOrEmpty() ||
-                !_codiExplotacio.value.isNullOrEmpty() ||
-                !_codiAtes.value.isNullOrEmpty() ||
-                !_nomTransportista.value.isNullOrEmpty() ||
-                !_mitjaTransport.value.isNullOrEmpty() ||
-                !_matricula.value.isNullOrEmpty() ||
-                !_nifConductor.value.isNullOrEmpty() ||
-                !_nomConductor.value.isNullOrEmpty() ||
+        return !_explotacioOrigen.value.isNullOrEmpty() || !_explotacioDestinacio.value.isNullOrEmpty() ||
+                !_temporal.value.isNullOrEmpty() || !_dataSortida.value.isNullOrEmpty() ||
+                !_horaSortida.value.isNullOrEmpty() || !_dataArribada.value.isNullOrEmpty() ||
+                !_horaArribada.value.isNullOrEmpty() || !_mobilitat.value.isNullOrEmpty() ||
+                !_pais.value.isNullOrEmpty() || !_codiExplotacio.value.isNullOrEmpty() ||
+                !_codiAtes.value.isNullOrEmpty() || !_nomTransportista.value.isNullOrEmpty() ||
+                !_mitjaTransport.value.isNullOrEmpty() || !_matricula.value.isNullOrEmpty() ||
+                !_nifConductor.value.isNullOrEmpty() || !_nomConductor.value.isNullOrEmpty() ||
                 (_identificadors.value?.any { it.isNotEmpty() } == true)
     }
 
     fun guardarBorradorAutomatico() {
-        if (!tieneContenido()) {
-            Log.d("Autoguardado Guía", "No hay contenido para guardar")
-            return
-        }
-
+        if (!tieneContenido()) { Log.d("Autoguardado Guía", "No hay contenido para guardar"); return }
         try {
             val datosGuia = mapOf(
                 "explotacioOrigen" to _explotacioOrigen.value,
@@ -170,10 +131,7 @@ class GuiasViewModel (application: Application): AndroidViewModel(application) {
                 "codiGuiaMobilidad" to codiGuiaMobilidad,
                 "codiTransport" to codiTransport
             )
-
-            val borradorExistente = sharedPreferencesManager.obtenerBorradores()
-                .find { it.id == borradorSesionId }
-
+            val borradorExistente = sharedPreferencesManager.obtenerBorradores().find { it.id == borradorSesionId }
             val borrador = if (borradorExistente != null) {
                 borradorExistente.copy(
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
@@ -181,15 +139,12 @@ class GuiasViewModel (application: Application): AndroidViewModel(application) {
                 )
             } else {
                 Borrador(
-                    id = borradorSesionId,
-                    tipo = "GUIA",
+                    id = borradorSesionId, tipo = "GUIA",
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
                     hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
-                    datos = Gson().toJson(datosGuia),
-                    estado = "BORRADOR_AUTO"
+                    datos = Gson().toJson(datosGuia), estado = "BORRADOR_AUTO"
                 )
             }
-
             sharedPreferencesManager.guardarBorrador(borrador)
             Log.d("Autoguardado Guía", "Borrador guardado: $borradorSesionId")
         } catch (e: Exception) {
@@ -199,16 +154,9 @@ class GuiasViewModel (application: Application): AndroidViewModel(application) {
 
     fun cargarBorradorPorId(id: String) {
         try {
-            val borrador = sharedPreferencesManager.obtenerBorradores()
-                .find { it.id == id } ?: return
-
+            val borrador = sharedPreferencesManager.obtenerBorradores().find { it.id == id } ?: return
             borradorSesionId = borrador.id
-
-            val datos: Map<String, Any?> = Gson().fromJson(
-                borrador.datos,
-                object : TypeToken<Map<String, Any?>>() {}.type
-            )
-
+            val datos: Map<String, Any?> = Gson().fromJson(borrador.datos, object : TypeToken<Map<String, Any?>>() {}.type)
             _explotacioOrigen.value = datos["explotacioOrigen"] as? String ?: ""
             _explotacioDestinacio.value = datos["explotacioDestinacio"] as? String ?: ""
             _temporal.value = datos["temporal"] as? String ?: ""
@@ -228,11 +176,8 @@ class GuiasViewModel (application: Application): AndroidViewModel(application) {
             codiTemporal = datos["codiTemporal"] as? String ?: ""
             codiGuiaMobilidad = datos["codiGuiaMobilidad"] as? String ?: ""
             codiTransport = datos["codiTransport"] as? String ?: ""
-
             @Suppress("UNCHECKED_CAST")
-            val identificadoresList = datos["identificadors"] as? List<String>
-            _identificadors.value = identificadoresList ?: listOf("")
-
+            _identificadors.value = (datos["identificadors"] as? List<String>) ?: listOf("")
             Log.d("GuiasVM", "Borrador cargado por ID: $id")
         } catch (e: Exception) {
             Log.e("GuiasVM", "Error al cargar borrador por ID: ${e.message}", e)
@@ -253,8 +198,7 @@ class GuiasViewModel (application: Application): AndroidViewModel(application) {
 
     fun obtenerBorradoresGuia(): List<Borrador> {
         return try {
-            sharedPreferencesManager.obtenerBorradores()
-                .filter { it.tipo == "GUIA" && it.estado == "BORRADOR_AUTO" }
+            sharedPreferencesManager.obtenerBorradores().filter { it.tipo == "GUIA" && it.estado == "BORRADOR_AUTO" }
         } catch (e: Exception) {
             Log.e("Error", "Error al obtener borradores: ${e.message}", e)
             emptyList()
@@ -342,207 +286,85 @@ class GuiasViewModel (application: Application): AndroidViewModel(application) {
     private val _cargandoGuia = MutableLiveData(false)
     val cargandoGuia = _cargandoGuia
 
+    private val _codiError = MutableLiveData<Int?>()
+    val codiError = _codiError
+
     private var codiTemporal = ""
     private var codiGuiaMobilidad = ""
     private var codiTransport = ""
 
-    private val _codiError = MutableLiveData<Int?>()
-    val codiError = _codiError
-
-    fun actualizarExplotacioOrigen(valor: String) {
-        _explotacioOrigen.value = valor
-    }
-
-    fun actualizarExplotacioDestinacio(valor: String) {
-        _explotacioDestinacio.value = valor
-    }
-
-    fun seleccionarTemporal(valor: String, codigo: String) {
-        _temporal.value = valor
-        codiTemporal = codigo
-        _temporalExpandido.value = false
-    }
-
-    fun actualizarDataSortida(fecha: String) {
-        _dataSortida.value = fecha
-    }
-
-    fun actualizarHoraSortida(hora: String, minutos: String) {
-        _horaSortida.value = String.format("%02d:%02d", hora.toInt(), minutos.toInt())
-    }
-
-    fun actualizarDataArribada(fecha: String) {
-        _dataArribada.value = fecha
-    }
-
-    fun actualizarHoraArribada(hora: String, minutos: String) {
-        _horaArribada.value = String.format("%02d:%02d", hora.toInt(), minutos.toInt())
-    }
-
-    fun seleccionarMobilitat(valor: String, codigo: String) {
-        _mobilitat.value = valor
-        codiGuiaMobilidad = codigo
-        _mobilitatExpandido.value = false
-    }
-
-    fun actualizarPais(valor: String) {
-        _pais.value = valor
-    }
-
-    fun actualizarCodiExplotacio(valor: String) {
-        _codiExplotacio.value = valor
-    }
-
-    fun campoCodiAtes(codigo: String) {
-        if (codigo.length <= 15) {
-            _codiAtes.value = codigo
-        }
-    }
-
-    fun actualizarNomTransportista(nombre: String) {
-        _nomTransportista.value = nombre
-    }
-
-    fun seleccionarMitjaTransport(medio: String, codigo: String) {
-        _mitjaTransport.value = medio
-        codiTransport = codigo
-        _mitjaTransportExpandido.value = false
-    }
-
-    fun actualizarMatricula(matricula: String) {
-        _matricula.value = matricula
-    }
-
-    fun actualizarNifConductor(nif: String) {
-        if (nif.length <= 9) {
-            _nifConductor.value = nif
-        }
-    }
-
-    fun actualizarNomConductor(nombre: String) {
-        _nomConductor.value = nombre
-    }
+    fun actualizarExplotacioOrigen(valor: String) { _explotacioOrigen.value = valor }
+    fun actualizarExplotacioDestinacio(valor: String) { _explotacioDestinacio.value = valor }
+    fun seleccionarTemporal(valor: String, codigo: String) { _temporal.value = valor; codiTemporal = codigo; _temporalExpandido.value = false }
+    fun actualizarDataSortida(fecha: String) { _dataSortida.value = fecha }
+    fun actualizarHoraSortida(hora: String, minutos: String) { _horaSortida.value = String.format("%02d:%02d", hora.toInt(), minutos.toInt()) }
+    fun actualizarDataArribada(fecha: String) { _dataArribada.value = fecha }
+    fun actualizarHoraArribada(hora: String, minutos: String) { _horaArribada.value = String.format("%02d:%02d", hora.toInt(), minutos.toInt()) }
+    fun seleccionarMobilitat(valor: String, codigo: String) { _mobilitat.value = valor; codiGuiaMobilidad = codigo; _mobilitatExpandido.value = false }
+    fun actualizarPais(valor: String) { _pais.value = valor }
+    fun actualizarCodiExplotacio(valor: String) { _codiExplotacio.value = valor }
+    fun campoCodiAtes(codigo: String) { if (codigo.length <= 15) _codiAtes.value = codigo }
+    fun actualizarNomTransportista(nombre: String) { _nomTransportista.value = nombre }
+    fun seleccionarMitjaTransport(medio: String, codigo: String) { _mitjaTransport.value = medio; codiTransport = codigo; _mitjaTransportExpandido.value = false }
+    fun actualizarMatricula(matricula: String) { _matricula.value = matricula }
+    fun actualizarNifConductor(nif: String) { if (nif.length <= 9) _nifConductor.value = nif }
+    fun actualizarNomConductor(nombre: String) { _nomConductor.value = nombre }
 
     fun actualizarIdentificador(index: Int, valor: String) {
         val listaActual = _identificadors.value?.toMutableList() ?: mutableListOf()
-        if (index < listaActual.size) {
-            listaActual[index] = valor
-            _identificadors.value = listaActual
-        }
+        if (index < listaActual.size) { listaActual[index] = valor; _identificadors.value = listaActual }
     }
 
     fun agregarIdentificador() {
         val listaActual = _identificadors.value?.toMutableList() ?: mutableListOf()
-        listaActual.add("")
-        _identificadors.value = listaActual
+        listaActual.add(""); _identificadors.value = listaActual
     }
 
     fun eliminarIdentificador(index: Int) {
         val listaActual = _identificadors.value?.toMutableList() ?: mutableListOf()
-        if (listaActual.size > 1 && index < listaActual.size) {
-            listaActual.removeAt(index)
-            _identificadors.value = listaActual
-        }
+        if (listaActual.size > 1 && index < listaActual.size) { listaActual.removeAt(index); _identificadors.value = listaActual }
     }
 
-    fun toggleTemporalExpandido() {
-        _temporalExpandido.value = !(_temporalExpandido.value ?: false)
-    }
-
-    fun toggleMobilitatExpandido() {
-        _mobilitatExpandido.value = !(_mobilitatExpandido.value ?: false)
-    }
-
-    fun toggleMitjaTransportExpandido() {
-        _mitjaTransportExpandido.value = !(_mitjaTransportExpandido.value ?: false)
-    }
-
-    fun cerrarTemporalMenu() {
-        _temporalExpandido.value = false
-    }
-
-    fun cerrarMobilitatMenu() {
-        _mobilitatExpandido.value = false
-    }
-
-    fun cerrarMitjaTransportMenu() {
-        _mitjaTransportExpandido.value = false
-    }
-
-    fun mostrarDatePickerSortida() {
-        _mostrarDatePickerSortida.value = true
-    }
-
-    fun ocultarDatePickerSortida() {
-        _mostrarDatePickerSortida.value = false
-    }
-
-    fun mostrarTimePickerSortida() {
-        _mostrarTimePickerSortida.value = true
-    }
-
-    fun ocultarTimePickerSortida() {
-        _mostrarTimePickerSortida.value = false
-    }
-
-    fun mostrarDatePickerArribada() {
-        _mostrarDatePickerArribada.value = true
-    }
-
-    fun ocultarDatePickerArribada() {
-        _mostrarDatePickerArribada.value = false
-    }
-
-    fun mostrarTimePickerArribada() {
-        _mostrarTimePickerArribada.value = true
-    }
-
-    fun ocultarTimePickerArribada() {
-        _mostrarTimePickerArribada.value = false
-    }
+    fun toggleTemporalExpandido() { _temporalExpandido.value = !(_temporalExpandido.value ?: false) }
+    fun toggleMobilitatExpandido() { _mobilitatExpandido.value = !(_mobilitatExpandido.value ?: false) }
+    fun toggleMitjaTransportExpandido() { _mitjaTransportExpandido.value = !(_mitjaTransportExpandido.value ?: false) }
+    fun cerrarTemporalMenu() { _temporalExpandido.value = false }
+    fun cerrarMobilitatMenu() { _mobilitatExpandido.value = false }
+    fun cerrarMitjaTransportMenu() { _mitjaTransportExpandido.value = false }
+    fun mostrarDatePickerSortida() { _mostrarDatePickerSortida.value = true }
+    fun ocultarDatePickerSortida() { _mostrarDatePickerSortida.value = false }
+    fun mostrarTimePickerSortida() { _mostrarTimePickerSortida.value = true }
+    fun ocultarTimePickerSortida() { _mostrarTimePickerSortida.value = false }
+    fun mostrarDatePickerArribada() { _mostrarDatePickerArribada.value = true }
+    fun ocultarDatePickerArribada() { _mostrarDatePickerArribada.value = false }
+    fun mostrarTimePickerArribada() { _mostrarTimePickerArribada.value = true }
+    fun ocultarTimePickerArribada() { _mostrarTimePickerArribada.value = false }
 
     fun seleccionarFechaSortida(fechaMillis: Long) {
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = fechaMillis
-        val dia = calendar.get(Calendar.DAY_OF_MONTH)
-        val mes = calendar.get(Calendar.MONTH) + 1
-        val anio = calendar.get(Calendar.YEAR)
-
-        _dataSortida.value = String.format("%02d/%02d/%04d", dia, mes, anio)
+        _dataSortida.value = String.format("%02d/%02d/%04d", calendar.get(Calendar.DAY_OF_MONTH), calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.YEAR))
         _mostrarDatePickerSortida.value = false
     }
 
     fun seleccionarFechaArribada(fechaMillis: Long) {
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = fechaMillis
-        val dia = calendar.get(Calendar.DAY_OF_MONTH)
-        val mes = calendar.get(Calendar.MONTH) + 1
-        val anio = calendar.get(Calendar.YEAR)
-
-        _dataArribada.value = String.format("%02d/%02d/%04d", dia, mes, anio)
+        _dataArribada.value = String.format("%02d/%02d/%04d", calendar.get(Calendar.DAY_OF_MONTH), calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.YEAR))
         _mostrarDatePickerArribada.value = false
     }
 
     fun esFormularioValido(): Boolean {
-        val explotacioOrigenValida = !_explotacioOrigen.value.isNullOrEmpty()
-        val explotacioDestinacioValida = !_explotacioDestinacio.value.isNullOrEmpty()
-        val temporalValido = !_temporal.value.isNullOrEmpty()
-        val dataSortidaValida = !_dataSortida.value.isNullOrEmpty()
-        val horaSortidaValida = !_horaSortida.value.isNullOrEmpty()
-        val dataArribadaValida = !_dataArribada.value.isNullOrEmpty()
-        val horaArribadaValida = !_horaArribada.value.isNullOrEmpty()
-        val mobilitatValida = !_mobilitat.value.isNullOrEmpty()
-
-        return explotacioOrigenValida && explotacioDestinacioValida &&
-                temporalValido && dataSortidaValida && horaSortidaValida &&
-                dataArribadaValida && horaArribadaValida && mobilitatValida
+        return !_explotacioOrigen.value.isNullOrEmpty() && !_explotacioDestinacio.value.isNullOrEmpty() &&
+                !_temporal.value.isNullOrEmpty() && !_dataSortida.value.isNullOrEmpty() &&
+                !_horaSortida.value.isNullOrEmpty() && !_dataArribada.value.isNullOrEmpty() &&
+                !_horaArribada.value.isNullOrEmpty() && !_mobilitat.value.isNullOrEmpty()
     }
 
     fun confirmarAltaGuia() {
         _codiError.value = null
-
         if (!esFormularioValido()) {
-            val mensajeError = when {
+            _codiError.value = when {
                 _explotacioOrigen.value.isNullOrEmpty() -> 20
                 _explotacioDestinacio.value.isNullOrEmpty() -> 18
                 _temporal.value.isNullOrEmpty() -> 21
@@ -553,43 +375,20 @@ class GuiasViewModel (application: Application): AndroidViewModel(application) {
                 _mobilitat.value.isNullOrEmpty() -> 24
                 else -> 0
             }
-            _codiError.value = mensajeError
-            Log.e("Validación Guía", "$mensajeError")
+            Log.e("Validación Guía", "${_codiError.value}")
             return
         }
-
         viewModelScope.launch {
             _cargandoGuia.postValue(true)
-
             try {
-                val fechaHoraSortidaAPI = convertirFechaHoraAFormatoAPI(
-                    _dataSortida.value ?: "",
-                    _horaSortida.value ?: ""
-                )
-
-                val fechaHoraArribadaAPI = convertirFechaHoraAFormatoAPI(
-                    _dataArribada.value ?: "",
-                    _horaArribada.value ?: ""
-                )
-
-                val temporalAPI = _temporal.value ?: ""
-                val mobilitatAPI = _mobilitat.value ?: ""
-
-                val identificadoresList = _identificadors.value
-                    ?.map { it.trim() }
-                    ?.filter { it.isNotEmpty() }
-                    ?.takeIf { it.isNotEmpty() }
-
                 val request = PeticionAltaGuia(
-                    nif = nif,
-                    passwordMobilitat = password,
-                    especie = "01",
+                    nif = nif, passwordMobilitat = password, especie = "01",
                     explotacioOrigen = _explotacioOrigen.value ?: "",
                     explotacioDestinacio = _explotacioDestinacio.value ?: "",
-                    temporal = temporalAPI,
-                    dataSortida = fechaHoraSortidaAPI,
-                    dataArribada = fechaHoraArribadaAPI,
-                    mobilitat = mobilitatAPI,
+                    temporal = _temporal.value ?: "",
+                    dataSortida = convertirFechaHoraAFormatoAPI(_dataSortida.value ?: "", _horaSortida.value ?: ""),
+                    dataArribada = convertirFechaHoraAFormatoAPI(_dataArribada.value ?: "", _horaArribada.value ?: ""),
+                    mobilitat = _mobilitat.value ?: "",
                     pais = _pais.value?.ifEmpty { null },
                     codiExplotacio = _codiExplotacio.value?.ifEmpty { null },
                     codiAtes = _codiAtes.value?.ifEmpty { null },
@@ -598,26 +397,19 @@ class GuiasViewModel (application: Application): AndroidViewModel(application) {
                     matricula = _matricula.value?.ifEmpty { null },
                     nifConductor = _nifConductor.value?.ifEmpty { null },
                     nomConductor = _nomConductor.value?.ifEmpty { null },
-                    identificadors = identificadoresList
+                    identificadors = _identificadors.value?.map { it.trim() }?.filter { it.isNotEmpty() }?.takeIf { it.isNotEmpty() }
                 )
-
                 Log.d("Alta Guía", "Request: $request")
-
                 val response = repositorio.putAltaGuia(request)
-
                 withContext(Dispatchers.Main) {
                     _cargandoGuia.value = false
-
                     when {
                         response.isSuccessful && response.body() != null -> {
                             val body = response.body()!!
-
                             if (body.codiRemo == "0" || body.descripcio?.contains("correcte", ignoreCase = true) == true) {
                                 _registroExitoso.value = true
                                 _mensajeError.value = ""
-
                                 Log.d("Alta Guía", "Guía creada exitosamente")
-
                                 eliminarBorradorAutomatico()
                                 limpiarFormulario()
                             } else {
@@ -631,21 +423,14 @@ class GuiasViewModel (application: Application): AndroidViewModel(application) {
                             if (errorBody != null) {
                                 try {
                                     val errorObj = Gson().fromJson(errorBody, ResAltaGuia::class.java)
-                                    _mensajeError.value = errorObj.errors?.firstOrNull()?.descripcio
-                                        ?: errorObj.descripcio
-                                                ?: "Error desconocido del servidor"
+                                    _mensajeError.value = errorObj.errors?.firstOrNull()?.descripcio ?: errorObj.descripcio ?: "Error desconocido del servidor"
                                 } catch (e: Exception) {
                                     _mensajeError.value = "Error al procesar respuesta"
                                     Log.e("Error parsing", "Error: ${e.message}", e)
                                 }
-                            } else {
-                                _mensajeError.value = "Error del servidor sin detalles"
-                            }
+                            } else { _mensajeError.value = "Error del servidor sin detalles" }
                             _registroExitoso.value = false
                             Log.e("Error Guía", "HTTP ${response.code()}: ${response.message()}")
-                            if (errorBody != null) {
-                                Log.e("Error Registro Nacimiento", "Body: $errorBody")
-                            }
                         }
                         else -> {
                             _registroExitoso.value = false
@@ -656,22 +441,19 @@ class GuiasViewModel (application: Application): AndroidViewModel(application) {
                 }
             } catch (e: java.net.SocketTimeoutException) {
                 withContext(Dispatchers.Main) {
-                    _cargandoGuia.value = false
-                    _registroExitoso.value = false
+                    _cargandoGuia.value = false; _registroExitoso.value = false
                     _mensajeError.value = "Tiempo de espera agotado. La operación puede haberse completado, por favor verifique."
                     Log.e("Error Guía", "Timeout: ${e.message}", e)
                 }
             } catch (e: java.io.IOException) {
                 withContext(Dispatchers.Main) {
-                    _cargandoGuia.value = false
-                    _registroExitoso.value = false
+                    _cargandoGuia.value = false; _registroExitoso.value = false
                     _mensajeError.value = "Error de conexión. Verifique su conexión a internet."
                     Log.e("Error Guía", "Error de red: ${e.message}", e)
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    _cargandoGuia.value = false
-                    _registroExitoso.value = false
+                    _cargandoGuia.value = false; _registroExitoso.value = false
                     _mensajeError.value = "Error inesperado: ${e.message ?: "Error desconocido"}"
                     Log.e("Error Guía", "Error general: ${e.message}", e)
                     e.printStackTrace()
@@ -681,53 +463,26 @@ class GuiasViewModel (application: Application): AndroidViewModel(application) {
     }
 
     fun limpiarFormulario() {
-        _explotacioOrigen.value = ""
-        _explotacioDestinacio.value = ""
-        _temporal.value = ""
-        _dataSortida.value = ""
-        _horaSortida.value = ""
-        _dataArribada.value = ""
-        _horaArribada.value = ""
-        _mobilitat.value = ""
-        _pais.value = ""
-        _codiExplotacio.value = ""
-        _codiAtes.value = ""
-        _nomTransportista.value = ""
-        _mitjaTransport.value = ""
-        _matricula.value = ""
-        _nifConductor.value = ""
-        _nomConductor.value = ""
-        _identificadors.value = listOf("")
-        codiTemporal = ""
-        codiGuiaMobilidad = ""
-        codiTransport = ""
-
-        borradorSesionId = ""
+        _explotacioOrigen.value = ""; _explotacioDestinacio.value = ""; _temporal.value = ""
+        _dataSortida.value = ""; _horaSortida.value = ""; _dataArribada.value = ""
+        _horaArribada.value = ""; _mobilitat.value = ""; _pais.value = ""
+        _codiExplotacio.value = ""; _codiAtes.value = ""; _nomTransportista.value = ""
+        _mitjaTransport.value = ""; _matricula.value = ""; _nifConductor.value = ""
+        _nomConductor.value = ""; _identificadors.value = listOf("")
+        codiTemporal = ""; codiGuiaMobilidad = ""; codiTransport = ""; borradorSesionId = ""
     }
 
-    fun resetearEstadoRegistro() {
-        _registroExitoso.value = false
-        _mensajeError.value = ""
-        _codiError.value = null
-    }
+    fun resetearEstadoRegistro() { _registroExitoso.value = false; _mensajeError.value = ""; _codiError.value = null }
 
     private fun convertirFechaHoraAFormatoAPI(fecha: String, hora: String): String {
         return try {
             if (fecha.length == 10 && hora.length == 5) {
-                val partesFecha = fecha.split("/")
-                val partesHora = hora.split(":")
-                val dia = partesFecha[0]
-                val mes = partesFecha[1]
-                val anio = partesFecha[2]
-                val horas = partesHora[0]
-                val minutos = partesHora[1]
+                val (dia, mes, anio) = fecha.split("/")
+                val (horas, minutos) = hora.split(":")
                 "$anio$mes$dia$horas$minutos"
-            } else {
-                ""
-            }
+            } else ""
         } catch (e: Exception) {
-            Log.e("Error conversión fecha/hora", e.message ?: "Error desconocido")
-            ""
+            Log.e("Error conversión fecha/hora", e.message ?: "Error desconocido"); ""
         }
     }
 }

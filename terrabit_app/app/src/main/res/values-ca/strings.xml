@@ -360,5 +360,31 @@
     <string name="gest_porcinos_no_guias">No hi ha guies per a l\'edició o la confirmació.</string>
     <string name="content_description_edit">Editar</string>
     <string name="gest_porcinos_cargando_entradas">Càrrega de entrades...</string>
+    <string name="bluetooth_title_waiting">Esperant identificador</string>
+    <string name="bluetooth_desc_waiting">Atansa el lector al crotal o identificador de l\'animal</string>
+    <string name="bluetooth_title_select_device">Seleccionar lector</string>
+    <string name="bluetooth_desc_select_device">Selecciona el dispositiu Arduino aparellat</string>
+    <string name="bluetooth_no_devices_found">No hi ha dispositius Bluetooth aparellats.\nAparella l\'Arduino als ajustos del sistema.</string>
+    <string name="bluetooth_error_connection">Error de connexió</string>
+    <string name="bluetooth_disabled_title">Bluetooth desactivat</string>
+    <string name="bluetooth_disabled_desc">Activa el Bluetooth del dispositiu per poder llegir identificadors.</string>
+    <string name="bluetooth_btn_retry">Reintentar</string>
+    <string name="bluetooth_btn_grant_permissions">Concedir permisos</string>
+    <string name="bluethooth_error_permissions">Permisos Bluetooth no concedits. Activa\'ls en Ajustos.</string>
+    <string name="bluetooth_error_unable_to_connect">No s\'ha pogut connectar a l\'Arduino. Verifica que estigui encès i aparellat.</string>
+    <string name="bluetooth_error_no_permissions">Sense permisos Bluetooth. Activa\'ls als Ajustos del dispositiu.</string>
+    <string name="bluetooth_error_prefix">Error de connexió: %1$s</string>
+    <string name="bluetooth_error_unknown">Error desconegut</string>
 
+
+    <string name="configuration_title">Configuració</string>
+    <string name="actual_user_title">USUARI</string>
+    <string name="appearance_title">APARENÇA</string>
+    <string name="dark_theme_title">Tema Fosc</string>
+    <string name="activated_theme_subtitle">Activat</string>
+    <string name="desactivated_theme_subtitle">Desactivat</string>
+
+    <string name="close_session_title">Tancar Sessió</string>
+    <string name="version_title">Versió</string>
+    <string name="connect_new_devices">connectar nou dispositiu</string>
 </resources>

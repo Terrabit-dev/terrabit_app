@@ -1,10 +1,8 @@
 package com.example.terrabit_app.viewmodel
 
-import android.app.Application
-import android.content.Context
 import android.util.Log
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.Borrador
 import com.example.terrabit_app.data.SharedPreferencesManager
@@ -16,6 +14,7 @@ import com.example.terrabit_app.data.network.respuestas.RespuestaUnificada
 import com.example.terrabit_app.utils.DateUtils
 import com.example.terrabit_app.utils.UserPreferences
 import com.google.gson.Gson
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,24 +23,27 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import javax.inject.Inject
 
-class NacimientoViewmodel(application: Application) : AndroidViewModel(application) {
-
-    private val repositorio = Repositorio(application)
-    private lateinit var sharedPreferencesManager: SharedPreferencesManager
+@HiltViewModel
+class NacimientoViewmodel @Inject constructor(
+    private val repositorio: Repositorio,
+    private val userPreferences: UserPreferences,
+    private val sharedPreferencesManager: SharedPreferencesManager
+) : ViewModel() {
 
     private var borradorSesionId: String = ""
     private var editandoBorrador: Boolean = false
-
-    private val userPreferences = UserPreferences(application)
 
     val nif = userPreferences.getNif() ?: ""
     val password = userPreferences.getPassword() ?: ""
     val codiMo = userPreferences.getCodiMO() ?: ""
 
-    // ============================================
-    // ESTADOS PARA AUTOCOMPLETADO
-    // ============================================
+    init {
+        borradorSesionId = "nacimiento_auto_${System.currentTimeMillis()}"
+        cargarBovinosEnCache()
+    }
+
     private val _suggestionsBovinos = MutableLiveData<List<Animal>>(emptyList())
     val suggestionsBovinos = _suggestionsBovinos
 
@@ -50,24 +52,10 @@ class NacimientoViewmodel(application: Application) : AndroidViewModel(applicati
 
     private val _bovinosCargados = MutableLiveData(false)
 
-
-    fun inicializarSharedPreferences(context: Context) {
-        sharedPreferencesManager = SharedPreferencesManager(context)
-        if (borradorSesionId.isEmpty()) {
-            borradorSesionId = "nacimiento_auto_${System.currentTimeMillis()}"
-        }
-
-        cargarBovinosEnCache()
-    }
-
-    // ============================================
-    // FUNCIÓN PARA CARGAR BOVINOS EN CACHÉ
-    // ============================================
     private fun cargarBovinosEnCache() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 _isLoadingBovinos.postValue(true)
-
                 repositorio.getBovinosWithCache(
                     nif = nif,
                     password = password,
@@ -75,7 +63,6 @@ class NacimientoViewmodel(application: Application) : AndroidViewModel(applicati
                     explotacio = codiMo,
                     forceRefresh = false
                 )
-
                 _bovinosCargados.postValue(true)
                 _isLoadingBovinos.postValue(false)
                 Log.d("NacimientoVM", "Bovinos cargados en caché")
@@ -87,15 +74,11 @@ class NacimientoViewmodel(application: Application) : AndroidViewModel(applicati
         }
     }
 
-    // ============================================
-    // FUNCIÓN PARA BUSCAR BOVINOS (AUTOCOMPLETADO)
-    // ============================================
     fun searchBovinos(query: String) {
         if (query.isBlank()) {
             _suggestionsBovinos.value = emptyList()
             return
         }
-
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val resultados = repositorio.searchBovinosLocal(query)
@@ -108,13 +91,15 @@ class NacimientoViewmodel(application: Application) : AndroidViewModel(applicati
         }
     }
 
-    // ============================================
-    // FUNCIÓN AL SELECCIONAR BOVINO
-    // ============================================
-    fun onBovinoSelected(animal: Animal) {
+    fun onMotherselected(animal: Animal) {
         _idMadre.value = animal.identificador
         _suggestionsBovinos.value = emptyList()
         Log.d("NacimientoVM", "Bovino seleccionado: ${animal.identificador}")
+    }
+
+    fun onBreedingSelected(animal: Animal) {
+        _idCria.value = animal.identificador
+        _suggestionsBovinos.value = emptyList()
     }
 
     fun tieneContenido(): Boolean {
@@ -132,7 +117,6 @@ class NacimientoViewmodel(application: Application) : AndroidViewModel(applicati
             Log.d("Autoguardado Nacimiento", "No hay contenido para guardar")
             return
         }
-
         try {
             val datosNacimiento = mapOf(
                 "idMadre" to _idMadre.value,
@@ -146,23 +130,19 @@ class NacimientoViewmodel(application: Application) : AndroidViewModel(applicati
                 "sexoApiSeleccionado" to sexoApiSeleccionado,
                 "codigoAptitud" to codigoAptitud
             )
-
             val borradorExistente = sharedPreferencesManager.obtenerBorradores()
                 .find { it.id == borradorSesionId }
-
             val borrador = borradorExistente?.copy(
                 fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
                 datos = Gson().toJson(datosNacimiento)
+            ) ?: Borrador(
+                id = borradorSesionId,
+                tipo = "NACIMIENTO",
+                fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
+                datos = Gson().toJson(datosNacimiento),
+                estado = "BORRADOR_AUTO"
             )
-                ?: Borrador(
-                    id = borradorSesionId,
-                    tipo = "NACIMIENTO",
-                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
-                    hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
-                    datos = Gson().toJson(datosNacimiento),
-                    estado = "BORRADOR_AUTO"
-                )
-
             sharedPreferencesManager.guardarBorrador(borrador)
             Log.d("Autoguardado Nacimiento", "Borrador guardado: $borradorSesionId")
         } catch (e: Exception) {
@@ -174,15 +154,12 @@ class NacimientoViewmodel(application: Application) : AndroidViewModel(applicati
         try {
             val borrador = sharedPreferencesManager.obtenerBorradores()
                 .find { it.id == id } ?: return
-
             editandoBorrador = true
             borradorSesionId = borrador.id
-
             val datos: Map<String, Any?> = Gson().fromJson(
                 borrador.datos,
                 object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
             )
-
             _idMadre.value = datos["idMadre"] as? String ?: ""
             _idCria.value = datos["idCria"] as? String ?: ""
             _fechaNacimiento.value = datos["fechaNacimiento"] as? String ?: ""
@@ -193,7 +170,6 @@ class NacimientoViewmodel(application: Application) : AndroidViewModel(applicati
             _codigoRaza.value = datos["codigoRaza"] as? String ?: ""
             sexoApiSeleccionado = datos["sexoApiSeleccionado"] as? String ?: "0"
             codigoAptitud = datos["codigoAptitud"] as? String ?: "0"
-
             Log.d("NacimientoVM", "Borrador cargado por ID: $id")
         } catch (e: Exception) {
             Log.e("NacimientoVM", "Error al cargar borrador por ID: ${e.message}", e)
@@ -256,8 +232,8 @@ class NacimientoViewmodel(application: Application) : AndroidViewModel(applicati
     val sexoSeleccionado = _sexoSeleccionado
 
     private var sexoApiSeleccionado = "0"
-
     private var codigoAptitud = "0"
+
     private val _razaSeleccionada = MutableLiveData("")
     val razaSeleccionada = _razaSeleccionada
 
@@ -290,8 +266,6 @@ class NacimientoViewmodel(application: Application) : AndroidViewModel(applicati
 
     private val _cargandoNacimiento = MutableLiveData(false)
     val cargandoNacimiento = _cargandoNacimiento
-
-
 
     val listaAptitudes = listOf("Carne", "Leche", "Doble propósito")
 
@@ -363,9 +337,8 @@ class NacimientoViewmodel(application: Application) : AndroidViewModel(applicati
 
     fun registrarNacimiento() {
         _codiError.value = null
-
         if (!esFormularioNacimientoValido()) {
-            val mensajeError = when {
+            _codiError.value = when {
                 _idMadre.value.isNullOrEmpty() -> 1
                 _idCria.value.isNullOrEmpty() -> 2
                 _fechaNacimiento.value.isNullOrEmpty() -> 3
@@ -374,10 +347,8 @@ class NacimientoViewmodel(application: Application) : AndroidViewModel(applicati
                 _aptitudSeleccionada.value.isNullOrEmpty() -> 6
                 else -> 0
             }
-            _codiError.value = mensajeError
             return
         }
-
         viewModelScope.launch {
             _cargandoNacimiento.postValue(true)
             try {
@@ -392,9 +363,7 @@ class NacimientoViewmodel(application: Application) : AndroidViewModel(applicati
                     raca = _codigoRaza.value ?: "",
                     aptitud = codigoAptitud
                 )
-
                 val response = repositorio.putRegistrarNacimiento(request)
-
                 withContext(Dispatchers.Main) {
                     _cargandoNacimiento.value = false
                     when {

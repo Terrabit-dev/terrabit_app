@@ -1,10 +1,8 @@
 package com.example.terrabit_app.viewmodel
 
-import android.app.Application
-import android.content.Context
 import android.util.Log
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.Borrador
 import com.example.terrabit_app.data.SharedPreferencesManager
@@ -15,28 +13,32 @@ import com.example.terrabit_app.data.network.respuestas.RespuestaUnificada
 import com.example.terrabit_app.utils.DateUtils
 import com.example.terrabit_app.utils.UserPreferences
 import com.google.gson.Gson
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
+import javax.inject.Inject
 
-class ViewModelMuerteBovi (application: Application) : AndroidViewModel(application) {
-
-    private var repositorio = Repositorio(application)
-    private lateinit var sharedPreferencesManager: SharedPreferencesManager
+@HiltViewModel
+class ViewModelMuerteBovi @Inject constructor(
+    private val repositorio: Repositorio,
+    private val userPreferences: UserPreferences,
+    private val sharedPreferencesManager: SharedPreferencesManager
+) : ViewModel() {
 
     private var borradorSesionId: String = ""
-
-    private val userPreferences = UserPreferences(application)
 
     val nif = userPreferences.getNif() ?: ""
     val password = userPreferences.getPassword() ?: ""
     val codiMo = userPreferences.getCodiMO() ?: ""
 
-    // ============================================
-    // ESTADOS PARA AUTOCOMPLETADO
-    // ============================================
+    init {
+        borradorSesionId = "muerte_auto_${System.currentTimeMillis()}"
+        cargarBovinosEnCache()
+    }
+
     private val _suggestionsBovinos = MutableLiveData<List<Animal>>(emptyList())
     val suggestionsBovinos = _suggestionsBovinos
 
@@ -46,24 +48,10 @@ class ViewModelMuerteBovi (application: Application) : AndroidViewModel(applicat
     private val _bovinosCargados = MutableLiveData(false)
     val bovinosCargados = _bovinosCargados
 
-    fun inicializarSharedPreferences(context: Context) {
-        sharedPreferencesManager = SharedPreferencesManager(context)
-
-        if (borradorSesionId.isEmpty()) {
-            borradorSesionId = "muerte_auto_${System.currentTimeMillis()}"
-        }
-
-        cargarBovinosEnCache()
-    }
-
-    // ============================================
-    // FUNCIÓN PARA CARGAR BOVINOS EN CACHÉ
-    // ============================================
     private fun cargarBovinosEnCache() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 _isLoadingBovinos.postValue(true)
-
                 repositorio.getBovinosWithCache(
                     nif = nif,
                     password = password,
@@ -71,7 +59,6 @@ class ViewModelMuerteBovi (application: Application) : AndroidViewModel(applicat
                     explotacio = codiMo,
                     forceRefresh = false
                 )
-
                 _bovinosCargados.postValue(true)
                 _isLoadingBovinos.postValue(false)
                 Log.d("MuerteVM", "Bovinos cargados en caché")
@@ -83,15 +70,11 @@ class ViewModelMuerteBovi (application: Application) : AndroidViewModel(applicat
         }
     }
 
-    // ============================================
-    // FUNCIÓN PARA BUSCAR BOVINOS (AUTOCOMPLETADO)
-    // ============================================
     fun searchBovinos(query: String) {
         if (query.isBlank()) {
             _suggestionsBovinos.value = emptyList()
             return
         }
-
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val resultados = repositorio.searchBovinosLocal(query)
@@ -104,9 +87,6 @@ class ViewModelMuerteBovi (application: Application) : AndroidViewModel(applicat
         }
     }
 
-    // ============================================
-    // FUNCIÓN AL SELECCIONAR BOVINO
-    // ============================================
     fun onBovinoSelected(animal: Animal) {
         _identificadorMuerte.value = animal.identificador
         _suggestionsBovinos.value = emptyList()
@@ -128,7 +108,6 @@ class ViewModelMuerteBovi (application: Application) : AndroidViewModel(applicat
             Log.d("Autoguardado Muerte", "No hay contenido para guardar")
             return
         }
-
         try {
             val datosMuerte = mapOf(
                 "tipo" to _tipoMuerte.value,
@@ -140,10 +119,8 @@ class ViewModelMuerteBovi (application: Application) : AndroidViewModel(applicat
                 "coordenadaX" to _coordenadaX.value,
                 "coordenadaY" to _coordenadaY.value
             )
-
             val borradorExistente = sharedPreferencesManager.obtenerBorradores()
                 .find { it.id == borradorSesionId }
-
             val borrador = if (borradorExistente != null) {
                 borradorExistente.copy(
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
@@ -159,7 +136,6 @@ class ViewModelMuerteBovi (application: Application) : AndroidViewModel(applicat
                     estado = "BORRADOR_AUTO"
                 )
             }
-
             sharedPreferencesManager.guardarBorrador(borrador)
             Log.d("Autoguardado Muerte", "Borrador guardado: $borradorSesionId")
         } catch (e: Exception) {
@@ -171,14 +147,11 @@ class ViewModelMuerteBovi (application: Application) : AndroidViewModel(applicat
         try {
             val borrador = sharedPreferencesManager.obtenerBorradores()
                 .find { it.id == id } ?: return
-
             borradorSesionId = borrador.id
-
             val datos: Map<String, Any?> = Gson().fromJson(
                 borrador.datos,
                 object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
             )
-
             _tipoMuerte.value = datos["tipo"] as? String ?: ""
             _codigoTipoMuerte.value = datos["codigoTipo"] as? String ?: ""
             _identificadorMuerte.value = datos["identificador"] as? String ?: ""
@@ -187,7 +160,6 @@ class ViewModelMuerteBovi (application: Application) : AndroidViewModel(applicat
             _cadaverInaccesible.value = datos["cadaverInaccesible"] as? Boolean ?: false
             _coordenadaX.value = datos["coordenadaX"] as? String ?: ""
             _coordenadaY.value = datos["coordenadaY"] as? String ?: ""
-
             Log.d("MuerteVM", "Borrador cargado por ID: $id")
         } catch (e: Exception) {
             Log.e("MuerteVM", "Error al cargar borrador por ID: ${e.message}", e)
@@ -262,64 +234,37 @@ class ViewModelMuerteBovi (application: Application) : AndroidViewModel(applicat
         _tipoMuerte.value = tipo
         _codigoTipoMuerte.value = codigo
         _tipoMuerteExpandido.value = false
-
-        if (tipo.contains("Mort")) {
-            _mesesGestacion.value = ""
-        }
+        if (tipo.contains("Mort")) _mesesGestacion.value = ""
     }
 
-    fun actualizarIdentificadorMuerte(nuevoId: String) {
-        _identificadorMuerte.value = nuevoId
-    }
+    fun actualizarIdentificadorMuerte(nuevoId: String) { _identificadorMuerte.value = nuevoId }
 
     fun actualizarMesesGestacion(valor: String) {
-        if (valor.isEmpty() || (valor.toIntOrNull() in 1..9)) {
-            _mesesGestacion.value = valor
-        }
+        if (valor.isEmpty() || (valor.toIntOrNull() in 1..9)) _mesesGestacion.value = valor
     }
 
     fun toggleCadaverInaccesible() {
         val nuevoValor = !(_cadaverInaccesible.value ?: false)
         _cadaverInaccesible.value = nuevoValor
-
-        if (!nuevoValor) {
-            _coordenadaX.value = ""
-            _coordenadaY.value = ""
-        }
+        if (!nuevoValor) { _coordenadaX.value = ""; _coordenadaY.value = "" }
     }
 
-    fun actualizarCoordenadaX(valor: String) {
-        _coordenadaX.value = valor
-    }
-
-    fun actualizarCoordenadaY(valor: String) {
-        _coordenadaY.value = valor
-    }
-
-    fun toggleTipoMuerteExpandido() {
-        _tipoMuerteExpandido.value = !(_tipoMuerteExpandido.value ?: false)
-    }
-
-    fun cerrarTipoMuerteMenu() {
-        _tipoMuerteExpandido.value = false
-    }
-
-    fun mostrarDatePickerMuerte() {
-        _mostrarDatePickerMuerte.value = true
-    }
-
-    fun ocultarDatePickerMuerte() {
-        _mostrarDatePickerMuerte.value = false
-    }
+    fun actualizarCoordenadaX(valor: String) { _coordenadaX.value = valor }
+    fun actualizarCoordenadaY(valor: String) { _coordenadaY.value = valor }
+    fun toggleTipoMuerteExpandido() { _tipoMuerteExpandido.value = !(_tipoMuerteExpandido.value ?: false) }
+    fun cerrarTipoMuerteMenu() { _tipoMuerteExpandido.value = false }
+    fun mostrarDatePickerMuerte() { _mostrarDatePickerMuerte.value = true }
+    fun ocultarDatePickerMuerte() { _mostrarDatePickerMuerte.value = false }
 
     fun seleccionarFechaMuerte(fechaMillis: Long) {
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = fechaMillis
-        val dia = calendar.get(Calendar.DAY_OF_MONTH)
-        val mes = calendar.get(Calendar.MONTH) + 1
-        val anio = calendar.get(Calendar.YEAR)
-
-        _fechaMuerte.value = String.format("%02d/%02d/%04d", dia, mes, anio)
+        _fechaMuerte.value = String.format(
+            "%02d/%02d/%04d",
+            calendar.get(Calendar.DAY_OF_MONTH),
+            calendar.get(Calendar.MONTH) + 1,
+            calendar.get(Calendar.YEAR)
+        )
         _mostrarDatePickerMuerte.value = false
     }
 
@@ -333,33 +278,19 @@ class ViewModelMuerteBovi (application: Application) : AndroidViewModel(applicat
         val tipoValido = !_tipoMuerte.value.isNullOrEmpty()
         val identificadorValido = !_identificadorMuerte.value.isNullOrEmpty()
         val fechaValida = !_fechaMuerte.value.isNullOrEmpty()
-
         val mesesValidos = if (_tipoMuerte.value?.contains("Avortament") == true) {
             !_mesesGestacion.value.isNullOrEmpty() && _mesesGestacion.value?.toIntOrNull() in 1..9
-        } else {
-            true
-        }
-
+        } else true
         val coordenadasValidas = if (_cadaverInaccesible.value == true) {
             !_coordenadaX.value.isNullOrEmpty() && !_coordenadaY.value.isNullOrEmpty()
-        } else {
-            true
-        }
-
+        } else true
         return tipoValido && identificadorValido && fechaValida && mesesValidos && coordenadasValidas
     }
 
     fun limpiarFormularioMuerte() {
-        _tipoMuerte.value = ""
-        _codigoTipoMuerte.value = ""
-        _identificadorMuerte.value = ""
-        _fechaMuerte.value = ""
-        _mesesGestacion.value = ""
-        _cadaverInaccesible.value = false
-        _coordenadaX.value = ""
-        _coordenadaY.value = ""
-
-        borradorSesionId = ""
+        _tipoMuerte.value = ""; _codigoTipoMuerte.value = ""; _identificadorMuerte.value = ""
+        _fechaMuerte.value = ""; _mesesGestacion.value = ""; _cadaverInaccesible.value = false
+        _coordenadaX.value = ""; _coordenadaY.value = ""; borradorSesionId = ""
     }
 
     fun resetearEstadoRegistroMuerte() {
@@ -370,9 +301,8 @@ class ViewModelMuerteBovi (application: Application) : AndroidViewModel(applicat
 
     fun putMuerteBovino() {
         _codiError.value = null
-
         if (!esFormularioMuerteValido()) {
-            val mensajeError = when {
+            _codiError.value = when {
                 _tipoMuerte.value.isNullOrEmpty() -> 7
                 _identificadorMuerte.value.isNullOrEmpty() -> 0
                 _fechaMuerte.value.isNullOrEmpty() -> 8
@@ -381,24 +311,17 @@ class ViewModelMuerteBovi (application: Application) : AndroidViewModel(applicat
                 _cadaverInaccesible.value == true && _coordenadaY.value.isNullOrEmpty() -> 11
                 else -> 0
             }
-            _codiError.value = mensajeError
-            Log.e("Validación Muerte", "Error: $mensajeError")
+            Log.e("Validación Muerte", "Error: ${_codiError.value}")
             return
         }
-
         viewModelScope.launch {
             _cargandoMuerte.postValue(true)
-
             try {
                 val tipoCodigo = _codigoTipoMuerte.value?.substring(0, 2) ?: ""
                 val fechaAPI = DateUtils.convertirFechaAFormatoAPI(_fechaMuerte.value ?: "")
                 val coordX = if (_cadaverInaccesible.value == true) _coordenadaX.value else null
                 val coordY = if (_cadaverInaccesible.value == true) _coordenadaY.value else null
-                val mesesGest = if (_tipoMuerte.value?.contains("Avortament") == true) {
-                    _mesesGestacion.value
-                } else {
-                    null
-                }
+                val mesesGest = if (_tipoMuerte.value?.contains("Avortament") == true) _mesesGestacion.value else null
 
                 val request = RegistroMuerteBovi(
                     cadaverInaccesible = if (_cadaverInaccesible.value == true) "SI" else "NO",
@@ -414,19 +337,15 @@ class ViewModelMuerteBovi (application: Application) : AndroidViewModel(applicat
                 Log.d("Registro Muerte", "Request: $request")
 
                 val response = repositorio.putRegistrarMuerte(request)
-
                 withContext(Dispatchers.Main) {
                     _cargandoMuerte.value = false
-
                     when {
                         response.isSuccessful && response.body() != null -> {
                             val body = response.body()!!
                             if (body.codi == "0" || body.descripcio == "OK") {
                                 _registroMuerteExitoso.value = true
                                 _mensajeErrorMuerte.value = ""
-
                                 Log.d("Registro Muerte", "Muerte reportada exitosamente")
-
                                 eliminarBorradorAutomatico()
                                 limpiarFormularioMuerte()
                             } else {
@@ -440,11 +359,8 @@ class ViewModelMuerteBovi (application: Application) : AndroidViewModel(applicat
                             if (errorBody != null) {
                                 try {
                                     val errorObj = Gson().fromJson(errorBody, RespuestaUnificada::class.java)
-                                    _mensajeErrorMuerte.value = errorObj.errors?.firstOrNull()?.descripcio
-                                        ?: "Error desconocido del servidor"
-                                } catch (e: Exception) {
-                                    _mensajeErrorMuerte.value = "Error al procesar respuesta"
-                                }
+                                    _mensajeErrorMuerte.value = errorObj.errors?.firstOrNull()?.descripcio ?: "Error desconocido del servidor"
+                                } catch (e: Exception) { _mensajeErrorMuerte.value = "Error al procesar respuesta" }
                             }
                             _registroMuerteExitoso.value = false
                             Log.e("Error Registro Muerte", "HTTP ${response.code()}")
@@ -458,22 +374,19 @@ class ViewModelMuerteBovi (application: Application) : AndroidViewModel(applicat
                 }
             } catch (e: java.net.SocketTimeoutException) {
                 withContext(Dispatchers.Main) {
-                    _cargandoMuerte.value = false
-                    _registroMuerteExitoso.value = false
+                    _cargandoMuerte.value = false; _registroMuerteExitoso.value = false
                     _mensajeErrorMuerte.value = "Tiempo de espera agotado. La operación puede haberse completado, por favor verifique."
                     Log.e("Error Registro Muerte", "Timeout: ${e.message}", e)
                 }
             } catch (e: java.io.IOException) {
                 withContext(Dispatchers.Main) {
-                    _cargandoMuerte.value = false
-                    _registroMuerteExitoso.value = false
+                    _cargandoMuerte.value = false; _registroMuerteExitoso.value = false
                     _mensajeErrorMuerte.value = "Error de conexión. Verifique su conexión a internet."
                     Log.e("Error Registro Muerte", "Error de red: ${e.message}", e)
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    _cargandoMuerte.value = false
-                    _registroMuerteExitoso.value = false
+                    _cargandoMuerte.value = false; _registroMuerteExitoso.value = false
                     _mensajeErrorMuerte.value = "Error inesperado: ${e.message ?: "Error desconocido"}"
                     Log.e("Error Registro Muerte", "Error general: ${e.message}", e)
                     e.printStackTrace()

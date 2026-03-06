@@ -1,14 +1,15 @@
 package com.example.terrabit_app.viewmodel
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.utils.UserPreferences
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 sealed class LoginState {
     object Idle : LoginState()
@@ -17,9 +18,11 @@ sealed class LoginState {
     data class Error(val message: String) : LoginState()
 }
 
-class LoginViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository = Repositorio(application)
-    private val userPreferences = UserPreferences(application)
+@HiltViewModel
+class LoginViewModel @Inject constructor(
+    private val repository: Repositorio,
+    private val userPreferences: UserPreferences
+) : ViewModel() {
 
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
     val loginState: StateFlow<LoginState> = _loginState.asStateFlow()
@@ -50,7 +53,6 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun loadSavedCredentials() {
-        // Solo precargar si marcó "Recordarme"
         if (userPreferences.getRememberMe()) {
             _savedNif.value = userPreferences.getNif()
             _savedPassword.value = userPreferences.getPassword()
@@ -70,26 +72,14 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     private fun validateFields(nif: String, password: String, codiMO: String): Boolean {
         var isValid = true
 
-        if (nif.isBlank()) {
-            _nifError.value = "El NIF es obligatorio"
-            isValid = false
-        } else {
-            _nifError.value = null
-        }
+        if (nif.isBlank()) { _nifError.value = "El NIF es obligatorio"; isValid = false }
+        else _nifError.value = null
 
-        if (password.isBlank()) {
-            _passwordError.value = "La contraseña es obligatoria"
-            isValid = false
-        } else {
-            _passwordError.value = null
-        }
+        if (password.isBlank()) { _passwordError.value = "La contraseña es obligatoria"; isValid = false }
+        else _passwordError.value = null
 
-        if (codiMO.isBlank()) {
-            _codiMOError.value = "El código MO es obligatorio"
-            isValid = false
-        } else {
-            _codiMOError.value = null
-        }
+        if (codiMO.isBlank()) { _codiMOError.value = "El código MO es obligatorio"; isValid = false }
+        else _codiMOError.value = null
 
         return isValid
     }
@@ -99,21 +89,16 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
 
         viewModelScope.launch {
             _loginState.value = LoginState.Loading
-
             try {
                 val response = repository.getIdentificadoresDisponibles(
                     nif = nif,
                     passwordMobilitat = password,
                     codiMO = codiMO
                 )
-
                 if (response.isSuccessful) {
                     val identificadores = response.body()
                     if (identificadores != null && identificadores.identificadors.isNotEmpty()) {
-
-                        // ← Un solo método que lo gestiona todo
                         userPreferences.saveCredentials(nif, password, codiMO, rememberMe)
-
                         _loginState.value = LoginState.Success(nif, password, codiMO)
                     } else {
                         _loginState.value = LoginState.Error("Credenciales incorrectas")
