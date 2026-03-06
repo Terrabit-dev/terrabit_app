@@ -20,7 +20,14 @@ import com.example.terrabit_app.data.network.respuestas.ResBasica
 import com.example.terrabit_app.data.network.respuestas.ResConfirmacionMovi
 import com.example.terrabit_app.data.network.respuestas.ResModificarGuia
 import com.example.terrabit_app.data.network.respuestas.RespuestaUnificada
-import okhttp3.logging.HttpLoggingInterceptor
+import com.example.terrabit_app.data.network.DataClassPorcinos.AltaGuiaExitoResponse
+import com.example.terrabit_app.data.network.DataClassPorcinos.AltaMovimientoGTR
+import com.example.terrabit_app.data.network.DataClassPorcinos.ConfirmarMovimientosRequest
+import com.example.terrabit_app.data.network.DataClassPorcinos.ConsultaMovimientosPorConfirmar
+import com.example.terrabit_app.data.network.DataClassPorcinos.GtrConfirmacioResponse
+import com.example.terrabit_app.data.network.DataClassPorcinos.GtrStandardResponse
+import com.example.terrabit_app.data.network.DataClassPorcinos.GuiaGTRLista
+import com.example.terrabit_app.data.network.DataClassPorcinos.ModificarMovimentsAGias
 
 import okhttp3.OkHttpClient
 import retrofit2.Response
@@ -119,18 +126,74 @@ interface ApiInterface {
     suspend fun putSolicitudMaterial(
         @Body request: PetSolicitudMaterial
     ): Response<ResBasica>
+
+    //---------------------- PORCINOS ----------------------
+
+    // --- SECCIÓN 1: GESTIÓN DE SALIDAS (ALTA Y CARGA) ---
+
+    /**
+     * 5.1 SW Alta de guies
+     * Crea un nuevo movimiento en el sistema GTR.
+     */
+    @PUT("WSAltaguies/AppJava/WSAltaGuia")
+    suspend fun altaMovimientoPorcino(
+        @Body request: AltaMovimientoGTR
+    ): Response<AltaGuiaExitoResponse>
+
+    /**
+     * 5.2 SW càrrega de guies DST per mobilitat
+     * Descarga las guías marcadas para movilidad desde el origen.
+     */
+    @GET("WSMobilitat/AppJava/WSCarregaGuiesMobilitat")
+    suspend fun     listarMovimientosOrigenPorcino(
+        @Query("nif") nif: String?,
+        @Query("password") password: String?,
+        @Query("codiMo") codiMo: String?,
+        @Query("codiRega") codiRega: String,
+        @Query("dataSortida") dataSortida: String // Format: yyyymmddHHMM
+    ): Response<List<GuiaGTRLista>>
+
+    /**
+     * 5.3 SW DST’s tramitats en App Mòbil
+     * Modifica y cierra (pasa a "Emesa") una guía descargada previamente.
+     */
+    @PUT("WSMobilitat/AppJava/WSModificarGuiasMovilitat")
+    suspend fun tramitarMovimientoMovilidadPorcina(
+        @Body request: ModificarMovimentsAGias
+    ): Response<GtrStandardResponse> // Quitamos el List
+
+
+    // --- SECCIÓN 2: CONFIRMACIÓN DE ENTRADAS (DESTINO) ---
+
+    /**
+     * 5.2 Consulta de moviments confirmació d’entrada
+     * Lista las guías que están esperando a que el destino confirme la llegada.
+     */
+    @GET("WSConfirmacioMoviments/AppJava/WSObtenirMovimentPteConfirmar")
+    suspend fun listarMovimientosPendientesEntradaPorcina(
+        @Query("nif") nif: String?,
+        @Query("password") password: String?,
+        @Query("moDesti") moDesti: String?,
+        @Query("dataSortidaDesde") desde: String,
+        @Query("dataSortidaFins") fins: String
+    ): Response<ConsultaMovimientosPorConfirmar>
+
+    /**
+     * 5.1 Confirmació de moviments d’entrada
+     * El destino confirma oficialmente que los animales han llegado.
+     */
+    @PUT("WSConfirmacioMoviments/AppJava/WSConfirmarMoviment")
+    suspend fun confirmarEntradaMovimientoPorcina(
+        @Body request: ConfirmarMovimientosRequest
+    ): Response<GtrConfirmacioResponse>
+
+
     companion object {
         val BASE_URL = "https://preproduccio.aplicacions.agricultura.gencat.cat/gtr/"
 
         fun create(): ApiInterface {
-
-            val logging = HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.BODY
-            }
-
             // Configurar timeouts más largos
             val client = OkHttpClient.Builder()
-                .addInterceptor(logging)
                 .connectTimeout(60, TimeUnit.SECONDS)  // Timeout de conexión: 60 segundos
                 .readTimeout(60, TimeUnit.SECONDS)     // Timeout de lectura: 60 segundos
                 .writeTimeout(60, TimeUnit.SECONDS)    // Timeout de escritura: 60 segundos

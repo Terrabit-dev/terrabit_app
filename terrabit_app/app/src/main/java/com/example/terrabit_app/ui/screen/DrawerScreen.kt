@@ -1,5 +1,7 @@
 package com.example.terrabit_app.ui.screen
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -42,6 +44,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.terrabit_app.R
@@ -59,10 +62,11 @@ import com.example.terrabit_app.viewmodel.DrawerViewModel
 import com.example.terrabit_app.viewmodel.MainViewmodel
 import kotlinx.coroutines.launch
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun DrawerScreen(
     bluetooth: BluetoothViewModel,
-    mainNavController: androidx.navigation.NavController,
+    mainNavController: NavController,
     drawerViewModel: DrawerViewModel
 ) {
     val drawerNavController = rememberNavController()
@@ -114,7 +118,8 @@ fun DrawerScreen(
         NavigationDrawer(
             bluetooth = bluetooth,
             navController = drawerNavController,
-            onMenuClick = { scope.launch { drawerState.open() } }
+            onMenuClick = { scope.launch { drawerState.open() } },
+            drawerViewModel = drawerViewModel
         )
     }
 }

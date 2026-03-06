@@ -5,7 +5,6 @@
     <string name="drawer_subtitle">Gestión Ganadera</string>
     <string name="drawer_explained">Tipo de Animal</string>
     <string name="bovinos_name">Bovinos</string>
-    <string name="draft_name">Borradores</string>
     <string name="porcionos_name">Porcinos</string>
 
     <string name="title_home">¡Bienvenido/a!</string>
@@ -21,9 +20,6 @@
     <string name="information_description_home">Todos los datos se sincronizan automáticamente con el sistema de registro de la Generalitat de Catalunya.</string>
     <string name="card_crear_guias">Crear guías</string>
 
-    <string name="list_bovinos">Mis Bovinos</string>
-    <string name="list_bovinos_subtitle">Mira tus Bovinos Disponibles</string>
-
     <string name="gestion_name_bovinos">Gestión de Bovinos</string>
     <string name="gestion_subtitle_bovinos">Selecciona una acción</string>
     <string name="action_register_born">Registrar Nacimiento</string>
@@ -36,22 +32,6 @@
     <string name="content_description_back">Volver</string>
     <string name="action_create_guide">Altas Guías</string>
     <string name="action_confirm_movement">Confirmar Movimientos</string>
-
-
-    <string name="list_bovinos_title">Listado de Bovinos</string>
-    <string name="search_bar_list_bovinos">Buscar por identificador...</string>
-
-    <string name="error_loading_list_bovinos">Error Desconocido</string>
-    <string name="retry_loading_list_bovinos">Reintentar</string>
-    <string name="empty_list_bovinos">No hay Bovinos</string>
-    <string name="no_results_list_bovinos">No se encontraron resultados</string>
-
-    <string name="card_info_sex">Sexo</string>
-    <string name="card_info_sex_male">Macho</string>
-    <string name="card_info_sex_female">Hembra</string>
-    <string name="card_info_date_born">Fecha Nac.</string>
-    <string name="card_info_mom">Madre</string>
-
 
     <string name="born_register_name">Registrar Nacimiento</string>
     <string name="form_id_mother">ID Madre *</string>
@@ -136,7 +116,6 @@
     <string name="form_exploitation_destination_description">Código de explotación REGA</string>
     <string name="form_state_arrival">Estado de llegada *</string>
     <string name="form_state_arrival_description">Seleccionar estado</string>
-    <string name="form_movs_title_transport">Información del transporte</string>
     <string name="form_movs_title_optionals">Datos Opcionales del Transporte</string>
     <string name="form_ways_transports">Medio de Transporte</string>
     <string name="form_ways_transports_description">Seleccionar medio</string>
@@ -151,46 +130,6 @@
     <string name="error_message_confirm_movs">Error al Confirmar Movimiento</string>
     <string name="successful_message_confirm_movs">Movimiento confirmado exitosamente</string>
     <string name="buttom_form_confirm_movs">Confirmar Movimiento</string>
-    <string name="form_movs_title_animals">Información de los Animales</string>
-    <string name="form_movs_title_sacrifate_dade">Datos de sacrifício</string>
-    <string name="form_date_sacrifice">Fecha de sacrifício *</string>
-    <string name="form_weight_canal">Peso de Canal *</string>
-    <string name="form_weight_canal_description">Introducir el peso</string>
-    <string name="form_class_canal">Clase de Canal *</string>
-    <string name="form_class_canal_description">Seleccionar clase</string>
-    <string name="form_type_presentation">Tipo de presentació *</string>
-    <string name="form_type_presentation_description">Seleccionar tipo</string>
-
-
-
-    <string name="name_manage_guides">Gestionar Guías</string>
-
-    <string name="title_draft_found">Borrador encontrado</string>
-    <string name="msg_draft_found">Se encontró un formulario sin completar. ¿Deseas recuperarlo?</string>
-    <string name="btn_recover">Recuperar</string>
-    <string name="btn_discard">Descartar</string>
-
-    <string name="form_origin_exploitation">Explotación Origen *</string>
-    <string name="form_format_mo_rega">Formato MO o REGA</string>
-    <string name="form_temporal">Temporal *</string>
-    <string name="form_yes_no">SI;NO</string>
-    <string name="form_date_departure">Fecha Salida *</string>
-    <string name="form_mobility_guide">Guía por movilidad *</string>
-    <string name="form_pif_country">Código país para guías con destino PIF *</string>
-    <string name="form_pif_country_desc">Tipo explotación: Centro de Inspección</string>
-    <string name="form_pif_exploitation">Código explotación, para guías con destino PIF</string>
-    <string name="form_pif_exploitation_desc">Obligatorio si explotaciónDestino es un tipo explotación</string>
-    <string name="form_ates_max_chars">Máximo 15 caracteres</string>
-    <string name="form_transport_name_warning">Si existe ATES en GTR no se actualizará</string>
-
-    <string name="form_animal_identifiers">Identificadores de los Animales</string>
-    <string name="content_desc_add_id">Agregar identificador</string>
-    <string name="content_desc_remove_id">Eliminar identificador</string>
-    <string name="form_animal_id_example">Ejemplo: 1234567890LPOI</string>
-
-    <string name="btn_create_guide">Crear Guía</string>
-    <string name="success_create_guide">Guía creada exitosamente</string>
-    <string name="error_create_guide">Error al Crear Guía</string>
 
     <string name="form_error_mother_id">Por favor, introduzca el ID de la madre</string>
     <string name="form_error_breeding_id">Por favor, introduzca el ID de la cría</string>
@@ -214,12 +153,6 @@
     <string name="form_error_destination_farm">Por favor, introduzca la explotación de destino</string>
     <string name="form_error_arrival_status">Por favor, seleccione el estado de llegada</string>
 
-    <string name="form_error_origin_farm">Por favor, introduzca la explotación de origen</string>
-    <string name="form_error_temporal">Por favor, seleccione si es temporal</string>
-    <string name="form_error_exit_date">Por favor, seleccione la fecha de salida</string>
-    <string name="form_error_exit_time">Por favor, seleccione la hora de salida</string>
-    <string name="form_error_mobilitat">Por favor, seleccione si es guia por movilidad</string>
-
     <string name="option_truck">Camión</string>
     <string name="option_train">Tren</string>
     <string name="option_airplane">Avión</string>
@@ -230,8 +163,6 @@
     <string name="option_death_transport">Fallecido duanrante el transporte</string>
     <string name="option_death_stable">Fallecido en el establo</string>
     <string name="option_arrival">Llegado</string>
-    <string name="option_yes">SI</string>
-    <string name="option_no">NO</string>
 
 
     <string name="form_date_identification">Fecha de Identificación *</string>
@@ -247,6 +178,97 @@
     <string name="content_description_selecionado">Seleccionado</string>
     <string name="content_description_menu">Menú</string>
     <string name="content_description_notificaciones">Notificaciones</string>
+    <string name="form_movs_title_sacrifate_dade">Datos de sacrifício</string>
+    <string name="app_version">Versión 1.0.0</string>
+    <string name="list_bovinos">Mis Bovinos</string>
+    <string name="list_bovinos_subtitle">Mira tus Bovinos Disponibles</string>
+    <string name="form_movs_title_transport">Información del transporte</string>
+    <string name="form_date_sacrifice">Fecha de sacrifício *</string>
+    <string name="form_movs_title_animals">Información de los Animales</string>
+    <string name="form_weight_canal">Peso de Canal *</string>
+    <string name="form_weight_canal_description">Introducir el peso</string>
+    <string name="form_class_canal">Clase de Canal *</string>
+    <string name="form_class_canal_description">Seleccionar clase</string>
+    <string name="form_type_presentation">Tipo de presentació *</string>
+    <string name="form_type_presentation_description">Seleccionar tipo</string>
+    <string name="name_manage_guides">Gestionar Guías</string>
+    <string name="title_draft_found">Borrador encontrado</string>
+    <string name="msg_draft_found">Se encontró un formulario sin completar. ¿Deseas recuperarlo?</string>
+    <string name="btn_recover">Recuperar</string>
+    <string name="btn_discard">Descartar</string>
+    <string name="form_origin_exploitation">Explotación Origen *</string>
+    <string name="form_format_mo_rega">Formato MO o REGA</string>
+    <string name="form_temporal">Temporal *</string>
+    <string name="form_yes_no">SI;NO</string>
+    <string name="form_date_departure">Fecha Salida *</string>
+    <string name="form_mobility_guide">Guía por movilidad *</string>
+    <string name="form_pif_country">Código país para guías con destino PIF *</string>
+    <string name="form_pif_country_desc">Tipo explotación: Centro de Inspección</string>
+    <string name="form_pif_exploitation">Código explotación, para guías con destino PIF</string>
+    <string name="form_pif_exploitation_desc">Obligatorio si explotaciónDestino es un tipo explotación</string>
+    <string name="form_ates_max_chars">Máximo 15 caracteres</string>
+    <string name="form_transport_name_warning">Si existe ATES en GTR no se actualizará</string>
+    <string name="form_animal_identifiers">Identificadores de los Animales</string>
+    <string name="content_desc_add_id">Agregar identificador</string>
+    <string name="content_desc_remove_id">Eliminar identificador</string>
+    <string name="form_animal_id_example">Ejemplo: 1234567890LPOI</string>
+    <string name="btn_create_guide">Crear Guía</string>
+    <string name="success_create_guide">Guía creada exitosamente</string>
+    <string name="error_create_guide">Error al Crear Guía</string>
+    <string name="form_error_origin_farm">Por favor, introduzca la explotación de origen</string>
+    <string name="form_error_temporal">Por favor, seleccione si es temporal</string>
+    <string name="form_error_exit_date">Por favor, seleccione la fecha de salida</string>
+    <string name="form_error_exit_time">Por favor, seleccione la hora de salida</string>
+    <string name="form_error_mobilitat">Por favor, seleccione si es guia por movilidad</string>
+    <string name="option_yes">SI</string>
+    <string name="option_no">NO</string>
+    <string name="title_porcinos_gestion_guias">Gestionar Guías</string>
+    <string name="name_confirmar_entradas">Confirmar Entradas</string>
+    <string name="gestion_subtitle_porcinos">Selecciona una acción</string>
+    <string name="card_confirm_edit_guias_porcinos">Confirmar y editar guías</string>
+    <string name="card_confirm_entrada_porcinos">Confirmar Entradas</string>
+    <string name="form_porcinos_expl_entrada">Explotación de Entrada *</string>
+    <string name="form_porcinos_cod_expl_entrada">Introducir código de explotación de entrada</string>
+    <string name="form_porcinos_cod_cat">Código de Categoría *</string>
+    <string name="form_porcinos_descr_cat">Seleccionar categoria</string>
+    <string name="form_porcinos_nAnimales">Número de Animales *</string>
+    <string name="form_porcinos_descr_nAnimales">Introducir número de animales</string>
+    <string name="form_porcinos_fecha_salida">Fecha de salida *</string>
+    <string name="form_porcinos_descr_fechaS">Seleccionar fecha de salida</string>
+    <string name="content_description_calendario">Calendario</string>
+    <string name="form_porcinos_fecha_llegada">Fecha de llegada *</string>
+    <string name="form_porcinos_descr_fechaLl">Seleccionar fecha de llegada</string>
+    <string name="form_porcinos_cod_sir">Código SIR</string>
+    <string name="form_porcinos_descr_sir">Introducir código SIR</string>
+    <string name="form_porcinos_medio_trans">Medio de Transporte</string>
+    <string name="form_porcinos_descr_MTransp">Seleccionar medio de transporte</string>
+    <string name="form_porcinos_matricula">Matrícula</string>
+    <string name="form_porcinos_descr_matricula">Introducir Matrícula</string>
+    <string name="form_porcinos_nifCond">NIF del Conductor</string>
+    <string name="form_porcinos_descr_nifCond">Introducir NIF del conductor</string>
+    <string name="app_copyright">Terrabit©</string>
+    <string name="form_porcinos_edit_confirm">Editar y confirmar guía</string>
+    <string name="form_porcinos_no_entr">No hay entradas por confirmar</string>
+    <string name="form_porcino_entradas_fecha_salida">"Fecha Salida: "</string>
+    <string name="form_porcinos_entradas_fecha_llegada">"Fecha Llegada: "</string>
+    <string name="form_porcinos_but_confirmar">Confirmar</string>
+    <string name="gest_porcinos_edit_confirm">Editar y Confirmar Guías</string>
+    <string name="gest_porcinos_cargando_mov">Cargando movimientos...</string>
+    <string name="gest_porcinos_no_guias">No hay guías para editar o confirmar</string>
+    <string name="content_description_edit">Editar</string>
+    <string name="gest_porcinos_cargando_entradas">Cargando entradas...</string>
+    <string name="draft_name">Borradores</string>
+    <string name="list_bovinos_title">Listado de Bovinos</string>
+    <string name="search_bar_list_bovinos">Buscar por identificador...</string>
+    <string name="error_loading_list_bovinos">Error Desconocido</string>
+    <string name="retry_loading_list_bovinos">Reintentar</string>
+    <string name="empty_list_bovinos">No hay Bovinos</string>
+    <string name="no_results_list_bovinos">No se encontraron resultados</string>
+    <string name="card_info_sex">Sexo</string>
+    <string name="card_info_sex_male">Macho</string>
+    <string name="card_info_sex_female">Hembra</string>
+    <string name="card_info_date_born">Fecha Nac.</string>
+    <string name="card_info_mom">Madre</string>
     <string name="option_ordinary_mail">Correo ordinario</string>
     <string name="option_certificate_mail">Correo certificado</string>
     <string name="option_rancher">Ganadero / Explotación ganadera</string>
@@ -255,42 +277,31 @@
     <string name="option_electronic_crotal">Crotal electronico</string>
     <string name="option_electronic_injectable">Inyectable electronico</string>
     <string name="option_ruminal_bowl">Bolo ruminal</string>
-
-
-
     <string name="no_results_description_draft">No hay Resultados :O</string>
-
     <string name="title_draft">Borradores</string>
     <string name="counter_draft">Guardados</string>
-
     <string name="delete_all_option">Eliminar todos</string>
     <string name="title_delete_all_option">Eliminar todos los borradores</string>
     <string name="description_delete_all_option">¿Estás seguro de que deseas eliminar todos los borradores? Esta acción no se puede deshacer.</string>
     <string name="cancel_delete_option_general">Cancelar</string>
     <string name="confirm_delete_option_general">Confirmar</string>
-
     <string name="search_bar_text">Buscar borradores...</string>
-
     <string name="type_draft_title_death">Muerte</string>
     <string name="type_draft_title_material">Material</string>
     <string name="type_draft_title_born">Nacimiento</string>
     <string name="type_draft_title_sex">Corrección Sexo</string>
     <string name="type_draft_title_id">ID Aplazada</string>
-
     <string name="status_draft_saved">Guardado</string>
     <string name="status_draft_pending">Pendiente</string>
     <string name="status_draft_sending">Enviando</string>
     <string name="status_draft_error">Error</string>
-
     <string name="no_hour_value">Sin hora</string>
-
     <string name="edit_button_individual_card">Editar</string>
     <string name="delete_button_individual_card">Eliminar</string>
     <string name="duplicate_request_name">Solicitud de Duplicado</string>
     <string name="title_duplicate_error">Error al Solicitar Duplicado</string>
     <string name="success_duplicate_request">Duplicado solicitado exitosamente</string>
     <string name="btn_duplicate_request">Solicitar Duplicado</string>
-
     <string name="form_suply_company">Empresa Suministradora</string>
     <string name="form_suply_company_description">Seleccionar empresa</string>
     <string name="form_send_type">Tipo de Envío</string>
@@ -310,7 +321,6 @@
     <string name="form_municipality_description">Introducir municipio</string>
     <string name="form_contact_phone">Teléfono de Contacto</string>
     <string name="form_contact_phone_description">Introducir teléfono</string>
-
     <string name="title_identifiers">Identificadores</string>
     <string name="label_identifier_count">Identificador</string>
     <string name="action_add">Agregar</string>
@@ -318,7 +328,7 @@
     <string name="form_material_type_description">Seleccionar tipo de material</string>
     <string name="form_id_scan_description">Introducir o escanear identificador</string>
     <string name="option_crotal_simple_tisular">Crotal tisular simple</string>
-    <string name="option_crotal_double_tisular">Crotal tissular doble</string>
+    <string name="option_crotal_double_tisular">Crotal tisular doble</string>
     <string name="option_crotal_ruminal_bowl">Crotal + Bol ruminal</string>
     <string name="option_crotal_electronic_crotal">Crotal + Crotal electronico</string>
     <string name="option_rebuilding">Reidentificación</string>
@@ -327,5 +337,4 @@
     <string name="form_unitats_description">Ingrese el numero de unidades</string>
     <string name="alert_material_codiMo">El Codi MO es obligatorio para el tipo de material seleccionado</string>
     <string name="alert_necessary_codiMO">Campo obligatorio para este tipo de material</string>
-
 </resources>
