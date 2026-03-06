@@ -3,9 +3,7 @@ package com.example.terrabit_app.viewmodel.porcinos
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.terrabit_app.data.network.ApiInterface
 import com.example.terrabit_app.data.network.DataClassPorcinos.GtrStandardResponse
 import com.example.terrabit_app.data.network.DataClassPorcinos.GuiaGTRLista
 import com.example.terrabit_app.data.network.DataClassPorcinos.ModificarMovimentsAGias

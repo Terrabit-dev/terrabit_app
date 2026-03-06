@@ -24,7 +24,6 @@ import androidx.compose.material.icons.filled.Agriculture
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.EmojiNature
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.LocalShipping
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
@@ -60,7 +59,6 @@ import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.theme.BlueGrey
 import com.example.terrabit_app.ui.theme.DarkBlueGrey
 import com.example.terrabit_app.ui.theme.ErrorRed
-import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
 import com.example.terrabit_app.ui.theme.MintCreamOrange
 import com.example.terrabit_app.ui.theme.WhiteBackground

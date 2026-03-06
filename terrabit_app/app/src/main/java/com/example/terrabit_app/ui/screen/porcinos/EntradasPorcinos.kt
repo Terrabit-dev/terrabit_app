@@ -48,8 +48,6 @@ import com.example.terrabit_app.R
 import com.example.terrabit_app.data.network.DataClassPorcinos.MovimentPteDetail
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.viewmodel.porcinos.EntradasPorcinosViewModel
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)

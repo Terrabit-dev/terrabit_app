@@ -4,7 +4,6 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -32,15 +31,7 @@ import com.example.terrabit_app.ui.screen.porcinos.GestionGuiasPorcinos
 import com.example.terrabit_app.ui.screen.porcinos.HomePorcinos
 import com.example.terrabit_app.ui.screen.porcinos.PorcinosGestionGuias
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
-import com.example.terrabit_app.viewmodel.BorradorViewModel
-import com.example.terrabit_app.viewmodel.DrawerViewModel
-import com.example.terrabit_app.viewmodel.IdentificacionAplazaViewModel
-import com.example.terrabit_app.viewmodel.ListarBovinosViewModel
-import com.example.terrabit_app.viewmodel.MaterialViewModel
 import com.example.terrabit_app.ui.screen.bovinos.ConfigurationScreen
-import com.example.terrabit_app.viewmodel.ConfigurationViewModel
-import com.example.terrabit_app.viewmodel.porcinos.EditarGuiaPorcinosViewModel
-import com.example.terrabit_app.viewmodel.porcinos.GestionarGuiasViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable

@@ -63,7 +63,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
-import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.theme.BlueGrey
 import com.example.terrabit_app.ui.theme.DarkBlueGrey
 import com.example.terrabit_app.ui.theme.DarkWhiteBackground

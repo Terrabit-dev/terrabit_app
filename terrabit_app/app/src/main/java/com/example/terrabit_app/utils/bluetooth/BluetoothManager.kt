@@ -2,7 +2,6 @@ package com.example.terrabit_app.utils.bluetooth
 
 
 import android.Manifest
-import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothSocket
 import android.content.Context

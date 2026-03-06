@@ -1,14 +1,11 @@
 package com.example.terrabit_app.viewmodel.porcinos
 
 import android.app.Application
-import android.content.Context
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.room.util.copy
 import com.example.terrabit_app.data.network.DataClassPorcinos.GuiaGTRLista
 import com.example.terrabit_app.data.network.DataClassPorcinos.ModificarMovimentsAGias
 import com.example.terrabit_app.data.network.Repositorio
@@ -23,7 +20,7 @@ import java.time.format.DateTimeFormatter
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.util.Locale
+
 
 
 class EditarGuiaPorcinosViewModel(application: Application): AndroidViewModel(application){

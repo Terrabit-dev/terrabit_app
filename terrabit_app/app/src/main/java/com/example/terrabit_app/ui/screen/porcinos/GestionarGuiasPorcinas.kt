@@ -54,7 +54,6 @@ import com.example.terrabit_app.ui.theme.MainOrange
 import com.example.terrabit_app.utils.UserPreferences
 import com.example.terrabit_app.viewmodel.porcinos.EditarGuiaPorcinosViewModel
 import com.example.terrabit_app.viewmodel.porcinos.GestionarGuiasViewModel
-import com.example.terrabit_app.viewmodel.porcinos.GestionarGuiasViewModelFactory
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 

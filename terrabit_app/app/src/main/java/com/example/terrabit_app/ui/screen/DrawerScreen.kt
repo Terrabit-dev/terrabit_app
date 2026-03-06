@@ -21,7 +21,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.terrabit_app.R
@@ -31,7 +30,6 @@ import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
 import com.example.terrabit_app.utils.UserPreferences
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
-import com.example.terrabit_app.viewmodel.ConfigurationViewModel
 import com.example.terrabit_app.viewmodel.DrawerViewModel
 import kotlinx.coroutines.launch
 

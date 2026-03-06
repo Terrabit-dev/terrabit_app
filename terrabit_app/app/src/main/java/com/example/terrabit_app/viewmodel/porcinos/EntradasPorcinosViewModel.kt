@@ -6,8 +6,6 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.network.DataClassPorcinos.ConfirmarMovimientosRequest
 import com.example.terrabit_app.data.network.DataClassPorcinos.MovimentPteDetail

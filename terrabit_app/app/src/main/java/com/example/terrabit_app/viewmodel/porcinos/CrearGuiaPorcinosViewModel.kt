@@ -12,7 +12,6 @@ import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.DataClassPorcinos.AltaMovimientoGTR
-import com.example.terrabit_app.data.network.DataClassPorcinos.ModificarMovimentsAGias
 import com.example.terrabit_app.ui.screen.porcinos.CrearGuiasPorcinosUiState
 import com.example.terrabit_app.utils.UserPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
