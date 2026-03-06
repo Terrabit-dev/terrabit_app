@@ -62,10 +62,10 @@ import java.time.format.DateTimeFormatter
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GestionGuiasPorcinos(
-    navController: NavController,
-    viewModelGestionarGuias: GestionarGuiasViewModel,
-    viewModelEditarGuias: EditarGuiaPorcinosViewModel
+    navController: NavController
 ) {
+    val viewModelGestionarGuias = viewModel<GestionarGuiasViewModel>()
+    val viewModelEditarGuias = viewModel<EditarGuiaPorcinosViewModel>()
     val context = LocalContext.current
 
     // 1. Inicializamos la API usando tu propio companion object
@@ -75,9 +75,7 @@ fun GestionGuiasPorcinos(
     val userPrefs = remember { UserPreferences(context) }
 
     // 3. Creamos el ViewModel con la Factory
-    val viewModelGestionarGuias: GestionarGuiasViewModel = viewModel(
-        factory = GestionarGuiasViewModelFactory(repo, userPrefs)
-    )
+
 
 
     val uiStateGestionGuias by viewModelGestionarGuias.uiState.collectAsState()

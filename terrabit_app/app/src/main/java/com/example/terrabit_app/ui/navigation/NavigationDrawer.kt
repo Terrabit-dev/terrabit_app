@@ -10,8 +10,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.terrabit_app.ui.pantallas.BorradoresScreen
+import com.example.terrabit_app.ui.pantallas.CrearGuiasPorcinos
 import com.example.terrabit_app.ui.pantallas.GestionBovinos
-import com.example.terrabit_app.ui.pantallas.GestionPorcinos
 import com.example.terrabit_app.ui.pantallas.GuiasMovimientos
 import com.example.terrabit_app.ui.pantallas.GuiasMovimientosPorcinos
 import com.example.terrabit_app.ui.pantallas.MaterialCategoria
@@ -25,9 +25,11 @@ import com.example.terrabit_app.ui.screen.bovinos.Material
 import com.example.terrabit_app.ui.screen.bovinos.MaterialDupplicadosScreen
 import com.example.terrabit_app.ui.screen.bovinos.Movimientos
 import com.example.terrabit_app.ui.screen.bovinos.Nacimiento
+import com.example.terrabit_app.ui.screen.porcinos.EditarGuiaPorcinos
 import com.example.terrabit_app.ui.screen.porcinos.EntradasPorcinos
 import com.example.terrabit_app.ui.screen.porcinos.GestionGuiasPorcinos
 import com.example.terrabit_app.ui.screen.porcinos.HomePorcinos
+import com.example.terrabit_app.ui.screen.porcinos.PorcinosGestionGuias
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 import com.example.terrabit_app.viewmodel.BorradorViewModel
 import com.example.terrabit_app.viewmodel.DrawerViewModel
@@ -64,7 +66,7 @@ fun NavigationDrawer(
         composable(Routes.HomePorcinos.route) {
             HomePorcinos(
                 navController = navController,
-                drawerViewModel = drawerViewModel
+                onMenuClick = onMenuClick,
             )
         }
 
@@ -104,7 +106,7 @@ fun NavigationDrawer(
 
         // Pantallas de categorías porcinos
         composable(Routes.GestionPorcinos.route) {
-            GestionPorcinos(navController = navController)
+            PorcinosGestionGuias(navController = navController)
         }
 
         composable(Routes.GuiasMovimientosPorcinos.route) {
@@ -196,17 +198,20 @@ fun NavigationDrawer(
 
         // Pantallas Porcinos
         composable(Routes.GestionGuiasPorcinos.route) {
-            val vMGestion: GestionarGuiasViewModel = viewModel()
-            val vMEditar: EditarGuiaPorcinosViewModel = viewModel()
             GestionGuiasPorcinos(
-                navController = navController,
-                viewModelGestionarGuias = vMGestion,
-                viewModelEditarGuias = vMEditar
+                navController = navController
             )
         }
 
         composable(Routes.EntradasPorcinos.route) {
             EntradasPorcinos(navController = navController)
+        }
+
+        composable(Routes.CrearGuiasPorcinos.route){
+            CrearGuiasPorcinos(navController = navController)
+        }
+        composable(Routes.EditarGuiaPorcinos.route){
+            EditarGuiaPorcinos(navController = navController)
         }
     }
 }

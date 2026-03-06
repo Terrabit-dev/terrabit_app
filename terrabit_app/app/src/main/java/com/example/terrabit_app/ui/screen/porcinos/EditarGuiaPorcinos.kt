@@ -77,10 +77,10 @@ import com.example.terrabit_app.viewmodel.porcinos.GestionarGuiasViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditarGuiaPorcinos(
-    navController: NavController,
-    viewModelEditarGuias: EditarGuiaPorcinosViewModel,
-    viewModelGestionarGuias: GestionarGuiasViewModel
+    navController: NavController
 ) {
+    val viewModelEditarGuias = viewModel<EditarGuiaPorcinosViewModel>()
+    val viewModelGestionarGuias = viewModel<GestionarGuiasViewModel>()
     val uiStateEdita by viewModelEditarGuias.uiState.collectAsState()
     val uiStateLista by viewModelGestionarGuias.uiState.collectAsState()
 

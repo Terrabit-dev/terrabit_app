@@ -72,10 +72,10 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GestionPorcinos(
-    navController: NavController,
-    viewModel: CrearGuiaPorcinosViewModel = viewModel()
+fun CrearGuiasPorcinos(
+    navController: NavController
 ) {
+    val viewModel = viewModel<CrearGuiaPorcinosViewModel>()
     val uiState by viewModel.uiState.collectAsState()
     val scope = rememberCoroutineScope()
     val elementosConCodigos = ElementosConCodigosPorcinos()

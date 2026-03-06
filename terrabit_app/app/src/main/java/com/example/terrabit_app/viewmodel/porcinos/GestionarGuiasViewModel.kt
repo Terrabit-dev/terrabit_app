@@ -1,6 +1,8 @@
 package com.example.terrabit_app.viewmodel.porcinos
 
+import android.app.Application
 import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.network.ApiInterface
@@ -17,13 +19,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.collections.firstOrNull
 
-class GestionarGuiasViewModel(
-    private val repo: Repositorio,
-    private val userPreferences: UserPreferences // Para obtener NIF/Pass
-) : ViewModel() {
+class GestionarGuiasViewModel(application: Application): AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(GestionarGuiasPorcinosUiState())
     val uiState: StateFlow<GestionarGuiasPorcinosUiState> = _uiState.asStateFlow()
+    private val repo = Repositorio(application)
+    private lateinit var userPreferences: UserPreferences
+
 
     fun cargarMovimientosDesdeApi() {
         viewModelScope.launch {

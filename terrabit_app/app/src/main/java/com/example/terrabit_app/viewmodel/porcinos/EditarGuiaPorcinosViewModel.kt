@@ -1,9 +1,11 @@
 package com.example.terrabit_app.viewmodel.porcinos
 
+import android.app.Application
 import android.content.Context
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.room.util.copy
@@ -24,13 +26,11 @@ import java.time.ZoneId
 import java.util.Locale
 
 
-class EditarGuiaPorcinosViewModel(
-    context: Context
-) : ViewModel() {
+class EditarGuiaPorcinosViewModel(application: Application): AndroidViewModel(application){
     private val _uiState = MutableStateFlow(EditarGuiasPorcionsUiState())
     val uiState: StateFlow<EditarGuiasPorcionsUiState> = _uiState.asStateFlow()
 
-    private val repositorio = Repositorio(context)
+    private val repositorio = Repositorio(application)
 
     // --- CATEGORÍA ---
     fun seleccionarCategoria(nombre: String, codigo: String) {

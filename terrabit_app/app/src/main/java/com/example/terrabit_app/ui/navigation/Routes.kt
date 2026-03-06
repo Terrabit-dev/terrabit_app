@@ -43,13 +43,15 @@ sealed class Routes(val route: String) {
     object IdentificacionAplazada : Routes("IdentificacioAplaz?borradorId={borradorId}") {
         fun conBorrador(id: String) = "IdentificacioAplaz?borradorId=$id"
     }
+    object MaterialDuplicado : Routes("material_duplicado")
+    object Drawer : Routes("drawer_screen")
 
     // Screens Porcinos
     object GestionGuiasPorcinos : Routes("gestion_guias_porcinos")
     object EntradasPorcinos : Routes("entradas_porcinos")
-
-    object Drawer : Routes("drawer_screen")
-
-    object MaterialDuplicado : Routes("material_duplicado")
     object EditarGuiaPorcinos : Routes("editar_guia_porcinos")
+
+    object CrearGuiasPorcinos : Routes("crear_guias_porcinos")
+
+    object GestionarGuiasPorcinos : Routes("editar_confirmar_guias_porcin")
 }

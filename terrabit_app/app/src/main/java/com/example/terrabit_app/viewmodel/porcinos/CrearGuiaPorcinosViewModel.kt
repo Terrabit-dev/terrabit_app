@@ -1,10 +1,14 @@
 package com.example.terrabit_app.viewmodel.porcinos
 
+import android.annotation.SuppressLint
+import android.app.Application
 import android.content.Context
 import android.util.Log
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.text.isDigitsOnly
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.DataClassPorcinos.AltaMovimientoGTR
@@ -18,17 +22,15 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
-class CrearGuiaPorcinosViewModel(
-    context: Context
-): ViewModel() {
+class CrearGuiaPorcinosViewModel(application: Application): AndroidViewModel(application) {
     private val _uiState = MutableStateFlow(CrearGuiasPorcinosUiState())
     val uiState: StateFlow<CrearGuiasPorcinosUiState> = _uiState.asStateFlow()
 
-    private val repositorio = Repositorio(context)
+    private val repositorio = Repositorio(application)
     private lateinit var userPreferences: UserPreferences
 
-    fun inicializarUserPreferences(context: Context) {
-        userPreferences = UserPreferences(context)
+    fun inicializarUserPreferences(application: Context) {
+        userPreferences = UserPreferences(application)
     }
 
     fun actualizarExplotacion(nuevaExplotacion: String) {
@@ -102,6 +104,7 @@ class CrearGuiaPorcinosViewModel(
         }
     }
 
+    @SuppressLint("DefaultLocale")
     fun actualizarHoraSalida(hora: String, minutos: String) {
         _uiState.update { currentState ->
             currentState.copy(
@@ -114,6 +117,7 @@ class CrearGuiaPorcinosViewModel(
         }
     }
 
+    @SuppressLint("DefaultLocale")
     fun seleccionarFechaSalida(fechaMillis: Long) {
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = fechaMillis
@@ -153,6 +157,7 @@ class CrearGuiaPorcinosViewModel(
         }
     }
 
+    @SuppressLint("DefaultLocale")
     fun actualizarHoraLlegada(hora: String, minutos: String) {
         _uiState.update { currentState ->
             currentState.copy(
