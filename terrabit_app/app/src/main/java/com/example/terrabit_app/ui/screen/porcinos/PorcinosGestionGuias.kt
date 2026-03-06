@@ -1,5 +1,4 @@
-package com.example.terrabit_app.ui.pantallas
-
+package com.example.terrabit_app.ui.screen.porcinos
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,9 +10,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Create
-import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,33 +32,33 @@ import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.components.TarjetaAccion
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.theme.BlueGrey
-import com.example.terrabit_app.ui.theme.MainGreen
+import com.example.terrabit_app.ui.theme.MainOrange
 import com.example.terrabit_app.ui.theme.WhiteBackground
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GuiasMovimientosPorcinos(navController: NavController) {
+fun PorcinosGestionGuias(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        text = stringResource(R.string.card_name_guias),
+                        "Gestion de Guias Porcinos",
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { navController.navigate(Routes.HomePorcinos.route) }) {
                         Icon(
                             Icons.Default.ArrowBack,
-                            contentDescription = stringResource(R.string.content_description_back),
+                            contentDescription = "Volver",
                             tint = Color.White
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MainGreen
+                    containerColor = MainOrange
                 )
             )
         },
@@ -75,7 +74,7 @@ fun GuiasMovimientosPorcinos(navController: NavController) {
 
             // Descripción
             Text(
-                text = stringResource(R.string.gestion_subtitle_porcinos),
+                stringResource(R.string.gestion_subtitle_bovinos),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = BlueGrey,
@@ -91,28 +90,27 @@ fun GuiasMovimientosPorcinos(navController: NavController) {
                     .padding(horizontal = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Gestionar Guías y Confirmar Movimientos
+                // Registrar Nacimiento y Reportar Muerte
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     TarjetaAccion(
-                        icono = Icons.Default.Create,
-                        titulo = stringResource(R.string.card_confirm_edit_guias_porcinos),
+                        icono = Icons.Default.Add,
+                        titulo = "Crear Guia",
                         subtitulo = "",
-                        colorFondo = MainGreen,
+                        colorFondo = MainOrange,
                         modifier = Modifier.weight(1f),
-                        onClick = { navController.navigate(Routes.GestionGuiasPorcinos.route) }
+                        onClick = { navController.navigate(Routes.CrearGuiasPorcinos.route) }
                     )
 
                     TarjetaAccion(
-                        icono = Icons.Default.Send,
-                        titulo = stringResource(R.string.card_confirm_entrada_porcinos),
+                        icono = Icons.Default.Edit,
+                        titulo = "Editar Guia",
                         subtitulo = "",
-                        colorFondo = MainGreen,
-                        contadorBadge = 2,
+                        colorFondo = MainOrange,
                         modifier = Modifier.weight(1f),
-                        onClick = { navController.navigate(Routes.EntradasPorcinos.route) }
+                        onClick = { navController.navigate(Routes.EditarGuiaPorcinos.route) }
                     )
                 }
             }

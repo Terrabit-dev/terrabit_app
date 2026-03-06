@@ -17,7 +17,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
@@ -34,6 +34,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -45,34 +46,58 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
-import com.example.terrabit_app.data.network.DataClassPorcinos.MovimentPteDetail
+import com.example.terrabit_app.data.network.DataClassPorcinos.GuiaGTRLista
+import com.example.terrabit_app.data.network.Repositorio
+import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.theme.MainGreen
-import com.example.terrabit_app.viewmodel.porcinos.EntradasPorcinosViewModel
+import com.example.terrabit_app.ui.theme.MainOrange
+import com.example.terrabit_app.utils.UserPreferences
+import com.example.terrabit_app.viewmodel.porcinos.EditarGuiaPorcinosViewModel
+import com.example.terrabit_app.viewmodel.porcinos.GestionarGuiasViewModel
+import com.example.terrabit_app.viewmodel.porcinos.GestionarGuiasViewModelFactory
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EntradasPorcinos(
+fun GestionGuiasPorcinos(
     navController: NavController
 ) {
-
-    val viewModelEntradasGuias = viewModel<EntradasPorcinosViewModel>()
-    val uiState by viewModelEntradasGuias.uiState.collectAsState()
+    val viewModelGestionarGuias = viewModel<GestionarGuiasViewModel>()
+    val viewModelEditarGuias = viewModel<EditarGuiaPorcinosViewModel>()
     val context = LocalContext.current
 
+    // 1. Inicializamos la API usando tu propio companion object
+    val repo = remember { Repositorio(context) }
+
+    // 2. Inicializamos las preferencias
+    val userPrefs = remember { UserPreferences(context) }
+
+    // 3. Creamos el ViewModel con la Factory
+
+
+
+    val uiStateGestionGuias by viewModelGestionarGuias.uiState.collectAsState()
+
+    // Cargar datos al entrar
     LaunchedEffect(Unit) {
-        viewModelEntradasGuias.inicializarUserPreferences(context)
+        viewModelGestionarGuias.cargarMovimientosDesdeApi()
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.name_confirmar_entradas), fontWeight = FontWeight.Bold) },
+                title = {
+                    Text(
+                        text = stringResource(R.string.gest_porcinos_edit_confirm),
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = null)
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -83,14 +108,14 @@ fun EntradasPorcinos(
             )
         }
     ) { padding ->
-        // Contenedor principal para manejar el estado de carga
+        // Contenedor principal
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            if (uiState.isLoading) {
-                // PANTALLA DE CARGA
+            // CONDICIÓ: Si está cargando, muestra el círculo de carga.
+            if (uiStateGestionGuias.isLoading) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -102,13 +127,13 @@ fun EntradasPorcinos(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = stringResource(R.string.gest_porcinos_cargando_entradas),
+                        text = stringResource(R.string.gest_porcinos_cargando_mov),
                         color = Color.Gray,
                         fontSize = 14.sp
                     )
                 }
             } else {
-                // LISTA DE DATOS
+                // Si NO está cargando, muestra la lista o el mensaje de vacío
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
@@ -116,22 +141,27 @@ fun EntradasPorcinos(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    if (uiState.listaEntradasPorcinos.isEmpty()) {
+                    if (uiStateGestionGuias.listaGuiasPorcinos.isEmpty()) {
                         item {
                             Box(
                                 modifier = Modifier.fillParentMaxSize(),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = stringResource(R.string.form_porcinos_no_entr),
+                                    stringResource(R.string.gest_porcinos_no_guias),
                                     fontSize = 16.sp,
                                     color = Color.Gray
                                 )
                             }
                         }
                     } else {
-                        items(uiState.listaEntradasPorcinos) { guia ->
-                            EntradaCard(guia, viewModelEntradasGuias)
+                        items(uiStateGestionGuias.listaGuiasPorcinos) { guia ->
+                            GuiaCard(
+                                navController = navController,
+                                guia = guia,
+                                viewModelGestionarGuias = viewModelGestionarGuias,
+                                viewModelEditarGuias = viewModelEditarGuias
+                            )
                         }
                     }
                 }
@@ -142,32 +172,28 @@ fun EntradasPorcinos(
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun EntradaCard(
-    guia: MovimentPteDetail,
-    viewModelGestionarGuias: EntradasPorcinosViewModel = viewModel(),
+fun GuiaCard(
+    navController: NavController,
+    guia: GuiaGTRLista,
+    viewModelGestionarGuias: GestionarGuiasViewModel = viewModel(),
+    viewModelEditarGuias: EditarGuiaPorcinosViewModel = viewModel(),
 ) {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .padding(8.dp)) {
+        Box(modifier = Modifier.fillMaxSize().padding(8.dp)) {
             Column(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .padding(4.dp),
+                modifier = Modifier.fillMaxHeight().padding(4.dp),
                 verticalArrangement = Arrangement.SpaceEvenly
             ) {
                 Column {
-                    // Código REMO
                     Text(
-                        text = guia.codiRemo,
+                        text = guia.remo,
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp
                     )
-                    // MO Destinación
                     Text(
                         text = guia.moDesti,
                         fontWeight = FontWeight.Bold,
@@ -175,14 +201,12 @@ fun EntradaCard(
                     )
                 }
                 Column {
-                    // Fecha Salida
                     Text(
-                        text = stringResource(R.string.form_porcino_entradas_fecha_salida) + guia.dataSortida,
+                        text = stringResource(R.string.form_porcino_entradas_fecha_salida) + formatearFecha(guia.dataSortida.toLong()),
                         fontSize = 16.sp
                     )
-                    // Fecha Llegada
                     Text(
-                        text = stringResource(R.string.form_porcinos_entradas_fecha_llegada) + guia.dataArribada,
+                        text = stringResource(R.string.form_porcinos_entradas_fecha_llegada) + formatearFecha(guia.dataArribada.toLong()),
                         fontSize = 16.sp
                     )
                 }
@@ -191,23 +215,33 @@ fun EntradaCard(
                 modifier = Modifier.align(Alignment.BottomEnd),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                // Botón confirmar entrada
                 FilledIconButton(
                     onClick = {
-                        viewModelGestionarGuias.confirmarEntrada(guia)
+                        viewModelEditarGuias.cargarDatosGuia(guia)
+                        navController.navigate(Routes.EditarGuiaPorcinos.route)
                     },
                     shape = RoundedCornerShape(8.dp),
                     colors = IconButtonDefaults.iconButtonColors(
-                        containerColor = MainGreen
+                        containerColor = MainOrange
                     )
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Check,
-                        contentDescription = stringResource(R.string.form_porcinos_but_confirmar),
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = stringResource(R.string.content_description_edit),
                         tint = Color.White
                     )
                 }
             }
         }
     }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+fun formatearFecha(dateLong: Long): String {
+    val dateString = dateLong.toString()
+    val inputFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmm")
+    val dateTime = LocalDateTime.parse(dateString, inputFormatter)
+    val outputFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+
+    return dateTime.format(outputFormatter)
 }

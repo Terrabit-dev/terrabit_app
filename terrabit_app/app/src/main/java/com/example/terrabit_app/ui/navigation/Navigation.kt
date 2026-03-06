@@ -1,5 +1,7 @@
 package com.example.terrabit_app.ui.navigation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.navigation.compose.NavHost
@@ -12,6 +14,7 @@ import com.example.terrabit_app.viewmodel.DrawerViewModel
 import androidx.compose.ui.platform.LocalContext
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun Navigation(
     bluetooth: BluetoothViewModel,

@@ -10,7 +10,6 @@ import com.example.terrabit_app.data.network.animales.RegistroMuerteBovi
 import com.example.terrabit_app.data.network.animales.RegistroNacimientoBovi
 import com.example.terrabit_app.data.network.guias.PeticionAltaGuia
 import com.example.terrabit_app.data.network.guias.PeticionModificarGuia
-import com.example.terrabit_app.data.network.lista_bovinos.Animal
 import com.example.terrabit_app.data.network.material.PetSolicitudDuplicado
 import com.example.terrabit_app.data.network.material.PetSolicitudMaterial
 import com.example.terrabit_app.data.network.moviminetos.modelos.PetConfirmacionMovi
@@ -18,6 +17,10 @@ import com.example.terrabit_app.data.network.moviminetos.modelos.PetModificacioM
 import com.example.terrabit_app.data.network.moviminetos.modelos.PetRegistroIntercanvi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.example.terrabit_app.data.network.DataClassPorcinos.AltaMovimientoGTR
+import com.example.terrabit_app.data.network.DataClassPorcinos.ConfirmarMovimientosRequest
+import com.example.terrabit_app.data.network.DataClassPorcinos.ModificarMovimentsAGias
+import com.example.terrabit_app.data.network.lista_bovinos.Animal
 
 class Repositorio(context: Context) {
     val apiInterface = ApiInterface.create()
@@ -102,7 +105,6 @@ class Repositorio(context: Context) {
 
     suspend fun putRegistrarMuerte(request: RegistroMuerteBovi) =
         apiInterface.putRegistrarMuerte(request)
-
     suspend fun putRegistrarNacimiento(request: RegistroNacimientoBovi) =
         apiInterface.putRegistrarNacimiento(request)
 
@@ -114,6 +116,7 @@ class Repositorio(context: Context) {
 
     suspend fun putModificarGuia(request: PeticionModificarGuia) =
         apiInterface.putModificarGuia(request)
+
 
     suspend fun putConfirmarMovi(request: PetConfirmacionMovi) =
         apiInterface.putConfirmarMovi(request)
@@ -132,4 +135,41 @@ class Repositorio(context: Context) {
 
     suspend fun putSolicitudMaterial(request: PetSolicitudMaterial) =
         apiInterface.putSolicitudMaterial(request)
+
+    //------------------- Porcinos -------------------
+
+    // --- FLUJO DE SALIDAS (ORIGEN) ---
+
+    // 5.1 Alta de guías
+    suspend fun altaGuiaPorcinas(request: AltaMovimientoGTR) =
+        apiInterface.altaMovimientoPorcino(request)
+
+    // 5.2 Descarga de movimientos para movilidad
+    suspend fun getGuiasMobilitatPorcinas(
+        nif: String?,
+        password: String?,
+        codiMo: String?,
+        codiRega: String,
+        dataSortida: String
+    ) = apiInterface.listarMovimientosOrigenPorcino(nif, password, codiMo, codiRega, dataSortida)
+
+    // 5.3 Modificar y emitir guía (Cierre)
+    suspend fun tramitarGuiaPorcina(request: ModificarMovimentsAGias) =
+        apiInterface.tramitarMovimientoMovilidadPorcina(request)
+
+
+    // --- FLUJO DE ENTRADAS (DESTINO) ---
+
+    // 5.2 Consulta de movimientos pendientes de confirmar entrada
+    suspend fun getPendientesConfirmarEntradaPorcina(
+        nif: String?,
+        password: String?,
+        moDesti: String?,
+        desde: String,
+        fins: String
+    ) = apiInterface.listarMovimientosPendientesEntradaPorcina(nif, password, moDesti, desde, fins)
+
+    // 5.1 Confirmación oficial de la entrada
+    suspend fun confirmarEntradaPorcina(request: ConfirmarMovimientosRequest) =
+        apiInterface.confirmarEntradaMovimientoPorcina(request)
 }

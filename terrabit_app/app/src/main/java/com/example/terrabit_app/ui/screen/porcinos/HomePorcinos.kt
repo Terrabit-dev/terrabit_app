@@ -115,29 +115,19 @@ fun HomePorcinos(
                 // Tarjeta Crear Guias
                 TarjetaMenuPorcinos(
                     icono = Icons.Default.Agriculture,
-                    titulo = stringResource(R.string.card_crear_guias),
+                    titulo = "Gestión de Guias",
                     descripcion = stringResource(R.string.card_description_crear_guias_porcinos),
                     colorFondo = MainOrange,
                     onClick = { navController.navigate(Routes.GestionPorcinos.route) }
                 )
 
-                // Tarjeta Guías/Movimientos
-                TarjetaMenuPorcinos(
-                    icono = Icons.Default.LocalShipping,
-                    titulo = stringResource(R.string.card_name_guias),
-                    descripcion = stringResource(R.string.card_description_guias),
-                    colorFondo = MainGreen,
-                    contadorBadge = 2,
-                    onClick = { navController.navigate(Routes.GuiasMovimientosPorcinos.route) }
-                )
-
                 // Tarjeta Material
                 TarjetaMenuPorcinos(
                     icono = Icons.Default.ShoppingCart,
-                    titulo = stringResource(R.string.card_name_material),
+                    titulo = "Gestion de movimientos",
                     descripcion = stringResource(R.string.card_description_material),
                     colorFondo = MainOrange,
-                    onClick = { navController.navigate(Routes.MaterialCategoria.route) }
+                    onClick = { navController.navigate(Routes.GuiasMovimientosPorcinos.route) }
                 )
             }
 

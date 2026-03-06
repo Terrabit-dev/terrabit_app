@@ -1,5 +1,7 @@
 package com.example.terrabit_app.ui.navigation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -9,8 +11,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.terrabit_app.ui.pantallas.BorradoresScreen
+import com.example.terrabit_app.ui.pantallas.CrearGuiasPorcinos
 import com.example.terrabit_app.ui.pantallas.GestionBovinos
-import com.example.terrabit_app.ui.screen.porcinos.GestionPorcinos
 import com.example.terrabit_app.ui.pantallas.GuiasMovimientos
 import com.example.terrabit_app.ui.pantallas.GuiasMovimientosPorcinos
 import com.example.terrabit_app.ui.pantallas.MaterialCategoria
@@ -24,16 +26,23 @@ import com.example.terrabit_app.ui.screen.bovinos.Material
 import com.example.terrabit_app.ui.screen.bovinos.MaterialDuplicadosScreen
 import com.example.terrabit_app.ui.screen.bovinos.Movimientos
 import com.example.terrabit_app.ui.screen.bovinos.Nacimiento
+import com.example.terrabit_app.ui.screen.porcinos.EditarGuiaPorcinos
 import com.example.terrabit_app.ui.screen.porcinos.EntradasPorcinos
 import com.example.terrabit_app.ui.screen.porcinos.GestionGuiasPorcinos
 import com.example.terrabit_app.ui.screen.porcinos.HomePorcinos
+import com.example.terrabit_app.ui.screen.porcinos.PorcinosGestionGuias
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 import com.example.terrabit_app.viewmodel.BorradorViewModel
+import com.example.terrabit_app.viewmodel.DrawerViewModel
+import com.example.terrabit_app.viewmodel.IdentificacionAplazaViewModel
 import com.example.terrabit_app.viewmodel.ListarBovinosViewModel
 import com.example.terrabit_app.viewmodel.MaterialViewModel
 import com.example.terrabit_app.ui.screen.bovinos.ConfigurationScreen
 import com.example.terrabit_app.viewmodel.ConfigurationViewModel
+import com.example.terrabit_app.viewmodel.porcinos.EditarGuiaPorcinosViewModel
+import com.example.terrabit_app.viewmodel.porcinos.GestionarGuiasViewModel
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NavigationDrawer(
     bluetooth : BluetoothViewModel,
@@ -105,7 +114,7 @@ fun NavigationDrawer(
 
         // Pantallas de categorías porcinos
         composable(Routes.GestionPorcinos.route) {
-            GestionPorcinos(navController = navController)
+            PorcinosGestionGuias(navController = navController)
         }
 
         composable(Routes.GuiasMovimientosPorcinos.route) {
@@ -200,6 +209,13 @@ fun NavigationDrawer(
 
         composable(Routes.EntradasPorcinos.route) {
             EntradasPorcinos(navController = navController)
+        }
+
+        composable(Routes.CrearGuiasPorcinos.route){
+            CrearGuiasPorcinos(navController = navController)
+        }
+        composable(Routes.EditarGuiaPorcinos.route){
+            EditarGuiaPorcinos(navController = navController)
         }
     }
 }
