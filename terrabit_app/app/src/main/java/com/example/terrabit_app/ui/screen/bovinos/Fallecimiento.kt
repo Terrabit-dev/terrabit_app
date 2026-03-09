@@ -18,7 +18,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -28,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
@@ -74,7 +74,10 @@ fun Fallecimiento(navController: NavController, bluetoothViewModel: BluetoothVie
 
     val mensajeRegistroExitoso = stringResource(R.string.successful_message_dead)
     val mensajeRegistroError = stringResource(R.string.error_message_dead)
-    val elementosConCodigos = ElementosConCodigos()
+    val elementosConCodigos = remember { ElementosConCodigos() }
+
+
+    val datePickerState = rememberDatePickerState()
 
     if (mostrarBluetooth) {
         BluetoothScanDialog(
@@ -138,7 +141,6 @@ fun Fallecimiento(navController: NavController, bluetoothViewModel: BluetoothVie
     }
 
     if (mostrarDatePickerMuerte) {
-        val datePickerState = rememberDatePickerState()
         DatePickerDialog(
             onDismissRequest = { viewModel.ocultarDatePickerMuerte() },
             confirmButton = {
@@ -159,30 +161,7 @@ fun Fallecimiento(navController: NavController, bluetoothViewModel: BluetoothVie
         }
     }
 
-    if (estadoCarga) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.5f))
-                .clickable(enabled = false) {},
-            contentAlignment = Alignment.Center
-        ) {
-            Card(
-                modifier = Modifier.size(120.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                        CircularProgressIndicator(modifier = Modifier.size(48.dp), color = ErrorRed, strokeWidth = 4.dp)
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text("Procesando...", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                }
-            }
-        }
-    } else {
+    Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -463,6 +442,32 @@ fun Fallecimiento(navController: NavController, bluetoothViewModel: BluetoothVie
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
+            }
+        }
+
+
+        if (estadoCarga) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f))
+                    .clickable(enabled = false) {},
+                contentAlignment = Alignment.Center
+            ) {
+                Card(
+                    modifier = Modifier.size(120.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                            CircularProgressIndicator(modifier = Modifier.size(48.dp), color = ErrorRed, strokeWidth = 4.dp)
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(stringResource(R.string.loading_processing), fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
             }
         }
     }

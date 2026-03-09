@@ -26,7 +26,11 @@ import com.example.terrabit_app.R
 import com.example.terrabit_app.data.network.lista_bovinos.Animal
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.theme.MainGreen
+import com.example.terrabit_app.utils.SwipeBackContainer
 import com.example.terrabit_app.viewmodel.ListarBovinosViewModel
+import com.example.terrabit_app.ui.screen.bovinos.Home
+
+import okhttp3.Route
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,99 +46,108 @@ fun ListarBovinos(navController: NavController) {
         viewModel.cargarBovinos()
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.list_bovinos_title), fontSize = 20.sp, fontWeight = FontWeight.SemiBold) },
-                navigationIcon = {
-                    IconButton(onClick = { navController.navigate(Routes.HomeBovinos.route) }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MainGreen,
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
-                )
-            )
-        },
-        containerColor = MaterialTheme.colorScheme.background
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
-            Card(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                OutlinedTextField(
-                    value = busqueda,
-                    onValueChange = { viewModel.actualizarBusqueda(it) },
-                    modifier = Modifier.fillMaxWidth().padding(8.dp),
-                    placeholder = { Text(stringResource(R.string.search_bar_list_bovinos), color = MaterialTheme.colorScheme.onSurfaceVariant) },
-                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar", tint = MainGreen) },
-                    singleLine = true,
-                    shape = RoundedCornerShape(8.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MainGreen,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                        cursorColor = MainGreen,
-                        focusedContainerColor = MaterialTheme.colorScheme.surface,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+    ){
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text(stringResource(R.string.list_bovinos_title), fontSize = 20.sp, fontWeight = FontWeight.SemiBold) },
+                    navigationIcon = {
+                        IconButton(onClick = { navController.navigate(Routes.HomeBovinos.route) }) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MainGreen,
+                        titleContentColor = Color.White,
+                        navigationIconContentColor = Color.White
                     )
                 )
-            }
-
-            PullToRefreshBox(
-                isRefreshing = refrescando,
-                onRefresh = { viewModel.refrescar() },
-                modifier = Modifier.fillMaxSize()
+            },
+            containerColor = MaterialTheme.colorScheme.background
+        ) { padding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
             ) {
-                when {
-                    cargando -> {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator(color = MainGreen)
+                Card(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    OutlinedTextField(
+                        value = busqueda,
+                        onValueChange = { viewModel.actualizarBusqueda(it) },
+                        modifier = Modifier.fillMaxWidth().padding(8.dp),
+                        placeholder = { Text(stringResource(R.string.search_bar_list_bovinos), color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar", tint = MainGreen) },
+                        singleLine = true,
+                        shape = RoundedCornerShape(8.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MainGreen,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                            cursorColor = MainGreen,
+                            focusedContainerColor = MaterialTheme.colorScheme.surface,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                        )
+                    )
+                }
+
+                PullToRefreshBox(
+                    isRefreshing = refrescando,
+                    onRefresh = { viewModel.refrescar() },
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    when {
+                        cargando -> {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator(color = MainGreen)
+                            }
                         }
-                    }
-                    error != null -> {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(text = error ?: stringResource(R.string.error_loading_list_bovinos), color = MaterialTheme.colorScheme.error, fontSize = 16.sp)
-                                Spacer(modifier = Modifier.height(16.dp))
-                                Button(onClick = { viewModel.cargarBovinos() }, colors = ButtonDefaults.buttonColors(containerColor = MainGreen)) {
-                                    Text(stringResource(R.string.retry_loading_list_bovinos))
+                        error != null -> {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(text = error ?: stringResource(R.string.error_loading_list_bovinos), color = MaterialTheme.colorScheme.error, fontSize = 16.sp)
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    Button(onClick = { viewModel.cargarBovinos() }, colors = ButtonDefaults.buttonColors(containerColor = MainGreen)) {
+                                        Text(stringResource(R.string.retry_loading_list_bovinos))
+                                    }
                                 }
                             }
                         }
-                    }
-                    listaFiltrada.isEmpty() -> {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text(
-                                text = if (busqueda.isEmpty()) stringResource(R.string.empty_list_bovinos) else "No se encontraron resultados",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontSize = 16.sp
-                            )
+                        listaFiltrada.isEmpty() -> {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Text(
+                                    text = if (busqueda.isEmpty()) stringResource(R.string.empty_list_bovinos) else "No se encontraron resultados",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontSize = 16.sp
+                                )
+                            }
                         }
-                    }
-                    else -> {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            items(listaFiltrada) { animal -> TarjetaBovino(animal) }
+                        else -> {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                items(listaFiltrada) { animal -> TarjetaBovino(animal) }
+                            }
                         }
                     }
                 }
             }
         }
+
+
+
     }
+
 }
 
 @Composable

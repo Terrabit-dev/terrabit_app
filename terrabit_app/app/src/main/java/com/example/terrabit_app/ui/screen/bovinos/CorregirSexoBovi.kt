@@ -56,7 +56,7 @@ fun CorregirSexoBovi(navController: NavController, bluetoothViewModel: Bluetooth
 
     val mensajeCorreccionSexoExitosa = stringResource(R.string.successful_message_correct_sex)
     val mensajeErrorCorreccionSexo = stringResource(R.string.error_message_correct_sex)
-    val elementosConCodigos = ElementosConCodigos()
+    val elementosConCodigos = remember { ElementosConCodigos() }
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -123,30 +123,7 @@ fun CorregirSexoBovi(navController: NavController, bluetoothViewModel: Bluetooth
         )
     }
 
-    if (estadoCarga) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.5f))
-                .clickable(enabled = false) {},
-            contentAlignment = Alignment.Center
-        ) {
-            Card(
-                modifier = Modifier.size(120.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                        CircularProgressIndicator(modifier = Modifier.size(48.dp), color = MainGreen, strokeWidth = 4.dp)
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text("Procesando...", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                }
-            }
-        }
-    } else {
+    Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -228,6 +205,31 @@ fun CorregirSexoBovi(navController: NavController, bluetoothViewModel: Bluetooth
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
+            }
+        }
+
+        if (estadoCarga) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f))
+                    .clickable(enabled = false) {},
+                contentAlignment = Alignment.Center
+            ) {
+                Card(
+                    modifier = Modifier.size(120.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                            CircularProgressIndicator(modifier = Modifier.size(48.dp), color = MainGreen, strokeWidth = 4.dp)
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(stringResource(R.string.loading_processing), fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
             }
         }
     }
