@@ -56,4 +56,6 @@ sealed class Routes(val route: String) {
     object GestionarGuiasPorcinos : Routes("editar_confirmar_guias_porcin")
 
     object Configuration : Routes("configuration")
+
+    object  Usb : Routes("usb")
 }

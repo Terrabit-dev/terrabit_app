@@ -32,6 +32,7 @@ import com.example.terrabit_app.ui.screen.porcinos.HomePorcinos
 import com.example.terrabit_app.ui.screen.porcinos.PorcinosGestionGuias
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 import com.example.terrabit_app.ui.screen.bovinos.ConfigurationScreen
+import com.example.terrabit_app.ui.screen.bovinos.UsbTestScreen
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -44,6 +45,9 @@ fun NavigationDrawer(
         navController = navController,
         startDestination = Routes.HomeBovinos.route
     ) {
+        composable(Routes.Usb.route) {
+            UsbTestScreen( navController = navController)
+        }
         // ========== PANTALLAS CON HEADER PERSONALIZADO ==========
 
         // Pantalla principal Bovinos - CON header verde

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ESP32 via CP210x (el chip USB más común del ESP32) -->
+    <usb-device vendor-id="4292" product-id="60000" />
+    <!-- ESP32 via CH340 -->
+    <usb-device vendor-id="6790" product-id="29987" />
+    <!-- ESP32 via FTDI -->
+    <usb-device vendor-id="1027" product-id="24577" />
+</resources>
