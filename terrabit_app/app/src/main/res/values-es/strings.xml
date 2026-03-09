@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">Terrabit</string>
 
+    <string name="app_version">Versión 1.0.0</string>
     <string name="drawer_subtitle">Gestión Ganadera</string>
     <string name="drawer_explained">Tipo de Animal</string>
     <string name="bovinos_name">Bovinos</string>
