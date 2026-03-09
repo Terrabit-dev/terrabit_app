@@ -39,11 +39,6 @@ class NacimientoViewmodel @Inject constructor(
     val password = userPreferences.getPassword() ?: ""
     val codiMo = userPreferences.getCodiMO() ?: ""
 
-    init {
-        borradorSesionId = "nacimiento_auto_${System.currentTimeMillis()}"
-        cargarBovinosEnCache()
-    }
-
     private val _suggestionsBovinos = MutableLiveData<List<Animal>>(emptyList())
     val suggestionsBovinos = _suggestionsBovinos
 
@@ -51,6 +46,71 @@ class NacimientoViewmodel @Inject constructor(
     val isLoadingBovinos = _isLoadingBovinos
 
     private val _bovinosCargados = MutableLiveData(false)
+
+    val listaAptitudes = listOf("Carne", "Leche", "Doble propósito")
+
+    private val _identificadores = MutableLiveData<Identificadores>()
+    val identificadores = _identificadores
+
+    private val _idMadre = MutableLiveData("")
+    val idMadre = _idMadre
+
+    private val _codigoRaza = MutableLiveData("")
+
+    private val _fechaIdentificacion = MutableLiveData("")
+    val fechaIdentificacion = _fechaIdentificacion
+
+    private val _idCria = MutableLiveData("")
+    val idCria = _idCria
+
+    private val _fechaNacimiento = MutableLiveData("")
+    val fechaNacimiento = _fechaNacimiento
+
+    private val _sexoSeleccionado = MutableLiveData("")
+    val sexoSeleccionado = _sexoSeleccionado
+
+    private var sexoApiSeleccionado = "0"
+    private var codigoAptitud = "0"
+
+    private val _razaSeleccionada = MutableLiveData("")
+    val razaSeleccionada = _razaSeleccionada
+
+    private val _aptitudSeleccionada = MutableLiveData("")
+    val aptitudSeleccionada = _aptitudSeleccionada
+
+    private val _sexoExpandido = MutableLiveData(false)
+    val sexoExpandido = _sexoExpandido
+
+    private val _razaExpandida = MutableLiveData(false)
+    val razaExpandida = _razaExpandida
+
+    private val _aptitudExpandida = MutableLiveData(false)
+    val aptitudExpandida = _aptitudExpandida
+
+    private val _mostrarDatePicker = MutableLiveData(false)
+    val mostrarDatePicker = _mostrarDatePicker
+
+    private val _mostrarDatePickerIdentificacion = MutableLiveData(false)
+    val mostrarDatePickerIdentificacion = _mostrarDatePickerIdentificacion
+
+    private val _registroExitoso = MutableLiveData<Boolean>()
+    val registroExitoso = _registroExitoso
+
+    private val _mensajeError = MutableLiveData<String>()
+    val mensajeError = _mensajeError
+
+    private val _codiError = MutableLiveData<Int?>()
+    val codiError = _codiError
+
+    private val _cargandoNacimiento = MutableLiveData(false)
+    val cargandoNacimiento = _cargandoNacimiento
+
+
+
+    init {
+        borradorSesionId = "nacimiento_auto_${System.currentTimeMillis()}"
+        cargarBovinosEnCache()
+    }
 
     private fun cargarBovinosEnCache() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -198,9 +258,6 @@ class NacimientoViewmodel @Inject constructor(
         }
     }
 
-    private val _identificadores = MutableLiveData<Identificadores>()
-    val identificadores = _identificadores
-
     fun getIdentificadores(nif: String, password: String, codiMO: String) {
         CoroutineScope(Dispatchers.IO).launch {
             val response = repositorio.getIdentificadoresDisponibles(nif, password, codiMO)
@@ -213,61 +270,6 @@ class NacimientoViewmodel @Inject constructor(
             }
         }
     }
-
-    private val _idMadre = MutableLiveData("")
-    val idMadre = _idMadre
-
-    private val _codigoRaza = MutableLiveData("")
-
-    private val _fechaIdentificacion = MutableLiveData("")
-    val fechaIdentificacion = _fechaIdentificacion
-
-    private val _idCria = MutableLiveData("")
-    val idCria = _idCria
-
-    private val _fechaNacimiento = MutableLiveData("")
-    val fechaNacimiento = _fechaNacimiento
-
-    private val _sexoSeleccionado = MutableLiveData("")
-    val sexoSeleccionado = _sexoSeleccionado
-
-    private var sexoApiSeleccionado = "0"
-    private var codigoAptitud = "0"
-
-    private val _razaSeleccionada = MutableLiveData("")
-    val razaSeleccionada = _razaSeleccionada
-
-    private val _aptitudSeleccionada = MutableLiveData("")
-    val aptitudSeleccionada = _aptitudSeleccionada
-
-    private val _sexoExpandido = MutableLiveData(false)
-    val sexoExpandido = _sexoExpandido
-
-    private val _razaExpandida = MutableLiveData(false)
-    val razaExpandida = _razaExpandida
-
-    private val _aptitudExpandida = MutableLiveData(false)
-    val aptitudExpandida = _aptitudExpandida
-
-    private val _mostrarDatePicker = MutableLiveData(false)
-    val mostrarDatePicker = _mostrarDatePicker
-
-    private val _mostrarDatePickerIdentificacion = MutableLiveData(false)
-    val mostrarDatePickerIdentificacion = _mostrarDatePickerIdentificacion
-
-    private val _registroExitoso = MutableLiveData<Boolean>()
-    val registroExitoso = _registroExitoso
-
-    private val _mensajeError = MutableLiveData<String>()
-    val mensajeError = _mensajeError
-
-    private val _codiError = MutableLiveData<Int?>()
-    val codiError = _codiError
-
-    private val _cargandoNacimiento = MutableLiveData(false)
-    val cargandoNacimiento = _cargandoNacimiento
-
-    val listaAptitudes = listOf("Carne", "Leche", "Doble propósito")
 
     fun actualizarIdMadre(nuevoId: String) { _idMadre.value = nuevoId }
     fun actualizarIdCria(nuevoId: String) { _idCria.value = nuevoId }

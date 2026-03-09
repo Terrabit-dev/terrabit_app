@@ -34,11 +34,6 @@ class CorrecionSexoViewModel @Inject constructor(
     val password = userPreferences.getPassword() ?: ""
     val codiMo = userPreferences.getCodiMO() ?: ""
 
-    init {
-        borradorSesionId = "correccion_sexo_auto_${System.currentTimeMillis()}"
-        cargarBovinosEnCache()
-    }
-
     private val _suggestionsBovinos = MutableLiveData<List<Animal>>(emptyList())
     val suggestionsBovinos = _suggestionsBovinos
 
@@ -47,6 +42,36 @@ class CorrecionSexoViewModel @Inject constructor(
 
     private val _bovinosCargados = MutableLiveData(false)
     val bovinosCargados = _bovinosCargados
+
+    private val _identificadorCorreccionSexo = MutableLiveData("")
+    val identificadorCorreccionSexo = _identificadorCorreccionSexo
+
+    private val _sexoCorreccionSeleccionado = MutableLiveData("")
+    val sexoCorreccionSeleccionado = _sexoCorreccionSeleccionado
+
+    private val _sexoCorreccionExpandido = MutableLiveData(false)
+    val sexoCorreccionExpandido = _sexoCorreccionExpandido
+
+    private val _correccionSexoExitosa = MutableLiveData<Boolean>()
+    val correccionSexoExitosa = _correccionSexoExitosa
+
+    private val _mensajeErrorCorreccionSexo = MutableLiveData<String>()
+    val mensajeErrorCorreccionSexo = _mensajeErrorCorreccionSexo
+
+    private val _codiError = MutableLiveData<Int?>()
+    val codiError = _codiError
+
+    private val _estadoCarga = MutableLiveData(false)
+    val estadoCarga = _estadoCarga
+
+    val listaSexos = listOf("Macho", "Hembra")
+    private var codigoSexo = ""
+
+    init {
+        borradorSesionId = "correccion_sexo_auto_${System.currentTimeMillis()}"
+        cargarBovinosEnCache()
+    }
+
 
     private fun cargarBovinosEnCache() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -198,29 +223,7 @@ class CorrecionSexoViewModel @Inject constructor(
         }
     }
 
-    private val _identificadorCorreccionSexo = MutableLiveData("")
-    val identificadorCorreccionSexo = _identificadorCorreccionSexo
 
-    private val _sexoCorreccionSeleccionado = MutableLiveData("")
-    val sexoCorreccionSeleccionado = _sexoCorreccionSeleccionado
-
-    private val _sexoCorreccionExpandido = MutableLiveData(false)
-    val sexoCorreccionExpandido = _sexoCorreccionExpandido
-
-    private val _correccionSexoExitosa = MutableLiveData<Boolean>()
-    val correccionSexoExitosa = _correccionSexoExitosa
-
-    private val _mensajeErrorCorreccionSexo = MutableLiveData<String>()
-    val mensajeErrorCorreccionSexo = _mensajeErrorCorreccionSexo
-
-    private val _codiError = MutableLiveData<Int?>()
-    val codiError = _codiError
-
-    private val _estadoCarga = MutableLiveData(false)
-    val estadoCarga = _estadoCarga
-
-    val listaSexos = listOf("Macho", "Hembra")
-    private var codigoSexo = ""
 
     fun actualizarIdentificadorCorreccionSexo(nuevoId: String) { _identificadorCorreccionSexo.value = nuevoId }
 

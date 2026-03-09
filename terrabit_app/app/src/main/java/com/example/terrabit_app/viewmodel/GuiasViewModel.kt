@@ -30,16 +30,12 @@ class GuiasViewModel @Inject constructor(
     private val sharedPreferencesManager: SharedPreferencesManager
 ) : ViewModel() {
 
+
     private var borradorSesionId: String = ""
 
     val nif = userPreferences.getNif() ?: ""
     val password = userPreferences.getPassword() ?: ""
     val codiMo = userPreferences.getCodiMO() ?: ""
-
-    init {
-        borradorSesionId = "guia_auto_${System.currentTimeMillis()}"
-        cargarBovinosEnCache()
-    }
 
     private val _suggestionsBovinos = MutableLiveData<List<Animal>>(emptyList())
     val suggestionsBovinos = _suggestionsBovinos
@@ -52,6 +48,103 @@ class GuiasViewModel @Inject constructor(
 
     private val _activeFieldIndex = MutableLiveData<Int>(-1)
     val activeFieldIndex = _activeFieldIndex
+
+    private val _explotacioOrigen = MutableLiveData("")
+    val explotacioOrigen = _explotacioOrigen
+
+    private val _explotacioDestinacio = MutableLiveData("")
+    val explotacioDestinacio = _explotacioDestinacio
+
+    private val _temporal = MutableLiveData("")
+    val temporal = _temporal
+
+    private val _dataSortida = MutableLiveData("")
+    val dataSortida = _dataSortida
+
+    private val _horaSortida = MutableLiveData("")
+    val horaSortida = _horaSortida
+
+    private val _dataArribada = MutableLiveData("")
+    val dataArribada = _dataArribada
+
+    private val _horaArribada = MutableLiveData("")
+    val horaArribada = _horaArribada
+
+    private val _mobilitat = MutableLiveData("")
+    val mobilitat = _mobilitat
+
+    private val _pais = MutableLiveData("")
+    val pais = _pais
+
+    private var codiTemporal = ""
+    private var codiGuiaMobilidad = ""
+    private var codiTransport = ""
+
+    private val _codiExplotacio = MutableLiveData("")
+    val codiExplotacio = _codiExplotacio
+
+    private val _codiAtes = MutableLiveData("")
+    val codiAtes = _codiAtes
+
+    private val _nomTransportista = MutableLiveData("")
+    val nomTransportista = _nomTransportista
+
+    private val _mitjaTransport = MutableLiveData("")
+    val mitjaTransport = _mitjaTransport
+
+    private val _matricula = MutableLiveData("")
+    val matricula = _matricula
+
+    private val _nifConductor = MutableLiveData("")
+    val nifConductor = _nifConductor
+
+    private val _nomConductor = MutableLiveData("")
+    val nomConductor = _nomConductor
+
+    private val _identificadors = MutableLiveData<List<String>>(listOf(""))
+    val identificadors = _identificadors
+
+    private val _temporalExpandido = MutableLiveData(false)
+    val temporalExpandido = _temporalExpandido
+
+    private val _mobilitatExpandido = MutableLiveData(false)
+    val mobilitatExpandido = _mobilitatExpandido
+
+    private val _mitjaTransportExpandido = MutableLiveData(false)
+    val mitjaTransportExpandido = _mitjaTransportExpandido
+
+    private val _mostrarDatePickerSortida = MutableLiveData(false)
+    val mostrarDatePickerSortida = _mostrarDatePickerSortida
+
+    private val _mostrarTimePickerSortida = MutableLiveData(false)
+    val mostrarTimePickerSortida = _mostrarTimePickerSortida
+
+    private val _mostrarDatePickerArribada = MutableLiveData(false)
+    val mostrarDatePickerArribada = _mostrarDatePickerArribada
+
+    private val _mostrarTimePickerArribada = MutableLiveData(false)
+    val mostrarTimePickerArribada = _mostrarTimePickerArribada
+
+    private val _registroExitoso = MutableLiveData<Boolean>()
+    val registroExitoso = _registroExitoso
+
+    private val _mensajeError = MutableLiveData<String>()
+    val mensajeError = _mensajeError
+
+    private val _cargandoGuia = MutableLiveData(false)
+    val cargandoGuia = _cargandoGuia
+
+    private val _codiError = MutableLiveData<Int?>()
+    val codiError = _codiError
+
+
+
+
+    init {
+        borradorSesionId = "guia_auto_${System.currentTimeMillis()}"
+        cargarBovinosEnCache()
+    }
+
 
     private fun cargarBovinosEnCache() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -205,93 +298,7 @@ class GuiasViewModel @Inject constructor(
         }
     }
 
-    private val _explotacioOrigen = MutableLiveData("")
-    val explotacioOrigen = _explotacioOrigen
 
-    private val _explotacioDestinacio = MutableLiveData("")
-    val explotacioDestinacio = _explotacioDestinacio
-
-    private val _temporal = MutableLiveData("")
-    val temporal = _temporal
-
-    private val _dataSortida = MutableLiveData("")
-    val dataSortida = _dataSortida
-
-    private val _horaSortida = MutableLiveData("")
-    val horaSortida = _horaSortida
-
-    private val _dataArribada = MutableLiveData("")
-    val dataArribada = _dataArribada
-
-    private val _horaArribada = MutableLiveData("")
-    val horaArribada = _horaArribada
-
-    private val _mobilitat = MutableLiveData("")
-    val mobilitat = _mobilitat
-
-    private val _pais = MutableLiveData("")
-    val pais = _pais
-
-    private val _codiExplotacio = MutableLiveData("")
-    val codiExplotacio = _codiExplotacio
-
-    private val _codiAtes = MutableLiveData("")
-    val codiAtes = _codiAtes
-
-    private val _nomTransportista = MutableLiveData("")
-    val nomTransportista = _nomTransportista
-
-    private val _mitjaTransport = MutableLiveData("")
-    val mitjaTransport = _mitjaTransport
-
-    private val _matricula = MutableLiveData("")
-    val matricula = _matricula
-
-    private val _nifConductor = MutableLiveData("")
-    val nifConductor = _nifConductor
-
-    private val _nomConductor = MutableLiveData("")
-    val nomConductor = _nomConductor
-
-    private val _identificadors = MutableLiveData<List<String>>(listOf(""))
-    val identificadors = _identificadors
-
-    private val _temporalExpandido = MutableLiveData(false)
-    val temporalExpandido = _temporalExpandido
-
-    private val _mobilitatExpandido = MutableLiveData(false)
-    val mobilitatExpandido = _mobilitatExpandido
-
-    private val _mitjaTransportExpandido = MutableLiveData(false)
-    val mitjaTransportExpandido = _mitjaTransportExpandido
-
-    private val _mostrarDatePickerSortida = MutableLiveData(false)
-    val mostrarDatePickerSortida = _mostrarDatePickerSortida
-
-    private val _mostrarTimePickerSortida = MutableLiveData(false)
-    val mostrarTimePickerSortida = _mostrarTimePickerSortida
-
-    private val _mostrarDatePickerArribada = MutableLiveData(false)
-    val mostrarDatePickerArribada = _mostrarDatePickerArribada
-
-    private val _mostrarTimePickerArribada = MutableLiveData(false)
-    val mostrarTimePickerArribada = _mostrarTimePickerArribada
-
-    private val _registroExitoso = MutableLiveData<Boolean>()
-    val registroExitoso = _registroExitoso
-
-    private val _mensajeError = MutableLiveData<String>()
-    val mensajeError = _mensajeError
-
-    private val _cargandoGuia = MutableLiveData(false)
-    val cargandoGuia = _cargandoGuia
-
-    private val _codiError = MutableLiveData<Int?>()
-    val codiError = _codiError
-
-    private var codiTemporal = ""
-    private var codiGuiaMobilidad = ""
-    private var codiTransport = ""
 
     fun actualizarExplotacioOrigen(valor: String) { _explotacioOrigen.value = valor }
     fun actualizarExplotacioDestinacio(valor: String) { _explotacioDestinacio.value = valor }

@@ -36,6 +36,7 @@ class MovimientosViewModel @Inject constructor(
     val nif = userPreferences.getNif() ?: ""
     val password = userPreferences.getPassword() ?: ""
     val codiMo = userPreferences.getCodiMO() ?: ""
+    val listaCodigosAtes = listOf(CodigoAtes("D", "D - Transportista"))
 
     private var borradorSesionId: String = ""
 
@@ -50,6 +51,100 @@ class MovimientosViewModel @Inject constructor(
 
     private val _activeFieldIndex = MutableLiveData<Int>(-1)
     val activeFieldIndex = _activeFieldIndex
+
+    private val _movimientosPendientes = MutableLiveData<Movimientos?>()
+    val movimientosPendientes = _movimientosPendientes
+
+    private val _codiRemo = MutableLiveData("")
+    val codiRemo = _codiRemo
+
+    private val _dataArribada = MutableLiveData("")
+    val dataArribada = _dataArribada
+
+    private val _horaArribada = MutableLiveData("")
+    val horaArribada = _horaArribada
+
+    private val _codiAtes = MutableLiveData("")
+    val codiAtes = _codiAtes
+
+    private val _nomTransportista = MutableLiveData("")
+    val nomTransportista = _nomTransportista
+
+    private val _matricula = MutableLiveData("")
+    val matricula = _matricula
+
+    private val _mitjaTransport = MutableLiveData("")
+    val mitjaTransport = _mitjaTransport
+
+    private val _codiTransport = MutableLiveData("")
+    val codiTransport = _codiTransport
+
+    private val _codiEstats = MutableLiveData("")
+    val codiEstats = _codiEstats
+
+    private val _codiError = MutableLiveData<Int?>()
+    val codiError = _codiError
+
+    private val _nifConductor = MutableLiveData("")
+    val nifConductor = _nifConductor
+
+    private val _nomConductor = MutableLiveData("")
+    val nomConductor = _nomConductor
+
+    private val _explotacioDestinacio = MutableLiveData("")
+    val explotacioDestinacio = _explotacioDestinacio
+
+    private val _identificadorAnimal = MutableLiveData("")
+    val identificadorAnimal = _identificadorAnimal
+
+    private val _estatArribada = MutableLiveData("")
+    val estatArribada = _estatArribada
+
+    private val _codiAtesExpandido = MutableLiveData(false)
+    val codiAtesExpandido = _codiAtesExpandido
+
+    private val _mitjaTransportExpandido = MutableLiveData(false)
+    val mitjaTransportExpandido = _mitjaTransportExpandido
+
+    private val _estatArribadaExpandido = MutableLiveData(false)
+    val estatArribadaExpandido = _estatArribadaExpandido
+
+    private val _mostrarDatePickerArribada = MutableLiveData(false)
+    val mostrarDatePickerArribada = _mostrarDatePickerArribada
+
+    private val _mostrarTimePickerArribada = MutableLiveData(false)
+    val mostrarTimePickerArribada = _mostrarTimePickerArribada
+
+    private val _registroExitoso = MutableLiveData<Boolean>()
+    val registroExitoso = _registroExitoso
+
+    private val _mensajeError = MutableLiveData<String>()
+    val mensajeError = _mensajeError
+
+    private val _cargandoMovimiento = MutableLiveData(false)
+    val cargandoMovimiento = _cargandoMovimiento
+
+    private val limiteClassCanel = 5
+
+    private val _listaAnimales = MutableLiveData<List<IdenMovimiento>>(
+        listOf(IdenMovimiento(identificador = "", estatArribada = "", classCanal = null, dataSacrMort = null, pesCanal = null, tipusPresentacio = null))
+    )
+    val listaAnimales = _listaAnimales
+
+    private val _estatArribadaExpandidoPorIndice = MutableLiveData<Map<Int, Boolean>>(emptyMap())
+    val estatArribadaExpandidoPorIndice = _estatArribadaExpandidoPorIndice
+
+    private val _classCanalExpandidoPorIndice = MutableLiveData<Map<Int, Boolean>>(emptyMap())
+    val classCanalExpandidoPorIndice = _classCanalExpandidoPorIndice
+
+    private val _tipusPresentacioExpandidoPorIndice = MutableLiveData<Map<Int, Boolean>>(emptyMap())
+    val tipusPresentacioExpandidoPorIndice = _tipusPresentacioExpandidoPorIndice
+
+    private val _mostrarDatePickerPorIndice = MutableLiveData<Map<Int, Boolean>>(emptyMap())
+    val mostrarDatePickerPorIndice = _mostrarDatePickerPorIndice
+
+    private val _textoEstatArribadaPorIndice = MutableLiveData<Map<Int, String>>(emptyMap())
+    val textoEstatArribadaPorIndice = _textoEstatArribadaPorIndice
 
     init {
         borradorSesionId = "movimiento_auto_${System.currentTimeMillis()}"
@@ -200,8 +295,7 @@ class MovimientosViewModel @Inject constructor(
         }
     }
 
-    private val _movimientosPendientes = MutableLiveData<Movimientos?>()
-    val movimientosPendientes = _movimientosPendientes
+
 
     private val _cargandoLista = MutableLiveData(false)
     val cargandoLista = _cargandoLista
@@ -221,77 +315,10 @@ class MovimientosViewModel @Inject constructor(
         }
     }
 
-    private val _codiRemo = MutableLiveData("")
-    val codiRemo = _codiRemo
 
-    private val _dataArribada = MutableLiveData("")
-    val dataArribada = _dataArribada
-
-    private val _horaArribada = MutableLiveData("")
-    val horaArribada = _horaArribada
-
-    private val _codiAtes = MutableLiveData("")
-    val codiAtes = _codiAtes
-
-    private val _nomTransportista = MutableLiveData("")
-    val nomTransportista = _nomTransportista
-
-    private val _matricula = MutableLiveData("")
-    val matricula = _matricula
-
-    private val _mitjaTransport = MutableLiveData("")
-    val mitjaTransport = _mitjaTransport
-
-    private val _codiTransport = MutableLiveData("")
-    val codiTransport = _codiTransport
-
-    private val _codiEstats = MutableLiveData("")
-    val codiEstats = _codiEstats
-
-    private val _codiError = MutableLiveData<Int?>()
-    val codiError = _codiError
-
-    private val _nifConductor = MutableLiveData("")
-    val nifConductor = _nifConductor
-
-    private val _nomConductor = MutableLiveData("")
-    val nomConductor = _nomConductor
-
-    private val _explotacioDestinacio = MutableLiveData("")
-    val explotacioDestinacio = _explotacioDestinacio
-
-    private val _identificadorAnimal = MutableLiveData("")
-    val identificadorAnimal = _identificadorAnimal
-
-    private val _estatArribada = MutableLiveData("")
-    val estatArribada = _estatArribada
-
-    private val _codiAtesExpandido = MutableLiveData(false)
-    val codiAtesExpandido = _codiAtesExpandido
-
-    private val _mitjaTransportExpandido = MutableLiveData(false)
-    val mitjaTransportExpandido = _mitjaTransportExpandido
-
-    private val _estatArribadaExpandido = MutableLiveData(false)
-    val estatArribadaExpandido = _estatArribadaExpandido
-
-    private val _mostrarDatePickerArribada = MutableLiveData(false)
-    val mostrarDatePickerArribada = _mostrarDatePickerArribada
-
-    private val _mostrarTimePickerArribada = MutableLiveData(false)
-    val mostrarTimePickerArribada = _mostrarTimePickerArribada
-
-    private val _registroExitoso = MutableLiveData<Boolean>()
-    val registroExitoso = _registroExitoso
-
-    private val _mensajeError = MutableLiveData<String>()
-    val mensajeError = _mensajeError
-
-    private val _cargandoMovimiento = MutableLiveData(false)
-    val cargandoMovimiento = _cargandoMovimiento
 
     data class CodigoAtes(val codigo: String, val nombre: String)
-    val listaCodigosAtes = listOf(CodigoAtes("D", "D - Transportista"))
+
 
     fun actualizarCodiRemo(nuevoValor: String) { _codiRemo.value = nuevoValor }
     fun actualizarDataArribada(nuevaFecha: String) { _dataArribada.value = nuevaFecha }
@@ -322,28 +349,6 @@ class MovimientosViewModel @Inject constructor(
         _dataArribada.value = String.format("%02d/%02d/%04d", calendar.get(Calendar.DAY_OF_MONTH), calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.YEAR))
         _mostrarDatePickerArribada.value = false
     }
-
-    private val limiteClassCanel = 5
-
-    private val _listaAnimales = MutableLiveData<List<IdenMovimiento>>(
-        listOf(IdenMovimiento(identificador = "", estatArribada = "", classCanal = null, dataSacrMort = null, pesCanal = null, tipusPresentacio = null))
-    )
-    val listaAnimales = _listaAnimales
-
-    private val _estatArribadaExpandidoPorIndice = MutableLiveData<Map<Int, Boolean>>(emptyMap())
-    val estatArribadaExpandidoPorIndice = _estatArribadaExpandidoPorIndice
-
-    private val _classCanalExpandidoPorIndice = MutableLiveData<Map<Int, Boolean>>(emptyMap())
-    val classCanalExpandidoPorIndice = _classCanalExpandidoPorIndice
-
-    private val _tipusPresentacioExpandidoPorIndice = MutableLiveData<Map<Int, Boolean>>(emptyMap())
-    val tipusPresentacioExpandidoPorIndice = _tipusPresentacioExpandidoPorIndice
-
-    private val _mostrarDatePickerPorIndice = MutableLiveData<Map<Int, Boolean>>(emptyMap())
-    val mostrarDatePickerPorIndice = _mostrarDatePickerPorIndice
-
-    private val _textoEstatArribadaPorIndice = MutableLiveData<Map<Int, String>>(emptyMap())
-    val textoEstatArribadaPorIndice = _textoEstatArribadaPorIndice
 
     fun agregarAnimal() {
         _listaAnimales.value = (_listaAnimales.value ?: emptyList()) +

@@ -17,6 +17,8 @@ class CodiMoManagerViewModel : ViewModel() {
         _codisMoExpandido.value = false
     }
 }
+
+
 /**
  *     val context = LocalContext.current
  *     val userPreferences = remember { UserPreferences(context) }

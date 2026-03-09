@@ -33,12 +33,6 @@ class IdentificacionAplazaViewModel @Inject constructor(
     val nif = userPreferences.getNif() ?: ""
     val password = userPreferences.getPassword() ?: ""
     val codiMo = userPreferences.getCodiMO() ?: ""
-
-    init {
-        borradorSesionId = "identificacion_aplazada_auto_${System.currentTimeMillis()}"
-        cargarBovinosEnCache()
-    }
-
     private val _suggestionsBovinos = MutableLiveData<List<Animal>>(emptyList())
     val suggestionsBovinos = _suggestionsBovinos
 
@@ -47,6 +41,32 @@ class IdentificacionAplazaViewModel @Inject constructor(
 
     private val _bovinosCargados = MutableLiveData(false)
     val bovinosCargados = _bovinosCargados
+
+    private val _identificadorAnimal = MutableLiveData("")
+    val identificadorAnimal = _identificadorAnimal
+
+    private val _fechaIdentificacion = MutableLiveData("")
+    val fechaIdentificacion = _fechaIdentificacion
+
+    private val _mostrarDatePickerIdentificacion = MutableLiveData(false)
+    val mostrarDatePickerIdentificacion = _mostrarDatePickerIdentificacion
+
+    private val _identificacionExitosa = MutableLiveData<Boolean>()
+    val identificacionExitosa = _identificacionExitosa
+
+    private val _mensajeErrorIdentificacion = MutableLiveData<String>()
+    val mensajeErrorIdentificacion = _mensajeErrorIdentificacion
+
+    private val _codiError = MutableLiveData<Int?>()
+    val codiError = _codiError
+
+    private val _estadoCarga = MutableLiveData(false)
+    val estadoCarga = _estadoCarga
+
+    init {
+        borradorSesionId = "identificacion_aplazada_auto_${System.currentTimeMillis()}"
+        cargarBovinosEnCache()
+    }
 
     private fun cargarBovinosEnCache() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -171,26 +191,7 @@ class IdentificacionAplazaViewModel @Inject constructor(
         }
     }
 
-    private val _identificadorAnimal = MutableLiveData("")
-    val identificadorAnimal = _identificadorAnimal
 
-    private val _fechaIdentificacion = MutableLiveData("")
-    val fechaIdentificacion = _fechaIdentificacion
-
-    private val _mostrarDatePickerIdentificacion = MutableLiveData(false)
-    val mostrarDatePickerIdentificacion = _mostrarDatePickerIdentificacion
-
-    private val _identificacionExitosa = MutableLiveData<Boolean>()
-    val identificacionExitosa = _identificacionExitosa
-
-    private val _mensajeErrorIdentificacion = MutableLiveData<String>()
-    val mensajeErrorIdentificacion = _mensajeErrorIdentificacion
-
-    private val _codiError = MutableLiveData<Int?>()
-    val codiError = _codiError
-
-    private val _estadoCarga = MutableLiveData(false)
-    val estadoCarga = _estadoCarga
 
     fun actualizarIdentificadorAnimal(nuevoId: String) { _identificadorAnimal.value = nuevoId }
     fun mostrarDatePickerIdentificacion() { _mostrarDatePickerIdentificacion.value = true }

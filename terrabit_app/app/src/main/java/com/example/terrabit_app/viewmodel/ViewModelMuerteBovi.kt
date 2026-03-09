@@ -34,11 +34,6 @@ class ViewModelMuerteBovi @Inject constructor(
     val password = userPreferences.getPassword() ?: ""
     val codiMo = userPreferences.getCodiMO() ?: ""
 
-    init {
-        borradorSesionId = "muerte_auto_${System.currentTimeMillis()}"
-        cargarBovinosEnCache()
-    }
-
     private val _suggestionsBovinos = MutableLiveData<List<Animal>>(emptyList())
     val suggestionsBovinos = _suggestionsBovinos
 
@@ -47,6 +42,53 @@ class ViewModelMuerteBovi @Inject constructor(
 
     private val _bovinosCargados = MutableLiveData(false)
     val bovinosCargados = _bovinosCargados
+
+    private val _tipoMuerte = MutableLiveData("")
+    val tipoMuerte = _tipoMuerte
+
+    private val _identificadorMuerte = MutableLiveData("")
+    val identificadorMuerte = _identificadorMuerte
+
+    private val _fechaMuerte = MutableLiveData("")
+    val fechaMuerte = _fechaMuerte
+
+    private val _mesesGestacion = MutableLiveData("")
+    val mesesGestacion = _mesesGestacion
+
+    private val _cadaverInaccesible = MutableLiveData(false)
+    val cadaverInaccesible = _cadaverInaccesible
+
+    private val _coordenadaX = MutableLiveData("")
+    val coordenadaX = _coordenadaX
+
+    private val _coordenadaY = MutableLiveData("")
+    val coordenadaY = _coordenadaY
+
+    private val _tipoMuerteExpandido = MutableLiveData(false)
+    val tipoMuerteExpandido = _tipoMuerteExpandido
+
+    private val _mostrarDatePickerMuerte = MutableLiveData(false)
+    val mostrarDatePickerMuerte = _mostrarDatePickerMuerte
+
+    private val _registroMuerteExitoso = MutableLiveData<Boolean>()
+    val registroMuerteExitoso = _registroMuerteExitoso
+
+    private val _mensajeErrorMuerte = MutableLiveData<String>()
+    val mensajeErrorMuerte = _mensajeErrorMuerte
+
+    private val _codiError = MutableLiveData<Int?>()
+    val codiError = _codiError
+
+    private val _cargandoMuerte = MutableLiveData(false)
+    val cargandoMuerte = _cargandoMuerte
+
+    private val _codigoTipoMuerte = MutableLiveData<String>()
+    val codigoTipoMuerte = _codigoTipoMuerte
+
+    init {
+        borradorSesionId = "muerte_auto_${System.currentTimeMillis()}"
+        cargarBovinosEnCache()
+    }
 
     private fun cargarBovinosEnCache() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -188,47 +230,7 @@ class ViewModelMuerteBovi @Inject constructor(
         }
     }
 
-    private val _tipoMuerte = MutableLiveData("")
-    val tipoMuerte = _tipoMuerte
 
-    private val _identificadorMuerte = MutableLiveData("")
-    val identificadorMuerte = _identificadorMuerte
-
-    private val _fechaMuerte = MutableLiveData("")
-    val fechaMuerte = _fechaMuerte
-
-    private val _mesesGestacion = MutableLiveData("")
-    val mesesGestacion = _mesesGestacion
-
-    private val _cadaverInaccesible = MutableLiveData(false)
-    val cadaverInaccesible = _cadaverInaccesible
-
-    private val _coordenadaX = MutableLiveData("")
-    val coordenadaX = _coordenadaX
-
-    private val _coordenadaY = MutableLiveData("")
-    val coordenadaY = _coordenadaY
-
-    private val _tipoMuerteExpandido = MutableLiveData(false)
-    val tipoMuerteExpandido = _tipoMuerteExpandido
-
-    private val _mostrarDatePickerMuerte = MutableLiveData(false)
-    val mostrarDatePickerMuerte = _mostrarDatePickerMuerte
-
-    private val _registroMuerteExitoso = MutableLiveData<Boolean>()
-    val registroMuerteExitoso = _registroMuerteExitoso
-
-    private val _mensajeErrorMuerte = MutableLiveData<String>()
-    val mensajeErrorMuerte = _mensajeErrorMuerte
-
-    private val _codiError = MutableLiveData<Int?>()
-    val codiError = _codiError
-
-    private val _cargandoMuerte = MutableLiveData(false)
-    val cargandoMuerte = _cargandoMuerte
-
-    private val _codigoTipoMuerte = MutableLiveData<String>()
-    val codigoTipoMuerte = _codigoTipoMuerte
 
     fun seleccionarTipoMuerte(tipo: String, codigo: String) {
         _tipoMuerte.value = tipo
