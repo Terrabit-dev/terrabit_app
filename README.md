@@ -14,7 +14,6 @@ Terrabit es una solución tecnológica integral diseñada para facilitar la gest
 - Automatizar la interacción con aplicaciones administrativas (GTR, SITRAN)
 - Ofrecer servicios de e-commerce para productos de las asociadas de DMR
 - Investigar nuevas tecnologías para comunicación e identificación de animales
-- Implementar sistemas de detección automática en granjas
 
 ## 🔧 Ámbitos de Trabajo
 
@@ -42,10 +41,6 @@ A partir de la lectura del crotal, generar automáticamente las guías necesaria
 
 ### CAS 3: Plataforma E-commerce
 Aplicación de venta de productos y servicios para las asociadas de DMR con gestión de productos, stocks y ventas.
-
-### CAS 4: Detección Automática de Peso
-Sistema de visión por computador para detectar automáticamente cerdos que alcanzan 120 kg de peso en la granja.
-
 
 
 ## 👥 Equipo
