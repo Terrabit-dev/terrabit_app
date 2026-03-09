@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -169,8 +170,8 @@ fun BorradoresScreen(
 
     DialogoConfirmacion(
         mostrar = mostrarDialogoEliminarSeleccion,
-        titulo = "Eliminar seleccionados",
-        mensaje = "¿Eliminar ${selectedIds.size} borrador${if (selectedIds.size > 1) "es" else ""}?",
+        titulo = stringResource(R.string.title_delete_selected_draft),
+        mensaje = pluralStringResource(R.plurals.message_delete_selected_draft, selectedIds.size, selectedIds.size),
         onConfirmar = {
             viewModel.eliminarBorradores(selectedIds)
             selectedIds = emptySet()
@@ -252,7 +253,7 @@ fun HeaderBorradores(
 
             Text(
                 text = if (enModoSeleccion)
-                    "$totalSeleccionados seleccionado${if (totalSeleccionados > 1) "s" else ""}"
+                    pluralStringResource(R.plurals.title_draft_selected_count, totalSeleccionados, totalSeleccionados)
                 else
                     stringResource(R.string.title_draft),
                 fontSize = 32.sp,

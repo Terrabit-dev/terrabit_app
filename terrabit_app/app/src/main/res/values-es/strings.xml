@@ -268,16 +268,25 @@
     <string name="type_draft_title_born">Nacimiento</string>
     <string name="type_draft_title_sex">Corrección Sexo</string>
     <string name="type_draft_title_id">ID Aplazada</string>
-
     <string name="status_draft_saved">Guardado</string>
     <string name="status_draft_pending">Pendiente</string>
     <string name="status_draft_sending">Enviando</string>
     <string name="status_draft_error">Error</string>
-
     <string name="no_hour_value">Sin hora</string>
-
     <string name="edit_button_individual_card">Editar</string>
     <string name="delete_button_individual_card">Eliminar</string>
+    <string name="title_draft_selected">Seleccionado</string>
+    <string name="title_delete_selected_draft">Eliminar seleccionados</string>
+    <plurals name="message_delete_selected_draft">
+        <item quantity="one">Eliminar %d esborrany?</item>
+        <item quantity="other">Eliminar %d esborranys?</item>
+    </plurals>
+
+    <plurals name="title_draft_selected_count">
+        <item quantity="one">%d seleccionat</item>
+        <item quantity="other">%d seleccionats</item>
+    </plurals>
+
 
     <string name="option_ordinary_mail">Correo ordinario</string>
     <string name="option_certificate_mail">Correo certificado</string>

@@ -267,22 +267,30 @@
     <string name="confirm_delete_option_general">Confirmar</string>
 
     <string name="search_bar_text">Buscar esborranys...</string>
-
     <string name="type_draft_title_death">Mort</string>
     <string name="type_draft_title_material">Material</string>
     <string name="type_draft_title_born">Naixement</string>
     <string name="type_draft_title_sex">Corregir Sexe</string>
     <string name="type_draft_title_id">ID Ajornada</string>
-
     <string name="status_draft_saved">Desat</string>
     <string name="status_draft_pending">Pendent</string>
     <string name="status_draft_sending">Enviat</string>
     <string name="status_draft_error">Error</string>
-
     <string name="no_hour_value">Sense hora</string>
-
     <string name="edit_button_individual_card">Editar</string>
     <string name="delete_button_individual_card">Eliminar</string>
+    <string name="title_draft_selected">Seleccionat</string>
+    <string name="title_delete_selected_draft">Eliminar seleccionats</string>
+    <plurals name="message_delete_selected_draft">
+        <item quantity="one">Eliminar %d esborrany?</item>
+        <item quantity="other">Eliminar %d esborranys?</item>
+    </plurals>
+
+    <plurals name="title_draft_selected_count">
+        <item quantity="one">%d seleccionat</item>
+        <item quantity="other">%d seleccionats</item>
+    </plurals>
+
 
     <string name="duplicate_request_name">Sol·licitud de Duplicat</string>
     <string name="title_duplicate_error">Error en Sol·licitar el Duplicat</string>
