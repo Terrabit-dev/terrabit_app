@@ -2,7 +2,7 @@
 
 **Digitalización aplicada a la ganadería**
 
-Proyecto de innovación desarrollado por el **ITB** en colaboración con el **IES Álvaro Falomir** de Almassora, Castelló, y la **Asociación de Mujeres del Mundo Rural (DMR)**.
+Proyecto de innovación desarrollado por el **ITB** en colaboración con el **IES Álvaro Falomir** y la **Asociación de Mujeres del Mundo Rural (DMR)**.
 
 ## 📋 Descripción del Proyecto
 
