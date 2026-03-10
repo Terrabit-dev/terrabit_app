@@ -247,7 +247,10 @@ fun Movimientos(navController: NavController, bluetoothViewModel: BluetoothViewM
                 TopAppBar(
                     title = { Text(stringResource(R.string.name_confirm_movs), fontSize = 20.sp, fontWeight = FontWeight.SemiBold) },
                     navigationIcon = {
-                        IconButton(onClick = { navController.navigate(Routes.GuiasMovimientos.route) }) {
+                        IconButton(onClick = {
+                            if (borradorId.isNotEmpty()) navController.popBackStack()
+                            else navController.navigate(Routes.GuiasMovimientos.route)
+                        }) {
                             Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
                         }
                     },

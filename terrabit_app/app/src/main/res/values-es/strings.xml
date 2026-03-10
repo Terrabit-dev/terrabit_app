@@ -269,6 +269,10 @@
     <string name="type_draft_title_born">Nacimiento</string>
     <string name="type_draft_title_sex">Corrección Sexo</string>
     <string name="type_draft_title_id">ID Aplazada</string>
+    <string name="type_draft_title_material_duplicate">Material Duplicado</string>
+    <string name="type_draft_title_movement">Movimiento</string>
+    <string name="type_draft_title_guide">Guia</string>
+
     <string name="status_draft_saved">Guardado</string>
     <string name="status_draft_pending">Pendiente</string>
     <string name="status_draft_sending">Enviando</string>

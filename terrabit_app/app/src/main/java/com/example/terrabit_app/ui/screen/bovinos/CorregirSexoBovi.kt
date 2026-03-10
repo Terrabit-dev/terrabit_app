@@ -129,9 +129,13 @@ fun CorregirSexoBovi(navController: NavController, bluetoothViewModel: Bluetooth
                 TopAppBar(
                     title = { Text(stringResource(R.string.name_sex_correct), fontSize = 20.sp, fontWeight = FontWeight.SemiBold) },
                     navigationIcon = {
-                        IconButton(onClick = { navController.navigate(Routes.GestionBovinos.route) }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                        IconButton(onClick = {
+                            if (borradorId.isNotEmpty()) navController.popBackStack()
+                            else navController.navigate(Routes.GestionBovinos.route)
+                        }) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
                         }
+
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MainGreen,

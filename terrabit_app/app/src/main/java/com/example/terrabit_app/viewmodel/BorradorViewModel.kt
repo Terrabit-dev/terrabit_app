@@ -69,6 +69,9 @@ class BorradorViewModel @Inject constructor(
         "NACIMIENTO" -> "Nacimiento"
         "CORRECCION_SEXO" -> "Corrección Sexo"
         "IDENTIFICACION_APLAZADA" -> "ID Aplazada"
+        "MATERIAL_DUPLICADO" -> "Material Duplicado"
+        "MOVIMIENTO" -> "Movimiento"
+        "GUIA" -> "Guia"
         else -> tipo
     }
 

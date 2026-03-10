@@ -455,6 +455,10 @@ fun TarjetaBorrador(
         "NACIMIENTO" -> stringResource(R.string.type_draft_title_born)
         "CORRECCION_SEXO" -> stringResource(R.string.type_draft_title_sex)
         "IDENTIFICACION_APLAZADA" -> stringResource(R.string.type_draft_title_id)
+        "MATERIAL_DUPLICADO" -> stringResource(R.string.type_draft_title_material_duplicate)
+        "MOVIMIENTO" -> stringResource(R.string.type_draft_title_movement)
+        "GUIA" -> stringResource(R.string.type_draft_title_guide)
+
         else -> tipo
     }
 
@@ -523,6 +527,9 @@ fun TarjetaBorrador(
                                 "NACIMIENTO" -> Icons.Default.Add
                                 "CORRECCION_SEXO" -> Icons.Default.Edit
                                 "IDENTIFICACION_APLAZADA" -> Icons.Default.Badge
+                                "MATERIAL_DUPLICADO" -> Icons.Default.Animation
+                                "MOVIMIENTO" -> Icons.Default.SwapHoriz
+                                "GUIA" -> Icons.Default.Receipt
                                 else -> Icons.Default.Description
                             },
                             contentDescription = null,
@@ -532,6 +539,9 @@ fun TarjetaBorrador(
                                 "NACIMIENTO" -> MainGreen
                                 "CORRECCION_SEXO" -> Blue
                                 "IDENTIFICACION_APLAZADA" -> MainGreen
+                                "MATERIAL_DUPLICADO" -> MainGreen
+                                "MOVIMIENTO" -> MainOrange
+                                "GUIA" -> MainOrange
                                 else -> MaterialTheme.colorScheme.onSurfaceVariant
                             },
                             modifier = Modifier.size(28.dp)

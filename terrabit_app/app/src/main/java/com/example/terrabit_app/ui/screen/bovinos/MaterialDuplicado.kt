@@ -155,7 +155,10 @@ fun MaterialDuplicadosScreen(navController: NavController, bluetoothViewModel: B
                 TopAppBar(
                     title = { Text(stringResource(R.string.duplicate_request_name), fontSize = 20.sp, fontWeight = FontWeight.SemiBold) },
                     navigationIcon = {
-                        IconButton(onClick = { navController.navigate(Routes.MaterialCategoria.route) }) {
+                        IconButton(onClick = {
+                            if (borradorId.isNotEmpty()) navController.popBackStack()
+                            else navController.navigate(Routes.MaterialCategoria.route)
+                        }) {
                             Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
                         }
                     },
