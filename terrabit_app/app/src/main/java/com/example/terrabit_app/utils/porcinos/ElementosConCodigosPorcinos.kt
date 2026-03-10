@@ -21,8 +21,8 @@ class ElementosConCodigosPorcinos {
     @Composable
     fun medios(): Map<String, String> {
         val codigos = mapOf<String, String>(
-            stringResource(R.string.option_truck) to "01",
-            stringResource(R.string.option_other) to "999"
+             "01" to stringResource(R.string.option_truck),
+            "999" to stringResource(R.string.option_other)
         )
         return codigos
     }

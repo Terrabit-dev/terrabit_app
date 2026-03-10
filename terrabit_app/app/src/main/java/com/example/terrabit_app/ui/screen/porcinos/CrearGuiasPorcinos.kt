@@ -513,7 +513,7 @@ fun CrearGuiasPorcinos(
                         opciones = elementosConCodigos.medios(),
                         onExpandedChange = { viewModel.toggleMedioTransporteExpandido() },
                         onDismissRequest = { viewModel.cerrarMedioTransporteMenu() },
-                        onSeleccionar = { nombre, codigo -> viewModel.seleccionarMedioTransporte(nombre, codigo) },
+                        onSeleccionar = { codigo, nombre -> viewModel.seleccionarMedioTransporte(nombre, codigo) },
                         defectColor = false
                     )
 
