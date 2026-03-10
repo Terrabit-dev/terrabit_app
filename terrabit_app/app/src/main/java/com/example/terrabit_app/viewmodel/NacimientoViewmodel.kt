@@ -24,12 +24,15 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import com.example.terrabit_app.data.local.dao.BorradorDao
+import com.example.terrabit_app.data.local.database.BorradorEntity
+import com.example.terrabit_app.data.local.database.toBorrador
 
 @HiltViewModel
 class NacimientoViewmodel @Inject constructor(
     private val repositorio: Repositorio,
     private val userPreferences: UserPreferences,
-    private val sharedPreferencesManager: SharedPreferencesManager
+    private val borradorDao: BorradorDao
 ) : ViewModel() {
 
     private var borradorSesionId: String = ""
@@ -172,89 +175,76 @@ class NacimientoViewmodel @Inject constructor(
                 !_aptitudSeleccionada.value.isNullOrEmpty()
     }
 
+
     fun guardarBorradorAutomatico() {
-        if (!tieneContenido()) {
-            Log.d("Autoguardado Nacimiento", "No hay contenido para guardar")
-            return
-        }
-        try {
-            val datosNacimiento = mapOf(
-                "idMadre" to _idMadre.value,
-                "idCria" to _idCria.value,
-                "fechaNacimiento" to _fechaNacimiento.value,
-                "fechaIdentificacion" to _fechaIdentificacion.value,
-                "sexoSeleccionado" to _sexoSeleccionado.value,
-                "razaSeleccionada" to _razaSeleccionada.value,
-                "aptitudSeleccionada" to _aptitudSeleccionada.value,
-                "codigoRaza" to _codigoRaza.value,
-                "sexoApiSeleccionado" to sexoApiSeleccionado,
-                "codigoAptitud" to codigoAptitud
-            )
-            val borradorExistente = sharedPreferencesManager.obtenerBorradores()
-                .find { it.id == borradorSesionId }
-            val borrador = borradorExistente?.copy(
-                fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
-                datos = Gson().toJson(datosNacimiento)
-            ) ?: Borrador(
-                id = borradorSesionId,
-                tipo = "NACIMIENTO",
-                fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
-                hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
-                datos = Gson().toJson(datosNacimiento),
-                estado = "BORRADOR_AUTO"
-            )
-            sharedPreferencesManager.guardarBorrador(borrador)
-            Log.d("Autoguardado Nacimiento", "Borrador guardado: $borradorSesionId")
-        } catch (e: Exception) {
-            Log.e("Error Autoguardado Nacimiento", "Error al guardar: ${e.message}", e)
+        if (!tieneContenido()) return
+        viewModelScope.launch {
+            try {
+                val datos = mapOf(
+                    "idMadre" to _idMadre.value,
+                    "idCria" to _idCria.value,
+                    "fechaNacimiento" to _fechaNacimiento.value,
+                    "fechaIdentificacion" to _fechaIdentificacion.value,
+                    "sexoSeleccionado" to _sexoSeleccionado.value,
+                    "razaSeleccionada" to _razaSeleccionada.value,
+                    "aptitudSeleccionada" to _aptitudSeleccionada.value,
+                    "codigoRaza" to _codigoRaza.value,
+                    "sexoApiSeleccionado" to sexoApiSeleccionado,
+                    "codigoAptitud" to codigoAptitud
+                )
+                val existente = borradorDao.getAll().find { it.id == borradorSesionId }
+                val entity = existente?.copy(
+                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    datos = Gson().toJson(datos)
+                ) ?: BorradorEntity(
+                    id = borradorSesionId, tipo = "NACIMIENTO",
+                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
+                    datos = Gson().toJson(datos), estado = "BORRADOR_AUTO"
+                )
+                borradorDao.upsert(entity)
+            } catch (e: Exception) {
+                Log.e("Error Autoguardado Nacimiento", "Error al guardar: ${e.message}", e)
+            }
         }
     }
 
     fun cargarBorradorPorId(id: String) {
-        try {
-            val borrador = sharedPreferencesManager.obtenerBorradores()
-                .find { it.id == id } ?: return
-            editandoBorrador = true
-            borradorSesionId = borrador.id
-            val datos: Map<String, Any?> = Gson().fromJson(
-                borrador.datos,
-                object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
-            )
-            _idMadre.value = datos["idMadre"] as? String ?: ""
-            _idCria.value = datos["idCria"] as? String ?: ""
-            _fechaNacimiento.value = datos["fechaNacimiento"] as? String ?: ""
-            _fechaIdentificacion.value = datos["fechaIdentificacion"] as? String ?: ""
-            _sexoSeleccionado.value = datos["sexoSeleccionado"] as? String ?: ""
-            _razaSeleccionada.value = datos["razaSeleccionada"] as? String ?: ""
-            _aptitudSeleccionada.value = datos["aptitudSeleccionada"] as? String ?: ""
-            _codigoRaza.value = datos["codigoRaza"] as? String ?: ""
-            sexoApiSeleccionado = datos["sexoApiSeleccionado"] as? String ?: "0"
-            codigoAptitud = datos["codigoAptitud"] as? String ?: "0"
-            Log.d("NacimientoVM", "Borrador cargado por ID: $id")
-        } catch (e: Exception) {
-            Log.e("NacimientoVM", "Error al cargar borrador por ID: ${e.message}", e)
+        viewModelScope.launch {
+            try {
+                val borrador = borradorDao.getAll().find { it.id == id } ?: return@launch
+                editandoBorrador = true
+                borradorSesionId = borrador.id
+                val datos: Map<String, Any?> = Gson().fromJson(
+                    borrador.datos,
+                    object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
+                )
+                _idMadre.value = datos["idMadre"] as? String ?: ""
+                _idCria.value = datos["idCria"] as? String ?: ""
+                _fechaNacimiento.value = datos["fechaNacimiento"] as? String ?: ""
+                _fechaIdentificacion.value = datos["fechaIdentificacion"] as? String ?: ""
+                _sexoSeleccionado.value = datos["sexoSeleccionado"] as? String ?: ""
+                _razaSeleccionada.value = datos["razaSeleccionada"] as? String ?: ""
+                _aptitudSeleccionada.value = datos["aptitudSeleccionada"] as? String ?: ""
+                _codigoRaza.value = datos["codigoRaza"] as? String ?: ""
+                sexoApiSeleccionado = datos["sexoApiSeleccionado"] as? String ?: "0"
+                codigoAptitud = datos["codigoAptitud"] as? String ?: "0"
+            } catch (e: Exception) {
+                Log.e("NacimientoVM", "Error al cargar borrador por ID: ${e.message}", e)
+            }
         }
     }
 
     fun eliminarBorradorAutomatico() {
-        try {
-            if (borradorSesionId.isNotEmpty()) {
-                sharedPreferencesManager.eliminarBorrador(borradorSesionId)
-                Log.d("Eliminar Borrador", "Borrador eliminado: $borradorSesionId")
-                borradorSesionId = ""
+        viewModelScope.launch {
+            try {
+                if (borradorSesionId.isNotEmpty()) {
+                    borradorDao.deleteById(borradorSesionId)
+                    borradorSesionId = ""
+                }
+            } catch (e: Exception) {
+                Log.e("Error Eliminar Borrador", "Error: ${e.message}", e)
             }
-        } catch (e: Exception) {
-            Log.e("Error Eliminar Borrador", "Error: ${e.message}", e)
-        }
-    }
-
-    fun obtenerBorradoresNacimiento(): List<Borrador> {
-        return try {
-            sharedPreferencesManager.obtenerBorradores()
-                .filter { it.tipo == "NACIMIENTO" && it.estado == "BORRADOR_AUTO" }
-        } catch (e: Exception) {
-            Log.e("Error", "Error al obtener borradores: ${e.message}", e)
-            emptyList()
         }
     }
 

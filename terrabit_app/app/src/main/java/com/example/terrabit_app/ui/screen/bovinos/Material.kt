@@ -35,7 +35,7 @@ import com.example.terrabit_app.viewmodel.MaterialViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Material(navController: NavController) {
+fun Material(navController: NavController, borradorId: String= "") {
     val viewModel = hiltViewModel<MaterialViewModel>()
 
     val empresaSubministradora by viewModel.empresaSubministradora.observeAsState("")
@@ -74,6 +74,12 @@ fun Material(navController: NavController) {
 
     LaunchedEffect(mensajeError) {
         if (mensajeError.isNotEmpty()) mostrarDialogoError = true
+    }
+
+    LaunchedEffect(Unit) {
+        if (borradorId.isNotEmpty()) {
+            viewModel.cargarBorradorPorId(borradorId)
+        }
     }
 
     if (mostrarDialogoError && mensajeError.isNotEmpty()) {
@@ -225,7 +231,14 @@ fun Material(navController: NavController) {
             }
         }
     }
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.guardarBorradorAutomatico()
+        }
+    }
 }
+
+
 
 @Composable
 private fun UnidadesItem(

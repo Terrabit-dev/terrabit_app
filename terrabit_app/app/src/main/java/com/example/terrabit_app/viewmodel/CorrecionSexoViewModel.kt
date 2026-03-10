@@ -5,7 +5,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.Borrador
-import com.example.terrabit_app.data.SharedPreferencesManager
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.animales.PetModicarAnimal
 import com.example.terrabit_app.data.network.lista_bovinos.Animal
@@ -20,12 +19,15 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import com.example.terrabit_app.data.local.dao.BorradorDao
+import com.example.terrabit_app.data.local.database.BorradorEntity
+import com.example.terrabit_app.data.local.database.toBorrador
 
 @HiltViewModel
 class CorrecionSexoViewModel @Inject constructor(
     private val repositorio: Repositorio,
     private val userPreferences: UserPreferences,
-    private val sharedPreferencesManager: SharedPreferencesManager
+    private val borradorDao: BorradorDao
 ) : ViewModel() {
 
     private var borradorSesionId: String = ""
@@ -123,105 +125,86 @@ class CorrecionSexoViewModel @Inject constructor(
                 !_sexoCorreccionSeleccionado.value.isNullOrEmpty()
     }
 
+
     fun guardarBorradorAutomatico() {
-        if (!tieneContenido()) {
-            Log.d("Autoguardado CorrecionSexo", "No hay contenido para guardar")
-            return
-        }
-        try {
-            val datosCorregirSexo = mapOf(
-                "identificador" to _identificadorCorreccionSexo.value,
-                "sexoSeleccionado" to _sexoCorreccionSeleccionado.value,
-                "codigoSexo" to codigoSexo
-            )
-            val borradorExistente = sharedPreferencesManager.obtenerBorradores()
-                .find { it.id == borradorSesionId }
-            val borrador = if (borradorExistente != null) {
-                borradorExistente.copy(
-                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
-                    datos = Gson().toJson(datosCorregirSexo)
+        if (!tieneContenido()) return
+        viewModelScope.launch {
+            try {
+                val datos = mapOf(
+                    "identificador" to _identificadorCorreccionSexo.value,
+                    "sexoSeleccionado" to _sexoCorreccionSeleccionado.value,
+                    "codigoSexo" to codigoSexo
                 )
-            } else {
-                Borrador(
-                    id = borradorSesionId,
-                    tipo = "CORRECCION_SEXO",
+                val existente = borradorDao.getAll().find { it.id == borradorSesionId }
+                val entity = existente?.copy(
+                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    datos = Gson().toJson(datos)
+                ) ?: BorradorEntity(
+                    id = borradorSesionId, tipo = "CORRECCION_SEXO",
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
                     hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
-                    datos = Gson().toJson(datosCorregirSexo),
-                    estado = "BORRADOR_AUTO"
+                    datos = Gson().toJson(datos), estado = "BORRADOR_AUTO"
                 )
+                borradorDao.upsert(entity)
+            } catch (e: Exception) {
+                Log.e("Error Autoguardado Correcion Sexo", "Error al guardar: ${e.message}", e)
             }
-            sharedPreferencesManager.guardarBorrador(borrador)
-            Log.d("Autoguardado Correcion Sexo", "Borrador guardado: $borradorSesionId")
-        } catch (e: Exception) {
-            Log.e("Error Autoguardado Correcion Sexo", "Error al guardar: ${e.message}", e)
         }
     }
 
     fun cargarBorradorPorId(id: String) {
-        try {
-            val borrador = sharedPreferencesManager.obtenerBorradores()
-                .find { it.id == id } ?: return
-            borradorSesionId = borrador.id
-            val datos: Map<String, Any?> = Gson().fromJson(
-                borrador.datos,
-                object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
-            )
-            _identificadorCorreccionSexo.value = datos["identificador"] as? String ?: ""
-            _sexoCorreccionSeleccionado.value = datos["sexoSeleccionado"] as? String ?: ""
-            codigoSexo = datos["codigoSexo"] as? String ?: ""
-            Log.d("CorrecionSexoVM", "Borrador cargado por ID: $id")
-        } catch (e: Exception) {
-            Log.e("CorrecionSexoVM", "Error al cargar borrador por ID: ${e.message}", e)
-        }
-    }
-
-    fun cargarBorradorExistente() {
-        try {
-            val borradoresCorreccionSexo = sharedPreferencesManager.obtenerBorradores()
-                .filter { it.tipo == "CORRECCION_SEXO" && it.estado == "BORRADOR_AUTO" }
-            if (borradoresCorreccionSexo.isNotEmpty()) {
-                val borradorCorreccionSexo = borradoresCorreccionSexo.maxByOrNull {
-                    it.id.substringAfter("correccion_sexo_auto_").toLongOrNull() ?: 0L
-                }
-                if (borradorCorreccionSexo != null) {
-                    borradorSesionId = borradorCorreccionSexo.id
-                    val datos: Map<String, Any?> = Gson().fromJson(
-                        borradorCorreccionSexo.datos,
-                        object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
-                    )
-                    _identificadorCorreccionSexo.value = datos["identificador"] as? String ?: ""
-                    _sexoCorreccionSeleccionado.value = datos["sexoSeleccionado"] as? String ?: ""
-                    codigoSexo = datos["codigoSexo"] as? String ?: ""
-                    Log.d("Cargar Borrador", "Borrador cargado: $borradorSesionId")
-                }
+        viewModelScope.launch {
+            try {
+                val borrador = borradorDao.getAll().find { it.id == id } ?: return@launch
+                borradorSesionId = borrador.id
+                val datos: Map<String, Any?> = Gson().fromJson(
+                    borrador.datos,
+                    object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
+                )
+                _identificadorCorreccionSexo.value = datos["identificador"] as? String ?: ""
+                _sexoCorreccionSeleccionado.value = datos["sexoSeleccionado"] as? String ?: ""
+                codigoSexo = datos["codigoSexo"] as? String ?: ""
+            } catch (e: Exception) {
+                Log.e("CorrecionSexoVM", "Error al cargar borrador por ID: ${e.message}", e)
             }
-        } catch (e: Exception) {
-            Log.e("Error Cargar Borrador", "Error al cargar: ${e.message}", e)
         }
     }
 
     fun eliminarBorradorAutomatico() {
-        try {
-            if (borradorSesionId.isNotEmpty()) {
-                sharedPreferencesManager.eliminarBorrador(borradorSesionId)
-                Log.d("Eliminar Borrador", "Borrador eliminado: $borradorSesionId")
-                borradorSesionId = ""
+        viewModelScope.launch {
+            try {
+                if (borradorSesionId.isNotEmpty()) {
+                    borradorDao.deleteById(borradorSesionId)
+                    borradorSesionId = ""
+                }
+            } catch (e: Exception) {
+                Log.e("Error Eliminar Borrador", "Error: ${e.message}", e)
             }
-        } catch (e: Exception) {
-            Log.e("Error Eliminar Borrador", "Error: ${e.message}", e)
         }
     }
 
-    fun obtenerBorradoresCorreccionSexo(): List<Borrador> {
-        return try {
-            sharedPreferencesManager.obtenerBorradores()
-                .filter { it.tipo == "CORRECCION_SEXO" && it.estado == "BORRADOR_AUTO" }
-        } catch (e: Exception) {
-            Log.e("Error", "Error al obtener borradores: ${e.message}", e)
-            emptyList()
+    fun cargarBorradorExistente() {
+        viewModelScope.launch {
+            try {
+                val borrador = borradorDao.getAll()
+                    .filter { it.tipo == "CORRECCION_SEXO" && it.estado == "BORRADOR_AUTO" }
+                    .maxByOrNull { it.id.substringAfter("correccion_sexo_auto_").toLongOrNull() ?: 0L }
+                    ?: return@launch
+                borradorSesionId = borrador.id
+                val datos: Map<String, Any?> = Gson().fromJson(
+                    borrador.datos,
+                    object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
+                )
+                _identificadorCorreccionSexo.value = datos["identificador"] as? String ?: ""
+                _sexoCorreccionSeleccionado.value = datos["sexoSeleccionado"] as? String ?: ""
+                codigoSexo = datos["codigoSexo"] as? String ?: ""
+            } catch (e: Exception) {
+                Log.e("Error Cargar Borrador", "Error al cargar: ${e.message}", e)
+            }
         }
     }
+
+
 
 
 

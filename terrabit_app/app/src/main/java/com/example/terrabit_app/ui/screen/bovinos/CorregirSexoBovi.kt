@@ -74,9 +74,9 @@ fun CorregirSexoBovi(navController: NavController, bluetoothViewModel: Bluetooth
     LaunchedEffect(Unit) {
         if (borradorId.isNotEmpty()) {
             viewModel.cargarBorradorPorId(borradorId)
-            return@LaunchedEffect
+        } else {
+            viewModel.cargarBorradorExistente()
         }
-        viewModel.obtenerBorradoresCorreccionSexo()
     }
 
     DisposableEffect(lifecycleOwner) {

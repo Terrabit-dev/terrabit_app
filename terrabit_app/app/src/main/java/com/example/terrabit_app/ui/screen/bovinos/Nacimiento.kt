@@ -77,9 +77,7 @@ fun Nacimiento(navController: NavController, bluetooth: BluetoothViewModel, borr
     LaunchedEffect(Unit) {
         if (borradorId.isNotEmpty()) {
             viewModel.cargarBorradorPorId(borradorId)
-            return@LaunchedEffect
         }
-        viewModel.obtenerBorradoresNacimiento()
     }
 
     if (mostrarBluetooth) {

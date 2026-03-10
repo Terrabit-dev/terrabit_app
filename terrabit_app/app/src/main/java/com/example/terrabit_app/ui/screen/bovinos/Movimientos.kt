@@ -106,8 +106,7 @@ fun Movimientos(navController: NavController, bluetoothViewModel: BluetoothViewM
             viewModel.cargarBorradorPorId(borradorId)
             return@LaunchedEffect
         }
-        val borradores = viewModel.obtenerBorradoresMovimiento()
-        cantidadBorradores = borradores.size
+        cantidadBorradores = viewModel.obtenerCantidadBorradoresMovimiento()
         if (cantidadBorradores >= 2) mostrarDialogoAviso = true
     }
 

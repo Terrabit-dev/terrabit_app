@@ -44,6 +44,7 @@ fun BorradoresScreen(
     navController: NavController,
     viewModel: BorradorViewModel = hiltViewModel()
 ) {
+
     val borradores by viewModel.borradores.observeAsState(emptyList())
     val borradoresFiltered by viewModel.borradoresFiltrados.observeAsState(emptyList())
     val textoBusqueda by viewModel.textoBusqueda.observeAsState("")
@@ -133,6 +134,8 @@ fun BorradoresScreen(
                                     "IDENTIFICACION_APLAZADA" -> Routes.IdentificacionAplazada.conBorrador(borrador.id)
                                     "GUIA" -> Routes.GestionGuias.conBorrador(borrador.id)
                                     "MOVIMIENTO" -> Routes.Movimientos.conBorrador(borrador.id)
+                                    "MATERIAL" -> Routes.Material.conBorrador(borrador.id)
+                                    "MATERIAL_DUPLICADO" -> Routes.MaterialDuplicado.conBorrador(borrador.id)
                                     else -> return@TarjetaBorrador
                                 }
                             )

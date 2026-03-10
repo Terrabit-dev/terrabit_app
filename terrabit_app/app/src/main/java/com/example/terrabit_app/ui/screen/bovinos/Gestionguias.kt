@@ -109,8 +109,7 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
             viewModel.cargarBorradorPorId(borradorId)
             return@LaunchedEffect
         }
-        val borradores = viewModel.obtenerBorradoresGuia()
-        cantidadBorradores = borradores.size
+        cantidadBorradores = viewModel.obtenerCantidadBorradoresGuia()
         if (cantidadBorradores >= 2) mostrarDialogoAviso = true
     }
 

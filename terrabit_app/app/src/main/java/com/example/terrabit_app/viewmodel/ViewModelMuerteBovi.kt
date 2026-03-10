@@ -20,12 +20,15 @@ import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
+import com.example.terrabit_app.data.local.dao.BorradorDao
+import com.example.terrabit_app.data.local.database.BorradorEntity
+import com.example.terrabit_app.data.local.database.toBorrador
 
 @HiltViewModel
 class ViewModelMuerteBovi @Inject constructor(
     private val repositorio: Repositorio,
     private val userPreferences: UserPreferences,
-    private val sharedPreferencesManager: SharedPreferencesManager
+    private val borradorDao: BorradorDao
 ) : ViewModel() {
 
     private var borradorSesionId: String = ""
@@ -145,92 +148,73 @@ class ViewModelMuerteBovi @Inject constructor(
                 !_coordenadaY.value.isNullOrEmpty()
     }
 
+
     fun guardarBorradorAutomatico() {
-        if (!tieneContenido()) {
-            Log.d("Autoguardado Muerte", "No hay contenido para guardar")
-            return
-        }
-        try {
-            val datosMuerte = mapOf(
-                "tipo" to _tipoMuerte.value,
-                "codigoTipo" to _codigoTipoMuerte.value,
-                "identificador" to _identificadorMuerte.value,
-                "fecha" to _fechaMuerte.value,
-                "mesesGestacion" to _mesesGestacion.value,
-                "cadaverInaccesible" to _cadaverInaccesible.value,
-                "coordenadaX" to _coordenadaX.value,
-                "coordenadaY" to _coordenadaY.value
-            )
-            val borradorExistente = sharedPreferencesManager.obtenerBorradores()
-                .find { it.id == borradorSesionId }
-            val borrador = if (borradorExistente != null) {
-                borradorExistente.copy(
-                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
-                    datos = Gson().toJson(datosMuerte)
+        if (!tieneContenido()) return
+        viewModelScope.launch {
+            try {
+                val datos = mapOf(
+                    "tipo" to _tipoMuerte.value,
+                    "codigoTipo" to _codigoTipoMuerte.value,
+                    "identificador" to _identificadorMuerte.value,
+                    "fecha" to _fechaMuerte.value,
+                    "mesesGestacion" to _mesesGestacion.value,
+                    "cadaverInaccesible" to _cadaverInaccesible.value,
+                    "coordenadaX" to _coordenadaX.value,
+                    "coordenadaY" to _coordenadaY.value
                 )
-            } else {
-                Borrador(
-                    id = borradorSesionId,
-                    tipo = "MUERTE",
+                val existente = borradorDao.getAll().find { it.id == borradorSesionId }
+                val entity = existente?.copy(
+                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    datos = Gson().toJson(datos)
+                ) ?: BorradorEntity(
+                    id = borradorSesionId, tipo = "MUERTE",
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
                     hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
-                    datos = Gson().toJson(datosMuerte),
-                    estado = "BORRADOR_AUTO"
+                    datos = Gson().toJson(datos), estado = "BORRADOR_AUTO"
                 )
+                borradorDao.upsert(entity)
+            } catch (e: Exception) {
+                Log.e("Error Autoguardado Muerte", "Error al guardar: ${e.message}", e)
             }
-            sharedPreferencesManager.guardarBorrador(borrador)
-            Log.d("Autoguardado Muerte", "Borrador guardado: $borradorSesionId")
-        } catch (e: Exception) {
-            Log.e("Error Autoguardado Muerte", "Error al guardar: ${e.message}", e)
         }
     }
 
     fun cargarBorradorPorId(id: String) {
-        try {
-            val borrador = sharedPreferencesManager.obtenerBorradores()
-                .find { it.id == id } ?: return
-            borradorSesionId = borrador.id
-            val datos: Map<String, Any?> = Gson().fromJson(
-                borrador.datos,
-                object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
-            )
-            _tipoMuerte.value = datos["tipo"] as? String ?: ""
-            _codigoTipoMuerte.value = datos["codigoTipo"] as? String ?: ""
-            _identificadorMuerte.value = datos["identificador"] as? String ?: ""
-            _fechaMuerte.value = datos["fecha"] as? String ?: ""
-            _mesesGestacion.value = datos["mesesGestacion"] as? String ?: ""
-            _cadaverInaccesible.value = datos["cadaverInaccesible"] as? Boolean ?: false
-            _coordenadaX.value = datos["coordenadaX"] as? String ?: ""
-            _coordenadaY.value = datos["coordenadaY"] as? String ?: ""
-            Log.d("MuerteVM", "Borrador cargado por ID: $id")
-        } catch (e: Exception) {
-            Log.e("MuerteVM", "Error al cargar borrador por ID: ${e.message}", e)
+        viewModelScope.launch {
+            try {
+                val borrador = borradorDao.getAll().find { it.id == id } ?: return@launch
+                borradorSesionId = borrador.id
+                val datos: Map<String, Any?> = Gson().fromJson(
+                    borrador.datos,
+                    object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
+                )
+                _tipoMuerte.value = datos["tipo"] as? String ?: ""
+                _codigoTipoMuerte.value = datos["codigoTipo"] as? String ?: ""
+                _identificadorMuerte.value = datos["identificador"] as? String ?: ""
+                _fechaMuerte.value = datos["fecha"] as? String ?: ""
+                _mesesGestacion.value = datos["mesesGestacion"] as? String ?: ""
+                _cadaverInaccesible.value = datos["cadaverInaccesible"] as? Boolean ?: false
+                _coordenadaX.value = datos["coordenadaX"] as? String ?: ""
+                _coordenadaY.value = datos["coordenadaY"] as? String ?: ""
+            } catch (e: Exception) {
+                Log.e("MuerteVM", "Error al cargar borrador por ID: ${e.message}", e)
+            }
         }
     }
 
     fun eliminarBorradorAutomatico() {
-        try {
-            if (borradorSesionId.isNotEmpty()) {
-                sharedPreferencesManager.eliminarBorrador(borradorSesionId)
-                Log.d("Eliminar Borrador", "Borrador eliminado: $borradorSesionId")
-                borradorSesionId = ""
+        viewModelScope.launch {
+            try {
+                if (borradorSesionId.isNotEmpty()) {
+                    borradorDao.deleteById(borradorSesionId)
+                    borradorSesionId = ""
+                }
+            } catch (e: Exception) {
+                Log.e("Error Eliminar Borrador", "Error: ${e.message}", e)
             }
-        } catch (e: Exception) {
-            Log.e("Error Eliminar Borrador", "Error: ${e.message}", e)
         }
     }
-
-    fun obtenerBorradoresMuerte(): List<Borrador> {
-        return try {
-            sharedPreferencesManager.obtenerBorradores()
-                .filter { it.tipo == "MUERTE" && it.estado == "BORRADOR_AUTO" }
-        } catch (e: Exception) {
-            Log.e("Error", "Error al obtener borradores: ${e.message}", e)
-            emptyList()
-        }
-    }
-
-
 
     fun seleccionarTipoMuerte(tipo: String, codigo: String) {
         _tipoMuerte.value = tipo

@@ -165,12 +165,28 @@ fun NavigationDrawer(
             Movimientos(navController = navController, bluetooth, borradorId)
         }
 
-        composable(Routes.Material.route) {
-            Material(navController)
+        composable(
+            route = Routes.Material.route,
+            arguments = listOf(navArgument("borradorId") {
+                type = NavType.StringType
+                defaultValue = ""
+                nullable = true
+            })
+        ) { backStackEntry ->
+            val borradorId = backStackEntry.arguments?.getString("borradorId") ?: ""
+            Material(navController = navController, borradorId = borradorId)
         }
 
-        composable(Routes.MaterialDuplicado.route){
-            MaterialDuplicadosScreen(navController, bluetooth)
+        composable(
+            route = Routes.MaterialDuplicado.route,
+            arguments = listOf(navArgument("borradorId") {
+                type = NavType.StringType
+                defaultValue = ""
+                nullable = true
+            })
+        ) { backStackEntry ->
+            val borradorId = backStackEntry.arguments?.getString("borradorId") ?: ""
+            MaterialDuplicadosScreen(navController = navController, bluetoothViewModel = bluetooth, borradorId = borradorId)
         }
 
         composable(

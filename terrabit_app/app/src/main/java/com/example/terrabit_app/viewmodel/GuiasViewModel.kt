@@ -22,12 +22,15 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import com.example.terrabit_app.data.local.dao.BorradorDao
+import com.example.terrabit_app.data.local.database.BorradorEntity
+import com.example.terrabit_app.data.local.database.toBorrador
 
 @HiltViewModel
 class GuiasViewModel @Inject constructor(
     private val repositorio: Repositorio,
     private val userPreferences: UserPreferences,
-    private val sharedPreferencesManager: SharedPreferencesManager
+    private val borradorDao: BorradorDao
 ) : ViewModel() {
 
 
@@ -146,6 +149,9 @@ class GuiasViewModel @Inject constructor(
     }
 
 
+    suspend fun obtenerCantidadBorradoresGuia(): Int {
+        return borradorDao.getAll().count { it.tipo == "GUIA" && it.estado == "BORRADOR_AUTO" }
+    }
     private fun cargarBovinosEnCache() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
@@ -199,105 +205,95 @@ class GuiasViewModel @Inject constructor(
                 (_identificadors.value?.any { it.isNotEmpty() } == true)
     }
 
+
     fun guardarBorradorAutomatico() {
-        if (!tieneContenido()) { Log.d("Autoguardado Guía", "No hay contenido para guardar"); return }
-        try {
-            val datosGuia = mapOf(
-                "explotacioOrigen" to _explotacioOrigen.value,
-                "explotacioDestinacio" to _explotacioDestinacio.value,
-                "temporal" to _temporal.value,
-                "dataSortida" to _dataSortida.value,
-                "horaSortida" to _horaSortida.value,
-                "dataArribada" to _dataArribada.value,
-                "horaArribada" to _horaArribada.value,
-                "mobilitat" to _mobilitat.value,
-                "pais" to _pais.value,
-                "codiExplotacio" to _codiExplotacio.value,
-                "codiAtes" to _codiAtes.value,
-                "nomTransportista" to _nomTransportista.value,
-                "mitjaTransport" to _mitjaTransport.value,
-                "matricula" to _matricula.value,
-                "nifConductor" to _nifConductor.value,
-                "nomConductor" to _nomConductor.value,
-                "identificadors" to _identificadors.value,
-                "codiTemporal" to codiTemporal,
-                "codiGuiaMobilidad" to codiGuiaMobilidad,
-                "codiTransport" to codiTransport
-            )
-            val borradorExistente = sharedPreferencesManager.obtenerBorradores().find { it.id == borradorSesionId }
-            val borrador = if (borradorExistente != null) {
-                borradorExistente.copy(
-                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
-                    datos = Gson().toJson(datosGuia)
+        if (!tieneContenido()) return
+        viewModelScope.launch {
+            try {
+                val datos = mapOf(
+                    "explotacioOrigen" to _explotacioOrigen.value,
+                    "explotacioDestinacio" to _explotacioDestinacio.value,
+                    "temporal" to _temporal.value,
+                    "dataSortida" to _dataSortida.value,
+                    "horaSortida" to _horaSortida.value,
+                    "dataArribada" to _dataArribada.value,
+                    "horaArribada" to _horaArribada.value,
+                    "mobilitat" to _mobilitat.value,
+                    "pais" to _pais.value,
+                    "codiExplotacio" to _codiExplotacio.value,
+                    "codiAtes" to _codiAtes.value,
+                    "nomTransportista" to _nomTransportista.value,
+                    "mitjaTransport" to _mitjaTransport.value,
+                    "matricula" to _matricula.value,
+                    "nifConductor" to _nifConductor.value,
+                    "nomConductor" to _nomConductor.value,
+                    "identificadors" to _identificadors.value,
+                    "codiTemporal" to codiTemporal,
+                    "codiGuiaMobilidad" to codiGuiaMobilidad,
+                    "codiTransport" to codiTransport
                 )
-            } else {
-                Borrador(
+                val existente = borradorDao.getAll().find { it.id == borradorSesionId }
+                val entity = existente?.copy(
+                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    datos = Gson().toJson(datos)
+                ) ?: BorradorEntity(
                     id = borradorSesionId, tipo = "GUIA",
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
                     hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
-                    datos = Gson().toJson(datosGuia), estado = "BORRADOR_AUTO"
+                    datos = Gson().toJson(datos), estado = "BORRADOR_AUTO"
                 )
+                borradorDao.upsert(entity)
+            } catch (e: Exception) {
+                Log.e("Error Autoguardado Guía", "Error al guardar: ${e.message}", e)
             }
-            sharedPreferencesManager.guardarBorrador(borrador)
-            Log.d("Autoguardado Guía", "Borrador guardado: $borradorSesionId")
-        } catch (e: Exception) {
-            Log.e("Error Autoguardado Guía", "Error al guardar: ${e.message}", e)
         }
     }
 
     fun cargarBorradorPorId(id: String) {
-        try {
-            val borrador = sharedPreferencesManager.obtenerBorradores().find { it.id == id } ?: return
-            borradorSesionId = borrador.id
-            val datos: Map<String, Any?> = Gson().fromJson(borrador.datos, object : TypeToken<Map<String, Any?>>() {}.type)
-            _explotacioOrigen.value = datos["explotacioOrigen"] as? String ?: ""
-            _explotacioDestinacio.value = datos["explotacioDestinacio"] as? String ?: ""
-            _temporal.value = datos["temporal"] as? String ?: ""
-            _dataSortida.value = datos["dataSortida"] as? String ?: ""
-            _horaSortida.value = datos["horaSortida"] as? String ?: ""
-            _dataArribada.value = datos["dataArribada"] as? String ?: ""
-            _horaArribada.value = datos["horaArribada"] as? String ?: ""
-            _mobilitat.value = datos["mobilitat"] as? String ?: ""
-            _pais.value = datos["pais"] as? String ?: ""
-            _codiExplotacio.value = datos["codiExplotacio"] as? String ?: ""
-            _codiAtes.value = datos["codiAtes"] as? String ?: ""
-            _nomTransportista.value = datos["nomTransportista"] as? String ?: ""
-            _mitjaTransport.value = datos["mitjaTransport"] as? String ?: ""
-            _matricula.value = datos["matricula"] as? String ?: ""
-            _nifConductor.value = datos["nifConductor"] as? String ?: ""
-            _nomConductor.value = datos["nomConductor"] as? String ?: ""
-            codiTemporal = datos["codiTemporal"] as? String ?: ""
-            codiGuiaMobilidad = datos["codiGuiaMobilidad"] as? String ?: ""
-            codiTransport = datos["codiTransport"] as? String ?: ""
-            @Suppress("UNCHECKED_CAST")
-            _identificadors.value = (datos["identificadors"] as? List<String>) ?: listOf("")
-            Log.d("GuiasVM", "Borrador cargado por ID: $id")
-        } catch (e: Exception) {
-            Log.e("GuiasVM", "Error al cargar borrador por ID: ${e.message}", e)
+        viewModelScope.launch {
+            try {
+                val borrador = borradorDao.getAll().find { it.id == id } ?: return@launch
+                borradorSesionId = borrador.id
+                val datos: Map<String, Any?> = Gson().fromJson(borrador.datos, object : TypeToken<Map<String, Any?>>() {}.type)
+                _explotacioOrigen.value = datos["explotacioOrigen"] as? String ?: ""
+                _explotacioDestinacio.value = datos["explotacioDestinacio"] as? String ?: ""
+                _temporal.value = datos["temporal"] as? String ?: ""
+                _dataSortida.value = datos["dataSortida"] as? String ?: ""
+                _horaSortida.value = datos["horaSortida"] as? String ?: ""
+                _dataArribada.value = datos["dataArribada"] as? String ?: ""
+                _horaArribada.value = datos["horaArribada"] as? String ?: ""
+                _mobilitat.value = datos["mobilitat"] as? String ?: ""
+                _pais.value = datos["pais"] as? String ?: ""
+                _codiExplotacio.value = datos["codiExplotacio"] as? String ?: ""
+                _codiAtes.value = datos["codiAtes"] as? String ?: ""
+                _nomTransportista.value = datos["nomTransportista"] as? String ?: ""
+                _mitjaTransport.value = datos["mitjaTransport"] as? String ?: ""
+                _matricula.value = datos["matricula"] as? String ?: ""
+                _nifConductor.value = datos["nifConductor"] as? String ?: ""
+                _nomConductor.value = datos["nomConductor"] as? String ?: ""
+                codiTemporal = datos["codiTemporal"] as? String ?: ""
+                codiGuiaMobilidad = datos["codiGuiaMobilidad"] as? String ?: ""
+                codiTransport = datos["codiTransport"] as? String ?: ""
+                @Suppress("UNCHECKED_CAST")
+                _identificadors.value = (datos["identificadors"] as? List<String>) ?: listOf("")
+            } catch (e: Exception) {
+                Log.e("GuiasVM", "Error al cargar borrador por ID: ${e.message}", e)
+            }
         }
     }
 
     fun eliminarBorradorAutomatico() {
-        try {
-            if (borradorSesionId.isNotEmpty()) {
-                sharedPreferencesManager.eliminarBorrador(borradorSesionId)
-                Log.d("Eliminar Borrador", "Borrador eliminado: $borradorSesionId")
-                borradorSesionId = ""
+        viewModelScope.launch {
+            try {
+                if (borradorSesionId.isNotEmpty()) {
+                    borradorDao.deleteById(borradorSesionId)
+                    borradorSesionId = ""
+                }
+            } catch (e: Exception) {
+                Log.e("Error Eliminar Borrador", "Error: ${e.message}", e)
             }
-        } catch (e: Exception) {
-            Log.e("Error Eliminar Borrador", "Error: ${e.message}", e)
         }
     }
-
-    fun obtenerBorradoresGuia(): List<Borrador> {
-        return try {
-            sharedPreferencesManager.obtenerBorradores().filter { it.tipo == "GUIA" && it.estado == "BORRADOR_AUTO" }
-        } catch (e: Exception) {
-            Log.e("Error", "Error al obtener borradores: ${e.message}", e)
-            emptyList()
-        }
-    }
-
 
 
     fun actualizarExplotacioOrigen(valor: String) { _explotacioOrigen.value = valor }

@@ -39,7 +39,7 @@ import com.example.terrabit_app.viewmodel.MaterialDuplicadoViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MaterialDuplicadosScreen(navController: NavController, bluetoothViewModel: BluetoothViewModel) {
+fun MaterialDuplicadosScreen(navController: NavController, bluetoothViewModel: BluetoothViewModel, borradorId: String="") {
     val viewModel = hiltViewModel<MaterialDuplicadoViewModel>()
     val elementosConCodigos = ElementosConCodigos()
 
@@ -100,6 +100,12 @@ fun MaterialDuplicadosScreen(navController: NavController, bluetoothViewModel: B
             },
             onDismiss = { mostrarBluetooth = false; indiceBluetooth = null }
         )
+    }
+
+    LaunchedEffect(Unit) {
+        if (borradorId.isNotEmpty()) {
+            viewModel.cargarBorradorPorId(borradorId)
+        }
     }
 
     if (mostrarDialogoError && mensajeError.isNotEmpty()) {
@@ -309,5 +315,11 @@ fun MaterialDuplicadosScreen(navController: NavController, bluetoothViewModel: B
             }
         }
     }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.guardarBorradorAutomatico()
+        }
     }
 }

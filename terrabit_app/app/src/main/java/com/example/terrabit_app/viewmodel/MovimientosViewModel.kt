@@ -25,12 +25,15 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import com.example.terrabit_app.data.local.dao.BorradorDao
+import com.example.terrabit_app.data.local.database.BorradorEntity
+import com.example.terrabit_app.data.local.database.toBorrador
 
 @HiltViewModel
 class MovimientosViewModel @Inject constructor(
     private val repositorio: Repositorio,
     private val userPreferences: UserPreferences,
-    private val sharedPreferencesManager: SharedPreferencesManager
+    private val borradorDao: BorradorDao
 ) : ViewModel() {
 
     val nif = userPreferences.getNif() ?: ""
@@ -151,6 +154,10 @@ class MovimientosViewModel @Inject constructor(
         cargarBovinosEnCache()
     }
 
+
+    suspend fun obtenerCantidadBorradoresMovimiento(): Int {
+        return borradorDao.getAll().count { it.tipo == "MOVIMIENTO" && it.estado == "BORRADOR_AUTO" }
+    }
     private fun cargarBovinosEnCache() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
@@ -202,100 +209,88 @@ class MovimientosViewModel @Inject constructor(
     }
 
     fun guardarBorradorAutomatico() {
-        if (!tieneContenido()) { Log.d("Autoguardado Movimiento", "No hay contenido para guardar"); return }
-        try {
-            val datosMovimiento = mapOf(
-                "codiRemo" to _codiRemo.value, "dataArribada" to _dataArribada.value,
-                "horaArribada" to _horaArribada.value, "codiAtes" to _codiAtes.value,
-                "nomTransportista" to _nomTransportista.value, "matricula" to _matricula.value,
-                "mitjaTransport" to _mitjaTransport.value, "nifConductor" to _nifConductor.value,
-                "nomConductor" to _nomConductor.value, "explotacioDestinacio" to _explotacioDestinacio.value,
-                "listaAnimales" to _listaAnimales.value, "codiTransport" to _codiTransport.value
-            )
-            val borradorExistente = sharedPreferencesManager.obtenerBorradores().find { it.id == borradorSesionId }
-            val borrador = if (borradorExistente != null) {
-                borradorExistente.copy(
-                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
-                    datos = Gson().toJson(datosMovimiento)
+        if (!tieneContenido()) return
+        viewModelScope.launch {
+            try {
+                val datos = mapOf(
+                    "codiRemo" to _codiRemo.value, "dataArribada" to _dataArribada.value,
+                    "horaArribada" to _horaArribada.value, "codiAtes" to _codiAtes.value,
+                    "nomTransportista" to _nomTransportista.value, "matricula" to _matricula.value,
+                    "mitjaTransport" to _mitjaTransport.value, "nifConductor" to _nifConductor.value,
+                    "nomConductor" to _nomConductor.value, "explotacioDestinacio" to _explotacioDestinacio.value,
+                    "listaAnimales" to _listaAnimales.value, "codiTransport" to _codiTransport.value
                 )
-            } else {
-                Borrador(
+                val existente = borradorDao.getAll().find { it.id == borradorSesionId }
+                val entity = existente?.copy(
+                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    datos = Gson().toJson(datos)
+                ) ?: BorradorEntity(
                     id = borradorSesionId, tipo = "MOVIMIENTO",
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
                     hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
-                    datos = Gson().toJson(datosMovimiento), estado = "BORRADOR_AUTO"
+                    datos = Gson().toJson(datos), estado = "BORRADOR_AUTO"
                 )
+                borradorDao.upsert(entity)
+            } catch (e: Exception) {
+                Log.e("Error Autoguardado Movimiento", "Error al guardar: ${e.message}", e)
             }
-            sharedPreferencesManager.guardarBorrador(borrador)
-            Log.d("Autoguardado Movimiento", "Borrador guardado: $borradorSesionId")
-        } catch (e: Exception) {
-            Log.e("Error Autoguardado Movimiento", "Error al guardar: ${e.message}", e)
         }
     }
 
     fun cargarBorradorPorId(id: String) {
-        try {
-            val borrador = sharedPreferencesManager.obtenerBorradores().find { it.id == id } ?: return
-            borradorSesionId = borrador.id
-            val datos: Map<String, Any?> = Gson().fromJson(borrador.datos, object : TypeToken<Map<String, Any?>>() {}.type)
-            _codiRemo.value = datos["codiRemo"] as? String ?: ""
-            _dataArribada.value = datos["dataArribada"] as? String ?: ""
-            _horaArribada.value = datos["horaArribada"] as? String ?: ""
-            _codiAtes.value = datos["codiAtes"] as? String ?: ""
-            _nomTransportista.value = datos["nomTransportista"] as? String ?: ""
-            _matricula.value = datos["matricula"] as? String ?: ""
-            _mitjaTransport.value = datos["mitjaTransport"] as? String ?: ""
-            _nifConductor.value = datos["nifConductor"] as? String ?: ""
-            _nomConductor.value = datos["nomConductor"] as? String ?: ""
-            _explotacioDestinacio.value = datos["explotacioDestinacio"] as? String ?: ""
-            _codiTransport.value = datos["codiTransport"] as? String ?: ""
-            val listaAnimalesJson = datos["listaAnimales"] as? List<*>
-            if (listaAnimalesJson != null) {
-                val listaRestaurada = listaAnimalesJson.mapNotNull { item ->
-                    try {
-                        val itemMap = item as? Map<*, *>
-                        IdenMovimiento(
-                            identificador = itemMap?.get("identificador") as? String ?: "",
-                            estatArribada = itemMap?.get("estatArribada") as? String,
-                            classCanal = itemMap?.get("classCanal") as? String,
-                            dataSacrMort = itemMap?.get("dataSacrMort") as? String,
-                            pesCanal = itemMap?.get("pesCanal") as? String,
-                            tipusPresentacio = itemMap?.get("tipusPresentacio") as? String
-                        )
-                    } catch (e: Exception) { null }
+        viewModelScope.launch {
+            try {
+                val borrador = borradorDao.getAll().find { it.id == id } ?: return@launch
+                borradorSesionId = borrador.id
+                val datos: Map<String, Any?> = Gson().fromJson(borrador.datos, object : TypeToken<Map<String, Any?>>() {}.type)
+                _codiRemo.value = datos["codiRemo"] as? String ?: ""
+                _dataArribada.value = datos["dataArribada"] as? String ?: ""
+                _horaArribada.value = datos["horaArribada"] as? String ?: ""
+                _codiAtes.value = datos["codiAtes"] as? String ?: ""
+                _nomTransportista.value = datos["nomTransportista"] as? String ?: ""
+                _matricula.value = datos["matricula"] as? String ?: ""
+                _mitjaTransport.value = datos["mitjaTransport"] as? String ?: ""
+                _nifConductor.value = datos["nifConductor"] as? String ?: ""
+                _nomConductor.value = datos["nomConductor"] as? String ?: ""
+                _explotacioDestinacio.value = datos["explotacioDestinacio"] as? String ?: ""
+                _codiTransport.value = datos["codiTransport"] as? String ?: ""
+                val listaAnimalesJson = datos["listaAnimales"] as? List<*>
+                if (listaAnimalesJson != null) {
+                    val listaRestaurada = listaAnimalesJson.mapNotNull { item ->
+                        try {
+                            val itemMap = item as? Map<*, *>
+                            IdenMovimiento(
+                                identificador = itemMap?.get("identificador") as? String ?: "",
+                                estatArribada = itemMap?.get("estatArribada") as? String,
+                                classCanal = itemMap?.get("classCanal") as? String,
+                                dataSacrMort = itemMap?.get("dataSacrMort") as? String,
+                                pesCanal = itemMap?.get("pesCanal") as? String,
+                                tipusPresentacio = itemMap?.get("tipusPresentacio") as? String
+                            )
+                        } catch (e: Exception) { null }
+                    }
+                    _listaAnimales.value = listaRestaurada.ifEmpty {
+                        listOf(IdenMovimiento(identificador = "", estatArribada = null, classCanal = null, dataSacrMort = null, pesCanal = null, tipusPresentacio = null))
+                    }
                 }
-                _listaAnimales.value = listaRestaurada.ifEmpty {
-                    listOf(IdenMovimiento(identificador = "", estatArribada = null, classCanal = null, dataSacrMort = null, pesCanal = null, tipusPresentacio = null))
-                }
+            } catch (e: Exception) {
+                Log.e("MovimientosVM", "Error al cargar borrador por ID: ${e.message}", e)
             }
-            Log.d("MovimientosVM", "Borrador cargado por ID: $id")
-        } catch (e: Exception) {
-            Log.e("MovimientosVM", "Error al cargar borrador por ID: ${e.message}", e)
         }
     }
 
     fun eliminarBorradorAutomatico() {
-        try {
-            if (borradorSesionId.isNotEmpty()) {
-                sharedPreferencesManager.eliminarBorrador(borradorSesionId)
-                Log.d("Eliminar Borrador", "Borrador eliminado: $borradorSesionId")
-                borradorSesionId = ""
+        viewModelScope.launch {
+            try {
+                if (borradorSesionId.isNotEmpty()) {
+                    borradorDao.deleteById(borradorSesionId)
+                    borradorSesionId = ""
+                }
+            } catch (e: Exception) {
+                Log.e("Error Eliminar Borrador", "Error: ${e.message}", e)
             }
-        } catch (e: Exception) {
-            Log.e("Error Eliminar Borrador", "Error: ${e.message}", e)
         }
     }
-
-    fun obtenerBorradoresMovimiento(): List<Borrador> {
-        return try {
-            sharedPreferencesManager.obtenerBorradores().filter { it.tipo == "MOVIMIENTO" && it.estado == "BORRADOR_AUTO" }
-        } catch (e: Exception) {
-            Log.e("Error", "Error al obtener borradores: ${e.message}", e)
-            emptyList()
-        }
-    }
-
-
 
     private val _cargandoLista = MutableLiveData(false)
     val cargandoLista = _cargandoLista

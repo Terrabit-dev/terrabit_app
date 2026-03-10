@@ -5,14 +5,15 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.Borrador
-import com.example.terrabit_app.data.SharedPreferencesManager
+import com.example.terrabit_app.data.local.dao.BorradorDao
+import com.example.terrabit_app.data.local.database.toBorrador
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class BorradorViewModel @Inject constructor(
-    private val sharedPreferencesManager: SharedPreferencesManager
+    private val borradorDao: BorradorDao
 ) : ViewModel() {
 
     private val _borradores = MutableLiveData<List<Borrador>>()
@@ -30,18 +31,16 @@ class BorradorViewModel @Inject constructor(
     fun cargarBorradores() {
         viewModelScope.launch {
             try {
-                val listaBorradores = sharedPreferencesManager.obtenerBorradores()
+                val listaBorradores = borradorDao.getAll()
+                    .map { it.toBorrador() }
+                    .sortedByDescending { "${it.fecha.split("/").reversed().joinToString("")}${it.hora}" }
+
                 _borradores.postValue(listaBorradores)
                 val texto = _textoBusqueda.value ?: ""
                 if (texto.isBlank()) {
                     _borradoresFiltrados.postValue(listaBorradores)
                 } else {
-                    _borradoresFiltrados.postValue(listaBorradores.filter { borrador ->
-                        obtenerNombreTipo(borrador.tipo).contains(texto, ignoreCase = true) ||
-                                borrador.fecha.contains(texto, ignoreCase = true) ||
-                                (borrador.hora ?: "").contains(texto, ignoreCase = true) ||
-                                obtenerEstadoLegible(borrador.estado).contains(texto, ignoreCase = true)
-                    })
+                    _borradoresFiltrados.postValue(listaBorradores.filter { filtrar(it, texto) })
                 }
             } catch (e: Exception) {
                 Log.e("Error Borradores", "Error al cargar: ${e.message}", e)
@@ -53,21 +52,15 @@ class BorradorViewModel @Inject constructor(
 
     fun actualizarBusqueda(texto: String) {
         _textoBusqueda.value = texto
-        filtrarBorradores(texto)
+        val lista = _borradores.value ?: emptyList()
+        _borradoresFiltrados.value = if (texto.isBlank()) lista else lista.filter { filtrar(it, texto) }
     }
 
-    private fun filtrarBorradores(texto: String) {
-        val lista = _borradores.value ?: emptyList()
-        if (texto.isBlank()) {
-            _borradoresFiltrados.value = lista
-        } else {
-            _borradoresFiltrados.value = lista.filter { borrador ->
-                obtenerNombreTipo(borrador.tipo).contains(texto, ignoreCase = true) ||
-                        borrador.fecha.contains(texto, ignoreCase = true) ||
-                        (borrador.hora ?: "").contains(texto, ignoreCase = true) ||
-                        obtenerEstadoLegible(borrador.estado).contains(texto, ignoreCase = true)
-            }
-        }
+    private fun filtrar(borrador: Borrador, texto: String): Boolean {
+        return obtenerNombreTipo(borrador.tipo).contains(texto, ignoreCase = true) ||
+                borrador.fecha.contains(texto, ignoreCase = true) ||
+                (borrador.hora).contains(texto, ignoreCase = true) ||
+                obtenerEstadoLegible(borrador.estado).contains(texto, ignoreCase = true)
     }
 
     private fun obtenerNombreTipo(tipo: String): String = when (tipo) {
@@ -90,7 +83,7 @@ class BorradorViewModel @Inject constructor(
     fun eliminarBorrador(id: String) {
         viewModelScope.launch {
             try {
-                sharedPreferencesManager.eliminarBorrador(id)
+                borradorDao.deleteById(id)
                 cargarBorradores()
                 Log.d("Borrador", "Eliminado exitosamente: $id")
             } catch (e: Exception) {
@@ -102,7 +95,7 @@ class BorradorViewModel @Inject constructor(
     fun eliminarBorradores(ids: Set<String>) {
         viewModelScope.launch {
             try {
-                ids.forEach { sharedPreferencesManager.eliminarBorrador(it) }
+                ids.forEach { borradorDao.deleteById(it) }
                 cargarBorradores()
                 Log.d("Borrador", "Eliminados ${ids.size} borradores")
             } catch (e: Exception) {
@@ -116,12 +109,9 @@ class BorradorViewModel @Inject constructor(
 
     suspend fun eliminarTodosBorradores() {
         try {
-            sharedPreferencesManager.obtenerBorradores().forEach {
-                sharedPreferencesManager.eliminarBorrador(it.id)
-            }
-            val listaVacia = sharedPreferencesManager.obtenerBorradores()
-            _borradores.postValue(listaVacia)
-            _borradoresFiltrados.postValue(listaVacia)
+            borradorDao.deleteAll()
+            _borradores.postValue(emptyList())
+            _borradoresFiltrados.postValue(emptyList())
             Log.d("Borrador", "Todos los borradores eliminados")
         } catch (e: Exception) {
             Log.e("Error Borrador", "Error al eliminar todos: ${e.message}", e)

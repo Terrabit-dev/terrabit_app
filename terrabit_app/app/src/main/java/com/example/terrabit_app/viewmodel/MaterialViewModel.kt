@@ -4,6 +4,8 @@ import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.terrabit_app.data.local.dao.BorradorDao
+import com.example.terrabit_app.data.local.database.BorradorEntity
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.material.PetSolicitudMaterial
 import com.example.terrabit_app.data.network.material.Unitat
@@ -12,13 +14,20 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
+import com.google.gson.Gson
 
 @HiltViewModel
 class MaterialViewModel @Inject constructor(
     private val repositorio: Repositorio,
-    private val userPreferences: UserPreferences
+    private val userPreferences: UserPreferences,
+    private val borradorDao: BorradorDao
 ) : ViewModel() {
+
+    private var borradorSesionId: String = "material_auto_${System.currentTimeMillis()}"
 
     val nif = userPreferences.getNif() ?: ""
     val password = userPreferences.getPassword() ?: ""
@@ -93,6 +102,112 @@ class MaterialViewModel @Inject constructor(
     )
     val listaUnidades = _listaUnidades
 
+    // ── Borrador ─────────────────────────────────────────────────────────────
+
+    fun tieneContenido(): Boolean {
+        return !_empresaSubministradora.value.isNullOrEmpty() ||
+                !_tipoEnviamiento.value.isNullOrEmpty() ||
+                !_destinoLliurament.value.isNullOrEmpty() ||
+                !_tipoMaterial.value.isNullOrEmpty() ||
+                (_listaUnidades.value?.any { !it.nombreUnitats.isNullOrEmpty() } == true)
+    }
+
+    fun guardarBorradorAutomatico() {
+        if (!tieneContenido()) return
+        viewModelScope.launch {
+            try {
+                val datos = mapOf(
+                    "empresaSubministradora" to _empresaSubministradora.value,
+                    "codigoEmpresa" to _codigoEmpresa.value,
+                    "tipoEnviamiento" to _tipoEnviamiento.value,
+                    "codigoTipoEnvio" to codigoTipoEnvio,
+                    "destinoLliurament" to _destinoLliurament.value,
+                    "codiDestinoEnvio" to codiDestinoEnvio,
+                    "oficinaComarcal" to _oficinaComarcal.value,
+                    "codigoOC" to codigoOC,
+                    "direccion" to _direccion.value,
+                    "poblacion" to _poblacion.value,
+                    "codigoPostal" to _codigoPostal.value,
+                    "municipio" to _municipio.value,
+                    "telefonoContacto" to _telefonoContacto.value,
+                    "tipoMaterial" to _tipoMaterial.value,
+                    "codigoTipoMaterial" to _codigoTipoMaterial.value,
+                    "listaUnidades" to _listaUnidades.value
+                )
+                val existente = borradorDao.getAll().find { it.id == borradorSesionId }
+                val entity = existente?.copy(
+                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    datos = Gson().toJson(datos)
+                ) ?: BorradorEntity(
+                    id = borradorSesionId, tipo = "MATERIAL",
+                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
+                    datos = Gson().toJson(datos), estado = "BORRADOR_AUTO"
+                )
+                borradorDao.upsert(entity)
+                Log.d("Autoguardado Material", "Borrador guardado: $borradorSesionId")
+            } catch (e: Exception) {
+                Log.e("Error Autoguardado Material", "Error al guardar: ${e.message}", e)
+            }
+        }
+    }
+
+    fun cargarBorradorPorId(id: String) {
+        viewModelScope.launch {
+            try {
+                val borrador = borradorDao.getAll().find { it.id == id } ?: return@launch
+                borradorSesionId = borrador.id
+                val datos: Map<String, Any?> = Gson().fromJson(
+                    borrador.datos,
+                    object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
+                )
+                _empresaSubministradora.value = datos["empresaSubministradora"] as? String ?: ""
+                _codigoEmpresa.value = datos["codigoEmpresa"] as? String ?: ""
+                _tipoEnviamiento.value = datos["tipoEnviamiento"] as? String ?: ""
+                codigoTipoEnvio = datos["codigoTipoEnvio"] as? String ?: ""
+                _destinoLliurament.value = datos["destinoLliurament"] as? String ?: ""
+                codiDestinoEnvio = datos["codiDestinoEnvio"] as? String ?: ""
+                _oficinaComarcal.value = datos["oficinaComarcal"] as? String ?: ""
+                codigoOC = datos["codigoOC"] as? String ?: ""
+                _direccion.value = datos["direccion"] as? String ?: ""
+                _poblacion.value = datos["poblacion"] as? String ?: ""
+                _codigoPostal.value = datos["codigoPostal"] as? String ?: ""
+                _municipio.value = datos["municipio"] as? String ?: ""
+                _telefonoContacto.value = datos["telefonoContacto"] as? String ?: ""
+                _tipoMaterial.value = datos["tipoMaterial"] as? String ?: ""
+                _codigoTipoMaterial.value = datos["codigoTipoMaterial"] as? String ?: ""
+                val listaJson = datos["listaUnidades"] as? List<*>
+                if (listaJson != null) {
+                    val listaRestaurada = listaJson.mapNotNull { item ->
+                        val m = item as? Map<*, *>
+                        Unitat(
+                            codiExplotacio = m?.get("codiExplotacio") as? String ?: "",
+                            nombreUnitats = m?.get("nombreUnitats") as? String ?: ""
+                        )
+                    }
+                    _listaUnidades.value = listaRestaurada.ifEmpty { listOf(Unitat(codiExplotacio = "", nombreUnitats = "")) }
+                }
+            } catch (e: Exception) {
+                Log.e("MaterialVM", "Error al cargar borrador por ID: ${e.message}", e)
+            }
+        }
+    }
+
+    fun eliminarBorradorAutomatico() {
+        viewModelScope.launch {
+            try {
+                if (borradorSesionId.isNotEmpty()) {
+                    borradorDao.deleteById(borradorSesionId)
+                    borradorSesionId = ""
+                }
+            } catch (e: Exception) {
+                Log.e("Error Eliminar Borrador", "Error: ${e.message}", e)
+            }
+        }
+    }
+
+    // ── Formulario ───────────────────────────────────────────────────────────
+
     fun agregarUnidades() {
         _listaUnidades.value = (_listaUnidades.value?.toMutableList() ?: mutableListOf()).also { it.add(Unitat(codiExplotacio = "", nombreUnitats = "")) }
     }
@@ -144,7 +259,6 @@ class MaterialViewModel @Inject constructor(
     fun toggleDestinoExpandido() { _destinoExpandido.value = !(_destinoExpandido.value ?: false) }
     fun toggleOficinaComarcalExpandida() { _oficinaComarcalExpandida.value = !(_oficinaComarcalExpandida.value ?: false) }
     fun toggleTipoMaterialExpandido() { _tipoMaterialExpandido.value = !(_tipoMaterialExpandido.value ?: false) }
-
     fun cerrarEmpresaMenu() { _empresaExpandida.value = false }
     fun cerrarTipoEnviamientoMenu() { _tipoEnviamientoExpandido.value = false }
     fun cerrarDestinoMenu() { _destinoExpandido.value = false }
@@ -197,7 +311,6 @@ class MaterialViewModel @Inject constructor(
             Log.e("Validación Material", _mensajeErrorMaterial.value ?: "")
             return
         }
-
         viewModelScope.launch {
             _cargandoMaterial.postValue(true)
             try {
@@ -207,7 +320,6 @@ class MaterialViewModel @Inject constructor(
                 val municipioFinal = if (codiDestinoEnvio == "03") _municipio.value else null
                 val telefonoFinal = if (codiDestinoEnvio == "03") _telefonoContacto.value else null
                 val ocFinal = if (codiDestinoEnvio == "01") codigoOC else null
-
                 val request = PetSolicitudMaterial(
                     nif = nif, passwordMobilitat = password, especie = "01",
                     empresaSubministradora = _codigoEmpresa.value ?: "",
@@ -222,10 +334,8 @@ class MaterialViewModel @Inject constructor(
                     tipusMaterial = _codigoTipoMaterial.value ?: "",
                     unitats = _listaUnidades.value ?: listOf(Unitat(codiExplotacio = null, nombreUnitats = "1"))
                 )
-
                 Log.d("Solicitud Material", "Request: $request")
                 val response = repositorio.putSolicitudMaterial(request)
-
                 withContext(Dispatchers.Main) {
                     _cargandoMaterial.value = false
                     when {
@@ -233,19 +343,16 @@ class MaterialViewModel @Inject constructor(
                             val body = response.body()!!
                             if (body.codi == "0" || body.descripcio == "OK") {
                                 _registroMaterialExitoso.value = true; _mensajeErrorMaterial.value = ""
-                                Log.d("Solicitud Material", "Exitoso: [${body.codi}] ${body.descripcio}")
+                                eliminarBorradorAutomatico()
                                 limpiarFormularioMaterial()
                             } else {
                                 _registroMaterialExitoso.value = false
                                 _mensajeErrorMaterial.value = "Error: [${body.codi}] ${body.descripcio}"
-                                Log.e("Error Solicitud Material", "[${body.codi}] ${body.descripcio}")
                             }
                         }
                         !response.isSuccessful -> {
-                            val errorBody = response.errorBody()?.string()
                             _registroMaterialExitoso.value = false
                             _mensajeErrorMaterial.value = "Error HTTP ${response.code()}: ${response.message()}"
-                            Log.e("Error Solicitud Material", "HTTP ${response.code()} - $errorBody")
                         }
                         else -> {
                             _registroMaterialExitoso.value = false
@@ -254,23 +361,11 @@ class MaterialViewModel @Inject constructor(
                     }
                 }
             } catch (e: java.net.SocketTimeoutException) {
-                withContext(Dispatchers.Main) {
-                    _cargandoMaterial.value = false; _registroMaterialExitoso.value = false
-                    _mensajeErrorMaterial.value = "Tiempo de espera agotado. La operación puede haberse completado, por favor verifique."
-                    Log.e("Error Solicitud Material", "Timeout: ${e.message}", e)
-                }
+                withContext(Dispatchers.Main) { _cargandoMaterial.value = false; _registroMaterialExitoso.value = false; _mensajeErrorMaterial.value = "Tiempo de espera agotado." }
             } catch (e: java.io.IOException) {
-                withContext(Dispatchers.Main) {
-                    _cargandoMaterial.value = false; _registroMaterialExitoso.value = false
-                    _mensajeErrorMaterial.value = "Error de conexión. Verifique su conexión a internet."
-                    Log.e("Error Solicitud Material", "Error de red: ${e.message}", e)
-                }
+                withContext(Dispatchers.Main) { _cargandoMaterial.value = false; _registroMaterialExitoso.value = false; _mensajeErrorMaterial.value = "Error de conexión." }
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    _cargandoMaterial.value = false; _registroMaterialExitoso.value = false
-                    _mensajeErrorMaterial.value = "Error inesperado: ${e.message ?: "Error desconocido"}"
-                    Log.e("Error Solicitud Material", "Error general: ${e.message}", e); e.printStackTrace()
-                }
+                withContext(Dispatchers.Main) { _cargandoMaterial.value = false; _registroMaterialExitoso.value = false; _mensajeErrorMaterial.value = "Error inesperado: ${e.message ?: "Error desconocido"}"; e.printStackTrace() }
             }
         }
     }
@@ -284,6 +379,7 @@ class MaterialViewModel @Inject constructor(
         _municipio.value = ""; _telefonoContacto.value = ""
         _tipoMaterial.value = ""; _codigoTipoMaterial.value = ""
         _listaUnidades.value = listOf(Unitat(codiExplotacio = "", nombreUnitats = ""))
+        borradorSesionId = ""
     }
 
     fun resetearEstadoRegistroMaterial() { _registroMaterialExitoso.value = false; _mensajeErrorMaterial.value = "" }

@@ -4,6 +4,8 @@ import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.terrabit_app.data.local.dao.BorradorDao
+import com.example.terrabit_app.data.local.database.BorradorEntity
 import com.example.terrabit_app.data.network.Identificadores.IdenSolicitudDupli
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.lista_bovinos.Animal
@@ -15,13 +17,19 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
 class MaterialDuplicadoViewModel @Inject constructor(
     private val repositorio: Repositorio,
-    private val userPreferences: UserPreferences
+    private val userPreferences: UserPreferences,
+    private val borradorDao: BorradorDao
 ) : ViewModel() {
+
+    private var borradorSesionId: String = "material_duplicado_auto_${System.currentTimeMillis()}"
 
     val nif = userPreferences.getNif() ?: ""
     val password = userPreferences.getPassword() ?: ""
@@ -110,7 +118,6 @@ class MaterialDuplicadoViewModel @Inject constructor(
                 repositorio.getBovinosWithCache(nif = nif, password = password, tipusVinculacio = "1", explotacio = codiMo, forceRefresh = false)
                 _bovinosCargados.postValue(true)
                 _isLoadingBovinos.postValue(false)
-                Log.d("MaterialDuplicadoVM", "Bovinos cargados en caché")
             } catch (e: Exception) {
                 _isLoadingBovinos.postValue(false)
                 _bovinosCargados.postValue(false)
@@ -119,6 +126,107 @@ class MaterialDuplicadoViewModel @Inject constructor(
         }
     }
 
+    // ── Borrador ─────────────────────────────────────────────────────────────
+
+    fun tieneContenido(): Boolean {
+        return !_empresaSubministradora.value.isNullOrEmpty() ||
+                !_tipoEnviamiento.value.isNullOrEmpty() ||
+                !_direccionEnvio.value.isNullOrEmpty() ||
+                (_listaAnimales.value?.any { it.identificador.isNotEmpty() } == true)
+    }
+
+    fun guardarBorradorAutomatico() {
+        if (!tieneContenido()) return
+        viewModelScope.launch {
+            try {
+                val datos = mapOf(
+                    "empresaSubministradora" to _empresaSubministradora.value,
+                    "codigoEmpresaSubministradora" to codigoEmpresaSubministradora,
+                    "tipoEnviamiento" to _tipoEnviamiento.value,
+                    "codigoTipoEnviamiento" to codigoTipoEnviamiento,
+                    "direccionEnvio" to _direccionEnvio.value,
+                    "codigoDireccionEnvio" to codigoDireccionEnvio,
+                    "oficinaComarcal" to _oficinaComarcal.value,
+                    "codigoOficinaComarcal" to codigoOficinaComarcal,
+                    "dirrecionEnvio" to _dirrecionEnvio.value,
+                    "poblacion" to _poblacion.value,
+                    "codigoPostal" to _codigoPostal.value,
+                    "municipio" to _municipio.value,
+                    "telefonoContacto" to _telefonoContacto.value,
+                    "listaAnimales" to _listaAnimales.value
+                )
+                val existente = borradorDao.getAll().find { it.id == borradorSesionId }
+                val entity = existente?.copy(
+                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    datos = Gson().toJson(datos)
+                ) ?: BorradorEntity(
+                    id = borradorSesionId, tipo = "MATERIAL_DUPLICADO",
+                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
+                    datos = Gson().toJson(datos), estado = "BORRADOR_AUTO"
+                )
+                borradorDao.upsert(entity)
+                Log.d("Autoguardado MaterialDuplicado", "Borrador guardado: $borradorSesionId")
+            } catch (e: Exception) {
+                Log.e("Error Autoguardado MaterialDuplicado", "Error al guardar: ${e.message}", e)
+            }
+        }
+    }
+
+    fun cargarBorradorPorId(id: String) {
+        viewModelScope.launch {
+            try {
+                val borrador = borradorDao.getAll().find { it.id == id } ?: return@launch
+                borradorSesionId = borrador.id
+                val datos: Map<String, Any?> = Gson().fromJson(
+                    borrador.datos,
+                    object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
+                )
+                _empresaSubministradora.value = datos["empresaSubministradora"] as? String ?: ""
+                codigoEmpresaSubministradora = datos["codigoEmpresaSubministradora"] as? String ?: ""
+                _tipoEnviamiento.value = datos["tipoEnviamiento"] as? String ?: ""
+                codigoTipoEnviamiento = datos["codigoTipoEnviamiento"] as? String ?: ""
+                _direccionEnvio.value = datos["direccionEnvio"] as? String ?: ""
+                codigoDireccionEnvio = datos["codigoDireccionEnvio"] as? String ?: ""
+                _oficinaComarcal.value = datos["oficinaComarcal"] as? String ?: ""
+                codigoOficinaComarcal = datos["codigoOficinaComarcal"] as? String ?: ""
+                _dirrecionEnvio.value = datos["dirrecionEnvio"] as? String ?: ""
+                _poblacion.value = datos["poblacion"] as? String ?: ""
+                _codigoPostal.value = datos["codigoPostal"] as? String ?: ""
+                _municipio.value = datos["municipio"] as? String ?: ""
+                _telefonoContacto.value = datos["telefonoContacto"] as? String ?: ""
+                val listaJson = datos["listaAnimales"] as? List<*>
+                if (listaJson != null) {
+                    val listaRestaurada = listaJson.mapNotNull { item ->
+                        val m = item as? Map<*, *>
+                        IdenSolicitudDupli(
+                            identificador = m?.get("identificador") as? String ?: "",
+                            tipusMaterial = m?.get("tipusMaterial") as? String ?: ""
+                        )
+                    }
+                    _listaAnimales.value = listaRestaurada.ifEmpty { listOf(IdenSolicitudDupli(identificador = "", tipusMaterial = "")) }
+                }
+            } catch (e: Exception) {
+                Log.e("MaterialDuplicadoVM", "Error al cargar borrador por ID: ${e.message}", e)
+            }
+        }
+    }
+
+    fun eliminarBorradorAutomatico() {
+        viewModelScope.launch {
+            try {
+                if (borradorSesionId.isNotEmpty()) {
+                    borradorDao.deleteById(borradorSesionId)
+                    borradorSesionId = ""
+                }
+            } catch (e: Exception) {
+                Log.e("Error Eliminar Borrador", "Error: ${e.message}", e)
+            }
+        }
+    }
+
+    // ── Formulario ───────────────────────────────────────────────────────────
+
     fun searchBovinos(index: Int, query: String) {
         _activeFieldIndex.value = index
         if (query.isBlank()) { _suggestionsBovinos.value = emptyList(); return }
@@ -126,10 +234,8 @@ class MaterialDuplicadoViewModel @Inject constructor(
             try {
                 val resultados = repositorio.searchBovinosLocal(query)
                 _suggestionsBovinos.postValue(resultados)
-                Log.d("MaterialDuplicadoVM", "Búsqueda en índice $index: '$query' - ${resultados.size} resultados")
             } catch (e: Exception) {
                 _suggestionsBovinos.postValue(emptyList())
-                Log.e("MaterialDuplicadoVM", "Error en búsqueda: ${e.message}", e)
             }
         }
     }
@@ -138,7 +244,6 @@ class MaterialDuplicadoViewModel @Inject constructor(
         actualizarIdentificador(index, animal.identificador)
         _suggestionsBovinos.value = emptyList()
         _activeFieldIndex.value = -1
-        Log.d("MaterialDuplicadoVM", "Bovino seleccionado en índice $index: ${animal.identificador}")
     }
 
     fun actualizarIdentificador(indice: Int, identificador: String) {
@@ -196,7 +301,6 @@ class MaterialDuplicadoViewModel @Inject constructor(
     }
 
     fun seleccionarOficinaComarcal(codigo: String, nombre: String) { _oficinaComarcal.value = nombre; codigoOficinaComarcal = codigo; cerrarOficinaComarcalMenu() }
-
     fun actualizarDireccionEnvio(valor: String) { _dirrecionEnvio.value = valor }
     fun actualizarPoblacion(valor: String) { _poblacion.value = valor }
     fun actualizarCodigoPostal(valor: String) {
@@ -206,7 +310,6 @@ class MaterialDuplicadoViewModel @Inject constructor(
     fun actualizarTelefonoContacto(valor: String) {
         if (valor.all { it.isDigit() || it.isWhitespace() }) _telefonoContacto.value = valor
     }
-
     fun getCodigoDirecioEnvio(): String = codigoDireccionEnvio
 
     fun esFormularioValido(): Boolean {
@@ -215,7 +318,6 @@ class MaterialDuplicadoViewModel @Inject constructor(
         if (codigoDireccionEnvio.isEmpty()) return false
         when (codigoDireccionEnvio) {
             "01" -> if (codigoOficinaComarcal.isEmpty()) return false
-            "02" -> { /* opcional */ }
             "03" -> {
                 if (_dirrecionEnvio.value.isNullOrEmpty()) return false
                 if (_poblacion.value.isNullOrEmpty()) return false
@@ -248,7 +350,6 @@ class MaterialDuplicadoViewModel @Inject constructor(
             }
             return
         }
-
         viewModelScope.launch {
             _cargando.postValue(true)
             try {
@@ -265,7 +366,6 @@ class MaterialDuplicadoViewModel @Inject constructor(
                     telefonContacte = if (codigoDireccionEnvio == "03") _telefonoContacto.value else null,
                     identificadors = _listaAnimales.value ?: emptyList()
                 )
-                Log.d("Solicitud Duplicado", "Request: $request")
                 val response = repositorio.putSolicitudDuplicado(request)
                 withContext(Dispatchers.Main) {
                     _cargando.value = false
@@ -274,12 +374,11 @@ class MaterialDuplicadoViewModel @Inject constructor(
                             val body = response.body()!!
                             if (body.codi == "0" || body.descripcio == "OK") {
                                 _registroExitoso.value = true; _mensajeError.value = ""
-                                Log.d("Solicitud Duplicado", "Exitoso: [${body.codi}] ${body.descripcio}")
+                                eliminarBorradorAutomatico()
                                 limpiarFormulario()
                             } else {
                                 _registroExitoso.value = false
                                 _mensajeError.value = "Error: [${body.codi}] ${body.descripcio}"
-                                Log.e("Solicitud Duplicado", "[${body.codi}] ${body.descripcio}")
                             }
                         }
                         !response.isSuccessful -> {
@@ -291,29 +390,16 @@ class MaterialDuplicadoViewModel @Inject constructor(
                                 } catch (e: Exception) { _mensajeError.value = "Error al procesar respuesta" }
                             }
                             _registroExitoso.value = false
-                            Log.e("Solicitud Duplicado", "HTTP ${response.code()} - $errorBody")
                         }
                         else -> { _registroExitoso.value = false; _mensajeError.value = "Error: Respuesta vacía del servidor" }
                     }
                 }
             } catch (e: java.net.SocketTimeoutException) {
-                withContext(Dispatchers.Main) {
-                    _cargando.value = false; _registroExitoso.value = false
-                    _mensajeError.value = "Tiempo de espera agotado. Verifique si la operación se completó."
-                    Log.e("Solicitud Duplicado", "Timeout: ${e.message}", e)
-                }
+                withContext(Dispatchers.Main) { _cargando.value = false; _registroExitoso.value = false; _mensajeError.value = "Tiempo de espera agotado." }
             } catch (e: java.io.IOException) {
-                withContext(Dispatchers.Main) {
-                    _cargando.value = false; _registroExitoso.value = false
-                    _mensajeError.value = "Error de conexión. Verifique su conexión a internet."
-                    Log.e("Solicitud Duplicado", "IOException: ${e.message}", e)
-                }
+                withContext(Dispatchers.Main) { _cargando.value = false; _registroExitoso.value = false; _mensajeError.value = "Error de conexión." }
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    _cargando.value = false; _registroExitoso.value = false
-                    _mensajeError.value = "Error inesperado: ${e.message ?: "Error desconocido"}"
-                    Log.e("Solicitud Duplicado", "Error general: ${e.message}", e)
-                }
+                withContext(Dispatchers.Main) { _cargando.value = false; _registroExitoso.value = false; _mensajeError.value = "Error inesperado: ${e.message ?: "Error desconocido"}" }
             }
         }
     }
@@ -327,6 +413,7 @@ class MaterialDuplicadoViewModel @Inject constructor(
         _municipio.value = ""; _telefonoContacto.value = ""
         _listaAnimales.value = listOf(IdenSolicitudDupli(identificador = "", tipusMaterial = ""))
         _tipoMaterialExpandidoPorIndice.value = emptyMap()
+        borradorSesionId = ""
     }
 
     fun resetearEstado() { _registroExitoso.value = false; _mensajeError.value = "" }

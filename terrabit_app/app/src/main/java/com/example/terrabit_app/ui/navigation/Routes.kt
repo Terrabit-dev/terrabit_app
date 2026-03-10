@@ -35,7 +35,15 @@ sealed class Routes(val route: String) {
         fun conBorrador(id: String) = "confirm_movements?borradorId=$id"
     }
 
-    object Material : Routes("request_material")
+
+
+    object Material : Routes("request_material?borradorId={borradorId}") {
+        fun conBorrador(id: String) = "request_material?borradorId=$id"
+    }
+
+    object MaterialDuplicado : Routes("material_duplicado?borradorId={borradorId}") {
+        fun conBorrador(id: String) = "material_duplicado?borradorId=$id"
+    }
     object Login : Routes("login")
     object CorregirBovino : Routes("modificar_animal?borradorId={borradorId}") {
         fun conBorrador(id: String) = "modificar_animal?borradorId=$id"
@@ -43,7 +51,6 @@ sealed class Routes(val route: String) {
     object IdentificacionAplazada : Routes("IdentificacioAplaz?borradorId={borradorId}") {
         fun conBorrador(id: String) = "IdentificacioAplaz?borradorId=$id"
     }
-    object MaterialDuplicado : Routes("material_duplicado")
     object Drawer : Routes("drawer_screen")
 
     // Screens Porcinos

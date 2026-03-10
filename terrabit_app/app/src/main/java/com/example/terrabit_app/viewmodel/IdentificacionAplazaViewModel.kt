@@ -4,8 +4,6 @@ import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.terrabit_app.data.Borrador
-import com.example.terrabit_app.data.SharedPreferencesManager
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.animales.PetIdentificacion
 import com.example.terrabit_app.data.network.lista_bovinos.Animal
@@ -20,12 +18,15 @@ import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
+import com.example.terrabit_app.data.local.dao.BorradorDao
+import com.example.terrabit_app.data.local.database.BorradorEntity
+import com.example.terrabit_app.data.local.database.toBorrador
 
 @HiltViewModel
 class IdentificacionAplazaViewModel @Inject constructor(
     private val repositorio: Repositorio,
     private val userPreferences: UserPreferences,
-    private val sharedPreferencesManager: SharedPreferencesManager
+    private val borradorDao: BorradorDao
 ) : ViewModel() {
 
     private var borradorSesionId: String = ""
@@ -118,80 +119,61 @@ class IdentificacionAplazaViewModel @Inject constructor(
                 !_fechaIdentificacion.value.isNullOrEmpty()
     }
 
+
     fun guardarBorradorAutomatico() {
-        if (!tieneContenido()) {
-            Log.d("Autoguardado Identificación", "No hay contenido para guardar")
-            return
-        }
-        try {
-            val datosIdentificacion = mapOf(
-                "identificador" to _identificadorAnimal.value,
-                "fechaIdentificacion" to _fechaIdentificacion.value
-            )
-            val borradorExistente = sharedPreferencesManager.obtenerBorradores()
-                .find { it.id == borradorSesionId }
-            val borrador = if (borradorExistente != null) {
-                borradorExistente.copy(
-                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
-                    datos = Gson().toJson(datosIdentificacion)
+        if (!tieneContenido()) return
+        viewModelScope.launch {
+            try {
+                val datos = mapOf(
+                    "identificador" to _identificadorAnimal.value,
+                    "fechaIdentificacion" to _fechaIdentificacion.value
                 )
-            } else {
-                Borrador(
-                    id = borradorSesionId,
-                    tipo = "IDENTIFICACION_APLAZADA",
+                val existente = borradorDao.getAll().find { it.id == borradorSesionId }
+                val entity = existente?.copy(
+                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    datos = Gson().toJson(datos)
+                ) ?: BorradorEntity(
+                    id = borradorSesionId, tipo = "IDENTIFICACION_APLAZADA",
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
                     hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
-                    datos = Gson().toJson(datosIdentificacion),
-                    estado = "BORRADOR_AUTO"
+                    datos = Gson().toJson(datos), estado = "BORRADOR_AUTO"
                 )
+                borradorDao.upsert(entity)
+            } catch (e: Exception) {
+                Log.e("Error Autoguardado Identificación", "Error al guardar: ${e.message}", e)
             }
-            sharedPreferencesManager.guardarBorrador(borrador)
-            Log.d("Autoguardado Identificación", "Borrador guardado: $borradorSesionId")
-        } catch (e: Exception) {
-            Log.e("Error Autoguardado Identificación", "Error al guardar: ${e.message}", e)
         }
     }
 
     fun cargarBorradorPorId(id: String) {
-        try {
-            val borrador = sharedPreferencesManager.obtenerBorradores()
-                .find { it.id == id } ?: return
-            borradorSesionId = borrador.id
-            val datos: Map<String, Any?> = Gson().fromJson(
-                borrador.datos,
-                object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
-            )
-            _identificadorAnimal.value = datos["identificador"] as? String ?: ""
-            _fechaIdentificacion.value = datos["fechaIdentificacion"] as? String ?: ""
-            Log.d("IdentificacionAplazaVM", "Borrador cargado por ID: $id")
-        } catch (e: Exception) {
-            Log.e("IdentificacionAplazaVM", "Error al cargar borrador por ID: ${e.message}", e)
+        viewModelScope.launch {
+            try {
+                val borrador = borradorDao.getAll().find { it.id == id } ?: return@launch
+                borradorSesionId = borrador.id
+                val datos: Map<String, Any?> = Gson().fromJson(
+                    borrador.datos,
+                    object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
+                )
+                _identificadorAnimal.value = datos["identificador"] as? String ?: ""
+                _fechaIdentificacion.value = datos["fechaIdentificacion"] as? String ?: ""
+            } catch (e: Exception) {
+                Log.e("IdentificacionAplazaVM", "Error al cargar borrador por ID: ${e.message}", e)
+            }
         }
     }
 
     fun eliminarBorradorAutomatico() {
-        try {
-            if (borradorSesionId.isNotEmpty()) {
-                sharedPreferencesManager.eliminarBorrador(borradorSesionId)
-                Log.d("Eliminar Borrador", "Borrador eliminado: $borradorSesionId")
-                borradorSesionId = ""
+        viewModelScope.launch {
+            try {
+                if (borradorSesionId.isNotEmpty()) {
+                    borradorDao.deleteById(borradorSesionId)
+                    borradorSesionId = ""
+                }
+            } catch (e: Exception) {
+                Log.e("Error Eliminar Borrador", "Error: ${e.message}", e)
             }
-        } catch (e: Exception) {
-            Log.e("Error Eliminar Borrador", "Error: ${e.message}", e)
         }
     }
-
-    fun obtenerBorradoresIdentificacionAplazada(): List<Borrador> {
-        return try {
-            sharedPreferencesManager.obtenerBorradores()
-                .filter { it.tipo == "IDENTIFICACION_APLAZADA" && it.estado == "BORRADOR_AUTO" }
-        } catch (e: Exception) {
-            Log.e("Error", "Error al obtener borradores: ${e.message}", e)
-            emptyList()
-        }
-    }
-
-
 
     fun actualizarIdentificadorAnimal(nuevoId: String) { _identificadorAnimal.value = nuevoId }
     fun mostrarDatePickerIdentificacion() { _mostrarDatePickerIdentificacion.value = true }
