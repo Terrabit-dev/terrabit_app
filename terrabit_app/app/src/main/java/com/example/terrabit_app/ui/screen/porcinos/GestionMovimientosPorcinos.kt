@@ -34,6 +34,7 @@ import com.example.terrabit_app.ui.components.TarjetaAccion
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.theme.BlueGrey
 import com.example.terrabit_app.ui.theme.MainGreen
+import com.example.terrabit_app.ui.theme.MainOrange
 import com.example.terrabit_app.ui.theme.WhiteBackground
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -96,15 +97,6 @@ fun GuiasMovimientosPorcinos(navController: NavController) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    TarjetaAccion(
-                        icono = Icons.Default.Create,
-                        titulo = stringResource(R.string.card_confirm_edit_guias_porcinos),
-                        subtitulo = "",
-                        colorFondo = MainGreen,
-                        modifier = Modifier.weight(1f),
-                        onClick = { navController.navigate(Routes.GestionGuiasPorcinos.route) }
-                    )
-
                     TarjetaAccion(
                         icono = Icons.Default.Send,
                         titulo = stringResource(R.string.card_confirm_entrada_porcinos),

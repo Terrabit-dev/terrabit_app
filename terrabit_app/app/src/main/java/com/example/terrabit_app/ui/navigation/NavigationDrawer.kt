@@ -27,9 +27,9 @@ import com.example.terrabit_app.ui.screen.bovinos.Movimientos
 import com.example.terrabit_app.ui.screen.bovinos.Nacimiento
 import com.example.terrabit_app.ui.screen.porcinos.EditarGuiaPorcinos
 import com.example.terrabit_app.ui.screen.porcinos.EntradasPorcinos
-import com.example.terrabit_app.ui.screen.porcinos.GestionGuiasPorcinos
+import com.example.terrabit_app.ui.screen.porcinos.EditarGuiasPorcinas
 import com.example.terrabit_app.ui.screen.porcinos.HomePorcinos
-import com.example.terrabit_app.ui.screen.porcinos.PorcinosGestionGuias
+import com.example.terrabit_app.ui.screen.porcinos.GestionGuiasPorcinos
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 import com.example.terrabit_app.ui.screen.bovinos.ConfigurationScreen
 import com.example.terrabit_app.ui.screen.bovinos.UsbTestScreen
@@ -109,7 +109,7 @@ fun NavigationDrawer(
 
         // Pantallas de categorías porcinos
         composable(Routes.GestionPorcinos.route) {
-            PorcinosGestionGuias(navController = navController)
+            GestionGuiasPorcinos(navController = navController)
         }
 
         composable(Routes.GuiasMovimientosPorcinos.route) {
@@ -199,7 +199,7 @@ fun NavigationDrawer(
 
         // Pantallas Porcinos
         composable(Routes.GestionGuiasPorcinos.route) {
-            GestionGuiasPorcinos(navController = navController)
+            EditarGuiasPorcinas(navController = navController)
         }
 
         composable(Routes.EntradasPorcinos.route) {

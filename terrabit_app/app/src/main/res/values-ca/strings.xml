@@ -395,4 +395,10 @@
     <string name="close_session_title">Tancar Sessió</string>
     <string name="version_title">Versió</string>
     <string name="connect_new_devices">connectar nou dispositiu</string>
+    <string name="category_fattening">Engreix</string>
+    <string name="category_piglets">Garrins</string>
+    <string name="category_rearing">Recria/Transició</string>
+    <string name="category_females">Famelles</string>
+    <string name="category_replacement">Reposició</string>
+    <string name="category_boars">Sementals</string>
 </resources>

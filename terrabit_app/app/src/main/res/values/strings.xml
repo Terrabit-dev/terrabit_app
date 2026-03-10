@@ -374,4 +374,10 @@
     <string name="close_session_title">Cerrar Sesión</string>
     <string name="version_title">Versión</string>
     <string name="connect_new_devices">conectar nuevo dispositivo</string>
+    <string name="category_fattening">Engorde</string>
+    <string name="category_piglets">Lechones</string>
+    <string name="category_rearing">Recría/Transición</string>
+    <string name="category_females">Hembras</string>
+    <string name="category_replacement">Reposición</string>
+    <string name="category_boars">Sementales</string>
 </resources>

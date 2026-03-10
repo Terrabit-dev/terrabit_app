@@ -66,6 +66,8 @@ import com.example.terrabit_app.ui.theme.DarkBlueGrey
 import com.example.terrabit_app.ui.theme.DarkWhiteBackground
 import com.example.terrabit_app.ui.theme.MainOrange
 import com.example.terrabit_app.ui.theme.WhiteBackground
+import com.example.terrabit_app.utils.CampoTexto
+import com.example.terrabit_app.utils.DropdownField
 import com.example.terrabit_app.utils.porcinos.ElementosConCodigosPorcinos
 import com.example.terrabit_app.viewmodel.porcinos.CrearGuiaPorcinosViewModel
 import kotlinx.coroutines.launch
@@ -265,154 +267,40 @@ fun CrearGuiasPorcinos(
                     verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
                     // Explotación de Entrada
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            text = stringResource(R.string.form_porcinos_expl_entrada),
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = DarkBlueGrey,
-                            letterSpacing = 0.15.sp
-                        )
-                        Spacer(modifier = Modifier.height(10.dp))
-                        OutlinedTextField(
-                            value = uiState.explotacion,
-                            onValueChange = { viewModel.actualizarExplotacion(it) },
-                            modifier = Modifier.fillMaxWidth(),
-                            placeholder = {
-                                Text(
-                                    text = stringResource(R.string.form_porcinos_cod_expl_entrada),
-                                    color = BlueGrey
-                                )
-                            },
-                            singleLine = true,
-                            shape = MaterialTheme.shapes.medium,
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = MainOrange,
-                                unfocusedBorderColor = DarkWhiteBackground,
-                                focusedTextColor = DarkBlueGrey,
-                                unfocusedTextColor = DarkBlueGrey,
-                                cursorColor = MainOrange
-                            ),
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Text,
-                                imeAction = ImeAction.Next,
-                                autoCorrect = false
-                            )
-                        )
-                    }
+                    CampoTexto(
+                        label = stringResource(R.string.form_porcinos_expl_entrada),
+                        valor = uiState.explotacion,
+                        placeholder = stringResource(R.string.form_porcinos_cod_expl_entrada),
+                        onValueChange = { viewModel.actualizarExplotacion(it) },
+                        defectColor = false
+                    )
+
 
                     // Codigo de Categoria
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            text = stringResource(R.string.form_porcinos_cod_cat),
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = DarkBlueGrey,
-                            letterSpacing = 0.15.sp
-                        )
-                        Spacer(modifier = Modifier.height(10.dp))
-                        ExposedDropdownMenuBox(
-                            expanded = uiState.categoriaExpandido,
-                            onExpandedChange = { viewModel.toggleCategoriaExpandido() }
-                        ) {
-                            OutlinedTextField(
-                                value = uiState.categoriaSeleccionada,
-                                onValueChange = {},
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .menuAnchor(),
-                                readOnly = true,
-                                placeholder = {
-                                    Text(
-                                        text = stringResource(R.string.form_porcinos_descr_cat),
-                                        color = BlueGrey
-                                    )
-                                },
-                                trailingIcon = {
-                                    ExposedDropdownMenuDefaults.TrailingIcon(
-                                        expanded = uiState.categoriaExpandido
-                                    )
-                                },
-                                singleLine = true,
-                                shape = MaterialTheme.shapes.medium,
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = MainOrange,
-                                    unfocusedBorderColor = DarkWhiteBackground,
-                                    focusedTextColor = DarkBlueGrey,
-                                    unfocusedTextColor = DarkBlueGrey
-                                )
-                            )
-                            ExposedDropdownMenu(
-                                expanded = uiState.categoriaExpandido,
-                                onDismissRequest = { viewModel.cerrarCategoriaMenu() },
-                                modifier = Modifier
-                                    .background(Color.White)
-                            ) {
-                                elementosConCodigos.categorias().forEach { (categoria, codigo) ->
-                                    DropdownMenuItem(
-                                        text = {
-                                            Text(
-                                                categoria,
-                                                fontSize = 15.sp,
-                                                color = DarkBlueGrey,
-                                                fontWeight = FontWeight.Normal
-                                            )
-                                        },
-                                        onClick = { viewModel.seleccionarCategoria(categoria, codigo) },
-                                        contentPadding = PaddingValues(
-                                            horizontal = 16.dp,
-                                            vertical = 14.dp
-                                        ),
-                                        colors = MenuDefaults.itemColors(
-                                            textColor = DarkBlueGrey,
-                                            leadingIconColor = DarkBlueGrey,
-                                            trailingIconColor = DarkBlueGrey,
-                                            disabledTextColor = BlueGrey
-                                        )
-                                    )
-                                }
 
+                    DropdownField(
+                        label = stringResource(R.string.form_porcinos_cod_cat),
+                        selectedValue = uiState.categoriaSeleccionada,
+                        expanded = uiState.categoriaExpandido,
+                        placeholder = stringResource(R.string.form_porcinos_descr_cat),
+                        opciones = elementosConCodigos.categorias(),
+                        onExpandedChange = { viewModel.toggleCategoriaExpandido() },
+                        onDismissRequest = { viewModel.cerrarCategoriaMenu() },
+                        onSeleccionar = { codigo, nombre -> viewModel.seleccionarCategoria(nombre, codigo) },
+                        defectColor = false
+                    )
 
-                            }
-                        }
-                    }
 
                     // Número de Animales
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            text = stringResource(R.string.form_porcinos_nAnimales),
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = DarkBlueGrey,
-                            letterSpacing = 0.15.sp
-                        )
-                        Spacer(modifier = Modifier.height(10.dp))
-                        OutlinedTextField(
-                            value = uiState.numAnimales,
-                            onValueChange = { viewModel.actualizarNumAnimales(it) },
-                            modifier = Modifier.fillMaxWidth(),
-                            placeholder = {
-                                Text(
-                                    text = stringResource(R.string.form_porcinos_descr_nAnimales),
-                                    color = BlueGrey
-                                )
-                            },
-                            singleLine = true,
-                            shape = MaterialTheme.shapes.medium,
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = MainOrange,
-                                unfocusedBorderColor = DarkWhiteBackground,
-                                focusedTextColor = DarkBlueGrey,
-                                unfocusedTextColor = DarkBlueGrey,
-                                cursorColor = MainOrange
-                            ),
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Number,
-                                imeAction = ImeAction.Next,
-                                autoCorrect = false
-                            )
-                        )
-                    }
+                    CampoTexto(
+                        label = stringResource(R.string.form_porcinos_nAnimales),
+                        valor = uiState.numAnimales,
+                        placeholder = stringResource(R.string.form_porcinos_descr_nAnimales),
+                        keyboardType = KeyboardType.Number,
+                        onValueChange = { viewModel.actualizarNumAnimales(it) },
+                        defectColor = false
+                    )
+
 
                     // Fecha de Salida
                     Row(
@@ -439,7 +327,7 @@ fun CrearGuiasPorcinos(
                                     modifier = Modifier.fillMaxWidth(),
                                     placeholder = {
                                         Text(
-                                            stringResource(R.string.form_porcinos_descr_fechaS),
+                                            stringResource(R.string.form_date_arrival_description),
                                             color = BlueGrey
                                         )
                                     },
@@ -535,7 +423,7 @@ fun CrearGuiasPorcinos(
                                     modifier = Modifier.fillMaxWidth(),
                                     placeholder = {
                                         Text(
-                                            stringResource(R.string.form_porcinos_descr_fechaLl),
+                                            stringResource(R.string.form_date_arrival_description),
                                             color = BlueGrey
                                         )
                                     },
@@ -607,191 +495,48 @@ fun CrearGuiasPorcinos(
                     }
 
                     // Opcional - Código SIR
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            text = stringResource(R.string.form_porcinos_cod_sir),
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = DarkBlueGrey,
-                            letterSpacing = 0.15.sp
-                        )
-                        Spacer(modifier = Modifier.height(10.dp))
-                        OutlinedTextField(
-                            value = uiState.codigoSIR,
-                            onValueChange = { viewModel.actualizarCodigoSIR(it) },
-                            modifier = Modifier.fillMaxWidth(),
-                            placeholder = {
-                                Text(
-                                    text = stringResource(R.string.form_porcinos_descr_sir),
-                                    color = BlueGrey
-                                )
-                            },
-                            singleLine = true,
-                            shape = MaterialTheme.shapes.medium,
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = MainOrange,
-                                unfocusedBorderColor = DarkWhiteBackground,
-                                focusedTextColor = DarkBlueGrey,
-                                unfocusedTextColor = DarkBlueGrey,
-                                cursorColor = MainOrange
-                            ),
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Text,
-                                imeAction = ImeAction.Next,
-                                autoCorrect = false
-                            )
-                        )
-                    }
+                    CampoTexto(
+                        label = stringResource(R.string.form_porcinos_cod_sir),
+                        valor = uiState.codigoSIR,
+                        placeholder = stringResource(R.string.form_porcinos_descr_sir),
+                        onValueChange = { viewModel.actualizarCodigoSIR(it) },
+                        defectColor = false
+                    )
+
 
                     // Opcional - Medio de Transporte
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            text = stringResource(R.string.form_porcinos_medio_trans),
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = DarkBlueGrey,
-                            letterSpacing = 0.15.sp
-                        )
-                        Spacer(modifier = Modifier.height(10.dp))
-                        ExposedDropdownMenuBox(
-                            expanded = uiState.medioTransporteExpandido,
-                            onExpandedChange = { viewModel.toggleMedioTransporteExpandido() }
-                        ) {
-                            OutlinedTextField(
-                                value = uiState.medioTransporteSeleccionado,
-                                onValueChange = {},
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .menuAnchor(),
-                                readOnly = true,
-                                placeholder = {
-                                    Text(
-                                        text = stringResource(R.string.form_porcinos_descr_MTransp),
-                                        color = BlueGrey
-                                    )
-                                },
-                                trailingIcon = {
-                                    ExposedDropdownMenuDefaults.TrailingIcon(
-                                        expanded = uiState.medioTransporteExpandido
-                                    )
-                                },
-                                singleLine = true,
-                                shape = MaterialTheme.shapes.medium,
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = MainOrange,
-                                    unfocusedBorderColor = DarkWhiteBackground,
-                                    focusedTextColor = DarkBlueGrey,
-                                    unfocusedTextColor = DarkBlueGrey
-                                )
-                            )
-                            ExposedDropdownMenu(
-                                expanded = uiState.medioTransporteExpandido,
-                                onDismissRequest = { viewModel.cerrarMedioTransporteMenu() },
-                                modifier = Modifier
-                                    .background(Color.White)
-                            ) {
-                                elementosConCodigos.medios().forEach { (medioTransporte, codigo) ->
-                                    DropdownMenuItem(
-                                        text = {
-                                            Text(
-                                                medioTransporte,
-                                                fontSize = 15.sp,
-                                                color = DarkBlueGrey,
-                                                fontWeight = FontWeight.Normal
-                                            )
-                                        },
-                                        onClick = { viewModel.seleccionarMedioTransporte(medioTransporte, codigo) },
-                                        contentPadding = PaddingValues(
-                                            horizontal = 16.dp,
-                                            vertical = 14.dp
-                                        ),
-                                        colors = MenuDefaults.itemColors(
-                                            textColor = DarkBlueGrey,
-                                            leadingIconColor = DarkBlueGrey,
-                                            trailingIconColor = DarkBlueGrey,
-                                            disabledTextColor = BlueGrey
-                                        )
-                                    )
-                                }
-
-
-                            }
-                        }
-                    }
+                    DropdownField(
+                        label = stringResource(R.string.form_porcinos_medio_trans),
+                        selectedValue = uiState.medioTransporteSeleccionado,
+                        expanded = uiState.medioTransporteExpandido,
+                        placeholder = stringResource(R.string.form_porcinos_descr_MTransp),
+                        opciones = elementosConCodigos.medios(),
+                        onExpandedChange = { viewModel.toggleMedioTransporteExpandido() },
+                        onDismissRequest = { viewModel.cerrarMedioTransporteMenu() },
+                        onSeleccionar = { nombre, codigo -> viewModel.seleccionarMedioTransporte(nombre, codigo) },
+                        defectColor = false
+                    )
 
                     // Opcional - Matrícula
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            text = stringResource(R.string.form_porcinos_matricula),
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = DarkBlueGrey,
-                            letterSpacing = 0.15.sp
-                        )
-                        Spacer(modifier = Modifier.height(10.dp))
-                        OutlinedTextField(
-                            value = uiState.matricula,
-                            onValueChange = { viewModel.actualizarMatricula(it) },
-                            modifier = Modifier.fillMaxWidth(),
-                            placeholder = {
-                                Text(
-                                    text = stringResource(R.string.form_porcinos_descr_matricula),
-                                    color = BlueGrey
-                                )
-                            },
-                            singleLine = true,
-                            shape = MaterialTheme.shapes.medium,
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = MainOrange,
-                                unfocusedBorderColor = DarkWhiteBackground,
-                                focusedTextColor = DarkBlueGrey,
-                                unfocusedTextColor = DarkBlueGrey,
-                                cursorColor = MainOrange
-                            ),
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Text,
-                                imeAction = ImeAction.Next,
-                                autoCorrect = false
-                            )
-                        )
-                    }
+                    CampoTexto(
+                        label = stringResource(R.string.form_porcinos_matricula),
+                        valor = uiState.matricula,
+                        placeholder = stringResource(R.string.form_porcinos_descr_matricula),
+                        onValueChange = { viewModel.actualizarMatricula(it) },
+                        defectColor = false
+                    )
+
 
                     // Opcional - NIF Conductor
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            text = stringResource(R.string.form_porcinos_nifCond),
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = DarkBlueGrey,
-                            letterSpacing = 0.15.sp
-                        )
-                        Spacer(modifier = Modifier.height(10.dp))
-                        OutlinedTextField(
-                            value = uiState.nifConductor,
-                            onValueChange = { viewModel.actualizarNifConductor(it) },
-                            modifier = Modifier.fillMaxWidth(),
-                            placeholder = {
-                                Text(
-                                    text = stringResource(R.string.form_porcinos_descr_nifCond),
-                                    color = BlueGrey
-                                )
-                            },
-                            singleLine = true,
-                            shape = MaterialTheme.shapes.medium,
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = MainOrange,
-                                unfocusedBorderColor = DarkWhiteBackground,
-                                focusedTextColor = DarkBlueGrey,
-                                unfocusedTextColor = DarkBlueGrey,
-                                cursorColor = MainOrange
-                            ),
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Text,
-                                imeAction = ImeAction.Next,
-                                autoCorrect = false
-                            )
-                        )
-                    }
+
+                    CampoTexto(
+                        label = stringResource(R.string.form_porcinos_nifCond),
+                        valor = uiState.nifConductor,
+                        placeholder = stringResource(R.string.form_porcinos_descr_nifCond),
+                        onValueChange = { viewModel.actualizarNifConductor(it) },
+                        defectColor = false
+                    )
+
 
                     // Botón Registrar
                     Button(

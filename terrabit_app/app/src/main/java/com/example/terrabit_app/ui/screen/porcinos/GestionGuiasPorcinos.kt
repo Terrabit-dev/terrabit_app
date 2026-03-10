@@ -12,6 +12,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -37,7 +38,7 @@ import com.example.terrabit_app.ui.theme.WhiteBackground
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PorcinosGestionGuias(navController: NavController) {
+fun GestionGuiasPorcinos(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -105,12 +106,12 @@ fun PorcinosGestionGuias(navController: NavController) {
                     )
 
                     TarjetaAccion(
-                        icono = Icons.Default.Edit,
-                        titulo = "Editar Guia",
+                        icono = Icons.Default.Create,
+                        titulo = stringResource(R.string.card_confirm_edit_guias_porcinos),
                         subtitulo = "",
                         colorFondo = MainOrange,
                         modifier = Modifier.weight(1f),
-                        onClick = { navController.navigate(Routes.EditarGuiaPorcinos.route) }
+                        onClick = { navController.navigate(Routes.GestionGuiasPorcinos.route) }
                     )
                 }
             }
