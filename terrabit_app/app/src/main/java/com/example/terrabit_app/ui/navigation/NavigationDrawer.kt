@@ -3,7 +3,9 @@ package com.example.terrabit_app.ui.navigation
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -25,14 +27,16 @@ import com.example.terrabit_app.ui.screen.bovinos.Material
 import com.example.terrabit_app.ui.screen.bovinos.MaterialDuplicadosScreen
 import com.example.terrabit_app.ui.screen.bovinos.Movimientos
 import com.example.terrabit_app.ui.screen.bovinos.Nacimiento
-import com.example.terrabit_app.ui.screen.porcinos.EditarGuiaPorcinos
+import com.example.terrabit_app.ui.screen.porcinos.ConfirmarEditarGuiasPorci
 import com.example.terrabit_app.ui.screen.porcinos.EntradasPorcinos
-import com.example.terrabit_app.ui.screen.porcinos.EditarGuiasPorcinas
+import com.example.terrabit_app.ui.screen.porcinos.ListaGuiasPorcinas
 import com.example.terrabit_app.ui.screen.porcinos.HomePorcinos
 import com.example.terrabit_app.ui.screen.porcinos.GestionGuiasPorcinos
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 import com.example.terrabit_app.ui.screen.bovinos.ConfigurationScreen
 import com.example.terrabit_app.ui.screen.bovinos.UsbTestScreen
+import com.example.terrabit_app.viewmodel.porcinos.EditarGuiaPorcinosViewModel
+import com.example.terrabit_app.viewmodel.porcinos.GestionarGuiasViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -215,7 +219,13 @@ fun NavigationDrawer(
 
         // Pantallas Porcinos
         composable(Routes.GestionGuiasPorcinos.route) {
-            EditarGuiasPorcinas(navController = navController)
+            val viewModelGestionarGuias = viewModel<GestionarGuiasViewModel>(it)
+            val viewModelEditarGuias = viewModel<EditarGuiaPorcinosViewModel>(it)
+            ListaGuiasPorcinas(
+                navController = navController,
+                viewModelGestionarGuias = viewModelGestionarGuias,
+                viewModelEditarGuias = viewModelEditarGuias
+            )
         }
 
         composable(Routes.EntradasPorcinos.route) {
@@ -225,8 +235,17 @@ fun NavigationDrawer(
         composable(Routes.CrearGuiasPorcinos.route){
             CrearGuiasPorcinos(navController = navController)
         }
-        composable(Routes.EditarGuiaPorcinos.route){
-            EditarGuiaPorcinos(navController = navController)
+        composable(Routes.EditarGuiaPorcinos.route) { currentEntry ->
+            val parentEntry = remember(currentEntry) {
+                navController.getBackStackEntry(Routes.GestionGuiasPorcinos.route)
+            }
+            val viewModelGestionarGuias = viewModel<GestionarGuiasViewModel>(parentEntry)
+            val viewModelEditarGuias = viewModel<EditarGuiaPorcinosViewModel>(parentEntry)
+            ConfirmarEditarGuiasPorci(
+                navController = navController,
+                viewModelGestionarGuias = viewModelGestionarGuias,
+                viewModelEditarGuias = viewModelEditarGuias
+            )
         }
     }
 }

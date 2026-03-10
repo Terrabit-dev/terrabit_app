@@ -60,8 +60,10 @@ import java.time.format.DateTimeFormatter
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditarGuiasPorcinas(
-    navController: NavController
+fun ListaGuiasPorcinas(
+    navController: NavController,
+    viewModelGestionarGuias: GestionarGuiasViewModel,
+    viewModelEditarGuias: EditarGuiaPorcinosViewModel
 ) {
     val viewModelGestionarGuias = viewModel<GestionarGuiasViewModel>()
     val viewModelEditarGuias = viewModel<EditarGuiaPorcinosViewModel>()
