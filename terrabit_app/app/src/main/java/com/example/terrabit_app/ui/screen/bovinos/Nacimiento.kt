@@ -36,7 +36,8 @@ import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
 import com.example.terrabit_app.utils.bluetooth.BluetoothScanDialog
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
-import com.example.terrabit_app.utils.usb.rememberUsbSerial
+import com.example.terrabit_app.utils.usb.UsbSerialViewModel
+
 import com.example.terrabit_app.viewmodel.NacimientoViewmodel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -83,13 +84,15 @@ fun Nacimiento(
     val lifecycleOwner = LocalLifecycleOwner.current
 
     //usb
+    val usbViewModel = hiltViewModel<UsbSerialViewModel>()
+    val usbState by usbViewModel.state.collectAsState()
 
     var madreUsb by remember { mutableStateOf(false) }
     var criaUsb by remember { mutableStateOf(false) }
 
     // ── Hook USB ─────────────────────────────────────────────────────────
-    val (usbState, conectarUsb) = rememberUsbSerial(
-        onMensaje = { mensaje ->
+    LaunchedEffect(Unit) {
+        usbViewModel.mensajes.collect { mensaje ->
             when {
                 madreUsb -> {
                     viewModel.actualizarIdMadre(mensaje)
@@ -101,12 +104,13 @@ fun Nacimiento(
                 }
             }
         }
-    )
+    }
 
+    // Error USB via snackbar
     LaunchedEffect(usbState.error) {
-        if (usbState.error != null) {
+        usbState.error?.let {
             snackbarHostState.showSnackbar(
-                message = "USB: ${usbState.error}",
+                message = "USB: $it",
                 duration = SnackbarDuration.Short
             )
         }
@@ -303,7 +307,7 @@ fun Nacimiento(
                             },
                             onClickUsb = {
                                 madreUsb = true; criaUsb = false
-                                conectarUsb()
+                                usbViewModel.conectar()
                             }
                         )
 
@@ -322,7 +326,7 @@ fun Nacimiento(
                             },
                             onClickUsb = {
                                 madreUsb = false; criaUsb = true
-                                conectarUsb()
+                                usbViewModel.conectar()
                             }
                         )
 
