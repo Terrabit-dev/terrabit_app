@@ -145,7 +145,7 @@ class Repositorio(context: Context) {
         apiInterface.altaMovimientoPorcino(request)
 
     // 5.2 Descarga de movimientos para movilidad
-    suspend fun getGuiasMobilitatPorcinas(
+    suspend fun getGuiasMobilitatPorcinas( //ListaGuiasPorcinas.kt
         nif: String?,
         password: String?,
         codiMo: String?,
@@ -161,7 +161,7 @@ class Repositorio(context: Context) {
     // --- FLUJO DE ENTRADAS (DESTINO) ---
 
     // 5.2 Consulta de movimientos pendientes de confirmar entrada
-    suspend fun getPendientesConfirmarEntradaPorcina(
+    suspend fun getPendientesConfirmarEntradaPorcina( // EntradasPorcinos.kt
         nif: String?,
         password: String?,
         moDesti: String?,

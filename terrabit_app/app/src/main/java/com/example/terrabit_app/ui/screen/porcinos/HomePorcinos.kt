@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.Agriculture
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.EmojiNature
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
@@ -338,7 +339,7 @@ fun HeaderBienvenidaPorcinos(
                             )
                     ) {
                         Icon(
-                            Icons.Default.Settings,
+                            Icons.Default.Language,
                             contentDescription = "Configuración",
                             tint = Color.White
                         )

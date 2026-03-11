@@ -60,7 +60,7 @@ fun GuiasMovimientosPorcinos(navController: NavController) {
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MainGreen
+                    containerColor = MainOrange
                 )
             )
         },
@@ -101,8 +101,7 @@ fun GuiasMovimientosPorcinos(navController: NavController) {
                         icono = Icons.Default.Send,
                         titulo = stringResource(R.string.card_confirm_entrada_porcinos),
                         subtitulo = "",
-                        colorFondo = MainGreen,
-                        contadorBadge = 2,
+                        colorFondo = MainOrange,
                         modifier = Modifier.weight(1f),
                         onClick = { navController.navigate(Routes.EntradasPorcinos.route) }
                     )
