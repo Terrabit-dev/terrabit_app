@@ -3,6 +3,7 @@ package com.example.terrabit_app.di
 import android.content.Context
 import com.example.terrabit_app.data.SharedPreferencesManager
 import com.example.terrabit_app.data.local.dao.BorradorDao
+import com.example.terrabit_app.data.local.dao.HistorialDao
 import com.example.terrabit_app.data.local.database.AppDatabase
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.utils.UserPreferences
@@ -47,4 +48,10 @@ object AppModule {
     fun provideBorradorDao(database: AppDatabase): BorradorDao {
         return database.borradorDao()
     }
+
+    @Provides
+    @Singleton
+    fun provideHistorialDao(database: AppDatabase): HistorialDao = database.historialDao()
+
+
 }

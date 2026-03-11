@@ -5,7 +5,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.local.dao.BorradorDao
+import com.example.terrabit_app.data.local.dao.HistorialDao
 import com.example.terrabit_app.data.local.database.BorradorEntity
+import com.example.terrabit_app.data.local.database.HistorialEntity
 import com.example.terrabit_app.data.network.Identificadores.IdenSolicitudDupli
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.lista_bovinos.Animal
@@ -20,13 +22,15 @@ import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
 class MaterialDuplicadoViewModel @Inject constructor(
     private val repositorio: Repositorio,
     private val userPreferences: UserPreferences,
-    private val borradorDao: BorradorDao
+    private val borradorDao: BorradorDao,
+    private val historialDao: HistorialDao
 ) : ViewModel() {
 
     private var borradorSesionId: String = "material_duplicado_auto_${System.currentTimeMillis()}"
@@ -374,6 +378,7 @@ class MaterialDuplicadoViewModel @Inject constructor(
                             val body = response.body()!!
                             if (body.codi == "0" || body.descripcio == "OK") {
                                 _registroExitoso.value = true; _mensajeError.value = ""
+                                guardarEnHistorial("Solicitud de duplicado enviada")
                                 eliminarBorradorAutomatico()
                                 limpiarFormulario()
                             } else {
@@ -417,4 +422,23 @@ class MaterialDuplicadoViewModel @Inject constructor(
     }
 
     fun resetearEstado() { _registroExitoso.value = false; _mensajeError.value = "" }
+
+    private fun guardarEnHistorial(resumen: String = "") {
+        viewModelScope.launch {
+            try {
+                historialDao.insert(
+                    HistorialEntity(
+                        id = UUID.randomUUID().toString(),
+                        tipo = "MATERIAL_DUPLICADO",
+                        fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                        hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
+                        datos = "",
+                        resumen = resumen
+                    )
+                )
+            } catch (e: Exception) {
+                Log.e("Historial", "Error al guardar en historial: ${e.message}", e)
+            }
+        }
+    }
 }

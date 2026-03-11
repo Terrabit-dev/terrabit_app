@@ -17,6 +17,7 @@ import com.example.terrabit_app.ui.pantallas.GestionBovinos
 import com.example.terrabit_app.ui.pantallas.GuiasMovimientos
 import com.example.terrabit_app.ui.pantallas.GuiasMovimientosPorcinos
 import com.example.terrabit_app.ui.pantallas.MaterialCategoria
+import com.example.terrabit_app.ui.screen.HistorialScreen
 import com.example.terrabit_app.ui.screen.bovinos.CorregirSexoBovi
 import com.example.terrabit_app.ui.screen.bovinos.Fallecimiento
 import com.example.terrabit_app.ui.screen.bovinos.GestionGuias
@@ -79,6 +80,16 @@ fun NavigationDrawer(
                 navController = navController
             )
         }
+
+        // Historial
+        composable("historial"){
+            HistorialScreen(
+                viewModel = hiltViewModel(),
+                onMenuClick = onMenuClick,
+                navController = navController
+            )
+        }
+
 
         // Configuracion
         composable(Routes.Configuration.route) {

@@ -5,7 +5,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.local.dao.BorradorDao
+import com.example.terrabit_app.data.local.dao.HistorialDao
 import com.example.terrabit_app.data.local.database.BorradorEntity
+import com.example.terrabit_app.data.local.database.HistorialEntity
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.material.PetSolicitudMaterial
 import com.example.terrabit_app.data.network.material.Unitat
@@ -19,12 +21,14 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import com.google.gson.Gson
+import java.util.UUID
 
 @HiltViewModel
 class MaterialViewModel @Inject constructor(
     private val repositorio: Repositorio,
     private val userPreferences: UserPreferences,
-    private val borradorDao: BorradorDao
+    private val borradorDao: BorradorDao,
+    private val historialDao: HistorialDao
 ) : ViewModel() {
 
     private var borradorSesionId: String = "material_auto_${System.currentTimeMillis()}"
@@ -343,6 +347,7 @@ class MaterialViewModel @Inject constructor(
                             val body = response.body()!!
                             if (body.codi == "0" || body.descripcio == "OK") {
                                 _registroMaterialExitoso.value = true; _mensajeErrorMaterial.value = ""
+                                guardarEnHistorial("Solicitud de material enviada")
                                 eliminarBorradorAutomatico()
                                 limpiarFormularioMaterial()
                             } else {
@@ -383,4 +388,24 @@ class MaterialViewModel @Inject constructor(
     }
 
     fun resetearEstadoRegistroMaterial() { _registroMaterialExitoso.value = false; _mensajeErrorMaterial.value = "" }
+
+    private fun guardarEnHistorial(resumen: String = "") {
+        viewModelScope.launch {
+            try {
+                historialDao.insert(
+                    HistorialEntity(
+                        id = UUID.randomUUID().toString(),
+                        tipo = "MATERIAL",
+                        fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                        hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
+                        datos = "",
+                        resumen = resumen
+                    )
+                )
+            } catch (e: Exception) {
+                Log.e("Historial", "Error al guardar en historial: ${e.message}", e)
+            }
+        }
+    }
+
 }

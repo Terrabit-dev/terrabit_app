@@ -26,14 +26,18 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import com.example.terrabit_app.data.local.dao.BorradorDao
+import com.example.terrabit_app.data.local.dao.HistorialDao
 import com.example.terrabit_app.data.local.database.BorradorEntity
+import com.example.terrabit_app.data.local.database.HistorialEntity
 import com.example.terrabit_app.data.local.database.toBorrador
+import java.util.UUID
 
 @HiltViewModel
 class MovimientosViewModel @Inject constructor(
     private val repositorio: Repositorio,
     private val userPreferences: UserPreferences,
-    private val borradorDao: BorradorDao
+    private val borradorDao: BorradorDao,
+    private val historialDao: HistorialDao
 ) : ViewModel() {
 
     val nif = userPreferences.getNif() ?: ""
@@ -502,7 +506,9 @@ class MovimientosViewModel @Inject constructor(
                             if (body.codiRemo == "0" || body.descripcio?.contains("correcte", ignoreCase = true) == true) {
                                 _registroExitoso.value = true; _mensajeError.value = ""
                                 Log.d("Confirmar Movimiento", "Movimiento confirmado exitosamente")
-                                eliminarBorradorAutomatico(); limpiarFormulario()
+                                guardarEnHistorial("Movimiento Registrado")
+                                eliminarBorradorAutomatico()
+                                limpiarFormulario()
                             } else {
                                 _registroExitoso.value = false
                                 _mensajeError.value = "Respuesta inesperada del servidor: ${body.descripcio ?: "Sin descripción"}"
@@ -573,6 +579,25 @@ class MovimientosViewModel @Inject constructor(
             } else ""
         } catch (e: Exception) {
             Log.e("Error conversión fecha/hora", e.message ?: "Error desconocido"); ""
+        }
+    }
+
+    private fun guardarEnHistorial(resumen: String = "") {
+        viewModelScope.launch {
+            try {
+                historialDao.insert(
+                    HistorialEntity(
+                        id = UUID.randomUUID().toString(),
+                        tipo = "MOVIMIENTO",
+                        fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                        hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
+                        datos = "",
+                        resumen = resumen
+                    )
+                )
+            } catch (e: Exception) {
+                Log.e("Historial", "Error al guardar en historial: ${e.message}", e)
+            }
         }
     }
 }

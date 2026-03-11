@@ -25,14 +25,18 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import com.example.terrabit_app.data.local.dao.BorradorDao
+import com.example.terrabit_app.data.local.dao.HistorialDao
 import com.example.terrabit_app.data.local.database.BorradorEntity
+import com.example.terrabit_app.data.local.database.HistorialEntity
 import com.example.terrabit_app.data.local.database.toBorrador
+import java.util.UUID
 
 @HiltViewModel
 class NacimientoViewmodel @Inject constructor(
     private val repositorio: Repositorio,
     private val userPreferences: UserPreferences,
-    private val borradorDao: BorradorDao
+    private val borradorDao: BorradorDao,
+    private val historialDao: HistorialDao
 ) : ViewModel() {
 
     private var borradorSesionId: String = ""
@@ -364,6 +368,7 @@ class NacimientoViewmodel @Inject constructor(
                             if (body.codi == "0" || body.descripcio == "OK") {
                                 _registroExitoso.value = true
                                 _mensajeError.value = ""
+                                guardarEnHistorial("Nacimiento Registrado")
                                 eliminarBorradorAutomatico()
                                 limpiarFormularioNacimiento()
                             }
@@ -431,4 +436,24 @@ class NacimientoViewmodel @Inject constructor(
     }
 
     fun validarIdentificador(id: String): Boolean = id.length >= 5
+
+
+    private fun guardarEnHistorial(resumen: String = "") {
+        viewModelScope.launch {
+            try {
+                historialDao.insert(
+                    HistorialEntity(
+                        id = UUID.randomUUID().toString(),
+                        tipo = "NACIMIENTO",
+                        fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                        hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
+                        datos = "",
+                        resumen = resumen
+                    )
+                )
+            } catch (e: Exception) {
+                Log.e("Historial", "Error al guardar en historial: ${e.message}", e)
+            }
+        }
+    }
 }

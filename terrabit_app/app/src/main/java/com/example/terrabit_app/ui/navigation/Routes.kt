@@ -2,6 +2,9 @@ package com.example.terrabit_app.ui.navigation
 
 sealed class Routes(val route: String) {
 
+
+    object Login : Routes("login")
+
     // Home Bovinos
     object HomeBovinos : Routes("home_bovinos")
 
@@ -35,8 +38,6 @@ sealed class Routes(val route: String) {
         fun conBorrador(id: String) = "confirm_movements?borradorId=$id"
     }
 
-
-
     object Material : Routes("request_material?borradorId={borradorId}") {
         fun conBorrador(id: String) = "request_material?borradorId=$id"
     }
@@ -44,14 +45,13 @@ sealed class Routes(val route: String) {
     object MaterialDuplicado : Routes("material_duplicado?borradorId={borradorId}") {
         fun conBorrador(id: String) = "material_duplicado?borradorId=$id"
     }
-    object Login : Routes("login")
+
     object CorregirBovino : Routes("modificar_animal?borradorId={borradorId}") {
         fun conBorrador(id: String) = "modificar_animal?borradorId=$id"
     }
     object IdentificacionAplazada : Routes("IdentificacioAplaz?borradorId={borradorId}") {
         fun conBorrador(id: String) = "IdentificacioAplaz?borradorId=$id"
     }
-    object Drawer : Routes("drawer_screen")
 
     // Screens Porcinos
     object GestionGuiasPorcinos : Routes("gestion_guias_porcinos")
@@ -62,7 +62,10 @@ sealed class Routes(val route: String) {
 
     object GestionarGuiasPorcinos : Routes("editar_confirmar_guias_porcin")
 
+
+    object Drawer : Routes("drawer_screen")
     object Configuration : Routes("configuration")
 
+    object Historial : Routes("historial")
     object  Usb : Routes("usb")
 }

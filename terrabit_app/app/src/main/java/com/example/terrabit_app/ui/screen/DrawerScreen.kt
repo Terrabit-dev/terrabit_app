@@ -69,6 +69,7 @@ fun DrawerScreen(
                     }
                     scope.launch { drawerState.close() }
                 },
+
                 onBorradoresClick = {
                     drawerNavController.navigate("borradores") {
                         popUpTo(drawerNavController.graph.startDestinationId)
@@ -76,6 +77,15 @@ fun DrawerScreen(
                     }
                     scope.launch { drawerState.close() }
                 },
+
+                onHistorialClick = {
+                    drawerNavController.navigate("historial") {
+                        popUpTo(drawerNavController.graph.startDestinationId)
+                        launchSingleTop = true
+                    }
+                    scope.launch { drawerState.close() }
+                },
+
                 onConfigClick = {
                     drawerNavController.navigate(Routes.Configuration.route) {
                         popUpTo(drawerNavController.graph.startDestinationId)
@@ -106,6 +116,7 @@ fun DrawerContent(
     currentRoute: String?,
     onTipoSeleccionado: (String) -> Unit,
     onBorradoresClick: () -> Unit,
+    onHistorialClick: () -> Unit,
     onConfigClick: () -> Unit,
     onLogout: () -> Unit
 ) {
@@ -171,6 +182,16 @@ fun DrawerContent(
                 titulo = stringResource(R.string.draft_name),
                 seleccionado = currentRoute == "borradores",
                 onClick = onBorradoresClick,
+                colorSeleccion = colorPrincipal
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OpcionDrawer(
+                icono = Icons.Default.History,
+                titulo = stringResource(R.string.history_name),
+                seleccionado = currentRoute == "historial",
+                onClick = onHistorialClick,
                 colorSeleccion = colorPrincipal
             )
 

@@ -19,14 +19,17 @@ import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
 import com.example.terrabit_app.data.local.dao.BorradorDao
+import com.example.terrabit_app.data.local.dao.HistorialDao
 import com.example.terrabit_app.data.local.database.BorradorEntity
+import com.example.terrabit_app.data.local.database.HistorialEntity
 import com.example.terrabit_app.data.local.database.toBorrador
 
 @HiltViewModel
 class IdentificacionAplazaViewModel @Inject constructor(
     private val repositorio: Repositorio,
     private val userPreferences: UserPreferences,
-    private val borradorDao: BorradorDao
+    private val borradorDao: BorradorDao,
+    private val historialDao: HistorialDao
 ) : ViewModel() {
 
     private var borradorSesionId: String = ""
@@ -227,6 +230,7 @@ class IdentificacionAplazaViewModel @Inject constructor(
                                 _identificacionExitosa.value = true
                                 _mensajeErrorIdentificacion.value = ""
                                 Log.d("Corrección Identificacion", "Identificación corregida exitosamente")
+                                guardarEnHistorial("Identificación aplazada registrada")
                                 eliminarBorradorAutomatico()
                                 limpiarFormulario()
                             } else {
@@ -288,5 +292,24 @@ class IdentificacionAplazaViewModel @Inject constructor(
         _identificacionExitosa.value = false
         _mensajeErrorIdentificacion.value = ""
         _codiError.value = null
+    }
+
+    private fun guardarEnHistorial(resumen: String = "") {
+        viewModelScope.launch {
+            try {
+                historialDao.insert(
+                    HistorialEntity(
+                        id = UUID.randomUUID().toString(),
+                        tipo = "IDENTIFICACION_APLAZADA",
+                        fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                        hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
+                        datos = "",
+                        resumen = resumen
+                    )
+                )
+            } catch (e: Exception) {
+                Log.e("Historial", "Error al guardar en historial: ${e.message}", e)
+            }
+        }
     }
 }

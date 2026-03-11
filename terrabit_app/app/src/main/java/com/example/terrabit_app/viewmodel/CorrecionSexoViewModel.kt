@@ -20,14 +20,18 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import com.example.terrabit_app.data.local.dao.BorradorDao
+import com.example.terrabit_app.data.local.dao.HistorialDao
 import com.example.terrabit_app.data.local.database.BorradorEntity
+import com.example.terrabit_app.data.local.database.HistorialEntity
 import com.example.terrabit_app.data.local.database.toBorrador
+import java.util.UUID
 
 @HiltViewModel
 class CorrecionSexoViewModel @Inject constructor(
     private val repositorio: Repositorio,
     private val userPreferences: UserPreferences,
-    private val borradorDao: BorradorDao
+    private val borradorDao: BorradorDao,
+    private val historialDao: HistorialDao
 ) : ViewModel() {
 
     private var borradorSesionId: String = ""
@@ -255,6 +259,7 @@ class CorrecionSexoViewModel @Inject constructor(
                                 _correccionSexoExitosa.value = true
                                 _mensajeErrorCorreccionSexo.value = ""
                                 Log.d("Corrección Sexo", "Sexo corregido exitosamente")
+                                guardarEnHistorial("Corrección de sexo registrada")
                                 eliminarBorradorAutomatico()
                                 limpiarFormularioCorreccionSexo()
                             } else {
@@ -317,5 +322,24 @@ class CorrecionSexoViewModel @Inject constructor(
         _correccionSexoExitosa.value = false
         _mensajeErrorCorreccionSexo.value = ""
         _codiError.value = null
+    }
+
+    private fun guardarEnHistorial(resumen: String = "") {
+        viewModelScope.launch {
+            try {
+                historialDao.insert(
+                    HistorialEntity(
+                        id = UUID.randomUUID().toString(),
+                        tipo = "CORRECCION_SEXO",
+                        fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                        hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
+                        datos = "",
+                        resumen = resumen
+                    )
+                )
+            } catch (e: Exception) {
+                Log.e("Historial", "Error al guardar en historial: ${e.message}", e)
+            }
+        }
     }
 }

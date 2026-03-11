@@ -38,7 +38,10 @@ import com.example.terrabit_app.viewmodel.CorrecionSexoViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CorregirSexoBovi(navController: NavController, bluetoothViewModel: BluetoothViewModel, borradorId: String = "") {
+fun CorregirSexoBovi(
+    navController: NavController,
+    bluetoothViewModel: BluetoothViewModel,
+    borradorId: String = "") {
     val viewModel = hiltViewModel<CorrecionSexoViewModel>()
     val identificadorCorreccionSexo by viewModel.identificadorCorreccionSexo.observeAsState("")
     val sexoCorreccionSeleccionado by viewModel.sexoCorreccionSeleccionado.observeAsState("")
