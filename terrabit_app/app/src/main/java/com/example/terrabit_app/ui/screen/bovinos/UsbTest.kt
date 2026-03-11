@@ -218,7 +218,7 @@ private fun abrirPuertoUsb(
         return onError("No se pudo abrir el puerto serie")
     }
 
-    serial.setBaudRate(115200)
+    serial.setBaudRate(9600)
     serial.setDataBits(UsbSerialInterface.DATA_BITS_8)
     serial.setStopBits(UsbSerialInterface.STOP_BITS_1)
     serial.setParity(UsbSerialInterface.PARITY_NONE)

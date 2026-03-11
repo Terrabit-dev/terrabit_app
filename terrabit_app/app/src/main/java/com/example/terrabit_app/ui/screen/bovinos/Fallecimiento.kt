@@ -42,6 +42,7 @@ import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
 import com.example.terrabit_app.utils.bluetooth.BluetoothScanDialog
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
+import com.example.terrabit_app.utils.usb.rememberUsbSerial
 import com.example.terrabit_app.viewmodel.ViewModelMuerteBovi
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -78,6 +79,21 @@ fun Fallecimiento(navController: NavController, bluetoothViewModel: BluetoothVie
 
 
     val datePickerState = rememberDatePickerState()
+
+    val (usbState, conectarUsb) = rememberUsbSerial(
+        onMensaje = { mensaje ->
+           viewModel.actualizarIdentificadorMuerte(mensaje)
+        }
+    )
+
+    LaunchedEffect(usbState.error) {
+        if (usbState.error != null) {
+            snackbarHostState.showSnackbar(
+                message = "USB: ${usbState.error}",
+                duration = SnackbarDuration.Short
+            )
+        }
+    }
 
     if (mostrarBluetooth) {
         BluetoothScanDialog(
@@ -264,6 +280,9 @@ fun Fallecimiento(navController: NavController, bluetoothViewModel: BluetoothVie
                             onClickBluetooth = {
                                 bluetoothViewModel.iniciarEscaneo(context)
                                 mostrarBluetooth = true
+                            },
+                            onClickUsb = {
+                                conectarUsb()
                             }
                         )
 

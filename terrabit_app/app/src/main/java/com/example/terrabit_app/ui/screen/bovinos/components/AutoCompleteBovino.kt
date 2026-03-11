@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.outlined.Bluetooth
+import androidx.compose.material.icons.outlined.Usb
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -91,6 +92,7 @@ fun CampoIdentificadorAutoComplete(
     suggestions: List<Animal> = emptyList(),
     onAnimalSelected: ((Animal) -> Unit)? = null,
     isLoadingSuggestions: Boolean = false,
+    onClickUsb: (() -> Unit)? = null
 ) {
     var expanded by remember { mutableStateOf(false) }
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -132,13 +134,6 @@ fun CampoIdentificadorAutoComplete(
             ),
             trailingIcon = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (isLoadingSuggestions) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp).padding(end = 4.dp),
-                            strokeWidth = 2.dp,
-                            color = accentColor
-                        )
-                    }
                     if (valor.isNotBlank() && onAnimalSelected != null) {
                         IconButton(onClick = { onValueChange(""); expanded = false }) {
                             Icon(
@@ -146,6 +141,16 @@ fun CampoIdentificadorAutoComplete(
                                 contentDescription = "Limpiar",
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                    // Botón USB — solo aparece si se pasa onClickUsb
+                    if (onClickUsb != null) {
+                        IconButton(onClick = onClickUsb) {
+                            Icon(
+                                Icons.Outlined.Usb,  // o Icons.Outlined.Cable
+                                contentDescription = "Leer crotal por USB",
+                                tint = accentColor
                             )
                         }
                     }

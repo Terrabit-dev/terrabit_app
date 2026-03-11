@@ -36,6 +36,7 @@ import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
 import com.example.terrabit_app.utils.bluetooth.BluetoothScanDialog
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
+import com.example.terrabit_app.utils.usb.rememberUsbSerial
 import com.example.terrabit_app.viewmodel.NacimientoViewmodel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -73,6 +74,36 @@ fun Nacimiento(navController: NavController, bluetooth: BluetoothViewModel, borr
     val elementosConCodigos = ElementosConCodigos()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+
+    //usb
+
+    var madreUsb by remember { mutableStateOf(false) }
+    var criaUsb by remember { mutableStateOf(false) }
+
+    // ── Hook USB ─────────────────────────────────────────────────────────
+    val (usbState, conectarUsb) = rememberUsbSerial(
+        onMensaje = { mensaje ->
+            when {
+                madreUsb -> {
+                    viewModel.actualizarIdMadre(mensaje)
+                    madreUsb = false
+                }
+                criaUsb -> {
+                    viewModel.actualizarIdCria(mensaje)
+                    criaUsb = false
+                }
+            }
+        }
+    )
+
+    LaunchedEffect(usbState.error) {
+        if (usbState.error != null) {
+            snackbarHostState.showSnackbar(
+                message = "USB: ${usbState.error}",
+                duration = SnackbarDuration.Short
+            )
+        }
+    }
 
     LaunchedEffect(Unit) {
         if (borradorId.isNotEmpty()) {
@@ -262,6 +293,10 @@ fun Nacimiento(navController: NavController, bluetooth: BluetoothViewModel, borr
                             onClickBluetooth = {
                                 madreBluetooth = true; criaBluetooth = false
                                 bluetooth.iniciarEscaneo(context); mostrarBluetooth = true
+                            },
+                            onClickUsb = {
+                                madreUsb = true; criaUsb = false
+                                conectarUsb()
                             }
                         )
 
@@ -277,6 +312,10 @@ fun Nacimiento(navController: NavController, bluetooth: BluetoothViewModel, borr
                             onClickBluetooth = {
                                 madreBluetooth = false; criaBluetooth = true
                                 bluetooth.iniciarEscaneo(context); mostrarBluetooth = true
+                            },
+                            onClickUsb = {
+                                madreUsb = false; criaUsb = true
+                                conectarUsb()
                             }
                         )
 
