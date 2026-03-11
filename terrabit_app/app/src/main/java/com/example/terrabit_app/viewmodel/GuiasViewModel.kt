@@ -497,18 +497,73 @@ class GuiasViewModel @Inject constructor(
     private fun guardarEnHistorial(resumen: String = "") {
         viewModelScope.launch {
             try {
-                historialDao.insert(
-                    HistorialEntity(
-                        id = UUID.randomUUID().toString(),
-                        tipo = "GUIA",
-                        fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
-                        hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
-                        datos = "",
-                        resumen = resumen
-                    )
+                val datos = mapOf(
+                    "explotacioOrigen" to _explotacioOrigen.value,
+                    "explotacioDestinacio" to _explotacioDestinacio.value,
+                    "temporal" to _temporal.value,
+                    "dataSortida" to _dataSortida.value,
+                    "horaSortida" to _horaSortida.value,
+                    "dataArribada" to _dataArribada.value,
+                    "horaArribada" to _horaArribada.value,
+                    "mobilitat" to _mobilitat.value,
+                    "pais" to _pais.value,
+                    "codiExplotacio" to _codiExplotacio.value,
+                    "codiAtes" to _codiAtes.value,
+                    "nomTransportista" to _nomTransportista.value,
+                    "mitjaTransport" to _mitjaTransport.value,
+                    "matricula" to _matricula.value,
+                    "nifConductor" to _nifConductor.value,
+                    "nomConductor" to _nomConductor.value,
+                    "identificadors" to _identificadors.value,
+                    "codiTemporal" to codiTemporal,
+                    "codiGuiaMobilidad" to codiGuiaMobilidad,
+                    "codiTransport" to codiTransport
                 )
+                historialDao.insert(HistorialEntity(
+                    id = java.util.UUID.randomUUID().toString(),
+                    tipo = "GUIA",
+                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
+                    datos = Gson().toJson(datos),
+                    resumen = resumen
+                ))
             } catch (e: Exception) {
-                Log.e("Historial", "Error al guardar en historial: ${e.message}", e)
+                Log.e("Historial", "Error: ${e.message}", e)
+            }
+        }
+    }
+
+    fun cargarDesdeHistorial(id: String) {
+        viewModelScope.launch {
+            try {
+                val registro = historialDao.getAll().find { it.id == id } ?: return@launch
+                val datos: Map<String, Any?> = Gson().fromJson(
+                    registro.datos,
+                    object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
+                )
+                _explotacioOrigen.value = datos["explotacioOrigen"] as? String ?: ""
+                _explotacioDestinacio.value = datos["explotacioDestinacio"] as? String ?: ""
+                _temporal.value = datos["temporal"] as? String ?: ""
+                _dataSortida.value = datos["dataSortida"] as? String ?: ""
+                _horaSortida.value = datos["horaSortida"] as? String ?: ""
+                _dataArribada.value = datos["dataArribada"] as? String ?: ""
+                _horaArribada.value = datos["horaArribada"] as? String ?: ""
+                _mobilitat.value = datos["mobilitat"] as? String ?: ""
+                _pais.value = datos["pais"] as? String ?: ""
+                _codiExplotacio.value = datos["codiExplotacio"] as? String ?: ""
+                _codiAtes.value = datos["codiAtes"] as? String ?: ""
+                _nomTransportista.value = datos["nomTransportista"] as? String ?: ""
+                _mitjaTransport.value = datos["mitjaTransport"] as? String ?: ""
+                _matricula.value = datos["matricula"] as? String ?: ""
+                _nifConductor.value = datos["nifConductor"] as? String ?: ""
+                _nomConductor.value = datos["nomConductor"] as? String ?: ""
+                codiTemporal = datos["codiTemporal"] as? String ?: ""
+                codiGuiaMobilidad = datos["codiGuiaMobilidad"] as? String ?: ""
+                codiTransport = datos["codiTransport"] as? String ?: ""
+                @Suppress("UNCHECKED_CAST")
+                _identificadors.value = (datos["identificadors"] as? List<String>) ?: listOf("")
+            } catch (e: Exception) {
+                Log.e("GuiasVM", "Error al cargar desde historial: ${e.message}", e)
             }
         }
     }

@@ -38,7 +38,6 @@ class NacimientoViewmodel @Inject constructor(
     private val borradorDao: BorradorDao,
     private val historialDao: HistorialDao
 ) : ViewModel() {
-
     private var borradorSesionId: String = ""
     private var editandoBorrador: Boolean = false
 
@@ -441,19 +440,56 @@ class NacimientoViewmodel @Inject constructor(
     private fun guardarEnHistorial(resumen: String = "") {
         viewModelScope.launch {
             try {
-                historialDao.insert(
-                    HistorialEntity(
-                        id = UUID.randomUUID().toString(),
-                        tipo = "NACIMIENTO",
-                        fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
-                        hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
-                        datos = "",
-                        resumen = resumen
-                    )
+                val datos = mapOf(
+                    "idMadre" to _idMadre.value,
+                    "idCria" to _idCria.value,
+                    "fechaNacimiento" to _fechaNacimiento.value,
+                    "fechaIdentificacion" to _fechaIdentificacion.value,
+                    "sexoSeleccionado" to _sexoSeleccionado.value,
+                    "razaSeleccionada" to _razaSeleccionada.value,
+                    "aptitudSeleccionada" to _aptitudSeleccionada.value,
+                    "codigoRaza" to _codigoRaza.value,
+                    "sexoApiSeleccionado" to sexoApiSeleccionado,
+                    "codigoAptitud" to codigoAptitud
                 )
+                historialDao.insert(HistorialEntity(
+                    id = java.util.UUID.randomUUID().toString(),
+                    tipo = "NACIMIENTO",
+                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
+                    datos = Gson().toJson(datos),
+                    resumen = resumen
+                ))
             } catch (e: Exception) {
-                Log.e("Historial", "Error al guardar en historial: ${e.message}", e)
+                Log.e("Historial", "Error: ${e.message}", e)
             }
         }
     }
+
+    fun cargarDesdeHistorial(id: String) {
+        viewModelScope.launch {
+            try {
+                val registro = historialDao.getAll().find { it.id == id } ?: return@launch
+                val datos: Map<String, Any?> = Gson().fromJson(
+                    registro.datos,
+                    object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
+                )
+                _idMadre.value = datos["idMadre"] as? String ?: ""
+                _idCria.value = datos["idCria"] as? String ?: ""
+                _fechaNacimiento.value = datos["fechaNacimiento"] as? String ?: ""
+                _fechaIdentificacion.value = datos["fechaIdentificacion"] as? String ?: ""
+                _sexoSeleccionado.value = datos["sexoSeleccionado"] as? String ?: ""
+                _razaSeleccionada.value = datos["razaSeleccionada"] as? String ?: ""
+                _aptitudSeleccionada.value = datos["aptitudSeleccionada"] as? String ?: ""
+                _codigoRaza.value = datos["codigoRaza"] as? String ?: ""
+                sexoApiSeleccionado = datos["sexoApiSeleccionado"] as? String ?: "0"
+                codigoAptitud = datos["codigoAptitud"] as? String ?: "0"
+            } catch (e: Exception) {
+                Log.e("NacimientoVM", "Error al cargar desde historial: ${e.message}", e)
+            }
+        }
+
+    }
+
+
 }

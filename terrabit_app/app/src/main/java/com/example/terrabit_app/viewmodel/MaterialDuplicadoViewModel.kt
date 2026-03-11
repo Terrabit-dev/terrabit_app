@@ -426,18 +426,70 @@ class MaterialDuplicadoViewModel @Inject constructor(
     private fun guardarEnHistorial(resumen: String = "") {
         viewModelScope.launch {
             try {
-                historialDao.insert(
-                    HistorialEntity(
-                        id = UUID.randomUUID().toString(),
-                        tipo = "MATERIAL_DUPLICADO",
-                        fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
-                        hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
-                        datos = "",
-                        resumen = resumen
-                    )
+                val datos = mapOf(
+                    "empresaSubministradora" to _empresaSubministradora.value,
+                    "codigoEmpresaSubministradora" to codigoEmpresaSubministradora,
+                    "tipoEnviamiento" to _tipoEnviamiento.value,
+                    "codigoTipoEnviamiento" to codigoTipoEnviamiento,
+                    "direccionEnvio" to _direccionEnvio.value,
+                    "codigoDireccionEnvio" to codigoDireccionEnvio,
+                    "oficinaComarcal" to _oficinaComarcal.value,
+                    "codigoOficinaComarcal" to codigoOficinaComarcal,
+                    "dirrecionEnvio" to _dirrecionEnvio.value,
+                    "poblacion" to _poblacion.value,
+                    "codigoPostal" to _codigoPostal.value,
+                    "municipio" to _municipio.value,
+                    "telefonoContacto" to _telefonoContacto.value,
+                    "listaAnimales" to _listaAnimales.value
                 )
+                historialDao.insert(HistorialEntity(
+                    id = java.util.UUID.randomUUID().toString(),
+                    tipo = "MATERIAL_DUPLICADO",
+                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
+                    datos = Gson().toJson(datos),
+                    resumen = resumen
+                ))
             } catch (e: Exception) {
-                Log.e("Historial", "Error al guardar en historial: ${e.message}", e)
+                Log.e("Historial", "Error: ${e.message}", e)
+            }
+        }
+    }
+
+    fun cargarDesdeHistorial(id: String) {
+        viewModelScope.launch {
+            try {
+                val registro = historialDao.getAll().find { it.id == id } ?: return@launch
+                val datos: Map<String, Any?> = Gson().fromJson(
+                    registro.datos,
+                    object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
+                )
+                _empresaSubministradora.value = datos["empresaSubministradora"] as? String ?: ""
+                codigoEmpresaSubministradora = datos["codigoEmpresaSubministradora"] as? String ?: ""
+                _tipoEnviamiento.value = datos["tipoEnviamiento"] as? String ?: ""
+                codigoTipoEnviamiento = datos["codigoTipoEnviamiento"] as? String ?: ""
+                _direccionEnvio.value = datos["direccionEnvio"] as? String ?: ""
+                codigoDireccionEnvio = datos["codigoDireccionEnvio"] as? String ?: ""
+                _oficinaComarcal.value = datos["oficinaComarcal"] as? String ?: ""
+                codigoOficinaComarcal = datos["codigoOficinaComarcal"] as? String ?: ""
+                _dirrecionEnvio.value = datos["dirrecionEnvio"] as? String ?: ""
+                _poblacion.value = datos["poblacion"] as? String ?: ""
+                _codigoPostal.value = datos["codigoPostal"] as? String ?: ""
+                _municipio.value = datos["municipio"] as? String ?: ""
+                _telefonoContacto.value = datos["telefonoContacto"] as? String ?: ""
+                val listaJson = datos["listaAnimales"] as? List<*>
+                if (listaJson != null) {
+                    val listaRestaurada = listaJson.mapNotNull { item ->
+                        val m = item as? Map<*, *>
+                        IdenSolicitudDupli(
+                            identificador = m?.get("identificador") as? String ?: "",
+                            tipusMaterial = m?.get("tipusMaterial") as? String ?: ""
+                        )
+                    }
+                    _listaAnimales.value = listaRestaurada.ifEmpty { listOf(IdenSolicitudDupli(identificador = "", tipusMaterial = "")) }
+                }
+            } catch (e: Exception) {
+                Log.e("MaterialDuplicadoVM", "Error al cargar desde historial: ${e.message}", e)
             }
         }
     }

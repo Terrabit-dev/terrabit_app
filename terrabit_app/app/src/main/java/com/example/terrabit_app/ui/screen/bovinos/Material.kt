@@ -35,8 +35,13 @@ import com.example.terrabit_app.viewmodel.MaterialViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Material(navController: NavController, borradorId: String= "") {
+fun Material(
+    navController: NavController,
+    borradorId: String = "",
+    historialId: String = ""
+) {
     val viewModel = hiltViewModel<MaterialViewModel>()
+    val modoLectura = historialId.isNotEmpty()
 
     val empresaSubministradora by viewModel.empresaSubministradora.observeAsState("")
     val tipoEnviamiento by viewModel.tipoEnviamiento.observeAsState("")
@@ -77,8 +82,9 @@ fun Material(navController: NavController, borradorId: String= "") {
     }
 
     LaunchedEffect(Unit) {
-        if (borradorId.isNotEmpty()) {
-            viewModel.cargarBorradorPorId(borradorId)
+        when {
+            historialId.isNotEmpty() -> viewModel.cargarDesdeHistorial(historialId)
+            borradorId.isNotEmpty() -> viewModel.cargarBorradorPorId(borradorId)
         }
     }
 
@@ -124,11 +130,19 @@ fun Material(navController: NavController, borradorId: String= "") {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("Solicitar Material", fontSize = 20.sp, fontWeight = FontWeight.SemiBold) },
+                    title = {
+                        Column {
+                            Text("Solicitar Material", fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
+                            if (modoLectura) Text("Solo lectura", fontSize = 13.sp, color = Color.White.copy(alpha = 0.8f))
+                        }
+                    },
                     navigationIcon = {
                         IconButton(onClick = {
-                            if (borradorId.isNotEmpty()) navController.popBackStack()
-                            else navController.navigate(Routes.MaterialCategoria.route)
+                            when {
+                                historialId.isNotEmpty() -> navController.popBackStack()
+                                borradorId.isNotEmpty() -> navController.popBackStack()
+                                else -> navController.navigate(Routes.MaterialCategoria.route)
+                            }
                         }) {
                             Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
                         }
@@ -153,12 +167,12 @@ fun Material(navController: NavController, borradorId: String= "") {
                     shape = MaterialTheme.shapes.large
                 ) {
                     Column(modifier = Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(24.dp)) {
-                        DropdownField(label = stringResource(R.string.form_suply_company) + " *", selectedValue = empresaSubministradora, expanded = empresaExpandida, placeholder = stringResource(R.string.form_suply_company_description), opciones = elementosConCodigos.tipoEmpresaSubministradora(), onExpandedChange = { viewModel.toggleEmpresaExpandida() }, onDismissRequest = { viewModel.cerrarEmpresaMenu() }, onSeleccionar = { codigo, nombre -> viewModel.seleccionarEmpresa(nombre, codigo) }, defectColor = true)
-                        DropdownField(label = stringResource(R.string.form_send_type) + " *", selectedValue = tipoEnviamiento, expanded = tipoEnviamientoExpandido, placeholder = stringResource(R.string.form_send_type_description), opciones = elementosConCodigos.tiposEnvios(), onExpandedChange = { viewModel.toggleTipoEnviamientoExpandido() }, onDismissRequest = { viewModel.cerrarTipoEnviamientoMenu() }, onSeleccionar = { codigo, nombre -> viewModel.seleccionarTipoEnviamiento(nombre, codigo) }, defectColor = true)
-                        DropdownField(label = stringResource(R.string.form_send_address) + " *", selectedValue = destinoLliurament, expanded = destinoExpandido, placeholder = stringResource(R.string.form_send_address_description), opciones = elementosConCodigos.tiposDireccionEnvio(), onExpandedChange = { viewModel.toggleDestinoExpandido() }, onDismissRequest = { viewModel.cerrarDestinoMenu() }, onSeleccionar = { codigo, nombre -> viewModel.seleccionarDestino(nombre, codigo) }, defectColor = true)
+                        DropdownField(label = stringResource(R.string.form_suply_company) + " *", selectedValue = empresaSubministradora, expanded = if (modoLectura) false else empresaExpandida, placeholder = stringResource(R.string.form_suply_company_description), opciones = elementosConCodigos.tipoEmpresaSubministradora(), onExpandedChange = { if (!modoLectura) viewModel.toggleEmpresaExpandida() }, onDismissRequest = { viewModel.cerrarEmpresaMenu() }, onSeleccionar = { codigo, nombre -> if (!modoLectura) viewModel.seleccionarEmpresa(nombre, codigo) }, defectColor = true)
+                        DropdownField(label = stringResource(R.string.form_send_type) + " *", selectedValue = tipoEnviamiento, expanded = if (modoLectura) false else tipoEnviamientoExpandido, placeholder = stringResource(R.string.form_send_type_description), opciones = elementosConCodigos.tiposEnvios(), onExpandedChange = { if (!modoLectura) viewModel.toggleTipoEnviamientoExpandido() }, onDismissRequest = { viewModel.cerrarTipoEnviamientoMenu() }, onSeleccionar = { codigo, nombre -> if (!modoLectura) viewModel.seleccionarTipoEnviamiento(nombre, codigo) }, defectColor = true)
+                        DropdownField(label = stringResource(R.string.form_send_address) + " *", selectedValue = destinoLliurament, expanded = if (modoLectura) false else destinoExpandido, placeholder = stringResource(R.string.form_send_address_description), opciones = elementosConCodigos.tiposDireccionEnvio(), onExpandedChange = { if (!modoLectura) viewModel.toggleDestinoExpandido() }, onDismissRequest = { viewModel.cerrarDestinoMenu() }, onSeleccionar = { codigo, nombre -> if (!modoLectura) viewModel.seleccionarDestino(nombre, codigo) }, defectColor = true)
 
                         if (codigoDestino == "01") {
-                            DropdownField(label = stringResource(R.string.form_comarcal_office) + " *", selectedValue = oficinaComarcal, expanded = oficinaComarcalExpandida, placeholder = stringResource(R.string.form_comarcal_office_description), opciones = elementosConCodigos.tiposOficinasComarcales(), onExpandedChange = { viewModel.toggleOficinaComarcalExpandida() }, onDismissRequest = { viewModel.cerrarOficinaComarcalMenu() }, onSeleccionar = { codigo, nombre -> viewModel.seleccionarOficinaComarcal(codigo, nombre) }, defectColor = true)
+                            DropdownField(label = stringResource(R.string.form_comarcal_office) + " *", selectedValue = oficinaComarcal, expanded = if (modoLectura) false else oficinaComarcalExpandida, placeholder = stringResource(R.string.form_comarcal_office_description), opciones = elementosConCodigos.tiposOficinasComarcales(), onExpandedChange = { if (!modoLectura) viewModel.toggleOficinaComarcalExpandida() }, onDismissRequest = { viewModel.cerrarOficinaComarcalMenu() }, onSeleccionar = { codigo, nombre -> if (!modoLectura) viewModel.seleccionarOficinaComarcal(codigo, nombre) }, defectColor = true)
                         }
 
                         if (codigoDestino == "02" || codigoDestino == "03") {
@@ -166,14 +180,14 @@ fun Material(navController: NavController, borradorId: String= "") {
                                 Text(stringResource(R.string.mesagge_send_dades), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant, letterSpacing = 0.15.sp)
                             }
                             val sufijo = if (codigoDestino == "03") " *" else ""
-                            CampoTexto(label = stringResource(R.string.form_address) + sufijo, valor = direccion, placeholder = stringResource(R.string.form_address_description), onValueChange = { viewModel.actualizarDireccion(it) }, defectColor = true)
-                            CampoTexto(label = stringResource(R.string.form_poblacion) + sufijo, valor = poblacion, placeholder = stringResource(R.string.form_poblacion_description), onValueChange = { viewModel.actualizarPoblacion(it) }, defectColor = true)
-                            CampoTexto(label = stringResource(R.string.form_postal_code) + sufijo, valor = codigoPostal, placeholder = stringResource(R.string.form_postal_code_description), keyboardType = KeyboardType.Number, onValueChange = { viewModel.actualizarCodigoPostal(it) }, defectColor = true)
-                            CampoTexto(label = stringResource(R.string.form_municipality) + sufijo, valor = municipio, placeholder = stringResource(R.string.form_municipality_description), onValueChange = { viewModel.actualizarMunicipio(it) }, defectColor = true)
-                            CampoTexto(label = stringResource(R.string.form_contact_phone) + sufijo, valor = telefonoContacto, placeholder = stringResource(R.string.form_contact_phone_description), keyboardType = KeyboardType.Phone, onValueChange = { viewModel.actualizarTelefonoContacto(it) }, defectColor = true)
+                            CampoTexto(label = stringResource(R.string.form_address) + sufijo, valor = direccion, placeholder = stringResource(R.string.form_address_description), onValueChange = { if (!modoLectura) viewModel.actualizarDireccion(it) }, defectColor = true, enabled = !modoLectura)
+                            CampoTexto(label = stringResource(R.string.form_poblacion) + sufijo, valor = poblacion, placeholder = stringResource(R.string.form_poblacion_description), onValueChange = { if (!modoLectura) viewModel.actualizarPoblacion(it) }, defectColor = true, enabled = !modoLectura)
+                            CampoTexto(label = stringResource(R.string.form_postal_code) + sufijo, valor = codigoPostal, placeholder = stringResource(R.string.form_postal_code_description), keyboardType = KeyboardType.Number, onValueChange = { if (!modoLectura) viewModel.actualizarCodigoPostal(it) }, defectColor = true, enabled = !modoLectura)
+                            CampoTexto(label = stringResource(R.string.form_municipality) + sufijo, valor = municipio, placeholder = stringResource(R.string.form_municipality_description), onValueChange = { if (!modoLectura) viewModel.actualizarMunicipio(it) }, defectColor = true, enabled = !modoLectura)
+                            CampoTexto(label = stringResource(R.string.form_contact_phone) + sufijo, valor = telefonoContacto, placeholder = stringResource(R.string.form_contact_phone_description), keyboardType = KeyboardType.Phone, onValueChange = { if (!modoLectura) viewModel.actualizarTelefonoContacto(it) }, defectColor = true, enabled = !modoLectura)
                         }
 
-                        DropdownField(label = stringResource(R.string.form_material_type) + " *", selectedValue = tipoMaterial, expanded = tipoMaterialExpandido, placeholder = stringResource(R.string.form_material_type_description), opciones = elementosConCodigos.tiposMaterial(), onExpandedChange = { viewModel.toggleTipoMaterialExpandido() }, onDismissRequest = { viewModel.cerrarTipoMaterialMenu() }, onSeleccionar = { codigo, nombre -> viewModel.seleccionarTipoMaterial(nombre, codigo) }, defectColor = true)
+                        DropdownField(label = stringResource(R.string.form_material_type) + " *", selectedValue = tipoMaterial, expanded = if (modoLectura) false else tipoMaterialExpandido, placeholder = stringResource(R.string.form_material_type_description), opciones = elementosConCodigos.tiposMaterial(), onExpandedChange = { if (!modoLectura) viewModel.toggleTipoMaterialExpandido() }, onDismissRequest = { viewModel.cerrarTipoMaterialMenu() }, onSeleccionar = { codigo, nombre -> if (!modoLectura) viewModel.seleccionarTipoMaterial(nombre, codigo) }, defectColor = true)
                     }
                 }
 
@@ -188,10 +202,12 @@ fun Material(navController: NavController, borradorId: String= "") {
                     Column(modifier = Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                             Text(stringResource(R.string.title_identifiers), fontSize = 17.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-                            TextButton(onClick = { viewModel.agregarUnidades() }, colors = ButtonDefaults.textButtonColors(contentColor = MainGreen)) {
-                                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.action_add), modifier = Modifier.size(18.dp))
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(stringResource(R.string.action_add), fontWeight = FontWeight.SemiBold)
+                            if (!modoLectura) {
+                                TextButton(onClick = { viewModel.agregarUnidades() }, colors = ButtonDefaults.textButtonColors(contentColor = MainGreen)) {
+                                    Icon(Icons.Default.Add, contentDescription = stringResource(R.string.action_add), modifier = Modifier.size(18.dp))
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(stringResource(R.string.action_add), fontWeight = FontWeight.SemiBold)
+                                }
                             }
                         }
 
@@ -206,8 +222,9 @@ fun Material(navController: NavController, borradorId: String= "") {
                                 indice = indice,
                                 codiMo = item.codiExplotacio,
                                 unidades = item.nombreUnitats,
-                                mostrarEliminar = listaUnidades.size > 1,
+                                mostrarEliminar = !modoLectura && listaUnidades.size > 1,
                                 codiMoObligatorio = codiMoObligatorio,
+                                modoLectura = modoLectura,
                                 oncodiMoChange = { viewModel.actualizarCodiExplotacio(indice, it) },
                                 onEliminar = { viewModel.eliminarUnidades(indice) },
                                 onUnidadesChange = { viewModel.actualizarUnidades(indice, it) }
@@ -219,29 +236,30 @@ fun Material(navController: NavController, borradorId: String= "") {
                     }
                 }
 
-                Button(
-                    onClick = { viewModel.solicitarMaterial() },
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 24.dp).height(56.dp),
-                    enabled = !estadoCarga,
-                    colors = ButtonDefaults.buttonColors(containerColor = MainGreen, disabledContainerColor = MaterialTheme.colorScheme.outline),
-                    shape = MaterialTheme.shapes.medium,
-                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp, pressedElevation = 6.dp)
-                ) {
-                    Text("Solicitar Material", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.5.sp)
+                if (!modoLectura) {
+                    Button(
+                        onClick = { viewModel.solicitarMaterial() },
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 24.dp).height(56.dp),
+                        enabled = !estadoCarga,
+                        colors = ButtonDefaults.buttonColors(containerColor = MainGreen, disabledContainerColor = MaterialTheme.colorScheme.outline),
+                        shape = MaterialTheme.shapes.medium,
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp, pressedElevation = 6.dp)
+                    ) {
+                        Text("Solicitar Material", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.5.sp)
+                    }
+                } else {
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
-
-                Spacer(modifier = Modifier.height(20.dp))
             }
         }
     }
+
     DisposableEffect(Unit) {
         onDispose {
-            viewModel.guardarBorradorAutomatico()
+            if (!modoLectura) viewModel.guardarBorradorAutomatico()
         }
     }
 }
-
-
 
 @Composable
 private fun UnidadesItem(
@@ -250,6 +268,7 @@ private fun UnidadesItem(
     unidades: String,
     mostrarEliminar: Boolean,
     codiMoObligatorio: Boolean,
+    modoLectura: Boolean = false,
     oncodiMoChange: (String) -> Unit,
     onUnidadesChange: (String) -> Unit,
     onEliminar: () -> Unit
@@ -272,7 +291,8 @@ private fun UnidadesItem(
             Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
                 value = codiMo ?: "",
-                onValueChange = oncodiMoChange,
+                onValueChange = { if (!modoLectura) oncodiMoChange(it) },
+                readOnly = modoLectura,
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text(stringResource(R.string.form_codiMo_description), color = MaterialTheme.colorScheme.onSurfaceVariant) },
                 singleLine = true,
@@ -299,7 +319,8 @@ private fun UnidadesItem(
             Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
                 value = unidades,
-                onValueChange = onUnidadesChange,
+                onValueChange = { if (!modoLectura) onUnidadesChange(it) },
+                readOnly = modoLectura,
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text(stringResource(R.string.form_unitats_description), color = MaterialTheme.colorScheme.onSurfaceVariant) },
                 singleLine = true,

@@ -209,9 +209,6 @@ class CorrecionSexoViewModel @Inject constructor(
     }
 
 
-
-
-
     fun actualizarIdentificadorCorreccionSexo(nuevoId: String) { _identificadorCorreccionSexo.value = nuevoId }
 
     fun seleccionarSexoCorreccion(sexo: String, codigo: String) {
@@ -327,18 +324,38 @@ class CorrecionSexoViewModel @Inject constructor(
     private fun guardarEnHistorial(resumen: String = "") {
         viewModelScope.launch {
             try {
-                historialDao.insert(
-                    HistorialEntity(
-                        id = UUID.randomUUID().toString(),
-                        tipo = "CORRECCION_SEXO",
-                        fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
-                        hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
-                        datos = "",
-                        resumen = resumen
-                    )
+                val datos = mapOf(
+                    "identificador" to _identificadorCorreccionSexo.value,
+                    "sexoSeleccionado" to _sexoCorreccionSeleccionado.value,
+                    "codigoSexo" to codigoSexo
                 )
+                historialDao.insert(HistorialEntity(
+                    id = java.util.UUID.randomUUID().toString(),
+                    tipo = "CORRECCION_SEXO",
+                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
+                    datos = Gson().toJson(datos),
+                    resumen = resumen
+                ))
             } catch (e: Exception) {
-                Log.e("Historial", "Error al guardar en historial: ${e.message}", e)
+                Log.e("Historial", "Error: ${e.message}", e)
+            }
+        }
+    }
+
+    fun cargarDesdeHistorial(id: String) {
+        viewModelScope.launch {
+            try {
+                val registro = historialDao.getAll().find { it.id == id } ?: return@launch
+                val datos: Map<String, Any?> = Gson().fromJson(
+                    registro.datos,
+                    object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
+                )
+                _identificadorCorreccionSexo.value = datos["identificador"] as? String ?: ""
+                _sexoCorreccionSeleccionado.value = datos["sexoSeleccionado"] as? String ?: ""
+                codigoSexo = datos["codigoSexo"] as? String ?: ""
+            } catch (e: Exception) {
+                Log.e("CorrecionSexoVM", "Error al cargar desde historial: ${e.message}", e)
             }
         }
     }

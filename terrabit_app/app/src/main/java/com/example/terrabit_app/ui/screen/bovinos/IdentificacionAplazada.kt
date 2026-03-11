@@ -37,8 +37,15 @@ import com.example.terrabit_app.viewmodel.IdentificacionAplazaViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun IdentificacionApalzada(navController: NavController, bluetoothViewModel: BluetoothViewModel, borradorId: String = "") {
+fun IdentificacionApalzada(
+    navController: NavController,
+    bluetoothViewModel: BluetoothViewModel,
+    borradorId: String = "",
+    historialId: String = ""
+) {
     val viewModel = hiltViewModel<IdentificacionAplazaViewModel>()
+    val modoLectura = historialId.isNotEmpty()
+
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -71,14 +78,15 @@ fun IdentificacionApalzada(navController: NavController, bluetoothViewModel: Blu
     }
 
     LaunchedEffect(Unit) {
-        if (borradorId.isNotEmpty()) {
-            viewModel.cargarBorradorPorId(borradorId)
+        when {
+            historialId.isNotEmpty() -> viewModel.cargarDesdeHistorial(historialId)
+            borradorId.isNotEmpty() -> viewModel.cargarBorradorPorId(borradorId)
         }
     }
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_PAUSE && viewModel.tieneContenido()) {
+            if (event == Lifecycle.Event.ON_PAUSE && !modoLectura && viewModel.tieneContenido()) {
                 viewModel.guardarBorradorAutomatico()
             }
         }
@@ -120,7 +128,7 @@ fun IdentificacionApalzada(navController: NavController, bluetoothViewModel: Blu
         )
     }
 
-    if (mostrarDatePickerIdentificadores) {
+    if (mostrarDatePickerIdentificadores && !modoLectura) {
         val datePickerState = rememberDatePickerState()
         DatePickerDialog(
             onDismissRequest = { viewModel.ocultarDatePickerIdentificacion() },
@@ -172,13 +180,19 @@ fun IdentificacionApalzada(navController: NavController, bluetoothViewModel: Blu
                     title = {
                         Column {
                             Text(stringResource(R.string.name_identification_postpone), fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
-                            Text(stringResource(R.string.subtitle_identification_postpone), fontSize = 13.sp, fontWeight = FontWeight.Normal, color = Color.White.copy(alpha = 0.9f))
+                            Text(
+                                if (modoLectura) "Solo lectura" else stringResource(R.string.subtitle_identification_postpone),
+                                fontSize = 13.sp, fontWeight = FontWeight.Normal, color = Color.White.copy(alpha = 0.9f)
+                            )
                         }
                     },
                     navigationIcon = {
                         IconButton(onClick = {
-                            if (borradorId.isNotEmpty()) navController.popBackStack()
-                            else navController.navigate(Routes.GestionBovinos.route)
+                            when {
+                                historialId.isNotEmpty() -> navController.popBackStack()
+                                borradorId.isNotEmpty() -> navController.popBackStack()
+                                else -> navController.navigate(Routes.GestionBovinos.route)
+                            }
                         }) {
                             Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
                         }
@@ -215,18 +229,22 @@ fun IdentificacionApalzada(navController: NavController, bluetoothViewModel: Blu
                         modifier = Modifier.fillMaxWidth().padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
-                        useDebounce(identificadorAnimal, delayMillis = 300L) { viewModel.searchBovinos(it) }
+                        if (!modoLectura) {
+                            useDebounce(identificadorAnimal, delayMillis = 300L) { viewModel.searchBovinos(it) }
+                        }
                         CampoIdentificadorAutoComplete(
                             label = stringResource(R.string.form_id_animal),
                             valor = identificadorAnimal,
                             placeholder = stringResource(R.string.form_id_animal_description),
-                            onValueChange = { viewModel.actualizarIdentificadorAnimal(it) },
-                            suggestions = suggestionsBovinos,
-                            onAnimalSelected = { viewModel.onBovinoSelected(it) },
-                            isLoadingSuggestions = isLoadingBovinos,
+                            onValueChange = { if (!modoLectura) viewModel.actualizarIdentificadorAnimal(it) },
+                            suggestions = if (modoLectura) emptyList() else suggestionsBovinos,
+                            onAnimalSelected = { if (!modoLectura) viewModel.onBovinoSelected(it) },
+                            isLoadingSuggestions = if (modoLectura) false else isLoadingBovinos,
                             onClickBluetooth = {
-                                bluetoothViewModel.iniciarEscaneo(context)
-                                mostrarBluetooth = true
+                                if (!modoLectura) {
+                                    bluetoothViewModel.iniciarEscaneo(context)
+                                    mostrarBluetooth = true
+                                }
                             }
                         )
 
@@ -237,7 +255,12 @@ fun IdentificacionApalzada(navController: NavController, bluetoothViewModel: Blu
                                 color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
-                            Box(modifier = Modifier.fillMaxWidth().clickable { viewModel.mostrarDatePickerIdentificacion() }) {
+                            Box(
+                                modifier = if (!modoLectura)
+                                    Modifier.fillMaxWidth().clickable { viewModel.mostrarDatePickerIdentificacion() }
+                                else
+                                    Modifier.fillMaxWidth()
+                            ) {
                                 OutlinedTextField(
                                     value = fechaIdentificacion,
                                     onValueChange = {},
@@ -260,21 +283,23 @@ fun IdentificacionApalzada(navController: NavController, bluetoothViewModel: Blu
                     }
                 }
 
-                Button(
-                    onClick = { viewModel.corregirIdentificacion() },
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 24.dp).height(56.dp),
-                    enabled = !estadoCarga,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MainGreen,
-                        disabledContainerColor = MaterialTheme.colorScheme.outline
-                    ),
-                    shape = MaterialTheme.shapes.medium,
-                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp, pressedElevation = 6.dp)
-                ) {
-                    Text(stringResource(R.string.buttom_form_identification_postpone), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.5.sp)
+                if (!modoLectura) {
+                    Button(
+                        onClick = { viewModel.corregirIdentificacion() },
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 24.dp).height(56.dp),
+                        enabled = !estadoCarga,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MainGreen,
+                            disabledContainerColor = MaterialTheme.colorScheme.outline
+                        ),
+                        shape = MaterialTheme.shapes.medium,
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp, pressedElevation = 6.dp)
+                    ) {
+                        Text(stringResource(R.string.buttom_form_identification_postpone), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.5.sp)
+                    }
+                } else {
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
-
-                Spacer(modifier = Modifier.height(20.dp))
             }
         }
     }

@@ -47,8 +47,15 @@ import com.example.terrabit_app.viewmodel.ViewModelMuerteBovi
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Fallecimiento(navController: NavController, bluetoothViewModel: BluetoothViewModel, borradorId: String = "") {
+fun Fallecimiento(
+    navController: NavController,
+    bluetoothViewModel: BluetoothViewModel,
+    borradorId: String = "",
+    historialId: String = ""
+) {
     val viewModel = hiltViewModel<ViewModelMuerteBovi>()
+    val modoLectura = historialId.isNotEmpty()
+
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -76,8 +83,6 @@ fun Fallecimiento(navController: NavController, bluetoothViewModel: BluetoothVie
     val mensajeRegistroExitoso = stringResource(R.string.successful_message_dead)
     val mensajeRegistroError = stringResource(R.string.error_message_dead)
     val elementosConCodigos = remember { ElementosConCodigos() }
-
-
     val datePickerState = rememberDatePickerState()
 
     val (usbState, conectarUsb) = rememberUsbSerial(
@@ -106,15 +111,18 @@ fun Fallecimiento(navController: NavController, bluetoothViewModel: BluetoothVie
         )
     }
 
+
     LaunchedEffect(Unit) {
-        if (borradorId.isNotEmpty()) {
-            viewModel.cargarBorradorPorId(borradorId)
+        when {
+            historialId.isNotEmpty() -> viewModel.cargarDesdeHistorial(historialId)
+            borradorId.isNotEmpty() -> viewModel.cargarBorradorPorId(borradorId)
         }
     }
 
+
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_PAUSE && viewModel.tieneContenido()) {
+            if (event == Lifecycle.Event.ON_PAUSE && !modoLectura && viewModel.tieneContenido()) {
                 viewModel.guardarBorradorAutomatico()
             }
         }
@@ -156,7 +164,8 @@ fun Fallecimiento(navController: NavController, bluetoothViewModel: BluetoothVie
         )
     }
 
-    if (mostrarDatePickerMuerte) {
+
+    if (mostrarDatePickerMuerte && !modoLectura) {
         DatePickerDialog(
             onDismissRequest = { viewModel.ocultarDatePickerMuerte() },
             confirmButton = {
@@ -181,12 +190,20 @@ fun Fallecimiento(navController: NavController, bluetoothViewModel: BluetoothVie
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text(stringResource(R.string.name_report_dead), fontSize = 20.sp, fontWeight = FontWeight.SemiBold) },
-                    navigationIcon = {
 
+                    title = {
+                        Column {
+                            Text(stringResource(R.string.name_report_dead), fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
+                            if (modoLectura) Text("Solo lectura", fontSize = 13.sp, color = Color.White.copy(alpha = 0.8f))
+                        }
+                    },
+                    navigationIcon = {
                         IconButton(onClick = {
-                            if (borradorId.isNotEmpty()) navController.popBackStack()
-                            else navController.navigate(Routes.GestionBovinos.route)
+                            when {
+                                historialId.isNotEmpty() -> navController.popBackStack()
+                                borradorId.isNotEmpty() -> navController.popBackStack()
+                                else -> navController.navigate(Routes.GestionBovinos.route)
+                            }
                         }) {
                             Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
                         }
@@ -230,9 +247,10 @@ fun Fallecimiento(navController: NavController, bluetoothViewModel: BluetoothVie
                                 color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
+
                             ExposedDropdownMenuBox(
-                                expanded = tipoExpandido,
-                                onExpandedChange = { viewModel.toggleTipoMuerteExpandido() }
+                                expanded = if (modoLectura) false else tipoExpandido,
+                                onExpandedChange = { if (!modoLectura) viewModel.toggleTipoMuerteExpandido() }
                             ) {
                                 OutlinedTextField(
                                     value = tipoSeleccionado,
@@ -240,7 +258,7 @@ fun Fallecimiento(navController: NavController, bluetoothViewModel: BluetoothVie
                                     modifier = Modifier.fillMaxWidth().menuAnchor(),
                                     readOnly = true,
                                     placeholder = { Text(stringResource(R.string.form_type_dead_description), color = MaterialTheme.colorScheme.onSurfaceVariant) },
-                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = tipoExpandido) },
+                                    trailingIcon = { if (!modoLectura) ExposedDropdownMenuDefaults.TrailingIcon(expanded = tipoExpandido) },
                                     singleLine = true,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
@@ -252,34 +270,42 @@ fun Fallecimiento(navController: NavController, bluetoothViewModel: BluetoothVie
                                         unfocusedContainerColor = MaterialTheme.colorScheme.surface
                                     )
                                 )
-                                ExposedDropdownMenu(
-                                    expanded = tipoExpandido,
-                                    onDismissRequest = { viewModel.cerrarTipoMuerteMenu() },
-                                    modifier = Modifier.background(MaterialTheme.colorScheme.surface)
-                                ) {
-                                    elementosConCodigos.muertes().forEach { (tipo, codigo) ->
-                                        DropdownMenuItem(
-                                            text = { Text(tipo, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Normal) },
-                                            onClick = { viewModel.seleccionarTipoMuerte(tipo, codigo) },
-                                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
-                                        )
+                                if (!modoLectura) {
+                                    ExposedDropdownMenu(
+                                        expanded = tipoExpandido,
+                                        onDismissRequest = { viewModel.cerrarTipoMuerteMenu() },
+                                        modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+                                    ) {
+                                        elementosConCodigos.muertes().forEach { (tipo, codigo) ->
+                                            DropdownMenuItem(
+                                                text = { Text(tipo, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Normal) },
+                                                onClick = { viewModel.seleccionarTipoMuerte(tipo, codigo) },
+                                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
+                                            )
+                                        }
                                     }
                                 }
                             }
                         }
 
-                        useDebounce(identificadorAnimal, delayMillis = 300L) { viewModel.searchBovinos(it) }
+
+                        if (!modoLectura) {
+                            useDebounce(identificadorAnimal, delayMillis = 300L) { viewModel.searchBovinos(it) }
+                        }
                         CampoIdentificadorAutoComplete(
                             label = if (tipoMuerte.contains("01")) stringResource(R.string.form_id_animal) else stringResource(R.string.form_id_mother),
                             valor = identificadorAnimal,
                             placeholder = if (tipoMuerte.contains("01")) stringResource(R.string.form_id_animal_description) else stringResource(R.string.form_mother_description),
-                            onValueChange = { viewModel.actualizarIdentificadorMuerte(it) },
-                            suggestions = suggestionsBovinos,
-                            onAnimalSelected = { viewModel.onBovinoSelected(it) },
-                            isLoadingSuggestions = isLoadingBovinos,
+
+                            onValueChange = { if (!modoLectura) viewModel.actualizarIdentificadorMuerte(it) },
+                            suggestions = if (modoLectura) emptyList() else suggestionsBovinos,
+                            onAnimalSelected = { if (!modoLectura) viewModel.onBovinoSelected(it) },
+                            isLoadingSuggestions = if (modoLectura) false else isLoadingBovinos,
                             onClickBluetooth = {
-                                bluetoothViewModel.iniciarEscaneo(context)
-                                mostrarBluetooth = true
+                                if (!modoLectura) {
+                                    bluetoothViewModel.iniciarEscaneo(context)
+                                    mostrarBluetooth = true
+                                }
                             },
                             onClickUsb = {
                                 conectarUsb()
@@ -293,7 +319,13 @@ fun Fallecimiento(navController: NavController, bluetoothViewModel: BluetoothVie
                                 color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
-                            Box(modifier = Modifier.fillMaxWidth().clickable { viewModel.mostrarDatePickerMuerte() }) {
+
+                            Box(
+                                modifier = if (!modoLectura)
+                                    Modifier.fillMaxWidth().clickable { viewModel.mostrarDatePickerMuerte() }
+                                else
+                                    Modifier.fillMaxWidth()
+                            ) {
                                 OutlinedTextField(
                                     value = fechaMuerte, onValueChange = {},
                                     modifier = Modifier.fillMaxWidth(),
@@ -323,8 +355,10 @@ fun Fallecimiento(navController: NavController, bluetoothViewModel: BluetoothVie
                                 Spacer(modifier = Modifier.height(10.dp))
                                 OutlinedTextField(
                                     value = mesesGestacion,
-                                    onValueChange = { viewModel.actualizarMesesGestacion(it) },
+                                    // CAMBIO: readOnly en modoLectura
+                                    onValueChange = { if (!modoLectura) viewModel.actualizarMesesGestacion(it) },
                                     modifier = Modifier.fillMaxWidth(),
+                                    readOnly = modoLectura,
                                     placeholder = { Text(stringResource(R.string.form_pregnancy_months_description), color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                     singleLine = true,
                                     shape = MaterialTheme.shapes.medium,
@@ -363,9 +397,10 @@ fun Fallecimiento(navController: NavController, bluetoothViewModel: BluetoothVie
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(stringResource(R.string.description_cadaver), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 18.sp)
                             }
+
                             Switch(
                                 checked = cadaverInaccesible,
-                                onCheckedChange = { viewModel.toggleCadaverInaccesible() },
+                                onCheckedChange = if (modoLectura) null else { { viewModel.toggleCadaverInaccesible() } },
                                 colors = SwitchDefaults.colors(
                                     checkedThumbColor = Color.White,
                                     checkedTrackColor = ErrorRed,
@@ -390,25 +425,30 @@ fun Fallecimiento(navController: NavController, bluetoothViewModel: BluetoothVie
                                         Text(stringResource(R.string.title_gps), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = ErrorRed)
                                     }
                                     Spacer(modifier = Modifier.height(16.dp))
-                                    Button(
-                                        onClick = { viewModel.obtenerUbicacionActual() },
-                                        modifier = Modifier.fillMaxWidth(),
-                                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),
-                                        shape = RoundedCornerShape(10.dp),
-                                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
-                                    ) {
-                                        Icon(Icons.Default.LocationOn, contentDescription = null, tint = MainOrange, modifier = Modifier.size(20.dp))
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        Text(stringResource(R.string.buttom_gps), color = ErrorRed, fontWeight = FontWeight.SemiBold)
+
+                                    if (!modoLectura) {
+                                        Button(
+                                            onClick = { viewModel.obtenerUbicacionActual() },
+                                            modifier = Modifier.fillMaxWidth(),
+                                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),
+                                            shape = RoundedCornerShape(10.dp),
+                                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
+                                        ) {
+                                            Icon(Icons.Default.LocationOn, contentDescription = null, tint = MainOrange, modifier = Modifier.size(20.dp))
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(stringResource(R.string.buttom_gps), color = ErrorRed, fontWeight = FontWeight.SemiBold)
+                                        }
+                                        Spacer(modifier = Modifier.height(16.dp))
                                     }
-                                    Spacer(modifier = Modifier.height(16.dp))
                                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                                         Column(modifier = Modifier.weight(1f)) {
                                             Text(stringResource(R.string.gps_laltitud), fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = ErrorRed)
                                             Spacer(modifier = Modifier.height(6.dp))
+
                                             OutlinedTextField(
                                                 value = coordenadaX,
-                                                onValueChange = { viewModel.actualizarCoordenadaX(it) },
+                                                onValueChange = { if (!modoLectura) viewModel.actualizarCoordenadaX(it) },
+                                                readOnly = modoLectura,
                                                 placeholder = { Text(stringResource(R.string.gps_laltitud_description), fontSize = 13.sp, color = DarkOrange) },
                                                 singleLine = true,
                                                 shape = RoundedCornerShape(8.dp),
@@ -426,9 +466,11 @@ fun Fallecimiento(navController: NavController, bluetoothViewModel: BluetoothVie
                                         Column(modifier = Modifier.weight(1f)) {
                                             Text(stringResource(R.string.gps_longitud), fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = ErrorRed)
                                             Spacer(modifier = Modifier.height(6.dp))
+
                                             OutlinedTextField(
                                                 value = coordenadaY,
-                                                onValueChange = { viewModel.actualizarCoordenadaY(it) },
+                                                onValueChange = { if (!modoLectura) viewModel.actualizarCoordenadaY(it) },
+                                                readOnly = modoLectura,
                                                 placeholder = { Text(stringResource(R.string.gps_longitud_description), fontSize = 13.sp, color = DarkOrange) },
                                                 singleLine = true,
                                                 shape = RoundedCornerShape(8.dp),
@@ -450,24 +492,26 @@ fun Fallecimiento(navController: NavController, bluetoothViewModel: BluetoothVie
                     }
                 }
 
-                Button(
-                    onClick = { viewModel.putMuerteBovino() },
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 24.dp).height(56.dp),
-                    enabled = !estadoCarga,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = ErrorRed,
-                        disabledContainerColor = MaterialTheme.colorScheme.outline
-                    ),
-                    shape = MaterialTheme.shapes.medium,
-                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp, pressedElevation = 6.dp)
-                ) {
-                    Text(stringResource(R.string.buttom_form_dead), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.5.sp)
-                }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                if (!modoLectura) {
+                    Button(
+                        onClick = { viewModel.putMuerteBovino() },
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 24.dp).height(56.dp),
+                        enabled = !estadoCarga,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = ErrorRed,
+                            disabledContainerColor = MaterialTheme.colorScheme.outline
+                        ),
+                        shape = MaterialTheme.shapes.medium,
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp, pressedElevation = 6.dp)
+                    ) {
+                        Text(stringResource(R.string.buttom_form_dead), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.5.sp)
+                    }
+                } else {
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
             }
         }
-
 
         if (estadoCarga) {
             Box(

@@ -41,8 +41,15 @@ import com.example.terrabit_app.viewmodel.NacimientoViewmodel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Nacimiento(navController: NavController, bluetooth: BluetoothViewModel, borradorId: String = "") {
+fun Nacimiento(
+    navController: NavController,
+    bluetooth: BluetoothViewModel,
+    borradorId: String = "",
+    historialId: String = ""
+    ) {
     val viewModel = hiltViewModel<NacimientoViewmodel>()
+    val modoLectura = historialId.isNotEmpty()
+
     val idMadre by viewModel.idMadre.observeAsState("")
     val idCria by viewModel.idCria.observeAsState("")
     val fechaNacimiento by viewModel.fechaNacimiento.observeAsState("")

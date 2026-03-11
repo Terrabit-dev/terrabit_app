@@ -24,33 +24,45 @@ sealed class Routes(val route: String) {
     object MaterialCategoria : Routes("material_menu")
 
     // Screens
-    object Nacimiento : Routes("register_birth?borradorId={borradorId}") {
+
+    object Nacimiento : Routes("register_birth?borradorId={borradorId}&historialId={historialId}") {
         fun conBorrador(id: String) = "register_birth?borradorId=$id"
+        fun conHistorial(id: String) = "register_birth?historialId=$id"
     }
-    object Fallecimiento : Routes("report_death?borradorId={borradorId}") {
+
+    object Fallecimiento : Routes("report_death?borradorId={borradorId}&historialId={historialId}") {
         fun conBorrador(id: String) = "report_death?borradorId=$id"
+        fun conHistorial(id: String) = "report_death?historialId=$id"
     }
-    object GestionGuias : Routes("manage_guides?borradorId={borradorId}") {
+
+    object GestionGuias : Routes("manage_guides?borradorId={borradorId}&historialId={historialId}") {
         fun conBorrador(id: String) = "manage_guides?borradorId=$id"
+        fun conHistorial(id: String) = "manage_guides?historialId=$id"
     }
 
-    object Movimientos : Routes("confirm_movements?borradorId={borradorId}") {
+    object Movimientos : Routes("confirm_movements?borradorId={borradorId}&historialId={historialId}") {
         fun conBorrador(id: String) = "confirm_movements?borradorId=$id"
+        fun conHistorial(id: String) = "confirm_movements?historialId=$id"
     }
 
-    object Material : Routes("request_material?borradorId={borradorId}") {
-        fun conBorrador(id: String) = "request_material?borradorId=$id"
-    }
-
-    object MaterialDuplicado : Routes("material_duplicado?borradorId={borradorId}") {
-        fun conBorrador(id: String) = "material_duplicado?borradorId=$id"
-    }
-
-    object CorregirBovino : Routes("modificar_animal?borradorId={borradorId}") {
+    object CorregirBovino : Routes("modificar_animal?borradorId={borradorId}&historialId={historialId}") {
         fun conBorrador(id: String) = "modificar_animal?borradorId=$id"
+        fun conHistorial(id: String) = "modificar_animal?historialId=$id"
     }
-    object IdentificacionAplazada : Routes("IdentificacioAplaz?borradorId={borradorId}") {
+
+    object Material : Routes("request_material?borradorId={borradorId}&historialId={historialId}") {
+        fun conBorrador(id: String) = "request_material?borradorId=$id"
+        fun conHistorial(id: String) = "request_material?historialId=$id"
+    }
+
+    object MaterialDuplicado : Routes("material_duplicado?borradorId={borradorId}&historialId={historialId}") {
+        fun conBorrador(id: String) = "material_duplicado?borradorId=$id"
+        fun conHistorial(id: String) = "material_duplicado?historialId=$id"
+    }
+
+    object IdentificacionAplazada : Routes("IdentificacioAplaz?borradorId={borradorId}&historialId={historialId}") {
         fun conBorrador(id: String) = "IdentificacioAplaz?borradorId=$id"
+        fun conHistorial(id: String) = "IdentificacioAplaz?historialId=$id"
     }
 
     // Screens Porcinos

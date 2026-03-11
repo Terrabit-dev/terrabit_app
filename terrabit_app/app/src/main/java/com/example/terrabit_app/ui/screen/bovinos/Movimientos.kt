@@ -51,9 +51,16 @@ import com.example.terrabit_app.viewmodel.MovimientosViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Movimientos(navController: NavController, bluetoothViewModel: BluetoothViewModel, borradorId: String = "") {
+fun Movimientos(
+    navController: NavController,
+    bluetoothViewModel: BluetoothViewModel,
+    borradorId: String = "",
+    historialId: String = ""
+    ) {
 
     val viewModel = hiltViewModel<MovimientosViewModel>()
+    val modoLectura = historialId.isNotEmpty()
+
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 

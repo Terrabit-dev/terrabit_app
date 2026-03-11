@@ -389,19 +389,51 @@ class ViewModelMuerteBovi @Inject constructor(
     private fun guardarEnHistorial(resumen: String = "") {
         viewModelScope.launch {
             try {
-                historialDao.insert(
-                    HistorialEntity(
-                        id = UUID.randomUUID().toString(),
-                        tipo = "MUERTE",
-                        fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
-                        hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
-                        datos = "",
-                        resumen = resumen
-                    )
+                val datos = mapOf(
+                    "tipo" to _tipoMuerte.value,
+                    "codigoTipo" to _codigoTipoMuerte.value,
+                    "identificador" to _identificadorMuerte.value,
+                    "fecha" to _fechaMuerte.value,
+                    "mesesGestacion" to _mesesGestacion.value,
+                    "cadaverInaccesible" to _cadaverInaccesible.value,
+                    "coordenadaX" to _coordenadaX.value,
+                    "coordenadaY" to _coordenadaY.value
                 )
+                historialDao.insert(HistorialEntity(
+                    id = java.util.UUID.randomUUID().toString(),
+                    tipo = "MUERTE",
+                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
+                    datos = Gson().toJson(datos),
+                    resumen = resumen
+                ))
             } catch (e: Exception) {
-                Log.e("Historial", "Error al guardar en historial: ${e.message}", e)
+                Log.e("Historial", "Error: ${e.message}", e)
             }
         }
     }
+
+
+    fun cargarDesdeHistorial(id: String) {
+        viewModelScope.launch {
+            try {
+                val registro = historialDao.getAll().find { it.id == id } ?: return@launch
+                val datos: Map<String, Any?> = Gson().fromJson(
+                    registro.datos,
+                    object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
+                )
+                _tipoMuerte.value = datos["tipo"] as? String ?: ""
+                _codigoTipoMuerte.value = datos["codigoTipo"] as? String ?: ""
+                _identificadorMuerte.value = datos["identificador"] as? String ?: ""
+                _fechaMuerte.value = datos["fecha"] as? String ?: ""
+                _mesesGestacion.value = datos["mesesGestacion"] as? String ?: ""
+                _cadaverInaccesible.value = datos["cadaverInaccesible"] as? Boolean ?: false
+                _coordenadaX.value = datos["coordenadaX"] as? String ?: ""
+                _coordenadaY.value = datos["coordenadaY"] as? String ?: ""
+            } catch (e: Exception) {
+                Log.e("MuerteVM", "Error al cargar desde historial: ${e.message}", e)
+            }
+        }
+    }
+
 }

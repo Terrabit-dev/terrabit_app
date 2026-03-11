@@ -392,18 +392,75 @@ class MaterialViewModel @Inject constructor(
     private fun guardarEnHistorial(resumen: String = "") {
         viewModelScope.launch {
             try {
-                historialDao.insert(
-                    HistorialEntity(
-                        id = UUID.randomUUID().toString(),
-                        tipo = "MATERIAL",
-                        fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
-                        hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
-                        datos = "",
-                        resumen = resumen
-                    )
+                val datos = mapOf(
+                    "empresaSubministradora" to _empresaSubministradora.value,
+                    "codigoEmpresa" to _codigoEmpresa.value,
+                    "tipoEnviamiento" to _tipoEnviamiento.value,
+                    "codigoTipoEnvio" to codigoTipoEnvio,
+                    "destinoLliurament" to _destinoLliurament.value,
+                    "codiDestinoEnvio" to codiDestinoEnvio,
+                    "oficinaComarcal" to _oficinaComarcal.value,
+                    "codigoOC" to codigoOC,
+                    "direccion" to _direccion.value,
+                    "poblacion" to _poblacion.value,
+                    "codigoPostal" to _codigoPostal.value,
+                    "municipio" to _municipio.value,
+                    "telefonoContacto" to _telefonoContacto.value,
+                    "tipoMaterial" to _tipoMaterial.value,
+                    "codigoTipoMaterial" to _codigoTipoMaterial.value,
+                    "listaUnidades" to _listaUnidades.value
                 )
+                historialDao.insert(HistorialEntity(
+                    id = java.util.UUID.randomUUID().toString(),
+                    tipo = "MATERIAL",
+                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
+                    datos = Gson().toJson(datos),
+                    resumen = resumen
+                ))
             } catch (e: Exception) {
-                Log.e("Historial", "Error al guardar en historial: ${e.message}", e)
+                Log.e("Historial", "Error: ${e.message}", e)
+            }
+        }
+    }
+
+
+    fun cargarDesdeHistorial(id: String) {
+        viewModelScope.launch {
+            try {
+                val registro = historialDao.getAll().find { it.id == id } ?: return@launch
+                val datos: Map<String, Any?> = Gson().fromJson(
+                    registro.datos,
+                    object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
+                )
+                _empresaSubministradora.value = datos["empresaSubministradora"] as? String ?: ""
+                _codigoEmpresa.value = datos["codigoEmpresa"] as? String ?: ""
+                _tipoEnviamiento.value = datos["tipoEnviamiento"] as? String ?: ""
+                codigoTipoEnvio = datos["codigoTipoEnvio"] as? String ?: ""
+                _destinoLliurament.value = datos["destinoLliurament"] as? String ?: ""
+                codiDestinoEnvio = datos["codiDestinoEnvio"] as? String ?: ""
+                _oficinaComarcal.value = datos["oficinaComarcal"] as? String ?: ""
+                codigoOC = datos["codigoOC"] as? String ?: ""
+                _direccion.value = datos["direccion"] as? String ?: ""
+                _poblacion.value = datos["poblacion"] as? String ?: ""
+                _codigoPostal.value = datos["codigoPostal"] as? String ?: ""
+                _municipio.value = datos["municipio"] as? String ?: ""
+                _telefonoContacto.value = datos["telefonoContacto"] as? String ?: ""
+                _tipoMaterial.value = datos["tipoMaterial"] as? String ?: ""
+                _codigoTipoMaterial.value = datos["codigoTipoMaterial"] as? String ?: ""
+                val listaJson = datos["listaUnidades"] as? List<*>
+                if (listaJson != null) {
+                    val listaRestaurada = listaJson.mapNotNull { item ->
+                        val m = item as? Map<*, *>
+                        Unitat(
+                            codiExplotacio = m?.get("codiExplotacio") as? String ?: "",
+                            nombreUnitats = m?.get("nombreUnitats") as? String ?: ""
+                        )
+                    }
+                    _listaUnidades.value = listaRestaurada.ifEmpty { listOf(Unitat(codiExplotacio = "", nombreUnitats = "")) }
+                }
+            } catch (e: Exception) {
+                Log.e("MaterialVM", "Error al cargar desde historial: ${e.message}", e)
             }
         }
     }

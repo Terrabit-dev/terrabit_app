@@ -585,18 +585,72 @@ class MovimientosViewModel @Inject constructor(
     private fun guardarEnHistorial(resumen: String = "") {
         viewModelScope.launch {
             try {
-                historialDao.insert(
-                    HistorialEntity(
-                        id = UUID.randomUUID().toString(),
-                        tipo = "MOVIMIENTO",
-                        fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
-                        hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
-                        datos = "",
-                        resumen = resumen
-                    )
+                val datos = mapOf(
+                    "codiRemo" to _codiRemo.value,
+                    "dataArribada" to _dataArribada.value,
+                    "horaArribada" to _horaArribada.value,
+                    "codiAtes" to _codiAtes.value,
+                    "nomTransportista" to _nomTransportista.value,
+                    "matricula" to _matricula.value,
+                    "mitjaTransport" to _mitjaTransport.value,
+                    "nifConductor" to _nifConductor.value,
+                    "nomConductor" to _nomConductor.value,
+                    "explotacioDestinacio" to _explotacioDestinacio.value,
+                    "listaAnimales" to _listaAnimales.value,
+                    "codiTransport" to _codiTransport.value
                 )
+                historialDao.insert(HistorialEntity(
+                    id = java.util.UUID.randomUUID().toString(),
+                    tipo = "MOVIMIENTO",
+                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
+                    hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
+                    datos = Gson().toJson(datos),
+                    resumen = resumen
+                ))
             } catch (e: Exception) {
-                Log.e("Historial", "Error al guardar en historial: ${e.message}", e)
+                Log.e("Historial", "Error: ${e.message}", e)
+            }
+        }
+    }
+
+    fun cargarDesdeHistorial(id: String) {
+        viewModelScope.launch {
+            try {
+                val registro = historialDao.getAll().find { it.id == id } ?: return@launch
+                val datos: Map<String, Any?> = Gson().fromJson(
+                    registro.datos,
+                    object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
+                )
+                _codiRemo.value = datos["codiRemo"] as? String ?: ""
+                _dataArribada.value = datos["dataArribada"] as? String ?: ""
+                _horaArribada.value = datos["horaArribada"] as? String ?: ""
+                _codiAtes.value = datos["codiAtes"] as? String ?: ""
+                _nomTransportista.value = datos["nomTransportista"] as? String ?: ""
+                _matricula.value = datos["matricula"] as? String ?: ""
+                _mitjaTransport.value = datos["mitjaTransport"] as? String ?: ""
+                _nifConductor.value = datos["nifConductor"] as? String ?: ""
+                _nomConductor.value = datos["nomConductor"] as? String ?: ""
+                _explotacioDestinacio.value = datos["explotacioDestinacio"] as? String ?: ""
+                _codiTransport.value = datos["codiTransport"] as? String ?: ""
+                val listaJson = datos["listaAnimales"] as? List<*>
+                if (listaJson != null) {
+                    val listaRestaurada = listaJson.mapNotNull { item ->
+                        val m = item as? Map<*, *>
+                        IdenMovimiento(
+                            identificador = m?.get("identificador") as? String ?: "",
+                            estatArribada = m?.get("estatArribada") as? String,
+                            classCanal = m?.get("classCanal") as? String,
+                            dataSacrMort = m?.get("dataSacrMort") as? String,
+                            pesCanal = m?.get("pesCanal") as? String,
+                            tipusPresentacio = m?.get("tipusPresentacio") as? String
+                        )
+                    }
+                    _listaAnimales.value = listaRestaurada.ifEmpty {
+                        listOf(IdenMovimiento(identificador = "", estatArribada = null, classCanal = null, dataSacrMort = null, pesCanal = null, tipusPresentacio = null))
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("MovimientosVM", "Error al cargar desde historial: ${e.message}", e)
             }
         }
     }

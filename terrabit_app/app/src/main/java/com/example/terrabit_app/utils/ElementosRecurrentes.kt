@@ -95,7 +95,8 @@ fun CampoTexto(
     placeholder: String,
     keyboardType: KeyboardType = KeyboardType.Text,
     onValueChange: (String) -> Unit,
-    defectColor: Boolean
+    defectColor: Boolean,
+    enabled: Boolean = true
 ) {
     val accentColor = if (defectColor) MainGreen else MainOrange
 
@@ -111,6 +112,7 @@ fun CampoTexto(
         OutlinedTextField(
             value = valor,
             onValueChange = onValueChange,
+            enabled = enabled,
             modifier = Modifier.fillMaxWidth(),
             placeholder = {
                 Text(placeholder, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -124,7 +126,11 @@ fun CampoTexto(
                 unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                 cursorColor = accentColor,
                 focusedContainerColor = MaterialTheme.colorScheme.surface,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                disabledBorderColor = MaterialTheme.colorScheme.outline,
+                disabledContainerColor = MaterialTheme.colorScheme.surface,
+                disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant
             ),
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType)
         )

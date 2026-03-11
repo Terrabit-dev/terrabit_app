@@ -132,100 +132,174 @@ fun NavigationDrawer(
         }
 
         // Pantallas de acciones específicas
+
+        //Nacimiento
         composable(
             route = Routes.Nacimiento.route,
-            arguments = listOf(navArgument("borradorId") {
-                type = NavType.StringType
-                defaultValue = ""
-                nullable = true
-            })
+            arguments = listOf(
+                navArgument("borradorId") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                    nullable = true },
+
+                navArgument("historialId") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                    nullable = true }
+            )
         ) { backStackEntry ->
             val borradorId = backStackEntry.arguments?.getString("borradorId") ?: ""
-            Nacimiento(navController = navController, bluetooth, borradorId)
+            val historialId = backStackEntry.arguments?.getString("historialId") ?: ""
+            Nacimiento(navController = navController, bluetooth, borradorId, historialId)
         }
 
+
+        // Fallecimiento
         composable(
             route = Routes.Fallecimiento.route,
-            arguments = listOf(navArgument("borradorId") {
+
+            arguments = listOf(
+                navArgument("borradorId") {
                 type = NavType.StringType
                 defaultValue = ""
-                nullable = true
-            })
+                nullable = true },
+
+                navArgument("historialId") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                    nullable = true }
+            )
         ) { backStackEntry ->
             val borradorId = backStackEntry.arguments?.getString("borradorId") ?: ""
-            Fallecimiento(navController = navController, bluetooth, borradorId)
+            val historialId = backStackEntry.arguments?.getString("historialId") ?: ""
+            Fallecimiento(navController = navController, bluetooth, borradorId, historialId)
         }
 
+
+        // Guias
         composable(
             route = Routes.GestionGuias.route,
-            arguments = listOf(navArgument("borradorId") {
+            arguments = listOf(
+                navArgument("borradorId") {
                 type = NavType.StringType
                 defaultValue = ""
-                nullable = true
-            })
+                nullable = true },
+
+                navArgument("historialId") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                    nullable = true }
+            )
         ) { backStackEntry ->
             val borradorId = backStackEntry.arguments?.getString("borradorId") ?: ""
-            GestionGuias(navController = navController, bluetooth, borradorId)
+            val historialId = backStackEntry.arguments?.getString("historialId") ?: ""
+            GestionGuias(navController = navController, bluetooth, borradorId, historialId)
         }
 
+
+        // Movimientos
         composable(
             route = Routes.Movimientos.route,
-            arguments = listOf(navArgument("borradorId") {
+            arguments = listOf(
+                navArgument("borradorId") {
                 type = NavType.StringType
                 defaultValue = ""
-                nullable = true
-            })
+                nullable = true },
+
+                navArgument("historialId") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                    nullable = true }
+            )
         ) { backStackEntry ->
             val borradorId = backStackEntry.arguments?.getString("borradorId") ?: ""
-            Movimientos(navController = navController, bluetooth, borradorId)
+            val historialId = backStackEntry.arguments?.getString("historialId") ?: ""
+            Movimientos(navController = navController, bluetooth, borradorId, historialId)
         }
 
+
+        // Material
         composable(
             route = Routes.Material.route,
-            arguments = listOf(navArgument("borradorId") {
+            arguments = listOf(
+                navArgument("borradorId") {
                 type = NavType.StringType
                 defaultValue = ""
-                nullable = true
-            })
+                nullable = true },
+
+                navArgument("historialId") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                    nullable = true }
+            )
         ) { backStackEntry ->
             val borradorId = backStackEntry.arguments?.getString("borradorId") ?: ""
-            Material(navController = navController, borradorId = borradorId)
+            val historialId = backStackEntry.arguments?.getString("historialId") ?: ""
+            Material(navController = navController, borradorId = borradorId, historialId)
         }
 
+
+        // Material Duplicado
         composable(
             route = Routes.MaterialDuplicado.route,
-            arguments = listOf(navArgument("borradorId") {
+            arguments = listOf(
+                navArgument("borradorId") {
                 type = NavType.StringType
                 defaultValue = ""
-                nullable = true
-            })
+                nullable = true },
+
+                navArgument("historialId") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                    nullable = true }
+
+            )
         ) { backStackEntry ->
             val borradorId = backStackEntry.arguments?.getString("borradorId") ?: ""
-            MaterialDuplicadosScreen(navController = navController, bluetoothViewModel = bluetooth, borradorId = borradorId)
+            val historialId = backStackEntry.arguments?.getString("historialId") ?: ""
+            MaterialDuplicadosScreen(navController = navController, bluetoothViewModel = bluetooth, borradorId = borradorId, historialId)
         }
 
+
+        // Corregir Bovino
         composable(
             route = Routes.CorregirBovino.route,
-            arguments = listOf(navArgument("borradorId") {
+            arguments = listOf(
+                navArgument("borradorId") {
                 type = NavType.StringType
                 defaultValue = ""
-                nullable = true
-            })
+                nullable = true },
+
+                navArgument("historialId") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                    nullable = true }
+            )
         ) { backStackEntry ->
             val borradorId = backStackEntry.arguments?.getString("borradorId") ?: ""
-            CorregirSexoBovi(navController, bluetooth, borradorId)
+            val historialId = backStackEntry.arguments?.getString("historialId") ?: ""
+            CorregirSexoBovi(navController, bluetooth, borradorId, historialId)
         }
 
+
+        // Identificacion Aplazada
         composable(
             route = Routes.IdentificacionAplazada.route,
-            arguments = listOf(navArgument("borradorId") {
+            arguments = listOf(
+                navArgument("borradorId") {
                 type = NavType.StringType
                 defaultValue = ""
-                nullable = true
-            })
+                nullable = true },
+
+                navArgument("historialId") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                    nullable = true }
+            )
         ) { backStackEntry ->
             val borradorId = backStackEntry.arguments?.getString("borradorId") ?: ""
-            IdentificacionApalzada(navController, bluetooth, borradorId)
+            val historialId = backStackEntry.arguments?.getString("historialId") ?: ""
+            IdentificacionApalzada(navController, bluetooth, borradorId, historialId)
         }
 
         // Pantallas Porcinos

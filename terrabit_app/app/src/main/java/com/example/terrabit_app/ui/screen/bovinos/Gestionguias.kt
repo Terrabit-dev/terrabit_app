@@ -46,8 +46,15 @@ import com.example.terrabit_app.viewmodel.GuiasViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothViewModel, borradorId: String = "") {
+fun GestionGuias(
+    navController: NavController,
+    bluetoothViewModel: BluetoothViewModel,
+    borradorId: String = "",
+    historialId: String = ""
+) {
     val viewModel = hiltViewModel<GuiasViewModel>()
+    val modoLectura = historialId.isNotEmpty()
+
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -105,17 +112,19 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
     }
 
     LaunchedEffect(Unit) {
-        if (borradorId.isNotEmpty()) {
-            viewModel.cargarBorradorPorId(borradorId)
-            return@LaunchedEffect
+        when {
+            historialId.isNotEmpty() -> viewModel.cargarDesdeHistorial(historialId)
+            borradorId.isNotEmpty() -> viewModel.cargarBorradorPorId(borradorId)
+            else -> {
+                cantidadBorradores = viewModel.obtenerCantidadBorradoresGuia()
+                if (cantidadBorradores >= 2) mostrarDialogoAviso = true
+            }
         }
-        cantidadBorradores = viewModel.obtenerCantidadBorradoresGuia()
-        if (cantidadBorradores >= 2) mostrarDialogoAviso = true
     }
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_PAUSE && viewModel.tieneContenido()) {
+            if (event == Lifecycle.Event.ON_PAUSE && !modoLectura && viewModel.tieneContenido()) {
                 viewModel.guardarBorradorAutomatico()
             }
         }
@@ -180,7 +189,7 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
         )
     }
 
-    if (mostrarDatePickerSortida) {
+    if (mostrarDatePickerSortida && !modoLectura) {
         val datePickerState = rememberDatePickerState()
         DatePickerDialog(
             onDismissRequest = { viewModel.ocultarDatePickerSortida() },
@@ -189,7 +198,7 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
         ) { DatePicker(state = datePickerState, colors = DatePickerDefaults.colors(selectedDayContainerColor = MainOrange, todayDateBorderColor = MainOrange)) }
     }
 
-    if (mostrarTimePickerSortida) {
+    if (mostrarTimePickerSortida && !modoLectura) {
         val timePickerState = rememberTimePickerState()
         AlertDialog(
             onDismissRequest = { viewModel.ocultarTimePickerSortida() },
@@ -200,7 +209,7 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
         )
     }
 
-    if (mostrarDatePickerArribada) {
+    if (mostrarDatePickerArribada && !modoLectura) {
         val datePickerState = rememberDatePickerState()
         DatePickerDialog(
             onDismissRequest = { viewModel.ocultarDatePickerArribada() },
@@ -209,7 +218,7 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
         ) { DatePicker(state = datePickerState, colors = DatePickerDefaults.colors(selectedDayContainerColor = MainOrange, todayDateBorderColor = MainOrange)) }
     }
 
-    if (mostrarTimePickerArribada) {
+    if (mostrarTimePickerArribada && !modoLectura) {
         val timePickerState = rememberTimePickerState()
         AlertDialog(
             onDismissRequest = { viewModel.ocultarTimePickerArribada() },
@@ -244,11 +253,19 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text(stringResource(R.string.name_manage_guides), fontSize = 20.sp, fontWeight = FontWeight.SemiBold) },
+                    title = {
+                        Column {
+                            Text(stringResource(R.string.name_manage_guides), fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
+                            if (modoLectura) Text("Solo lectura", fontSize = 13.sp, color = Color.White.copy(alpha = 0.8f))
+                        }
+                    },
                     navigationIcon = {
                         IconButton(onClick = {
-                            if (borradorId.isNotEmpty()) navController.popBackStack()
-                            else navController.navigate(Routes.GuiasMovimientos.route)
+                            when {
+                                historialId.isNotEmpty() -> navController.popBackStack()
+                                borradorId.isNotEmpty() -> navController.popBackStack()
+                                else -> navController.navigate(Routes.GuiasMovimientos.route)
+                            }
                         }) {
                             Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
                         }
@@ -277,34 +294,40 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
                     Column(modifier = Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(24.dp)) {
                         Text(stringResource(R.string.form_movs_title_necessary), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
 
-                        CampoTexto(label = stringResource(R.string.form_origin_exploitation), valor = explotacioOrigen, placeholder = stringResource(R.string.form_format_mo_rega), onValueChange = { viewModel.actualizarExplotacioOrigen(it) }, defectColor = false)
-                        CampoTexto(label = stringResource(R.string.form_exploitation_destination), valor = explotacioDestinacio, placeholder = stringResource(R.string.form_format_mo_rega), onValueChange = { viewModel.actualizarExplotacioDestinacio(it) }, defectColor = false)
+                        CampoTexto(label = stringResource(R.string.form_origin_exploitation), valor = explotacioOrigen, placeholder = stringResource(R.string.form_format_mo_rega), onValueChange = { if (!modoLectura) viewModel.actualizarExplotacioOrigen(it) }, defectColor = false, enabled = !modoLectura)
+                        CampoTexto(label = stringResource(R.string.form_exploitation_destination), valor = explotacioDestinacio, placeholder = stringResource(R.string.form_format_mo_rega), onValueChange = { if (!modoLectura) viewModel.actualizarExplotacioDestinacio(it) }, defectColor = false, enabled = !modoLectura)
 
                         DropdownField(
-                            label = stringResource(R.string.form_temporal), selectedValue = temporal, expanded = temporalExpandido,
+                            label = stringResource(R.string.form_temporal), selectedValue = temporal,
+                            expanded = if (modoLectura) false else temporalExpandido,
                             placeholder = stringResource(R.string.form_yes_no), opciones = elementosConCodigos.opcionesSiNo(),
-                            onExpandedChange = { viewModel.toggleTemporalExpandido() }, onDismissRequest = { viewModel.cerrarTemporalMenu() },
-                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarTemporal(nombre, codigo) }, defectColor = true
+                            onExpandedChange = { if (!modoLectura) viewModel.toggleTemporalExpandido() },
+                            onDismissRequest = { viewModel.cerrarTemporalMenu() },
+                            onSeleccionar = { codigo, nombre -> if (!modoLectura) viewModel.seleccionarTemporal(nombre, codigo) },
+                            defectColor = true
                         )
 
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            DateTimeField(modifier = Modifier.weight(1f), label = stringResource(R.string.form_date_departure), value = dataSortida, placeholder = datePlaceholder, icon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = MainOrange) }, onClick = { viewModel.mostrarDatePickerSortida() })
-                            DateTimeField(modifier = Modifier.weight(1f), label = stringResource(R.string.form_hour_arrival), value = horaSortida, placeholder = hourPlaceholder, icon = { Icon(Icons.Default.Schedule, contentDescription = null, tint = MainOrange) }, onClick = { viewModel.mostrarTimePickerSortida() })
+                            DateTimeField(modifier = Modifier.weight(1f), label = stringResource(R.string.form_date_departure), value = dataSortida, placeholder = datePlaceholder, icon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = MainOrange) }, onClick = { if (!modoLectura) viewModel.mostrarDatePickerSortida() })
+                            DateTimeField(modifier = Modifier.weight(1f), label = stringResource(R.string.form_hour_arrival), value = horaSortida, placeholder = hourPlaceholder, icon = { Icon(Icons.Default.Schedule, contentDescription = null, tint = MainOrange) }, onClick = { if (!modoLectura) viewModel.mostrarTimePickerSortida() })
                         }
 
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            DateTimeField(modifier = Modifier.weight(1f), label = stringResource(R.string.form_date_arrival), value = dataArribada, placeholder = datePlaceholder, icon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = MainOrange) }, onClick = { viewModel.mostrarDatePickerArribada() })
-                            DateTimeField(modifier = Modifier.weight(1f), label = stringResource(R.string.form_hour_arrival), value = horaArribada, placeholder = hourPlaceholder, icon = { Icon(Icons.Default.Schedule, contentDescription = null, tint = MainOrange) }, onClick = { viewModel.mostrarTimePickerArribada() })
+                            DateTimeField(modifier = Modifier.weight(1f), label = stringResource(R.string.form_date_arrival), value = dataArribada, placeholder = datePlaceholder, icon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = MainOrange) }, onClick = { if (!modoLectura) viewModel.mostrarDatePickerArribada() })
+                            DateTimeField(modifier = Modifier.weight(1f), label = stringResource(R.string.form_hour_arrival), value = horaArribada, placeholder = hourPlaceholder, icon = { Icon(Icons.Default.Schedule, contentDescription = null, tint = MainOrange) }, onClick = { if (!modoLectura) viewModel.mostrarTimePickerArribada() })
                         }
 
                         DropdownField(
-                            label = stringResource(R.string.form_mobility_guide), selectedValue = mobilitat, expanded = mobilitatExpandido,
+                            label = stringResource(R.string.form_mobility_guide), selectedValue = mobilitat,
+                            expanded = if (modoLectura) false else mobilitatExpandido,
                             placeholder = stringResource(R.string.form_yes_no), opciones = elementosConCodigos.opcionesSiNo(),
-                            onExpandedChange = { viewModel.toggleMobilitatExpandido() }, onDismissRequest = { viewModel.cerrarMobilitatMenu() },
-                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarMobilitat(nombre, codigo) }, defectColor = true
+                            onExpandedChange = { if (!modoLectura) viewModel.toggleMobilitatExpandido() },
+                            onDismissRequest = { viewModel.cerrarMobilitatMenu() },
+                            onSeleccionar = { codigo, nombre -> if (!modoLectura) viewModel.seleccionarMobilitat(nombre, codigo) },
+                            defectColor = true
                         )
 
-                        ParametrosCentroInspeccion(viewModel)
+                        ParametrosCentroInspeccion(viewModel, modoLectura)
                     }
                 }
 
@@ -319,25 +342,33 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
                     Column(modifier = Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(24.dp)) {
                         Text(stringResource(R.string.form_movs_title_optionals), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
 
-                        CampoTexto(label = stringResource(R.string.form_codi_ates), valor = codiAtes, placeholder = stringResource(R.string.form_codi_ates_description), onValueChange = { viewModel.campoCodiAtes(it) }, defectColor = false)
-                        CampoTexto(label = stringResource(R.string.form_name_transportits), valor = nomTransportista, placeholder = stringResource(R.string.form_name_transportits_description), onValueChange = { viewModel.actualizarNomTransportista(it) }, defectColor = false)
+                        CampoTexto(label = stringResource(R.string.form_codi_ates), valor = codiAtes, placeholder = stringResource(R.string.form_codi_ates_description), onValueChange = { if (!modoLectura) viewModel.campoCodiAtes(it) }, defectColor = false, enabled = !modoLectura)
+                        CampoTexto(label = stringResource(R.string.form_name_transportits), valor = nomTransportista, placeholder = stringResource(R.string.form_name_transportits_description), onValueChange = { if (!modoLectura) viewModel.actualizarNomTransportista(it) }, defectColor = false, enabled = !modoLectura)
 
                         DropdownField(
-                            label = stringResource(R.string.form_ways_transports), selectedValue = mitjaTransport, expanded = mitjaTransportExpandido,
+                            label = stringResource(R.string.form_ways_transports), selectedValue = mitjaTransport,
+                            expanded = if (modoLectura) false else mitjaTransportExpandido,
                             placeholder = stringResource(R.string.form_ways_transports_description), opciones = elementosConCodigos.transporte(),
-                            onExpandedChange = { viewModel.toggleMitjaTransportExpandido() }, onDismissRequest = { viewModel.cerrarMitjaTransportMenu() },
-                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarMitjaTransport(nombre, codigo) }, defectColor = true
+                            onExpandedChange = { if (!modoLectura) viewModel.toggleMitjaTransportExpandido() },
+                            onDismissRequest = { viewModel.cerrarMitjaTransportMenu() },
+                            onSeleccionar = { codigo, nombre -> if (!modoLectura) viewModel.seleccionarMitjaTransport(nombre, codigo) },
+                            defectColor = true
                         )
 
-                        CampoTexto(label = stringResource(R.string.form_matricule_transport), valor = matricula, placeholder = stringResource(R.string.form_matricule_transports_description), onValueChange = { viewModel.actualizarMatricula(it) }, defectColor = false)
-                        CampoTexto(label = stringResource(R.string.form_nif_driver), valor = nifConductor, placeholder = stringResource(R.string.form_nif_driver_description), onValueChange = { viewModel.actualizarNifConductor(it) }, defectColor = false)
-                        CampoTexto(label = stringResource(R.string.form_name_driver), valor = nomConductor, placeholder = stringResource(R.string.form_name_driver_description), onValueChange = { viewModel.actualizarNomConductor(it) }, defectColor = false)
+                        CampoTexto(label = stringResource(R.string.form_matricule_transport), valor = matricula, placeholder = stringResource(R.string.form_matricule_transports_description), onValueChange = { if (!modoLectura) viewModel.actualizarMatricula(it) }, defectColor = false, enabled = !modoLectura)
+                        CampoTexto(label = stringResource(R.string.form_nif_driver), valor = nifConductor, placeholder = stringResource(R.string.form_nif_driver_description), onValueChange = { if (!modoLectura) viewModel.actualizarNifConductor(it) }, defectColor = false, enabled = !modoLectura)
+                        CampoTexto(label = stringResource(R.string.form_name_driver), valor = nomConductor, placeholder = stringResource(R.string.form_name_driver_description), onValueChange = { if (!modoLectura) viewModel.actualizarNomConductor(it) }, defectColor = false, enabled = !modoLectura)
 
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                                 Text(stringResource(R.string.form_animal_identifiers), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
-                                IconButton(onClick = { viewModel.agregarIdentificador() }, modifier = Modifier.size(36.dp).background(color = MainOrange, shape = RoundedCornerShape(8.dp))) {
-                                    Icon(Icons.Default.Add, contentDescription = stringResource(R.string.content_desc_add_id), tint = Color.White, modifier = Modifier.size(20.dp))
+                                if (!modoLectura) {
+                                    IconButton(
+                                        onClick = { viewModel.agregarIdentificador() },
+                                        modifier = Modifier.size(36.dp).background(color = MainOrange, shape = RoundedCornerShape(8.dp))
+                                    ) {
+                                        Icon(Icons.Default.Add, contentDescription = stringResource(R.string.content_desc_add_id), tint = Color.White, modifier = Modifier.size(20.dp))
+                                    }
                                 }
                             }
 
@@ -353,26 +384,30 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
                                     Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                                             Text("Animal ${index + 1}", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MainOrange)
-                                            if (identificadors.size > 1) {
+                                            if (!modoLectura && identificadors.size > 1) {
                                                 IconButton(onClick = { viewModel.eliminarIdentificador(index) }, modifier = Modifier.size(32.dp)) {
                                                     Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.content_desc_remove_id), tint = ErrorRed, modifier = Modifier.size(20.dp))
                                                 }
                                             }
                                         }
-                                        useDebounce(identificador, delayMillis = 300L) { viewModel.searchBovinos(index, it) }
+                                        if (!modoLectura) {
+                                            useDebounce(identificador, delayMillis = 300L) { viewModel.searchBovinos(index, it) }
+                                        }
                                         CampoIdentificadorAutoComplete(
                                             label = stringResource(R.string.form_id_animal),
                                             valor = identificador,
                                             placeholder = stringResource(R.string.form_animal_id_example),
-                                            onValueChange = { viewModel.actualizarIdentificador(index, it) },
-                                            suggestions = if (activeIndex == index) suggestionsBovinos else emptyList(),
-                                            onAnimalSelected = { viewModel.onBovinoSelected(index, it) },
-                                            isLoadingSuggestions = isLoadingBovinos,
+                                            onValueChange = { if (!modoLectura) viewModel.actualizarIdentificador(index, it) },
+                                            suggestions = if (modoLectura) emptyList() else if (activeIndex == index) suggestionsBovinos else emptyList(),
+                                            onAnimalSelected = { if (!modoLectura) viewModel.onBovinoSelected(index, it) },
+                                            isLoadingSuggestions = if (modoLectura) false else isLoadingBovinos,
                                             defectColor = false,
                                             onClickBluetooth = {
-                                                indiceBluetooth = index
-                                                bluetoothViewModel.iniciarEscaneo(context)
-                                                mostrarBluetooth = true
+                                                if (!modoLectura) {
+                                                    indiceBluetooth = index
+                                                    bluetoothViewModel.iniciarEscaneo(context)
+                                                    mostrarBluetooth = true
+                                                }
                                             }
                                         )
                                     }
@@ -382,18 +417,20 @@ fun GestionGuias(navController: NavController, bluetoothViewModel: BluetoothView
                     }
                 }
 
-                Button(
-                    onClick = { viewModel.confirmarAltaGuia() },
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 24.dp).height(56.dp),
-                    enabled = !estadoCarga,
-                    colors = ButtonDefaults.buttonColors(containerColor = MainOrange, disabledContainerColor = MaterialTheme.colorScheme.outline),
-                    shape = MaterialTheme.shapes.medium,
-                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp, pressedElevation = 6.dp)
-                ) {
-                    Text(stringResource(R.string.btn_create_guide), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.5.sp)
+                if (!modoLectura) {
+                    Button(
+                        onClick = { viewModel.confirmarAltaGuia() },
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 24.dp).height(56.dp),
+                        enabled = !estadoCarga,
+                        colors = ButtonDefaults.buttonColors(containerColor = MainOrange, disabledContainerColor = MaterialTheme.colorScheme.outline),
+                        shape = MaterialTheme.shapes.medium,
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp, pressedElevation = 6.dp)
+                    ) {
+                        Text(stringResource(R.string.btn_create_guide), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.5.sp)
+                    }
+                } else {
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
-
-                Spacer(modifier = Modifier.height(20.dp))
             }
         }
     }
@@ -433,19 +470,22 @@ private fun DateTimeField(
 }
 
 @Composable
-fun ParametrosCentroInspeccion(viewModel: GuiasViewModel) {
+fun ParametrosCentroInspeccion(viewModel: GuiasViewModel, modoLectura: Boolean = false) {
     val pais by viewModel.pais.observeAsState("")
     val codiExplotacio by viewModel.codiExplotacio.observeAsState("")
     val (isChecked, setChecked) = remember { mutableStateOf(false) }
 
     Column(Modifier.fillMaxWidth()) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            Checkbox(checked = isChecked, onCheckedChange = { setChecked(it) })
+            Checkbox(
+                checked = isChecked,
+                onCheckedChange = { if (!modoLectura) setChecked(it) }
+            )
             Text("El destino es centro de inspección?", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
         }
         if (isChecked) {
-            CampoTexto(label = stringResource(R.string.form_pif_country), valor = pais, placeholder = stringResource(R.string.form_pif_country_desc), onValueChange = { viewModel.actualizarPais(it) }, defectColor = false)
-            CampoTexto(label = stringResource(R.string.form_pif_exploitation), valor = codiExplotacio, placeholder = stringResource(R.string.form_pif_exploitation_desc), onValueChange = { viewModel.actualizarCodiExplotacio(it) }, defectColor = false)
+            CampoTexto(label = stringResource(R.string.form_pif_country), valor = pais, placeholder = stringResource(R.string.form_pif_country_desc), onValueChange = { if (!modoLectura) viewModel.actualizarPais(it) }, defectColor = false, enabled = !modoLectura)
+            CampoTexto(label = stringResource(R.string.form_pif_exploitation), valor = codiExplotacio, placeholder = stringResource(R.string.form_pif_exploitation_desc), onValueChange = { if (!modoLectura) viewModel.actualizarCodiExplotacio(it) }, defectColor = false, enabled = !modoLectura)
         }
     }
 }

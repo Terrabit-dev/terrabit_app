@@ -41,8 +41,12 @@ import com.example.terrabit_app.viewmodel.CorrecionSexoViewModel
 fun CorregirSexoBovi(
     navController: NavController,
     bluetoothViewModel: BluetoothViewModel,
-    borradorId: String = "") {
+    borradorId: String = "",
+    historialId: String = ""
+) {
     val viewModel = hiltViewModel<CorrecionSexoViewModel>()
+    val modoLectura = historialId.isNotEmpty()
+
     val identificadorCorreccionSexo by viewModel.identificadorCorreccionSexo.observeAsState("")
     val sexoCorreccionSeleccionado by viewModel.sexoCorreccionSeleccionado.observeAsState("")
     val sexoCorreccionExpandido by viewModel.sexoCorreccionExpandido.observeAsState(false)
@@ -66,25 +70,22 @@ fun CorregirSexoBovi(
     if (mostrarBluetooth) {
         BluetoothScanDialog(
             bluetoothViewModel = bluetoothViewModel,
-            onMensajeRecibido = { mensaje ->
-                viewModel.actualizarIdentificadorCorreccionSexo(mensaje)
-                mostrarBluetooth = false
-            },
+            onMensajeRecibido = { mensaje -> viewModel.actualizarIdentificadorCorreccionSexo(mensaje); mostrarBluetooth = false },
             onDismiss = { mostrarBluetooth = false }
         )
     }
 
     LaunchedEffect(Unit) {
-        if (borradorId.isNotEmpty()) {
-            viewModel.cargarBorradorPorId(borradorId)
-        } else {
-            viewModel.cargarBorradorExistente()
+        when {
+            historialId.isNotEmpty() -> viewModel.cargarDesdeHistorial(historialId)
+            borradorId.isNotEmpty() -> viewModel.cargarBorradorPorId(borradorId)
+            else -> viewModel.cargarBorradorExistente()
         }
     }
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_PAUSE && viewModel.tieneContenido()) {
+            if (event == Lifecycle.Event.ON_PAUSE && !modoLectura && viewModel.tieneContenido()) {
                 viewModel.guardarBorradorAutomatico()
             }
         }
@@ -108,21 +109,13 @@ fun CorregirSexoBovi(
             onDismissRequest = { mostrarDialogoError = false; viewModel.resetearEstadoCorreccionSexo() },
             icon = { Icon(Icons.Default.ArrowBack, contentDescription = null, tint = MainGreen, modifier = Modifier.size(48.dp)) },
             title = { Text(mensajeErrorCorreccionSexo, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface) },
-            text = {
-                Text(
-                    if (codiError != null) alertsErrosScreens(codiError!!) else mensajeError,
-                    fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 24.sp
-                )
-            },
+            text = { Text(if (codiError != null) alertsErrosScreens(codiError!!) else mensajeError, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 24.sp) },
             confirmButton = {
-                Button(
-                    onClick = { mostrarDialogoError = false; viewModel.resetearEstadoCorreccionSexo() },
-                    colors = ButtonDefaults.buttonColors(containerColor = MainGreen),
-                    shape = RoundedCornerShape(8.dp)
-                ) { Text(stringResource(R.string.error_buttom), fontWeight = FontWeight.SemiBold) }
+                Button(onClick = { mostrarDialogoError = false; viewModel.resetearEstadoCorreccionSexo() }, colors = ButtonDefaults.buttonColors(containerColor = MainGreen), shape = RoundedCornerShape(8.dp)) {
+                    Text(stringResource(R.string.error_buttom), fontWeight = FontWeight.SemiBold)
+                }
             },
-            containerColor = MaterialTheme.colorScheme.surface,
-            shape = RoundedCornerShape(16.dp)
+            containerColor = MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(16.dp)
         )
     }
 
@@ -130,21 +123,22 @@ fun CorregirSexoBovi(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text(stringResource(R.string.name_sex_correct), fontSize = 20.sp, fontWeight = FontWeight.SemiBold) },
+                    title = {
+                        Column {
+                            Text(stringResource(R.string.name_sex_correct), fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
+                            if (modoLectura) Text("Solo lectura", fontSize = 13.sp, color = Color.White.copy(alpha = 0.8f))
+                        }
+                    },
                     navigationIcon = {
                         IconButton(onClick = {
-                            if (borradorId.isNotEmpty()) navController.popBackStack()
-                            else navController.navigate(Routes.GestionBovinos.route)
-                        }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
-                        }
-
+                            when {
+                                historialId.isNotEmpty() -> navController.popBackStack()
+                                borradorId.isNotEmpty() -> navController.popBackStack()
+                                else -> navController.navigate(Routes.GestionBovinos.route)
+                            }
+                        }) { Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.content_description_back)) }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MainGreen,
-                        titleContentColor = Color.White,
-                        navigationIconContentColor = Color.White
-                    )
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = MainGreen, titleContentColor = Color.White, navigationIconContentColor = Color.White)
                 )
             },
             snackbarHost = {
@@ -154,81 +148,57 @@ fun CorregirSexoBovi(
             },
             containerColor = MaterialTheme.colorScheme.background
         ) { padding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .verticalScroll(rememberScrollState())
-            ) {
+            Column(modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())) {
                 Spacer(modifier = Modifier.height(20.dp))
-
                 Card(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                     shape = MaterialTheme.shapes.large
                 ) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth().padding(24.dp),
-                        verticalArrangement = Arrangement.spacedBy(24.dp)
-                    ) {
-                        useDebounce(identificadorCorreccionSexo, delayMillis = 300L) { viewModel.searchBovinos(it) }
+                    Column(modifier = Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(24.dp)) {
+                        if (!modoLectura) {
+                            useDebounce(identificadorCorreccionSexo, delayMillis = 300L) { viewModel.searchBovinos(it) }
+                        }
                         CampoIdentificadorAutoComplete(
                             label = stringResource(R.string.form_id_animal),
                             valor = identificadorCorreccionSexo,
                             placeholder = stringResource(R.string.form_id_animal_description),
-                            onValueChange = { viewModel.actualizarIdentificadorCorreccionSexo(it) },
-                            suggestions = suggestionsBovinos,
-                            onAnimalSelected = { viewModel.onBovinoSelected(it) },
-                            isLoadingSuggestions = isLoadingBovinos,
-                            onClickBluetooth = {
-                                bluetoothViewModel.iniciarEscaneo(context)
-                                mostrarBluetooth = true
-                            }
+                            onValueChange = { if (!modoLectura) viewModel.actualizarIdentificadorCorreccionSexo(it) },
+                            suggestions = if (modoLectura) emptyList() else suggestionsBovinos,
+                            onAnimalSelected = { if (!modoLectura) viewModel.onBovinoSelected(it) },
+                            isLoadingSuggestions = if (modoLectura) false else isLoadingBovinos,
+                            onClickBluetooth = { if (!modoLectura) { bluetoothViewModel.iniciarEscaneo(context); mostrarBluetooth = true } }
                         )
-
                         DropdownField(
                             label = stringResource(R.string.form_sex),
                             selectedValue = sexoCorreccionSeleccionado,
-                            expanded = sexoCorreccionExpandido,
+                            expanded = if (modoLectura) false else sexoCorreccionExpandido,
                             placeholder = stringResource(R.string.form_send_address_description),
                             opciones = elementosConCodigos.sexos(),
-                            onExpandedChange = { viewModel.toggleSexoCorreccionExpandido() },
+                            onExpandedChange = { if (!modoLectura) viewModel.toggleSexoCorreccionExpandido() },
                             onDismissRequest = { viewModel.cerrarSexoCorreccionMenu() },
-                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarSexoCorreccion(nombre, codigo) },
+                            onSeleccionar = { codigo, nombre -> if (!modoLectura) viewModel.seleccionarSexoCorreccion(nombre, codigo) },
                             defectColor = true
                         )
                     }
                 }
-
-                Button(
-                    onClick = { viewModel.corregirSexoAnimal() },
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 24.dp).height(56.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MainGreen),
-                    shape = MaterialTheme.shapes.medium,
-                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp, pressedElevation = 6.dp)
-                ) {
-                    Text(stringResource(R.string.buttom_form_correct_sex), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.5.sp)
+                if (!modoLectura) {
+                    Button(
+                        onClick = { viewModel.corregirSexoAnimal() },
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 24.dp).height(56.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = MainGreen),
+                        shape = MaterialTheme.shapes.medium,
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp, pressedElevation = 6.dp)
+                    ) { Text(stringResource(R.string.buttom_form_correct_sex), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.5.sp) }
+                } else {
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
-
-                Spacer(modifier = Modifier.height(20.dp))
             }
         }
-
         if (estadoCarga) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.5f))
-                    .clickable(enabled = false) {},
-                contentAlignment = Alignment.Center
-            ) {
-                Card(
-                    modifier = Modifier.size(120.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
+            Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)).clickable(enabled = false) {}, contentAlignment = Alignment.Center) {
+                Card(modifier = Modifier.size(120.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), elevation = CardDefaults.cardElevation(defaultElevation = 8.dp), shape = RoundedCornerShape(16.dp)) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                             CircularProgressIndicator(modifier = Modifier.size(48.dp), color = MainGreen, strokeWidth = 4.dp)
