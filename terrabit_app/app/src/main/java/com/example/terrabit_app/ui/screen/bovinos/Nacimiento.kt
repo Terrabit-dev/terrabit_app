@@ -91,6 +91,8 @@ fun Nacimiento(
     var madreUsb by remember { mutableStateOf(false) }
     var criaUsb by remember { mutableStateOf(false) }
 
+    val razas = elementosConCodigos.razasBovinas()
+
     // ── Hook USB ─────────────────────────────────────────────────────────
     LaunchedEffect(Unit) {
         usbViewModel.mensajes.collect { mensaje ->
@@ -394,7 +396,7 @@ fun Nacimiento(
                             selectedValue = razaSeleccionada,
                             expanded = razaExpandida,
                             placeholder = stringResource(R.string.form_raze_description),
-                            opciones = elementosConCodigos.razasBovinas(),
+                            opciones = razas,
                             onExpandedChange = { viewModel.toggleRazaExpandida() },
                             onDismissRequest = { viewModel.cerrarRazaMenu() },
                             onSeleccionar = { codigo, nombre -> viewModel.seleccionarRaza(nombre, codigo) },
