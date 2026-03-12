@@ -43,9 +43,7 @@ import com.example.terrabit_app.utils.alertsErrosScreens
 import com.example.terrabit_app.utils.bluetooth.BluetoothScanDialog
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 import com.example.terrabit_app.utils.usb.UsbSerialViewModel
-
 import com.example.terrabit_app.viewmodel.ViewModelMuerteBovi
-import androidx.compose.runtime.collectAsState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -91,23 +89,17 @@ fun Fallecimiento(
     val usbState by usbViewModel.state.collectAsState()
     val usbErrorText = usbState.error?.let { stringResource(it) }
 
-
     LaunchedEffect(Unit) {
         usbViewModel.mensajes.collect { mensaje ->
             viewModel.actualizarIdentificadorMuerte(mensaje)
         }
     }
 
-    // Error USB via snackbar
     LaunchedEffect(usbErrorText) {
         usbErrorText?.let {
-            snackbarHostState.showSnackbar(
-                message = "USB: $it",
-                duration = SnackbarDuration.Short
-            )
+            snackbarHostState.showSnackbar(message = "USB: $it", duration = SnackbarDuration.Short)
         }
     }
-
 
     if (mostrarBluetooth) {
         BluetoothScanDialog(
@@ -120,14 +112,12 @@ fun Fallecimiento(
         )
     }
 
-
     LaunchedEffect(Unit) {
         when {
             historialId.isNotEmpty() -> viewModel.cargarDesdeHistorial(historialId)
             borradorId.isNotEmpty() -> viewModel.cargarBorradorPorId(borradorId)
         }
     }
-
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -173,7 +163,6 @@ fun Fallecimiento(
         )
     }
 
-
     if (mostrarDatePickerMuerte && !modoLectura) {
         DatePickerDialog(
             onDismissRequest = { viewModel.ocultarDatePickerMuerte() },
@@ -199,7 +188,6 @@ fun Fallecimiento(
         Scaffold(
             topBar = {
                 TopAppBar(
-
                     title = {
                         Column {
                             Text(stringResource(R.string.name_report_dead), fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
@@ -265,9 +253,10 @@ fun Fallecimiento(
                                     value = tipoSeleccionado,
                                     onValueChange = {},
                                     modifier = Modifier.fillMaxWidth().menuAnchor(),
+                                    enabled = !modoLectura,
                                     readOnly = true,
                                     placeholder = { Text(stringResource(R.string.form_type_dead_description), color = MaterialTheme.colorScheme.onSurfaceVariant) },
-                                    trailingIcon = { if (!modoLectura) ExposedDropdownMenuDefaults.TrailingIcon(expanded = tipoExpandido) },
+                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = if (modoLectura) false else tipoExpandido) },
                                     singleLine = true,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
@@ -276,7 +265,13 @@ fun Fallecimiento(
                                         focusedTextColor = MaterialTheme.colorScheme.onSurface,
                                         unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                                         focusedContainerColor = MaterialTheme.colorScheme.surface,
-                                        unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                                        disabledBorderColor = MaterialTheme.colorScheme.outline,
+                                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        disabledContainerColor = MaterialTheme.colorScheme.surface,
                                     )
                                 )
                                 if (!modoLectura) {
@@ -297,7 +292,6 @@ fun Fallecimiento(
                             }
                         }
 
-
                         if (!modoLectura) {
                             useDebounce(identificadorAnimal, delayMillis = 300L) { viewModel.searchBovinos(it) }
                         }
@@ -305,13 +299,13 @@ fun Fallecimiento(
                             label = if (tipoMuerte.contains("01")) stringResource(R.string.form_id_animal) else stringResource(R.string.form_id_mother),
                             valor = identificadorAnimal,
                             placeholder = if (tipoMuerte.contains("01")) stringResource(R.string.form_id_animal_description) else stringResource(R.string.form_mother_description),
-
-                            onValueChange = { if (!modoLectura) viewModel.actualizarIdentificadorMuerte(it) },
-                            suggestions = if (modoLectura) emptyList() else suggestionsBovinos,
-                            onAnimalSelected = { if (!modoLectura) viewModel.onBovinoSelected(it) },
-                            isLoadingSuggestions = if (modoLectura) false else isLoadingBovinos,
-                            onClickBluetooth = { if (!modoLectura) { bluetoothViewModel.iniciarEscaneo(context); mostrarBluetooth = true } },
-                            onClickUsb = { if (!modoLectura) { usbViewModel.conectar()} }
+                            enabled = !modoLectura,
+                            onValueChange = { viewModel.actualizarIdentificadorMuerte(it) },
+                            suggestions = suggestionsBovinos,
+                            onAnimalSelected = { viewModel.onBovinoSelected(it) },
+                            isLoadingSuggestions = isLoadingBovinos,
+                            onClickBluetooth = { bluetoothViewModel.iniciarEscaneo(context); mostrarBluetooth = true },
+                            onClickUsb = { usbViewModel.conectar() }
                         )
 
                         Column(modifier = Modifier.fillMaxWidth()) {
@@ -329,11 +323,13 @@ fun Fallecimiento(
                                     Modifier.fillMaxWidth()
                             ) {
                                 OutlinedTextField(
-                                    value = fechaMuerte, onValueChange = {},
+                                    value = fechaMuerte,
+                                    onValueChange = {},
                                     modifier = Modifier.fillMaxWidth(),
                                     placeholder = { Text(stringResource(R.string.form_date_description), color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                     leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = ErrorRed) },
-                                    readOnly = true, enabled = false,
+                                    readOnly = true,
+                                    enabled = false,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
                                         disabledTextColor = MaterialTheme.colorScheme.onSurface,
@@ -357,10 +353,9 @@ fun Fallecimiento(
                                 Spacer(modifier = Modifier.height(10.dp))
                                 OutlinedTextField(
                                     value = mesesGestacion,
-                                    // CAMBIO: readOnly en modoLectura
-                                    onValueChange = { if (!modoLectura) viewModel.actualizarMesesGestacion(it) },
+                                    onValueChange = { viewModel.actualizarMesesGestacion(it) },
                                     modifier = Modifier.fillMaxWidth(),
-                                    readOnly = modoLectura,
+                                    enabled = !modoLectura,
                                     placeholder = { Text(stringResource(R.string.form_pregnancy_months_description), color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                     singleLine = true,
                                     shape = MaterialTheme.shapes.medium,
@@ -371,7 +366,12 @@ fun Fallecimiento(
                                         unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                                         cursorColor = ErrorRed,
                                         focusedContainerColor = MaterialTheme.colorScheme.surface,
-                                        unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                                        disabledBorderColor = MaterialTheme.colorScheme.outline,
+                                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        disabledContainerColor = MaterialTheme.colorScheme.surface,
                                     ),
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done)
                                 )
@@ -442,24 +442,31 @@ fun Fallecimiento(
                                         }
                                         Spacer(modifier = Modifier.height(16.dp))
                                     }
+
                                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                                         Column(modifier = Modifier.weight(1f)) {
                                             Text(stringResource(R.string.gps_laltitud), fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = ErrorRed)
                                             Spacer(modifier = Modifier.height(6.dp))
-
                                             OutlinedTextField(
                                                 value = coordenadaX,
-                                                onValueChange = { if (!modoLectura) viewModel.actualizarCoordenadaX(it) },
-                                                readOnly = modoLectura,
+                                                onValueChange = { viewModel.actualizarCoordenadaX(it) },
+                                                enabled = !modoLectura,
                                                 placeholder = { Text(stringResource(R.string.gps_laltitud_description), fontSize = 13.sp, color = DarkOrange) },
                                                 singleLine = true,
                                                 shape = RoundedCornerShape(8.dp),
                                                 colors = OutlinedTextFieldDefaults.colors(
-                                                    focusedBorderColor = MainOrange, unfocusedBorderColor = Yellow,
-                                                    focusedTextColor = ErrorRed, unfocusedTextColor = ErrorRed,
+                                                    focusedBorderColor = MainOrange,
+                                                    unfocusedBorderColor = Yellow,
+                                                    focusedTextColor = ErrorRed,
+                                                    unfocusedTextColor = ErrorRed,
                                                     cursorColor = MainOrange,
                                                     focusedContainerColor = MaterialTheme.colorScheme.surface,
-                                                    unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                                                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                                                    disabledBorderColor = Yellow,
+                                                    disabledTextColor = ErrorRed,
+                                                    disabledLabelColor = DarkOrange,
+                                                    disabledPlaceholderColor = DarkOrange,
+                                                    disabledContainerColor = MaterialTheme.colorScheme.surface,
                                                 ),
                                                 modifier = Modifier.fillMaxWidth(),
                                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next)
@@ -468,20 +475,26 @@ fun Fallecimiento(
                                         Column(modifier = Modifier.weight(1f)) {
                                             Text(stringResource(R.string.gps_longitud), fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = ErrorRed)
                                             Spacer(modifier = Modifier.height(6.dp))
-
                                             OutlinedTextField(
                                                 value = coordenadaY,
-                                                onValueChange = { if (!modoLectura) viewModel.actualizarCoordenadaY(it) },
-                                                readOnly = modoLectura,
+                                                onValueChange = { viewModel.actualizarCoordenadaY(it) },
+                                                enabled = !modoLectura,
                                                 placeholder = { Text(stringResource(R.string.gps_longitud_description), fontSize = 13.sp, color = DarkOrange) },
                                                 singleLine = true,
                                                 shape = RoundedCornerShape(8.dp),
                                                 colors = OutlinedTextFieldDefaults.colors(
-                                                    focusedBorderColor = MainOrange, unfocusedBorderColor = Yellow,
-                                                    focusedTextColor = ErrorRed, unfocusedTextColor = ErrorRed,
+                                                    focusedBorderColor = MainOrange,
+                                                    unfocusedBorderColor = Yellow,
+                                                    focusedTextColor = ErrorRed,
+                                                    unfocusedTextColor = ErrorRed,
                                                     cursorColor = MainOrange,
                                                     focusedContainerColor = MaterialTheme.colorScheme.surface,
-                                                    unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                                                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                                                    disabledBorderColor = Yellow,
+                                                    disabledTextColor = ErrorRed,
+                                                    disabledLabelColor = DarkOrange,
+                                                    disabledPlaceholderColor = DarkOrange,
+                                                    disabledContainerColor = MaterialTheme.colorScheme.surface,
                                                 ),
                                                 modifier = Modifier.fillMaxWidth(),
                                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Done)
@@ -493,7 +506,6 @@ fun Fallecimiento(
                         }
                     }
                 }
-
 
                 if (!modoLectura) {
                     Button(

@@ -31,7 +31,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
@@ -49,7 +48,6 @@ import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 import com.example.terrabit_app.utils.usb.UsbSerialViewModel
 import com.example.terrabit_app.viewmodel.MovimientosViewModel
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Movimientos(
@@ -57,8 +55,7 @@ fun Movimientos(
     bluetoothViewModel: BluetoothViewModel,
     borradorId: String = "",
     historialId: String = ""
-    ) {
-
+) {
     val viewModel = hiltViewModel<MovimientosViewModel>()
     val modoLectura = historialId.isNotEmpty()
 
@@ -109,13 +106,9 @@ fun Movimientos(
         }
     }
 
-    // Error USB via snackbar
     LaunchedEffect(usbErrorText) {
         usbErrorText?.let {
-            snackbarHostState.showSnackbar(
-                message = "USB: $it",
-                duration = SnackbarDuration.Short
-            )
+            snackbarHostState.showSnackbar(message = "USB: $it", duration = SnackbarDuration.Short)
         }
     }
 
@@ -132,17 +125,19 @@ fun Movimientos(
     }
 
     LaunchedEffect(Unit) {
-        if (borradorId.isNotEmpty()) {
-            viewModel.cargarBorradorPorId(borradorId)
-            return@LaunchedEffect
+        when {
+            historialId.isNotEmpty() -> viewModel.cargarDesdeHistorial(historialId)
+            borradorId.isNotEmpty() -> viewModel.cargarBorradorPorId(borradorId)
+            else -> {
+                cantidadBorradores = viewModel.obtenerCantidadBorradoresMovimiento()
+                if (cantidadBorradores >= 2) mostrarDialogoAviso = true
+            }
         }
-        cantidadBorradores = viewModel.obtenerCantidadBorradoresMovimiento()
-        if (cantidadBorradores >= 2) mostrarDialogoAviso = true
     }
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_PAUSE && viewModel.tieneContenido()) {
+            if (event == Lifecycle.Event.ON_PAUSE && !modoLectura && viewModel.tieneContenido()) {
                 viewModel.guardarBorradorAutomatico()
             }
         }
@@ -207,7 +202,7 @@ fun Movimientos(
         )
     }
 
-    if (mostrarDatePickerArribada) {
+    if (mostrarDatePickerArribada && !modoLectura) {
         val datePickerState = rememberDatePickerState()
         DatePickerDialog(
             onDismissRequest = { viewModel.ocultarDatePickerArribada() },
@@ -226,7 +221,7 @@ fun Movimientos(
         }
     }
 
-    if (mostrarTimePickerArribada) {
+    if (mostrarTimePickerArribada && !modoLectura) {
         val timePickerState = rememberTimePickerState()
         AlertDialog(
             onDismissRequest = { viewModel.ocultarTimePickerArribada() },
@@ -275,11 +270,19 @@ fun Movimientos(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text(stringResource(R.string.name_confirm_movs), fontSize = 20.sp, fontWeight = FontWeight.SemiBold) },
+                    title = {
+                        Column {
+                            Text(stringResource(R.string.name_confirm_movs), fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
+                            if (modoLectura) Text("Solo lectura", fontSize = 13.sp, color = Color.White.copy(alpha = 0.9f))
+                        }
+                    },
                     navigationIcon = {
                         IconButton(onClick = {
-                            if (borradorId.isNotEmpty()) navController.popBackStack()
-                            else navController.navigate(Routes.GuiasMovimientos.route)
+                            when {
+                                historialId.isNotEmpty() -> navController.popBackStack()
+                                borradorId.isNotEmpty() -> navController.popBackStack()
+                                else -> navController.navigate(Routes.GuiasMovimientos.route)
+                            }
                         }) {
                             Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
                         }
@@ -306,7 +309,6 @@ fun Movimientos(
             ) {
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // ---- Card datos necesarios ----
                 Card(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -319,31 +321,15 @@ fun Movimientos(
                     ) {
                         Text(stringResource(R.string.form_movs_title_necessary), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
 
-                        // Codi REMO
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            Text(stringResource(R.string.form_codi_remo), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
-                            Spacer(modifier = Modifier.height(10.dp))
-                            OutlinedTextField(
-                                value = codiRemo,
-                                onValueChange = { viewModel.actualizarCodiRemo(it) },
-                                modifier = Modifier.fillMaxWidth(),
-                                placeholder = { Text(stringResource(R.string.form_codi_remo_description), color = MaterialTheme.colorScheme.onSurfaceVariant) },
-                                singleLine = true,
-                                shape = MaterialTheme.shapes.medium,
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = MainOrange,
-                                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                    cursorColor = MainOrange,
-                                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                                    unfocusedContainerColor = MaterialTheme.colorScheme.surface
-                                ),
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next)
-                            )
-                        }
+                        SimpleTextField(
+                            label = stringResource(R.string.form_codi_remo),
+                            value = codiRemo,
+                            placeholder = stringResource(R.string.form_codi_remo_description),
+                            onValueChange = { viewModel.actualizarCodiRemo(it) },
+                            enabled = !modoLectura,
+                            imeAction = ImeAction.Next
+                        )
 
-                        // Fecha y hora llegada
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                             DateTimeFieldMovs(
                                 modifier = Modifier.weight(1f),
@@ -351,6 +337,7 @@ fun Movimientos(
                                 value = dataArribada,
                                 placeholder = stringResource(R.string.form_date_arrival_description),
                                 icon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = MainOrange) },
+                                enabled = !modoLectura,
                                 onClick = { viewModel.mostrarDatePickerArribada() }
                             )
                             DateTimeFieldMovs(
@@ -359,25 +346,26 @@ fun Movimientos(
                                 value = horaArribada,
                                 placeholder = stringResource(R.string.form_hour_arrival_description),
                                 icon = { Icon(Icons.Default.Schedule, contentDescription = null, tint = MainOrange) },
+                                enabled = !modoLectura,
                                 onClick = { viewModel.mostrarTimePickerArribada() }
                             )
                         }
 
-                        // Codi Ates dropdown
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(stringResource(R.string.form_codi_ates), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
                             Spacer(modifier = Modifier.height(10.dp))
                             ExposedDropdownMenuBox(
-                                expanded = codiAtesExpandido,
-                                onExpandedChange = { viewModel.toggleCodiAtesExpandido() }
+                                expanded = if (modoLectura) false else codiAtesExpandido,
+                                onExpandedChange = { if (!modoLectura) viewModel.toggleCodiAtesExpandido() }
                             ) {
                                 OutlinedTextField(
                                     value = codiAtes,
                                     onValueChange = {},
                                     modifier = Modifier.fillMaxWidth().menuAnchor(),
+                                    enabled = !modoLectura,
                                     readOnly = true,
                                     placeholder = { Text(stringResource(R.string.form_codi_ates_description), color = MaterialTheme.colorScheme.onSurfaceVariant) },
-                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = codiAtesExpandido) },
+                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = if (modoLectura) false else codiAtesExpandido) },
                                     singleLine = true,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
@@ -386,54 +374,46 @@ fun Movimientos(
                                         focusedTextColor = MaterialTheme.colorScheme.onSurface,
                                         unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                                         focusedContainerColor = MaterialTheme.colorScheme.surface,
-                                        unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                                        disabledBorderColor = MaterialTheme.colorScheme.outline,
+                                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        disabledContainerColor = MaterialTheme.colorScheme.surface,
                                     )
                                 )
-                                ExposedDropdownMenu(
-                                    expanded = codiAtesExpandido,
-                                    onDismissRequest = { viewModel.cerrarCodiAtesMenu() },
-                                    modifier = Modifier.background(MaterialTheme.colorScheme.surface)
-                                ) {
-                                    viewModel.listaCodigosAtes.forEach { ates ->
-                                        DropdownMenuItem(
-                                            text = { Text("${ates.codigo} - ${ates.nombre}", fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Normal) },
-                                            onClick = { viewModel.seleccionarCodiAtes(ates.codigo) },
-                                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
-                                        )
+                                if (!modoLectura) {
+                                    ExposedDropdownMenu(
+                                        expanded = codiAtesExpandido,
+                                        onDismissRequest = { viewModel.cerrarCodiAtesMenu() },
+                                        modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+                                    ) {
+                                        viewModel.listaCodigosAtes.forEach { ates ->
+                                            DropdownMenuItem(
+                                                text = { Text("${ates.codigo} - ${ates.nombre}", fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Normal) },
+                                                onClick = { viewModel.seleccionarCodiAtes(ates.codigo) },
+                                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
+                                            )
+                                        }
                                     }
                                 }
                             }
                         }
 
-                        // Explotación destino
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            Text(stringResource(R.string.form_exploitation_destination), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
-                            Spacer(modifier = Modifier.height(10.dp))
-                            OutlinedTextField(
-                                value = explotacioDestinacio,
-                                onValueChange = { viewModel.actualizarExplotacioDestinacio(it) },
-                                modifier = Modifier.fillMaxWidth(),
-                                placeholder = { Text(stringResource(R.string.form_exploitation_destination_description), color = MaterialTheme.colorScheme.onSurfaceVariant) },
-                                singleLine = true,
-                                shape = MaterialTheme.shapes.medium,
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = MainOrange,
-                                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                    cursorColor = MainOrange,
-                                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                                    unfocusedContainerColor = MaterialTheme.colorScheme.surface
-                                ),
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next)
-                            )
-                        }
+                        SimpleTextField(
+                            label = stringResource(R.string.form_exploitation_destination),
+                            value = explotacioDestinacio,
+                            placeholder = stringResource(R.string.form_exploitation_destination_description),
+                            onValueChange = { viewModel.actualizarExplotacioDestinacio(it) },
+                            enabled = !modoLectura,
+                            imeAction = ImeAction.Next
+                        )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // ---- Card datos transporte ----
                 Card(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -446,21 +426,21 @@ fun Movimientos(
                     ) {
                         Text(stringResource(R.string.form_movs_title_animals), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
 
-                        // Medio transporte
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(stringResource(R.string.form_ways_transports), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
                             Spacer(modifier = Modifier.height(10.dp))
                             ExposedDropdownMenuBox(
-                                expanded = mitjaTransportExpandido,
-                                onExpandedChange = { viewModel.toggleMitjaTransportExpandido() }
+                                expanded = if (modoLectura) false else mitjaTransportExpandido,
+                                onExpandedChange = { if (!modoLectura) viewModel.toggleMitjaTransportExpandido() }
                             ) {
                                 OutlinedTextField(
                                     value = mitjaTransport,
                                     onValueChange = {},
                                     modifier = Modifier.fillMaxWidth().menuAnchor(),
+                                    enabled = !modoLectura,
                                     readOnly = true,
                                     placeholder = { Text(stringResource(R.string.form_ways_transports_description), color = MaterialTheme.colorScheme.onSurfaceVariant) },
-                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = mitjaTransportExpandido) },
+                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = if (modoLectura) false else mitjaTransportExpandido) },
                                     singleLine = true,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
@@ -469,35 +449,42 @@ fun Movimientos(
                                         focusedTextColor = MaterialTheme.colorScheme.onSurface,
                                         unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                                         focusedContainerColor = MaterialTheme.colorScheme.surface,
-                                        unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                                        disabledBorderColor = MaterialTheme.colorScheme.outline,
+                                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        disabledContainerColor = MaterialTheme.colorScheme.surface,
                                     )
                                 )
-                                ExposedDropdownMenu(
-                                    expanded = mitjaTransportExpandido,
-                                    onDismissRequest = { viewModel.cerrarMitjaTransportMenu() },
-                                    modifier = Modifier.background(MaterialTheme.colorScheme.surface)
-                                ) {
-                                    elementosConCodigos.transporte().forEach { (medio, codigo) ->
-                                        DropdownMenuItem(
-                                            text = { Text(medio, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Normal) },
-                                            onClick = { viewModel.seleccionarMitjaTransport(medio, codigo) },
-                                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
-                                        )
+                                if (!modoLectura) {
+                                    ExposedDropdownMenu(
+                                        expanded = mitjaTransportExpandido,
+                                        onDismissRequest = { viewModel.cerrarMitjaTransportMenu() },
+                                        modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+                                    ) {
+                                        elementosConCodigos.transporte().forEach { (medio, codigo) ->
+                                            DropdownMenuItem(
+                                                text = { Text(medio, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Normal) },
+                                                onClick = { viewModel.seleccionarMitjaTransport(medio, codigo) },
+                                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
+                                            )
+                                        }
                                     }
                                 }
                             }
                         }
 
-                        SimpleTextField(label = stringResource(R.string.form_matricule_transport), value = matricula, placeholder = stringResource(R.string.form_matricule_transports_description), onValueChange = { viewModel.actualizarMatricula(it) }, imeAction = ImeAction.Next)
-                        SimpleTextField(label = stringResource(R.string.form_name_transportits), value = nomTransportista, placeholder = stringResource(R.string.form_name_transportits_description), onValueChange = { viewModel.actualizarNomTransportista(it) }, imeAction = ImeAction.Next)
-                        SimpleTextField(label = stringResource(R.string.form_nif_driver), value = nifConductor, placeholder = stringResource(R.string.form_nif_driver_description), onValueChange = { viewModel.actualizarNifConductor(it) }, imeAction = ImeAction.Next)
-                        SimpleTextField(label = stringResource(R.string.form_name_driver), value = nomConductor, placeholder = stringResource(R.string.form_name_driver_description), onValueChange = { viewModel.actualizarNomConductor(it) }, imeAction = ImeAction.Done)
+                        SimpleTextField(label = stringResource(R.string.form_matricule_transport), value = matricula, placeholder = stringResource(R.string.form_matricule_transports_description), onValueChange = { viewModel.actualizarMatricula(it) }, enabled = !modoLectura, imeAction = ImeAction.Next)
+                        SimpleTextField(label = stringResource(R.string.form_name_transportits), value = nomTransportista, placeholder = stringResource(R.string.form_name_transportits_description), onValueChange = { viewModel.actualizarNomTransportista(it) }, enabled = !modoLectura, imeAction = ImeAction.Next)
+                        SimpleTextField(label = stringResource(R.string.form_nif_driver), value = nifConductor, placeholder = stringResource(R.string.form_nif_driver_description), onValueChange = { viewModel.actualizarNifConductor(it) }, enabled = !modoLectura, imeAction = ImeAction.Next)
+                        SimpleTextField(label = stringResource(R.string.form_name_driver), value = nomConductor, placeholder = stringResource(R.string.form_name_driver_description), onValueChange = { viewModel.actualizarNomConductor(it) }, enabled = !modoLectura, imeAction = ImeAction.Done)
                     }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // ---- Card animales ----
                 Card(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -514,11 +501,13 @@ fun Movimientos(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(stringResource(R.string.form_movs_title_animals), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-                            IconButton(
-                                onClick = { viewModel.agregarAnimal() },
-                                modifier = Modifier.size(40.dp).background(color = MainOrange, shape = RoundedCornerShape(8.dp))
-                            ) {
-                                Icon(Icons.Default.Add, contentDescription = "Agregar animal", tint = Color.White, modifier = Modifier.size(24.dp))
+                            if (!modoLectura) {
+                                IconButton(
+                                    onClick = { viewModel.agregarAnimal() },
+                                    modifier = Modifier.size(40.dp).background(color = MainOrange, shape = RoundedCornerShape(8.dp))
+                                ) {
+                                    Icon(Icons.Default.Add, contentDescription = "Agregar animal", tint = Color.White, modifier = Modifier.size(24.dp))
+                                }
                             }
                         }
 
@@ -528,7 +517,7 @@ fun Movimientos(
                         val datePickerPorIndice by viewModel.mostrarDatePickerPorIndice.observeAsState(emptyMap())
 
                         animales.forEachIndexed { index, animal ->
-                            if (datePickerPorIndice[index] == true) {
+                            if (datePickerPorIndice[index] == true && !modoLectura) {
                                 val datePickerState = rememberDatePickerState()
                                 DatePickerDialog(
                                     onDismissRequest = { viewModel.ocultarDatePickerSacrMort(index) },
@@ -563,18 +552,21 @@ fun Movimientos(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Text("Animal ${index + 1}", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MainOrange)
-                                        if (animales.size > 1) {
+                                        if (!modoLectura && animales.size > 1) {
                                             IconButton(onClick = { viewModel.eliminarAnimal(index) }, modifier = Modifier.size(32.dp)) {
                                                 Icon(Icons.Default.Delete, contentDescription = "Eliminar animal", tint = ErrorRed, modifier = Modifier.size(20.dp))
                                             }
                                         }
                                     }
 
-                                    useDebounce(animal.identificador, delayMillis = 300L) { viewModel.searchBovinos(index, it) }
+                                    if (!modoLectura) {
+                                        useDebounce(animal.identificador, delayMillis = 300L) { viewModel.searchBovinos(index, it) }
+                                    }
                                     CampoIdentificadorAutoComplete(
                                         label = stringResource(R.string.form_id_animal),
                                         valor = animal.identificador,
                                         placeholder = stringResource(R.string.form_animal_id_example),
+                                        enabled = !modoLectura,
                                         onValueChange = { viewModel.actualizarIdentificadorAnimal(index, it) },
                                         suggestions = if (activeIndex == index) suggestionsBovinos else emptyList(),
                                         onAnimalSelected = { viewModel.onBovinoSelected(index, it) },
@@ -597,6 +589,7 @@ fun Movimientos(
                                         expanded = estatExpandidoPorIndice[index] ?: false,
                                         placeholder = stringResource(R.string.form_state_arrival_description),
                                         opciones = elementosConCodigos.estadosLlegada(),
+                                        enabled = !modoLectura,
                                         onExpandedChange = { viewModel.toggleEstatArribadaExpandido(index) },
                                         onDismissRequest = { viewModel.cerrarEstatArribadaMenu(index) },
                                         onSeleccionar = { codigo, nombre -> viewModel.seleccionarEstatArribadaAnimal(index, nombre, codigo) },
@@ -608,18 +601,23 @@ fun Movimientos(
 
                                         Text(stringResource(R.string.form_movs_title_sacrifate_dade), fontSize = 15.sp, fontWeight = FontWeight.Bold, color = MainOrange)
 
-                                        // Fecha sacrificio
                                         Column(modifier = Modifier.fillMaxWidth()) {
                                             Text(stringResource(R.string.form_date_sacrifice), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
                                             Spacer(modifier = Modifier.height(8.dp))
-                                            Box(modifier = Modifier.fillMaxWidth().clickable { viewModel.mostrarDatePickerSacrMort(index) }) {
+                                            Box(
+                                                modifier = if (!modoLectura)
+                                                    Modifier.fillMaxWidth().clickable { viewModel.mostrarDatePickerSacrMort(index) }
+                                                else
+                                                    Modifier.fillMaxWidth()
+                                            ) {
                                                 OutlinedTextField(
                                                     value = animal.dataSacrMort ?: "",
                                                     onValueChange = {},
                                                     modifier = Modifier.fillMaxWidth(),
                                                     placeholder = { Text(stringResource(R.string.form_date_description), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp) },
                                                     leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = MainOrange) },
-                                                    readOnly = true, enabled = false,
+                                                    readOnly = true,
+                                                    enabled = false,
                                                     shape = MaterialTheme.shapes.medium,
                                                     colors = OutlinedTextFieldDefaults.colors(
                                                         disabledTextColor = MaterialTheme.colorScheme.onSurface,
@@ -633,8 +631,8 @@ fun Movimientos(
                                             }
                                         }
 
-                                        CampoTexto(label = stringResource(R.string.form_weight_canal), valor = animal.pesCanal ?: "0", placeholder = stringResource(R.string.form_weight_canal_description), onValueChange = { viewModel.actualizarPesCanal(index, it) }, defectColor = false, keyboardType = KeyboardType.Decimal)
-                                        CampoTexto(label = stringResource(R.string.form_class_canal), valor = animal.classCanal ?: "", placeholder = stringResource(R.string.form_class_canal_description), onValueChange = { viewModel.actualizarClassCanal(index, it) }, defectColor = false)
+                                        CampoTexto(label = stringResource(R.string.form_weight_canal), valor = animal.pesCanal ?: "0", placeholder = stringResource(R.string.form_weight_canal_description), onValueChange = { viewModel.actualizarPesCanal(index, it) }, defectColor = false, keyboardType = KeyboardType.Decimal, enabled = !modoLectura)
+                                        CampoTexto(label = stringResource(R.string.form_class_canal), valor = animal.classCanal ?: "", placeholder = stringResource(R.string.form_class_canal_description), onValueChange = { viewModel.actualizarClassCanal(index, it) }, defectColor = false, enabled = !modoLectura)
 
                                         DropdownField(
                                             label = stringResource(R.string.form_type_presentation),
@@ -642,6 +640,7 @@ fun Movimientos(
                                             expanded = tipusExpandidoPorIndice[index] ?: false,
                                             placeholder = stringResource(R.string.form_type_presentation_description),
                                             opciones = elementosConCodigos.tiposPresentacion(),
+                                            enabled = !modoLectura,
                                             onExpandedChange = { viewModel.toggleTipusPresentacioExpandido(index) },
                                             onDismissRequest = { viewModel.cerrarTipusPresentacioMenu(index) },
                                             onSeleccionar = { codigo, _ -> viewModel.seleccionarTipusPresentacio(index, codigo) },
@@ -656,21 +655,23 @@ fun Movimientos(
                     }
                 }
 
-                Button(
-                    onClick = { viewModel.confirmarMovimiento() },
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 24.dp).height(56.dp),
-                    enabled = !estadoCarga,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MainOrange,
-                        disabledContainerColor = MaterialTheme.colorScheme.outline
-                    ),
-                    shape = MaterialTheme.shapes.medium,
-                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp, pressedElevation = 6.dp)
-                ) {
-                    Text(stringResource(R.string.buttom_form_confirm_movs), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.5.sp)
+                if (!modoLectura) {
+                    Button(
+                        onClick = { viewModel.confirmarMovimiento() },
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 24.dp).height(56.dp),
+                        enabled = !estadoCarga,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MainOrange,
+                            disabledContainerColor = MaterialTheme.colorScheme.outline
+                        ),
+                        shape = MaterialTheme.shapes.medium,
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp, pressedElevation = 6.dp)
+                    ) {
+                        Text(stringResource(R.string.buttom_form_confirm_movs), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.5.sp)
+                    }
+                } else {
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
-
-                Spacer(modifier = Modifier.height(20.dp))
             }
         }
     }
@@ -683,18 +684,26 @@ private fun DateTimeFieldMovs(
     value: String,
     placeholder: String,
     icon: @Composable () -> Unit,
+    enabled: Boolean = true,
     onClick: () -> Unit
 ) {
     Column(modifier = modifier) {
         Text(label, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
         Spacer(modifier = Modifier.height(10.dp))
-        Box(modifier = Modifier.fillMaxWidth().clickable { onClick() }) {
+        Box(
+            modifier = if (enabled)
+                Modifier.fillMaxWidth().clickable { onClick() }
+            else
+                Modifier.fillMaxWidth()
+        ) {
             OutlinedTextField(
-                value = value, onValueChange = {},
+                value = value,
+                onValueChange = {},
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text(placeholder, color = MaterialTheme.colorScheme.onSurfaceVariant) },
                 leadingIcon = icon,
-                readOnly = true, enabled = false,
+                readOnly = true,
+                enabled = false,
                 shape = MaterialTheme.shapes.medium,
                 colors = OutlinedTextFieldDefaults.colors(
                     disabledTextColor = MaterialTheme.colorScheme.onSurface,
@@ -715,6 +724,7 @@ private fun SimpleTextField(
     value: String,
     placeholder: String,
     onValueChange: (String) -> Unit,
+    enabled: Boolean = true,
     imeAction: ImeAction = ImeAction.Next
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -723,6 +733,7 @@ private fun SimpleTextField(
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
+            enabled = enabled,
             modifier = Modifier.fillMaxWidth(),
             placeholder = { Text(placeholder, color = MaterialTheme.colorScheme.onSurfaceVariant) },
             singleLine = true,
@@ -734,7 +745,12 @@ private fun SimpleTextField(
                 unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                 cursorColor = MainOrange,
                 focusedContainerColor = MaterialTheme.colorScheme.surface,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                disabledBorderColor = MaterialTheme.colorScheme.outline,
+                disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                disabledContainerColor = MaterialTheme.colorScheme.surface,
             ),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = imeAction)
         )

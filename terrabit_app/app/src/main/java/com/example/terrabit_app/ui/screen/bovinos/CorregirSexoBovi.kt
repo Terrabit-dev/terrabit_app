@@ -78,13 +78,9 @@ fun CorregirSexoBovi(
         }
     }
 
-    // Error USB via snackbar
     LaunchedEffect(usbErrorText) {
         usbErrorText?.let {
-            snackbarHostState.showSnackbar(
-                message = "USB: $it",
-                duration = SnackbarDuration.Short
-            )
+            snackbarHostState.showSnackbar(message = "USB: $it", duration = SnackbarDuration.Short)
         }
     }
 
@@ -185,22 +181,24 @@ fun CorregirSexoBovi(
                             label = stringResource(R.string.form_id_animal),
                             valor = identificadorCorreccionSexo,
                             placeholder = stringResource(R.string.form_id_animal_description),
-                            onValueChange = { if (!modoLectura) viewModel.actualizarIdentificadorCorreccionSexo(it) },
-                            suggestions = if (modoLectura) emptyList() else suggestionsBovinos,
-                            onAnimalSelected = { if (!modoLectura) viewModel.onBovinoSelected(it) },
-                            isLoadingSuggestions = if (modoLectura) false else isLoadingBovinos,
-                            onClickBluetooth = { if (!modoLectura) { bluetoothViewModel.iniciarEscaneo(context); mostrarBluetooth = true } },
-                            onClickUsb = { if (!modoLectura) { usbViewModel.conectar()} }
+                            enabled = !modoLectura,
+                            onValueChange = { viewModel.actualizarIdentificadorCorreccionSexo(it) },
+                            suggestions = suggestionsBovinos,
+                            onAnimalSelected = { viewModel.onBovinoSelected(it) },
+                            isLoadingSuggestions = isLoadingBovinos,
+                            onClickBluetooth = { bluetoothViewModel.iniciarEscaneo(context); mostrarBluetooth = true },
+                            onClickUsb = { usbViewModel.conectar() }
                         )
                         DropdownField(
                             label = stringResource(R.string.form_sex),
                             selectedValue = sexoCorreccionSeleccionado,
-                            expanded = if (modoLectura) false else sexoCorreccionExpandido,
+                            expanded = sexoCorreccionExpandido,
                             placeholder = stringResource(R.string.form_send_address_description),
                             opciones = elementosConCodigos.sexos(),
-                            onExpandedChange = { if (!modoLectura) viewModel.toggleSexoCorreccionExpandido() },
+                            enabled = !modoLectura,
+                            onExpandedChange = { viewModel.toggleSexoCorreccionExpandido() },
                             onDismissRequest = { viewModel.cerrarSexoCorreccionMenu() },
-                            onSeleccionar = { codigo, nombre -> if (!modoLectura) viewModel.seleccionarSexoCorreccion(nombre, codigo) },
+                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarSexoCorreccion(nombre, codigo) },
                             defectColor = true
                         )
                     }

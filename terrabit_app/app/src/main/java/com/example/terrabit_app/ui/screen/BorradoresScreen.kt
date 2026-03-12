@@ -476,7 +476,9 @@ fun TarjetaBorrador(
             .fillMaxWidth()
             .height(96.dp)
             .combinedClickable(
-                onClick = { if (enModoSeleccion) onToggleSeleccion() },
+                onClick = {
+                    if (enModoSeleccion) onToggleSeleccion() else onEditarClick()
+                },
                 onLongClick = onToggleSeleccion
             ),
         colors = CardDefaults.cardColors(containerColor = cardColor),

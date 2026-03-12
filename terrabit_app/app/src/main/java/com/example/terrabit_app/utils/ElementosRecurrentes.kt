@@ -26,7 +26,8 @@ fun DropdownField(
     onExpandedChange: () -> Unit,
     onDismissRequest: () -> Unit,
     onSeleccionar: (String, String) -> Unit,
-    defectColor: Boolean
+    defectColor: Boolean,
+    enabled: Boolean = true
 ) {
     val accentColor = if (defectColor) MainGreen else MainOrange
 
@@ -40,8 +41,8 @@ fun DropdownField(
         )
         Spacer(modifier = Modifier.height(10.dp))
         ExposedDropdownMenuBox(
-            expanded = expanded,
-            onExpandedChange = { onExpandedChange() }
+            expanded = if (enabled) expanded else false,
+            onExpandedChange = { if (enabled) onExpandedChange() }
         ) {
             OutlinedTextField(
                 value = selectedValue,
@@ -49,11 +50,12 @@ fun DropdownField(
                 modifier = Modifier
                     .fillMaxWidth()
                     .menuAnchor(),
+                enabled = enabled,
                 readOnly = true,
                 placeholder = {
                     Text(placeholder, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(if (enabled) expanded else false) },
                 singleLine = true,
                 shape = MaterialTheme.shapes.medium,
                 colors = OutlinedTextFieldDefaults.colors(
@@ -62,26 +64,34 @@ fun DropdownField(
                     focusedTextColor = MaterialTheme.colorScheme.onSurface,
                     unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                     focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    disabledBorderColor = MaterialTheme.colorScheme.outline,
+                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                    disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    disabledContainerColor = MaterialTheme.colorScheme.surface,
                 )
             )
-            ExposedDropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { onDismissRequest() },
-                modifier = Modifier.background(MaterialTheme.colorScheme.surface)
-            ) {
-                opciones.forEach { (codigo, nombre) ->
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                nombre,
-                                fontSize = 15.sp,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        },
-                        onClick = { onSeleccionar(codigo, nombre) },
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
-                    )
+            if (enabled) {
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { onDismissRequest() },
+                    modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+                ) {
+                    opciones.forEach { (codigo, nombre) ->
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    nombre,
+                                    fontSize = 15.sp,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            },
+                            onClick = { onSeleccionar(codigo, nombre) },
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
+                        )
+                    }
                 }
             }
         }
@@ -127,10 +137,11 @@ fun CampoTexto(
                 cursorColor = accentColor,
                 focusedContainerColor = MaterialTheme.colorScheme.surface,
                 unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                disabledTextColor = MaterialTheme.colorScheme.onSurface,
                 disabledBorderColor = MaterialTheme.colorScheme.outline,
+                disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 disabledContainerColor = MaterialTheme.colorScheme.surface,
-                disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant
             ),
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType)
         )
@@ -146,7 +157,8 @@ fun CampoTextoIdentificador(
     keyboardType: KeyboardType = KeyboardType.Text,
     onValueChange: (String) -> Unit,
     onClickIcon: () -> Unit,
-    defectColor: Boolean
+    defectColor: Boolean,
+    enabled: Boolean = true
 ) {
     val accentColor = if (defectColor) MainGreen else MainOrange
 
@@ -162,6 +174,7 @@ fun CampoTextoIdentificador(
         OutlinedTextField(
             value = valor,
             onValueChange = onValueChange,
+            enabled = enabled,
             modifier = Modifier.fillMaxWidth(),
             placeholder = {
                 Text(placeholder, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -175,18 +188,26 @@ fun CampoTextoIdentificador(
                 unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                 cursorColor = accentColor,
                 focusedContainerColor = MaterialTheme.colorScheme.surface,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                disabledBorderColor = MaterialTheme.colorScheme.outline,
+                disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                disabledContainerColor = MaterialTheme.colorScheme.surface,
             ),
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-            trailingIcon = {
-                IconButton(onClick = onClickIcon) {
-                    Icon(
-                        Icons.Outlined.Bluetooth,
-                        contentDescription = "Leer crotal",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+            trailingIcon = if (enabled) {
+                {
+                    IconButton(onClick = onClickIcon) {
+                        Icon(
+                            Icons.Outlined.Bluetooth,
+                            contentDescription = "Leer crotal",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
-            }
+            } else null
         )
     }
 }

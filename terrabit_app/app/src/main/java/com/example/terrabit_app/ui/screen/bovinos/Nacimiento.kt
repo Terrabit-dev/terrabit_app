@@ -47,7 +47,7 @@ fun Nacimiento(
     bluetooth: BluetoothViewModel,
     borradorId: String = "",
     historialId: String = ""
-    ) {
+) {
     val viewModel = hiltViewModel<NacimientoViewmodel>()
     val modoLectura = historialId.isNotEmpty()
 
@@ -83,7 +83,6 @@ fun Nacimiento(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    //usb
     val usbViewModel = hiltViewModel<UsbSerialViewModel>()
     val usbState by usbViewModel.state.collectAsState()
     val usbErrorText = usbState.error?.let { stringResource(it) }
@@ -93,7 +92,6 @@ fun Nacimiento(
 
     val razas = elementosConCodigos.razasBovinas()
 
-    // ── Hook USB ─────────────────────────────────────────────────────────
     LaunchedEffect(Unit) {
         usbViewModel.mensajes.collect { mensaje ->
             when {
@@ -120,9 +118,20 @@ fun Nacimiento(
     }
 
     LaunchedEffect(Unit) {
-        if (borradorId.isNotEmpty()) {
-            viewModel.cargarBorradorPorId(borradorId)
+        when {
+            historialId.isNotEmpty() -> viewModel.cargarDesdeHistorial(historialId)
+            borradorId.isNotEmpty() -> viewModel.cargarBorradorPorId(borradorId)
         }
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_PAUSE && !modoLectura && viewModel.tieneContenido()) {
+                viewModel.guardarBorradorAutomatico()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     if (mostrarBluetooth) {
@@ -137,16 +146,6 @@ fun Nacimiento(
             },
             onDismiss = { mostrarBluetooth = false }
         )
-    }
-
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_PAUSE && viewModel.tieneContenido()) {
-                viewModel.guardarBorradorAutomatico()
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     LaunchedEffect(registroExitoso) {
@@ -183,7 +182,7 @@ fun Nacimiento(
         )
     }
 
-    if (mostrarDatePicker) {
+    if (mostrarDatePicker && !modoLectura) {
         val datePickerState = rememberDatePickerState()
         DatePickerDialog(
             onDismissRequest = { viewModel.ocultarDatePicker() },
@@ -205,7 +204,7 @@ fun Nacimiento(
         }
     }
 
-    if (mostrarDatePickerIdentificadores) {
+    if (mostrarDatePickerIdentificadores && !modoLectura) {
         val datePickerState = rememberDatePickerState()
         DatePickerDialog(
             onDismissRequest = { viewModel.ocultarDatePickerIdentificacion() },
@@ -254,11 +253,19 @@ fun Nacimiento(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text(stringResource(R.string.born_register_name), fontSize = 20.sp, fontWeight = FontWeight.SemiBold) },
+                    title = {
+                        Column {
+                            Text(stringResource(R.string.born_register_name), fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
+                            if (modoLectura) Text("Solo lectura", fontSize = 13.sp, color = Color.White.copy(alpha = 0.9f))
+                        }
+                    },
                     navigationIcon = {
                         IconButton(onClick = {
-                            if (borradorId.isNotEmpty()) navController.popBackStack()
-                            else navController.navigate(Routes.GestionBovinos.route)
+                            when {
+                                historialId.isNotEmpty() -> navController.popBackStack()
+                                borradorId.isNotEmpty() -> navController.popBackStack()
+                                else -> navController.navigate(Routes.GestionBovinos.route)
+                            }
                         }) {
                             Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
                         }
@@ -295,54 +302,81 @@ fun Nacimiento(
                         modifier = Modifier.fillMaxWidth().padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
-                        useDebounce(idMadre, delayMillis = 300L) { viewModel.searchBovinos(it) }
+
+                        if (!modoLectura) {
+                            useDebounce(idMadre, delayMillis = 300L) { viewModel.searchBovinos(it) }
+                        }
                         CampoIdentificadorAutoComplete(
                             label = stringResource(R.string.form_id_mother),
                             valor = idMadre,
                             placeholder = stringResource(R.string.form_mother_description),
-                            onValueChange = { viewModel.actualizarIdMadre(it) },
-                            suggestions = suggestionsBovinos,
-                            onAnimalSelected = { viewModel.onMotherselected(it) },
-                            isLoadingSuggestions = isLoadingBovinos,
+                            // CAMBIO: propagamos enabled para que no muestre cursor ni abra teclado
+                            enabled = !modoLectura,
+                            onValueChange = { if (!modoLectura) viewModel.actualizarIdMadre(it) },
+                            suggestions = if (modoLectura) emptyList() else suggestionsBovinos,
+                            onAnimalSelected = { if (!modoLectura) viewModel.onMotherselected(it) },
+                            isLoadingSuggestions = if (modoLectura) false else isLoadingBovinos,
                             onClickBluetooth = {
-                                madreBluetooth = true; criaBluetooth = false
-                                bluetooth.iniciarEscaneo(context); mostrarBluetooth = true
+                                if (!modoLectura) {
+                                    madreBluetooth = true; criaBluetooth = false
+                                    bluetooth.iniciarEscaneo(context); mostrarBluetooth = true
+                                }
                             },
                             onClickUsb = {
-                                madreUsb = true; criaUsb = false
-                                usbViewModel.conectar()
+                                if (!modoLectura) {
+                                    madreUsb = true; criaUsb = false
+                                    usbViewModel.conectar()
+                                }
                             }
                         )
 
-                        useDebounce(idCria, delayMillis = 300L) { viewModel.searchBovinos(it) }
+
+                        if (!modoLectura) {
+                            useDebounce(idCria, delayMillis = 300L) { viewModel.searchBovinos(it) }
+                        }
                         CampoIdentificadorAutoComplete(
                             label = stringResource(R.string.form_id_breeding),
                             valor = idCria,
                             placeholder = stringResource(R.string.form_id_breeding_description),
-                            onValueChange = { viewModel.actualizarIdCria(it) },
-                            suggestions = suggestionsBovinos,
-                            onAnimalSelected = { viewModel.onBreedingSelected(it) },
-                            isLoadingSuggestions = isLoadingBovinos,
+                            // CAMBIO: propagamos enabled para que no muestre cursor ni abra teclado
+                            enabled = !modoLectura,
+                            onValueChange = { if (!modoLectura) viewModel.actualizarIdCria(it) },
+                            suggestions = if (modoLectura) emptyList() else suggestionsBovinos,
+                            onAnimalSelected = { if (!modoLectura) viewModel.onBreedingSelected(it) },
+                            isLoadingSuggestions = if (modoLectura) false else isLoadingBovinos,
                             onClickBluetooth = {
-                                madreBluetooth = false; criaBluetooth = true
-                                bluetooth.iniciarEscaneo(context); mostrarBluetooth = true
+                                if (!modoLectura) {
+                                    madreBluetooth = false; criaBluetooth = true
+                                    bluetooth.iniciarEscaneo(context); mostrarBluetooth = true
+                                }
                             },
                             onClickUsb = {
-                                madreUsb = false; criaUsb = true
-                                usbViewModel.conectar()
+                                if (!modoLectura) {
+                                    madreUsb = false; criaUsb = true
+                                    usbViewModel.conectar()
+                                }
                             }
                         )
+
 
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(stringResource(R.string.form_birthdate), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
                             Spacer(modifier = Modifier.height(10.dp))
-                            Box(modifier = Modifier.fillMaxWidth().clickable { viewModel.mostrarDatePicker() }) {
+                            Box(
+                                modifier = if (!modoLectura)
+                                    Modifier.fillMaxWidth().clickable { viewModel.mostrarDatePicker() }
+                                else
+                                    Modifier.fillMaxWidth()
+                            ) {
                                 OutlinedTextField(
                                     value = fechaNacimiento, onValueChange = {},
                                     modifier = Modifier.fillMaxWidth(),
                                     placeholder = { Text(stringResource(R.string.form_date_description), color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                     leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = MainGreen) },
-                                    readOnly = true, enabled = false,
+                                    readOnly = true,
+                                    // CAMBIO: enabled=false bloquea cursor/teclado; colores disabled
+                                    // iguales a Movimientos para que se vea igual de profesional
+                                    enabled = false,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
                                         disabledTextColor = MaterialTheme.colorScheme.onSurface,
@@ -356,16 +390,24 @@ fun Nacimiento(
                             }
                         }
 
+
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(stringResource(R.string.form_date_identification), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
                             Spacer(modifier = Modifier.height(10.dp))
-                            Box(modifier = Modifier.fillMaxWidth().clickable { viewModel.mostrarDatePickerIdentificacion() }) {
+                            Box(
+                                modifier = if (!modoLectura)
+                                    Modifier.fillMaxWidth().clickable { viewModel.mostrarDatePickerIdentificacion() }
+                                else
+                                    Modifier.fillMaxWidth()
+                            ) {
                                 OutlinedTextField(
                                     value = fechaIdentificacion, onValueChange = {},
                                     modifier = Modifier.fillMaxWidth(),
                                     placeholder = { Text(stringResource(R.string.form_date_description), color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                     leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = MainGreen) },
-                                    readOnly = true, enabled = false,
+                                    readOnly = true,
+                                    // CAMBIO: igual que fecha nacimiento
+                                    enabled = false,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
                                         disabledTextColor = MaterialTheme.colorScheme.onSurface,
@@ -379,59 +421,65 @@ fun Nacimiento(
                             }
                         }
 
+
                         DropdownField(
                             label = stringResource(R.string.form_sex),
                             selectedValue = sexoSeleccionado,
-                            expanded = sexoExpandido,
+                            expanded = if (modoLectura) false else sexoExpandido,
                             placeholder = stringResource(R.string.form_sex_description),
                             opciones = elementosConCodigos.sexos(),
-                            onExpandedChange = { viewModel.toggleSexoExpandido() },
+                            enabled = !modoLectura,
+                            onExpandedChange = { if (!modoLectura) viewModel.toggleSexoExpandido() },
                             onDismissRequest = { viewModel.cerrarSexoMenu() },
-                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarSexo(nombre, codigo) },
+                            onSeleccionar = { codigo, nombre -> if (!modoLectura) viewModel.seleccionarSexo(nombre, codigo) },
                             defectColor = true
                         )
 
                         DropdownField(
                             label = stringResource(R.string.form_raze),
                             selectedValue = razaSeleccionada,
-                            expanded = razaExpandida,
+                            expanded = if (modoLectura) false else razaExpandida,
                             placeholder = stringResource(R.string.form_raze_description),
                             opciones = razas,
-                            onExpandedChange = { viewModel.toggleRazaExpandida() },
+                            enabled = !modoLectura,
+                            onExpandedChange = { if (!modoLectura) viewModel.toggleRazaExpandida() },
                             onDismissRequest = { viewModel.cerrarRazaMenu() },
-                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarRaza(nombre, codigo) },
+                            onSeleccionar = { codigo, nombre -> if (!modoLectura) viewModel.seleccionarRaza(nombre, codigo) },
                             defectColor = true
                         )
 
                         DropdownField(
                             label = stringResource(R.string.form_aptitude),
                             selectedValue = aptitudSeleccionada,
-                            expanded = aptitudExpandida,
+                            expanded = if (modoLectura) false else aptitudExpandida,
                             placeholder = stringResource(R.string.form_aptitude_description),
                             opciones = elementosConCodigos.aptitudes(),
-                            onExpandedChange = { viewModel.toggleAptitudExpandida() },
+                            enabled = !modoLectura,
+                            onExpandedChange = { if (!modoLectura) viewModel.toggleAptitudExpandida() },
                             onDismissRequest = { viewModel.cerrarAptitudMenu() },
-                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarAptitud(nombre, codigo) },
+                            onSeleccionar = { codigo, nombre -> if (!modoLectura) viewModel.seleccionarAptitud(nombre, codigo) },
                             defectColor = true
                         )
                     }
                 }
 
-                Button(
-                    onClick = { viewModel.registrarNacimiento() },
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 24.dp).height(56.dp),
-                    enabled = !estadoCarga,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MainGreen,
-                        disabledContainerColor = MaterialTheme.colorScheme.outline
-                    ),
-                    shape = MaterialTheme.shapes.medium,
-                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp, pressedElevation = 6.dp)
-                ) {
-                    Text(stringResource(R.string.buttom_form_born), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.5.sp)
+                if (!modoLectura) {
+                    Button(
+                        onClick = { viewModel.registrarNacimiento() },
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 24.dp).height(56.dp),
+                        enabled = !estadoCarga,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MainGreen,
+                            disabledContainerColor = MaterialTheme.colorScheme.outline
+                        ),
+                        shape = MaterialTheme.shapes.medium,
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp, pressedElevation = 6.dp)
+                    ) {
+                        Text(stringResource(R.string.buttom_form_born), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.5.sp)
+                    }
+                } else {
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
-
-                Spacer(modifier = Modifier.height(20.dp))
             }
         }
     }

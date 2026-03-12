@@ -81,7 +81,7 @@ fun GestionBovinos(navController: NavController) {
                         subtitulo = "",
                         colorFondo = MainGreen,
                         modifier = Modifier.weight(1f),
-                        onClick = { navController.navigate(Routes.Nacimiento.route) }
+                        onClick = { navController.navigate(Routes.Nacimiento.nuevo()) }
                     )
                     TarjetaAccion(
                         icono = Icons.Default.Clear,
@@ -89,7 +89,7 @@ fun GestionBovinos(navController: NavController) {
                         subtitulo = "",
                         colorFondo = ErrorRed,
                         modifier = Modifier.weight(1f),
-                        onClick = { navController.navigate(Routes.Fallecimiento.route) }
+                        onClick = { navController.navigate(Routes.Fallecimiento.nuevo()) }
                     )
                 }
                 Row(
@@ -102,7 +102,7 @@ fun GestionBovinos(navController: NavController) {
                         subtitulo = "",
                         colorFondo = MainGreen,
                         modifier = Modifier.weight(1f),
-                        onClick = { navController.navigate(Routes.CorregirBovino.route) }
+                        onClick = { navController.navigate(Routes.CorregirBovino.nuevo()) }
                     )
                     TarjetaAccion(
                         icono = Icons.Default.AddCircle,
@@ -110,7 +110,7 @@ fun GestionBovinos(navController: NavController) {
                         subtitulo = "",
                         colorFondo = MainGreen,
                         modifier = Modifier.weight(1f),
-                        onClick = { navController.navigate(Routes.IdentificacionAplazada.route) }
+                        onClick = { navController.navigate(Routes.IdentificacionAplazada.nuevo()) }
                     )
                 }
             }

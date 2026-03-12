@@ -68,7 +68,7 @@ fun MaterialCategoria(navController: NavController) {
                         subtitulo = "",
                         colorFondo = MainGreen,
                         modifier = Modifier.weight(1f),
-                        onClick = { navController.navigate(Routes.Material.route) }
+                        onClick = { navController.navigate(Routes.Material.nuevo()) }
                     )
                     TarjetaAccion(
                         icono = Icons.Default.ContentCopy,
@@ -76,7 +76,7 @@ fun MaterialCategoria(navController: NavController) {
                         subtitulo = "",
                         colorFondo = MainGreen,
                         modifier = Modifier.weight(1f),
-                        onClick = { navController.navigate(Routes.MaterialDuplicado.route) }
+                        onClick = { navController.navigate(Routes.MaterialDuplicado.nuevo()) }
                     )
                 }
             }

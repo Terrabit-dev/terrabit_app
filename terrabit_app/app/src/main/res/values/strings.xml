@@ -310,6 +310,19 @@
     </plurals>
 
 
+    <string name="no_results_description_historial">No hay registros en el historial</string>
+    <string name="title_historial">Historial</string>
+    <string name="counter_historial">registros</string>
+    <string name="search_bar_historial_text">Buscar en historial...</string>
+    <string name="clear_search_content_description">Limpiar</string>
+    <string name="menu_content_description">Menú</string>
+    <string name="options_content_description">Opciones</string>
+    <string name="title_delete_all_historial">Limpiar historial</string>
+    <string name="description_delete_all_historial">Se eliminarán todos los registros del historial. Esta acción no se puede deshacer.</string>
+    <string name="status_historial_sent">Enviado</string>
+    <string name="view_detail_button_historial">Ver detalle</string>
+
+
     <string name="option_ordinary_mail">Correo ordinario</string>
     <string name="option_certificate_mail">Correo certificado</string>
     <string name="option_rancher">Ganadero / Explotación ganadera</string>
@@ -357,6 +370,12 @@
     <string name="form_unitats_description">Ingrese el numero de unidades</string>
     <string name="alert_material_codiMo">El Codi MO es obligatorio para el tipo de material seleccionado</string>
     <string name="alert_necessary_codiMO">Campo obligatorio para este tipo de material</string>
+
+    <string name="successful_message_material">Material solicitado exitosamente</string>
+    <string name="error_message_material">Error al Solicitar Material</string>
+    <string name="name_request_material">Solicitar Material</string>
+    <string name="buttom_form_request_material">Solicitar Material</string>
+
 
     <string name="bluetooth_title_waiting">Esperando identificador</string>
     <string name="bluetooth_desc_waiting">Acerca el lector al crotal o identificador del animal</string>

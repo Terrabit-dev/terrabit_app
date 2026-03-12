@@ -168,7 +168,7 @@ fun IdentificacionApalzada(
                     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                         CircularProgressIndicator(modifier = Modifier.size(48.dp), color = MainGreen, strokeWidth = 4.dp)
                         Spacer(modifier = Modifier.height(12.dp))
-                        Text("Procesando...", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(R.string.loading_processing), fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
@@ -236,16 +236,12 @@ fun IdentificacionApalzada(
                             label = stringResource(R.string.form_id_animal),
                             valor = identificadorAnimal,
                             placeholder = stringResource(R.string.form_id_animal_description),
-                            onValueChange = { if (!modoLectura) viewModel.actualizarIdentificadorAnimal(it) },
-                            suggestions = if (modoLectura) emptyList() else suggestionsBovinos,
-                            onAnimalSelected = { if (!modoLectura) viewModel.onBovinoSelected(it) },
-                            isLoadingSuggestions = if (modoLectura) false else isLoadingBovinos,
-                            onClickBluetooth = {
-                                if (!modoLectura) {
-                                    bluetoothViewModel.iniciarEscaneo(context)
-                                    mostrarBluetooth = true
-                                }
-                            }
+                            enabled = !modoLectura,
+                            onValueChange = { viewModel.actualizarIdentificadorAnimal(it) },
+                            suggestions = suggestionsBovinos,
+                            onAnimalSelected = { viewModel.onBovinoSelected(it) },
+                            isLoadingSuggestions = isLoadingBovinos,
+                            onClickBluetooth = { bluetoothViewModel.iniciarEscaneo(context); mostrarBluetooth = true }
                         )
 
                         Column(modifier = Modifier.fillMaxWidth()) {
@@ -267,7 +263,8 @@ fun IdentificacionApalzada(
                                     modifier = Modifier.fillMaxWidth(),
                                     placeholder = { Text(stringResource(R.string.form_date_description), color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                     leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = MainGreen) },
-                                    readOnly = true, enabled = false,
+                                    readOnly = true,
+                                    enabled = false,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
                                         disabledTextColor = MaterialTheme.colorScheme.onSurface,

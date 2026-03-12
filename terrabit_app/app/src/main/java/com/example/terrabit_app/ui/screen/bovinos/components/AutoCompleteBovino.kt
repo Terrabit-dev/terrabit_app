@@ -28,6 +28,7 @@ import com.example.terrabit_app.ui.theme.MainOrange
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+
 @Composable
 private fun SuggestionItem(
     animal: Animal,
@@ -87,6 +88,7 @@ fun CampoIdentificadorAutoComplete(
     onValueChange: (String) -> Unit,
     onClickBluetooth: () -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     keyboardType: KeyboardType = KeyboardType.Text,
     defectColor: Boolean = true,
     suggestions: List<Animal> = emptyList(),
@@ -99,7 +101,7 @@ fun CampoIdentificadorAutoComplete(
     val accentColor = if (defectColor) MainGreen else MainOrange
 
     LaunchedEffect(suggestions, valor) {
-        expanded = valor.isNotBlank() && suggestions.isNotEmpty() && onAnimalSelected != null
+        expanded = enabled && valor.isNotBlank() && suggestions.isNotEmpty() && onAnimalSelected != null
     }
 
     Column(modifier = modifier.fillMaxWidth()) {
@@ -116,6 +118,7 @@ fun CampoIdentificadorAutoComplete(
             value = valor,
             onValueChange = { onValueChange(it) },
             modifier = Modifier.fillMaxWidth(),
+            enabled = enabled,
             placeholder = { Text(placeholder, color = MaterialTheme.colorScheme.onSurfaceVariant) },
             singleLine = true,
             shape = MaterialTheme.shapes.medium,
@@ -126,43 +129,51 @@ fun CampoIdentificadorAutoComplete(
                 unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                 cursorColor = accentColor,
                 focusedContainerColor = MaterialTheme.colorScheme.surface,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                disabledBorderColor = MaterialTheme.colorScheme.outline,
+                disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                disabledContainerColor = MaterialTheme.colorScheme.surface,
             ),
             keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
                 keyboardType = keyboardType,
                 autoCorrect = false
             ),
-            trailingIcon = {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (valor.isNotBlank() && onAnimalSelected != null) {
-                        IconButton(onClick = { onValueChange(""); expanded = false }) {
-                            Icon(
-                                Icons.Default.Clear,
-                                contentDescription = "Limpiar",
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(20.dp)
-                            )
+            trailingIcon = if (enabled) {
+                {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (valor.isNotBlank() && onAnimalSelected != null) {
+                            IconButton(onClick = { onValueChange(""); expanded = false }) {
+                                Icon(
+                                    Icons.Default.Clear,
+                                    contentDescription = "Limpiar",
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
                         }
-                    }
-                    // Botón USB — solo aparece si se pasa onClickUsb
-                    if (onClickUsb != null) {
-                        IconButton(onClick = onClickUsb) {
+                        if (onClickUsb != null) {
+                            IconButton(onClick = onClickUsb) {
+                                Icon(
+                                    Icons.Outlined.Usb,
+                                    contentDescription = "Leer crotal por USB",
+                                    tint = accentColor
+                                )
+                            }
+                        }
+                        IconButton(onClick = onClickBluetooth) {
                             Icon(
-                                Icons.Outlined.Usb,  // o Icons.Outlined.Cable
-                                contentDescription = "Leer crotal por USB",
+                                Icons.Outlined.Bluetooth,
+                                contentDescription = "Leer crotal por Bluetooth",
                                 tint = accentColor
                             )
                         }
                     }
-                    IconButton(onClick = onClickBluetooth) {
-                        Icon(
-                            Icons.Outlined.Bluetooth,
-                            contentDescription = "Leer crotal por Bluetooth",
-                            tint = accentColor
-                        )
-                    }
                 }
-            }
+            } else null
         )
 
         AnimatedVisibility(visible = expanded && suggestions.isNotEmpty()) {

@@ -298,6 +298,19 @@
     </plurals>
 
 
+    <string name="no_results_description_historial">No hi ha registres a l\'historial</string>
+    <string name="title_historial">Historial</string>
+    <string name="counter_historial">registres</string>
+    <string name="search_bar_historial_text">Cercar a l\'historial...</string>
+    <string name="clear_search_content_description">Netejar</string>
+    <string name="menu_content_description">Menú</string>
+    <string name="options_content_description">Opcions</string>
+    <string name="title_delete_all_historial">Netejar historial</string>
+    <string name="description_delete_all_historial">S\'eliminaran tots els registres de l\'historial. Aquesta acció no es pot desfer.</string>
+    <string name="status_historial_sent">Enviat</string>
+    <string name="view_detail_button_historial">Veure detall</string>
+
+
     <string name="duplicate_request_name">Sol·licitud de Duplicat</string>
     <string name="title_duplicate_error">Error en Sol·licitar el Duplicat</string>
     <string name="success_duplicate_request">Duplicat sol·licitat correctament</string>
@@ -339,6 +352,12 @@
     <string name="form_unitats_description">Ingressi el numero d\'unitats</string>
     <string name="alert_material_codiMo">El Codi MO és obligatori per al tipus de material seleccionat</string>
     <string name="alert_necessary_codiMO">Camp obligatori per a aquesta mena de material</string>
+    <string name="successful_message_material">Material sol·licitat correctament</string>
+    <string name="error_message_material">Error en Sol·licitar Material</string>
+    <string name="name_request_material">Sol·licitar Material</string>
+    <string name="buttom_form_request_material">Sol·licitar Material</string>
+
+
     <string name="title_porcinos_gestion_guias">Gestionar Guies</string>
     <string name="name_confirmar_entradas">Confirmar Entrades</string>
     <string name="gestion_subtitle_porcinos">Seleccioneu una acció</string>

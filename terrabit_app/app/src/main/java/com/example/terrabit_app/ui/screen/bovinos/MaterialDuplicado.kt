@@ -214,23 +214,67 @@ fun MaterialDuplicadosScreen(
                         modifier = Modifier.fillMaxWidth().padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
-                        DropdownField(label = stringResource(R.string.form_suply_company) + " *", selectedValue = empresaSubministradora, expanded = if (modoLectura) false else empresaExpandida, placeholder = stringResource(R.string.form_suply_company_description), opciones = elementosConCodigos.tipoEmpresaSubministradora(), onExpandedChange = { if (!modoLectura) viewModel.toggleEmpresaExpandida() }, onDismissRequest = { viewModel.cerrarEmpresaMenu() }, onSeleccionar = { codigo, nombre -> if (!modoLectura) viewModel.seleccionarEmpresa(codigo, nombre) }, defectColor = true)
-                        DropdownField(label = stringResource(R.string.form_send_type) + " *", selectedValue = tipoEnviamiento, expanded = if (modoLectura) false else tipoEnviamientoExpandido, placeholder = stringResource(R.string.form_send_type_description), opciones = elementosConCodigos.tiposEnvios(), onExpandedChange = { if (!modoLectura) viewModel.toggleTipoEnviamientoExpandido() }, onDismissRequest = { viewModel.cerrarTipoEnviamientoMenu() }, onSeleccionar = { codigo, nombre -> if (!modoLectura) viewModel.seleccionarTipoEnviamiento(codigo, nombre) }, defectColor = true)
-                        DropdownField(label = stringResource(R.string.form_send_address) + " *", selectedValue = tipoDireccionEnvio, expanded = if (modoLectura) false else direccionEnvioExpandido, placeholder = stringResource(R.string.form_send_address_description), opciones = elementosConCodigos.tiposDireccionEnvio(), onExpandedChange = { if (!modoLectura) viewModel.toggleDireccionEnvioExpandido() }, onDismissRequest = { viewModel.cerrarDireccionEnvioMenu() }, onSeleccionar = { codigo, nombre -> if (!modoLectura) viewModel.seleccionarDireccionEnvio(codigo, nombre) }, defectColor = true)
+                        DropdownField(
+                            label = stringResource(R.string.form_suply_company) + " *",
+                            selectedValue = empresaSubministradora,
+                            expanded = empresaExpandida,
+                            placeholder = stringResource(R.string.form_suply_company_description),
+                            opciones = elementosConCodigos.tipoEmpresaSubministradora(),
+                            enabled = !modoLectura,
+                            onExpandedChange = { viewModel.toggleEmpresaExpandida() },
+                            onDismissRequest = { viewModel.cerrarEmpresaMenu() },
+                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarEmpresa(codigo, nombre) },
+                            defectColor = true
+                        )
+                        DropdownField(
+                            label = stringResource(R.string.form_send_type) + " *",
+                            selectedValue = tipoEnviamiento,
+                            expanded = tipoEnviamientoExpandido,
+                            placeholder = stringResource(R.string.form_send_type_description),
+                            opciones = elementosConCodigos.tiposEnvios(),
+                            enabled = !modoLectura,
+                            onExpandedChange = { viewModel.toggleTipoEnviamientoExpandido() },
+                            onDismissRequest = { viewModel.cerrarTipoEnviamientoMenu() },
+                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarTipoEnviamiento(codigo, nombre) },
+                            defectColor = true
+                        )
+                        DropdownField(
+                            label = stringResource(R.string.form_send_address) + " *",
+                            selectedValue = tipoDireccionEnvio,
+                            expanded = direccionEnvioExpandido,
+                            placeholder = stringResource(R.string.form_send_address_description),
+                            opciones = elementosConCodigos.tiposDireccionEnvio(),
+                            enabled = !modoLectura,
+                            onExpandedChange = { viewModel.toggleDireccionEnvioExpandido() },
+                            onDismissRequest = { viewModel.cerrarDireccionEnvioMenu() },
+                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarDireccionEnvio(codigo, nombre) },
+                            defectColor = true
+                        )
 
                         if (viewModel.getCodigoDirecioEnvio() == direccionOficinaComarcal) {
-                            DropdownField(label = stringResource(R.string.form_comarcal_office) + " *", selectedValue = oficinaComarcal, expanded = if (modoLectura) false else oficinaComarcalExpandido, placeholder = stringResource(R.string.form_comarcal_office_description), opciones = elementosConCodigos.tiposOficinasComarcales(), onExpandedChange = { if (!modoLectura) viewModel.toggleOficinaComarcalExpandido() }, onDismissRequest = { viewModel.cerrarOficinaComarcalMenu() }, onSeleccionar = { codigo, nombre -> if (!modoLectura) viewModel.seleccionarOficinaComarcal(codigo, nombre) }, defectColor = true)
+                            DropdownField(
+                                label = stringResource(R.string.form_comarcal_office) + " *",
+                                selectedValue = oficinaComarcal,
+                                expanded = oficinaComarcalExpandido,
+                                placeholder = stringResource(R.string.form_comarcal_office_description),
+                                opciones = elementosConCodigos.tiposOficinasComarcales(),
+                                enabled = !modoLectura,
+                                onExpandedChange = { viewModel.toggleOficinaComarcalExpandido() },
+                                onDismissRequest = { viewModel.cerrarOficinaComarcalMenu() },
+                                onSeleccionar = { codigo, nombre -> viewModel.seleccionarOficinaComarcal(codigo, nombre) },
+                                defectColor = true
+                            )
                         }
 
                         if (viewModel.getCodigoDirecioEnvio() == direccionExplotacion || viewModel.getCodigoDirecioEnvio() == direccionAlternativa) {
                             if (viewModel.getCodigoDirecioEnvio() == direccionExplotacion) {
                                 Text(stringResource(R.string.mesagge_send_dades), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant, letterSpacing = 0.15.sp)
                             }
-                            CampoTexto(label = stringResource(R.string.form_address) + " *", valor = direccionEnvio, placeholder = stringResource(R.string.form_address_description), onValueChange = { if (!modoLectura) viewModel.actualizarDireccionEnvio(it) }, defectColor = false, enabled = !modoLectura)
-                            CampoTexto(label = stringResource(R.string.form_poblacion) + " *", valor = poblacion, placeholder = stringResource(R.string.form_poblacion_description), onValueChange = { if (!modoLectura) viewModel.actualizarPoblacion(it) }, defectColor = false, enabled = !modoLectura)
-                            CampoTexto(label = stringResource(R.string.form_postal_code) + " *", valor = codigoPostal, placeholder = stringResource(R.string.form_postal_code_description), keyboardType = KeyboardType.Number, onValueChange = { if (!modoLectura) viewModel.actualizarCodigoPostal(it) }, defectColor = false, enabled = !modoLectura)
-                            CampoTexto(label = stringResource(R.string.form_municipality) + " *", valor = municipio, placeholder = stringResource(R.string.form_municipality_description), onValueChange = { if (!modoLectura) viewModel.actualizarMunicipio(it) }, defectColor = false, enabled = !modoLectura)
-                            CampoTexto(label = stringResource(R.string.form_contact_phone) + " *", valor = telefono, placeholder = stringResource(R.string.form_contact_phone_description), keyboardType = KeyboardType.Phone, onValueChange = { if (!modoLectura) viewModel.actualizarTelefonoContacto(it) }, defectColor = false, enabled = !modoLectura)
+                            CampoTexto(label = stringResource(R.string.form_address) + " *", valor = direccionEnvio, placeholder = stringResource(R.string.form_address_description), onValueChange = { viewModel.actualizarDireccionEnvio(it) }, defectColor = false, enabled = !modoLectura)
+                            CampoTexto(label = stringResource(R.string.form_poblacion) + " *", valor = poblacion, placeholder = stringResource(R.string.form_poblacion_description), onValueChange = { viewModel.actualizarPoblacion(it) }, defectColor = false, enabled = !modoLectura)
+                            CampoTexto(label = stringResource(R.string.form_postal_code) + " *", valor = codigoPostal, placeholder = stringResource(R.string.form_postal_code_description), keyboardType = KeyboardType.Number, onValueChange = { viewModel.actualizarCodigoPostal(it) }, defectColor = false, enabled = !modoLectura)
+                            CampoTexto(label = stringResource(R.string.form_municipality) + " *", valor = municipio, placeholder = stringResource(R.string.form_municipality_description), onValueChange = { viewModel.actualizarMunicipio(it) }, defectColor = false, enabled = !modoLectura)
+                            CampoTexto(label = stringResource(R.string.form_contact_phone) + " *", valor = telefono, placeholder = stringResource(R.string.form_contact_phone_description), keyboardType = KeyboardType.Phone, onValueChange = { viewModel.actualizarTelefonoContacto(it) }, defectColor = false, enabled = !modoLectura)
                         }
                     }
                 }
@@ -294,28 +338,28 @@ fun MaterialDuplicadosScreen(
                                     label = stringResource(R.string.form_id_animal),
                                     valor = animal.identificador,
                                     placeholder = stringResource(R.string.form_animal_id_example),
-                                    onValueChange = { if (!modoLectura) viewModel.actualizarIdentificador(indice, it) },
-                                    suggestions = if (modoLectura) emptyList() else if (activeIndex == indice) suggestionsBovinos else emptyList(),
-                                    onAnimalSelected = { if (!modoLectura) viewModel.onBovinoSelected(indice, it) },
-                                    isLoadingSuggestions = if (modoLectura) false else isLoadingBovinos,
+                                    enabled = !modoLectura,
+                                    onValueChange = { viewModel.actualizarIdentificador(indice, it) },
+                                    suggestions = if (activeIndex == indice) suggestionsBovinos else emptyList(),
+                                    onAnimalSelected = { viewModel.onBovinoSelected(indice, it) },
+                                    isLoadingSuggestions = isLoadingBovinos,
                                     defectColor = true,
                                     onClickBluetooth = {
-                                        if (!modoLectura) {
-                                            indiceBluetooth = indice
-                                            bluetoothViewModel.iniciarEscaneo(context)
-                                            mostrarBluetooth = true
-                                        }
+                                        indiceBluetooth = indice
+                                        bluetoothViewModel.iniciarEscaneo(context)
+                                        mostrarBluetooth = true
                                     }
                                 )
                                 DropdownField(
                                     label = stringResource(R.string.form_material_type) + " *",
                                     selectedValue = elementosConCodigos.tiposMaterialDuplicados()[animal.tipusMaterial] ?: "",
-                                    expanded = if (modoLectura) false else materialesExpandidoPorIndice[indice] ?: false,
+                                    expanded = materialesExpandidoPorIndice[indice] ?: false,
                                     placeholder = stringResource(R.string.form_state_arrival_description),
                                     opciones = elementosConCodigos.tiposMaterialDuplicados(),
-                                    onExpandedChange = { if (!modoLectura) viewModel.toggleTipoMaterialExpandido(indice) },
+                                    enabled = !modoLectura,
+                                    onExpandedChange = { viewModel.toggleTipoMaterialExpandido(indice) },
                                     onDismissRequest = { viewModel.cerrarTipoMaterialMenu(indice) },
-                                    onSeleccionar = { codigo, _ -> if (!modoLectura) viewModel.seleccionarTipoMaterialIdentificador(indice, codigo) },
+                                    onSeleccionar = { codigo, _ -> viewModel.seleccionarTipoMaterialIdentificador(indice, codigo) },
                                     defectColor = true
                                 )
                                 if (indice < animales.size - 1) Spacer(modifier = Modifier.height(8.dp))
