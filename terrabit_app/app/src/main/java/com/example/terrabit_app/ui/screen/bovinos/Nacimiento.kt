@@ -86,6 +86,7 @@ fun Nacimiento(
     //usb
     val usbViewModel = hiltViewModel<UsbSerialViewModel>()
     val usbState by usbViewModel.state.collectAsState()
+    val usbErrorText = usbState.error?.let { stringResource(it) }
 
     var madreUsb by remember { mutableStateOf(false) }
     var criaUsb by remember { mutableStateOf(false) }
@@ -107,8 +108,8 @@ fun Nacimiento(
     }
 
     // Error USB via snackbar
-    LaunchedEffect(usbState.error) {
-        usbState.error?.let {
+    LaunchedEffect(usbErrorText) {
+        usbErrorText?.let {
             snackbarHostState.showSnackbar(
                 message = "USB: $it",
                 duration = SnackbarDuration.Short

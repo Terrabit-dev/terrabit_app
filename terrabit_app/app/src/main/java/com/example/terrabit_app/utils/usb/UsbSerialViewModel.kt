@@ -11,6 +11,7 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.terrabit_app.R
 import com.felhr.usbserial.UsbSerialDevice
 import com.felhr.usbserial.UsbSerialInterface
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -29,7 +30,7 @@ private const val TAG = "USB_DEBUG"
 
 data class UsbSerialState(
     val conectado: Boolean = false,
-    val error: String? = null,
+    val error: Int? = null,
     val cargando: Boolean = false
 )
 
@@ -73,8 +74,8 @@ class UsbSerialViewModel @Inject constructor(
                         )
                         Log.d(TAG, "Permiso: granted=$granted device=${device?.deviceName}")
                         when {
-                            device == null -> _state.value = UsbSerialState(error = "Dispositivo no encontrado")
-                            !granted -> _state.value = UsbSerialState(error = "Permiso denegado")
+                            device == null -> _state.value = UsbSerialState(error = R.string.usb_error_not_found)
+                            !granted -> _state.value = UsbSerialState(error = R.string.usb_error_permission_denied)
                             else -> {
                                 _state.value = UsbSerialState(cargando = true)
                                 viewModelScope.launch(Dispatchers.IO) {
@@ -102,7 +103,7 @@ class UsbSerialViewModel @Inject constructor(
         val device = usbManager.deviceList.values.firstOrNull()
 
         if (device == null) {
-            _state.value = UsbSerialState(error = "No hay dispositivo USB conectado")
+            _state.value = UsbSerialState(error = R.string.usb_error_not_found)
             return
         }
 
@@ -140,25 +141,25 @@ class UsbSerialViewModel @Inject constructor(
             usbManager.openDevice(device)
         } catch (e: IllegalArgumentException) {
             Log.e(TAG, "Device obsoleto: ${e.message}")
-            _state.value = UsbSerialState(error = "Desconecta y vuelve a conectar el cable")
+            _state.value = UsbSerialState(error = R.string.usb_error_reconnect_cable) //"Desconecta y vuelve a conectar el cable"
             return
         } ?: run {
             Log.e(TAG, "openDevice devolvió null")
-            _state.value = UsbSerialState(error = "No se pudo abrir la conexión")
+            _state.value = UsbSerialState(error = R.string.usb_error_cannot_open_connection)
             return
         }
 
         val serial = UsbSerialDevice.createUsbSerialDevice(device, connection) ?: run {
             Log.e(TAG, "Driver no soportado VID=${device.vendorId} PID=${device.productId}")
             connection.close()
-            _state.value = UsbSerialState(error = "Driver no soportado")
+            _state.value = UsbSerialState(error = R.string.usb_error_unsupported_driver)
             return
         }
 
         if (!serial.open()) {
             Log.e(TAG, "serial.open() devolvió false")
             connection.close()
-            _state.value = UsbSerialState(error = "No se pudo abrir el puerto serie")
+            _state.value = UsbSerialState(error = R.string.usb_error_cannot_open_port)
             return
         }
 

@@ -46,6 +46,7 @@ import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
 import com.example.terrabit_app.utils.bluetooth.BluetoothScanDialog
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
+import com.example.terrabit_app.utils.usb.UsbSerialViewModel
 import com.example.terrabit_app.viewmodel.MovimientosViewModel
 
 
@@ -95,6 +96,28 @@ fun Movimientos(
 
     val successMessage = stringResource(R.string.successful_message_confirm_movs)
     val elementosConCodigos = ElementosConCodigos()
+
+    val usbViewModel = hiltViewModel<UsbSerialViewModel>()
+    val usbState by usbViewModel.state.collectAsState()
+    val usbErrorText = usbState.error?.let { stringResource(it) }
+    var indiceUsb by remember { mutableStateOf<Int?>(null) }
+
+    LaunchedEffect(Unit) {
+        usbViewModel.mensajes.collect { mensaje ->
+            indiceUsb?.let { viewModel.actualizarIdentificadorAnimal(it, mensaje) }
+            indiceUsb = null
+        }
+    }
+
+    // Error USB via snackbar
+    LaunchedEffect(usbErrorText) {
+        usbErrorText?.let {
+            snackbarHostState.showSnackbar(
+                message = "USB: $it",
+                duration = SnackbarDuration.Short
+            )
+        }
+    }
 
     if (mostrarBluetooth) {
         BluetoothScanDialog(
@@ -561,6 +584,10 @@ fun Movimientos(
                                             indiceBluetooth = index
                                             bluetoothViewModel.iniciarEscaneo(context)
                                             mostrarBluetooth = true
+                                        },
+                                        onClickUsb = {
+                                            indiceUsb = index
+                                            usbViewModel.conectar()
                                         }
                                     )
 

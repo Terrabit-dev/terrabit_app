@@ -407,4 +407,12 @@
     <string name="category_females">Famelles</string>
     <string name="category_replacement">Reposició</string>
     <string name="category_boars">Sementals</string>
+
+    <string name="usb_error_not_found">Dispositiu no trobat</string>
+    <string name="usb_error_permission_denied">Permís denegat</string>
+    <string name="usb_error_no_device_connected">No hi ha cap dispositiu USB connectat</string>
+    <string name="usb_error_reconnect_cable">Desconnecta i torna a connectar el cable</string>
+    <string name="usb_error_cannot_open_connection">No s\'ha pogut obrir la connexió</string>
+    <string name="usb_error_unsupported_driver">Driver no suportat</string>
+    <string name="usb_error_cannot_open_port">No s\'ha pogut obrir el port sèrie</string>
 </resources>

@@ -412,4 +412,12 @@
     <string name="category_females">Hembras</string>
     <string name="category_replacement">Reposición</string>
     <string name="category_boars">Sementales</string>
+
+    <string name="usb_error_not_found">Dispositivo no encontrado</string>
+    <string name="usb_error_permission_denied">Permiso denegado</string>
+    <string name="usb_error_no_device_connected">No hay dispositivo USB conectado</string>
+    <string name="usb_error_reconnect_cable">Desconecta y vuelve a conectar el cable</string>
+    <string name="usb_error_cannot_open_connection">No se pudo abrir la conexión</string>
+    <string name="usb_error_unsupported_driver">Driver no soportado</string>
+    <string name="usb_error_cannot_open_port">No se pudo abrir el puerto serie</string>
 </resources>

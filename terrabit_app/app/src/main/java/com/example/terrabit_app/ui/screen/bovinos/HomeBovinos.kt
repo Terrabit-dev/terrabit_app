@@ -139,7 +139,7 @@ fun Home(
                     titulo = stringResource(R.string.list_bovinos),
                     descripcion = stringResource(R.string.list_bovinos_subtitle),
                     colorFondo = Color(0xFFE28F41),
-                    onClick = { navController.navigate(Routes.Usb.route) }
+                    onClick = { navController.navigate(Routes.ListarBovinos.route) }
                 )
                 TarjetaMenu(
                     icono = Icons.Default.Agriculture,

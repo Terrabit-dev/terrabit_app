@@ -34,6 +34,7 @@ import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
 import com.example.terrabit_app.utils.bluetooth.BluetoothScanDialog
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
+import com.example.terrabit_app.utils.usb.UsbSerialViewModel
 import com.example.terrabit_app.viewmodel.CorrecionSexoViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -66,6 +67,26 @@ fun CorregirSexoBovi(
     val elementosConCodigos = remember { ElementosConCodigos() }
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+
+    val usbViewModel = hiltViewModel<UsbSerialViewModel>()
+    val usbState by usbViewModel.state.collectAsState()
+    val usbErrorText = usbState.error?.let { stringResource(it) }
+
+    LaunchedEffect(Unit) {
+        usbViewModel.mensajes.collect { mensaje ->
+            viewModel.actualizarIdentificadorCorreccionSexo(mensaje)
+        }
+    }
+
+    // Error USB via snackbar
+    LaunchedEffect(usbErrorText) {
+        usbErrorText?.let {
+            snackbarHostState.showSnackbar(
+                message = "USB: $it",
+                duration = SnackbarDuration.Short
+            )
+        }
+    }
 
     if (mostrarBluetooth) {
         BluetoothScanDialog(
@@ -168,7 +189,8 @@ fun CorregirSexoBovi(
                             suggestions = if (modoLectura) emptyList() else suggestionsBovinos,
                             onAnimalSelected = { if (!modoLectura) viewModel.onBovinoSelected(it) },
                             isLoadingSuggestions = if (modoLectura) false else isLoadingBovinos,
-                            onClickBluetooth = { if (!modoLectura) { bluetoothViewModel.iniciarEscaneo(context); mostrarBluetooth = true } }
+                            onClickBluetooth = { if (!modoLectura) { bluetoothViewModel.iniciarEscaneo(context); mostrarBluetooth = true } },
+                            onClickUsb = { if (!modoLectura) { usbViewModel.conectar()} }
                         )
                         DropdownField(
                             label = stringResource(R.string.form_sex),

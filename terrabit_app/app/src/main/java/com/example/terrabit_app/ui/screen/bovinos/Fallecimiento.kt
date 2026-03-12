@@ -45,6 +45,7 @@ import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 import com.example.terrabit_app.utils.usb.UsbSerialViewModel
 
 import com.example.terrabit_app.viewmodel.ViewModelMuerteBovi
+import androidx.compose.runtime.collectAsState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -88,6 +89,8 @@ fun Fallecimiento(
 
     val usbViewModel = hiltViewModel<UsbSerialViewModel>()
     val usbState by usbViewModel.state.collectAsState()
+    val usbErrorText = usbState.error?.let { stringResource(it) }
+
 
     LaunchedEffect(Unit) {
         usbViewModel.mensajes.collect { mensaje ->
@@ -96,8 +99,8 @@ fun Fallecimiento(
     }
 
     // Error USB via snackbar
-    LaunchedEffect(usbState.error) {
-        usbState.error?.let {
+    LaunchedEffect(usbErrorText) {
+        usbErrorText?.let {
             snackbarHostState.showSnackbar(
                 message = "USB: $it",
                 duration = SnackbarDuration.Short
@@ -307,15 +310,8 @@ fun Fallecimiento(
                             suggestions = if (modoLectura) emptyList() else suggestionsBovinos,
                             onAnimalSelected = { if (!modoLectura) viewModel.onBovinoSelected(it) },
                             isLoadingSuggestions = if (modoLectura) false else isLoadingBovinos,
-                            onClickBluetooth = {
-                                if (!modoLectura) {
-                                    bluetoothViewModel.iniciarEscaneo(context)
-                                    mostrarBluetooth = true
-                                }
-                            },
-                            onClickUsb = {
-                                usbViewModel.conectar()
-                            }
+                            onClickBluetooth = { if (!modoLectura) { bluetoothViewModel.iniciarEscaneo(context); mostrarBluetooth = true } },
+                            onClickUsb = { if (!modoLectura) { usbViewModel.conectar()} }
                         )
 
                         Column(modifier = Modifier.fillMaxWidth()) {
