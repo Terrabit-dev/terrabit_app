@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.LightMode
@@ -32,6 +33,9 @@ import androidx.navigation.NavController
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.viewmodel.ConfigurationViewModel
 import com.example.terrabit_app.R
+import com.example.terrabit_app.ui.theme.ErrorRed
+import com.example.terrabit_app.viewmodel.CodiMoManagerViewModel
+
 @Composable
 fun ConfigurationScreen(
     onMenuClick: () -> Unit = {},
@@ -42,6 +46,9 @@ fun ConfigurationScreen(
     val viewModel: ConfigurationViewModel = hiltViewModel(activity)
     val isDark by viewModel.isDarkTheme.collectAsState()
     var expandedIdioma by remember { mutableStateOf(false) }
+    val codiMoViewModel = hiltViewModel<CodiMoManagerViewModel>()
+
+
 
     Column(
         modifier = Modifier
@@ -181,6 +188,57 @@ fun ConfigurationScreen(
                         )
                         Text(
                             text = viewModel.nif,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+            }
+
+            HorizontalDivider(color = MaterialTheme.colorScheme.outline)
+
+            Text(
+                text = "Añadir explotacíon",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                letterSpacing = 1.sp
+            )
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                shape = RoundedCornerShape(16.dp),
+                onClick = {
+
+                }
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(MainGreen.copy(alpha = 0.15f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = null,
+                            tint = ErrorRed,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+                    Column {
+                        Text(
+                            text = "Añadir nueva explotación",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onSurface
