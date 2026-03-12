@@ -42,6 +42,7 @@ import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
 import com.example.terrabit_app.utils.bluetooth.BluetoothScanDialog
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
+import com.example.terrabit_app.utils.usb.UsbSerialViewModel
 import com.example.terrabit_app.viewmodel.GuiasViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -99,6 +100,24 @@ fun GestionGuias(
     val datePlaceholder = stringResource(R.string.form_date_description)
     val hourPlaceholder = stringResource(R.string.form_hour_arrival_description)
     val elementosConCodigos = ElementosConCodigos()
+
+    val usbViewModel = hiltViewModel<UsbSerialViewModel>()
+    val usbState by usbViewModel.state.collectAsState()
+    val usbErrorText = usbState.error?.let { stringResource(it) }
+    var indiceUsb by remember { mutableStateOf<Int?>(null) }
+
+    LaunchedEffect(Unit) {
+        usbViewModel.mensajes.collect { mensaje ->
+            indiceUsb?.let { viewModel.actualizarIdentificador(it, mensaje) }
+            indiceUsb = null
+        }
+    }
+
+    LaunchedEffect(usbErrorText) {
+        usbErrorText?.let {
+            snackbarHostState.showSnackbar(message = "USB: $it", duration = SnackbarDuration.Short)
+        }
+    }
 
     if (mostrarBluetooth) {
         BluetoothScanDialog(
@@ -402,13 +421,17 @@ fun GestionGuias(
                                             onAnimalSelected = { if (!modoLectura) viewModel.onBovinoSelected(index, it) },
                                             isLoadingSuggestions = if (modoLectura) false else isLoadingBovinos,
                                             defectColor = false,
-                                            onClickBluetooth = {
-                                                if (!modoLectura) {
+                                            onClickBluetooth = { if (!modoLectura) {
                                                     indiceBluetooth = index
                                                     bluetoothViewModel.iniciarEscaneo(context)
                                                     mostrarBluetooth = true
                                                 }
+                                            },
+                                            onClickUsb = {
+                                                indiceUsb = index
+                                                usbViewModel.conectar()
                                             }
+
                                         )
                                     }
                                 }

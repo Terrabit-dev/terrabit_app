@@ -35,6 +35,7 @@ import com.example.terrabit_app.utils.DropdownField
 import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.bluetooth.BluetoothScanDialog
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
+import com.example.terrabit_app.utils.usb.UsbSerialViewModel
 import com.example.terrabit_app.viewmodel.MaterialDuplicadoViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -83,6 +84,25 @@ fun MaterialDuplicadosScreen(
     val direccionAlternativa = "03"
     val direccionExplotacion = "02"
     val direccionOficinaComarcal = "01"
+
+    val usbViewModel = hiltViewModel<UsbSerialViewModel>()
+    val usbState by usbViewModel.state.collectAsState()
+    val usbErrorText = usbState.error?.let { stringResource(it) }
+    var indiceUsb by remember { mutableStateOf<Int?>(null) }
+
+    LaunchedEffect(Unit) {
+        usbViewModel.mensajes.collect { mensaje ->
+            indiceUsb?.let { viewModel.actualizarIdentificador(it, mensaje) }
+            indiceUsb = null
+        }
+    }
+
+    LaunchedEffect(usbErrorText) {
+        usbErrorText?.let {
+            snackbarHostState.showSnackbar(message = "USB: $it", duration = SnackbarDuration.Short)
+        }
+    }
+
 
     LaunchedEffect(registroExitoso) {
         if (registroExitoso) {
@@ -348,6 +368,10 @@ fun MaterialDuplicadosScreen(
                                         indiceBluetooth = indice
                                         bluetoothViewModel.iniciarEscaneo(context)
                                         mostrarBluetooth = true
+                                    },
+                                    onClickUsb = {
+                                        indiceUsb = indice
+                                        usbViewModel.conectar()
                                     }
                                 )
                                 DropdownField(
