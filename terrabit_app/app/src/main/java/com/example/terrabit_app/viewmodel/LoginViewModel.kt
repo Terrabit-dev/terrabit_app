@@ -95,9 +95,9 @@ class LoginViewModel @Inject constructor(
                     passwordMobilitat = password,
                     codiMO = codiMO
                 )
-                if (response.isSuccessful) {
-                    val identificadores = response.body()
-                    if (identificadores != null && identificadores.identificadors!!.isNotEmpty()) {
+                if (response.isSuccessful  && response.body() != null) {
+                    val body = response.body()!!
+                    if (body.errors == null) {
                         userPreferences.saveCredentials(nif, password, codiMO, rememberMe)
                         _loginState.value = LoginState.Success(nif, password, codiMO)
                     } else {

@@ -29,6 +29,7 @@ import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.utils.SwipeBackContainer
 import com.example.terrabit_app.viewmodel.ListarBovinosViewModel
 import com.example.terrabit_app.ui.screen.bovinos.Home
+import com.example.terrabit_app.utils.CodiMoSelector
 import com.example.terrabit_app.viewmodel.CodiMoManagerViewModel
 
 import okhttp3.Route
@@ -103,19 +104,20 @@ fun ListarBovinos(navController: NavController) {
                     )
                 }
 
-                Box(modifier = Modifier.wrapContentSize(Alignment.TopStart)) {
-                    Button(onClick = { codiMoViewModel.toggleCodisMoExpandido() }) { Text("Codigo MO") }
-
-                    DropdownMenu(
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                ) {
+                    CodiMoSelector(
+                        codisMos = codiMoViewModel.getCodisMos(),
+                        seleccionado = null, // cuando tengas estado: codiMoViewModel.seleccionado
                         expanded = codisMoExpandido,
-                        onDismissRequest = { codiMoViewModel.cerrarCodisMo() }
-                    ) {
-                        // Items normales
-                        codiMoViewModel.getCodisMos().forEach { option ->
-                            DropdownMenuItem(text = { Text(option) }, onClick = { /* ... */ })
-                        }
-
-                    }
+                        onToggle = { codiMoViewModel.toggleCodisMoExpandido() },
+                        onDismiss = { codiMoViewModel.cerrarCodisMo() },
+                        onSeleccionar = { codi -> /* tu acción */ },
+                        accentColor = MainGreen
+                    )
                 }
 
                 PullToRefreshBox(
