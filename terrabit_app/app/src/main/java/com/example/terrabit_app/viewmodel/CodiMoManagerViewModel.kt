@@ -2,8 +2,14 @@ package com.example.terrabit_app.viewmodel
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-
-class CodiMoManagerViewModel : ViewModel() {
+import com.example.terrabit_app.data.network.Repositorio
+import com.example.terrabit_app.utils.UserPreferences
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+@HiltViewModel
+class CodiMoManagerViewModel @Inject constructor(
+    private val userPreferences: UserPreferences
+): ViewModel() {
     private val _codisMoExpandido = MutableLiveData(false)
 
     val codisMoExpandido = _codisMoExpandido
@@ -15,6 +21,10 @@ class CodiMoManagerViewModel : ViewModel() {
 
     fun cerrarCodisMo(){
         _codisMoExpandido.value = false
+    }
+
+    fun getCodisMos(): List<String> {
+        return userPreferences.getUserMOList()
     }
 }
 

@@ -29,6 +29,7 @@ import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.utils.SwipeBackContainer
 import com.example.terrabit_app.viewmodel.ListarBovinosViewModel
 import com.example.terrabit_app.ui.screen.bovinos.Home
+import com.example.terrabit_app.viewmodel.CodiMoManagerViewModel
 
 import okhttp3.Route
 
@@ -41,6 +42,9 @@ fun ListarBovinos(navController: NavController) {
     val refrescando by viewModel.refrescando.observeAsState(false)
     val error by viewModel.error.observeAsState()
     val busqueda by viewModel.busqueda.observeAsState("")
+    val codiMoViewModel = hiltViewModel<CodiMoManagerViewModel>()
+    val codisMoExpandido by codiMoViewModel.codisMoExpandido.observeAsState(false)
+
 
     LaunchedEffect(Unit) {
         viewModel.cargarBovinos()
@@ -97,6 +101,21 @@ fun ListarBovinos(navController: NavController) {
                             unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                         )
                     )
+                }
+
+                Box(modifier = Modifier.wrapContentSize(Alignment.TopStart)) {
+                    Button(onClick = { codiMoViewModel.toggleCodisMoExpandido() }) { Text("Codigo MO") }
+
+                    DropdownMenu(
+                        expanded = codisMoExpandido,
+                        onDismissRequest = { codiMoViewModel.cerrarCodisMo() }
+                    ) {
+                        // Items normales
+                        codiMoViewModel.getCodisMos().forEach { option ->
+                            DropdownMenuItem(text = { Text(option) }, onClick = { /* ... */ })
+                        }
+
+                    }
                 }
 
                 PullToRefreshBox(

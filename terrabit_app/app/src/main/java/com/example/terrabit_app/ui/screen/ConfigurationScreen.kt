@@ -16,6 +16,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -28,13 +29,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.viewmodel.ConfigurationViewModel
 import com.example.terrabit_app.R
+import com.example.terrabit_app.ui.theme.BlueGrey
+import com.example.terrabit_app.ui.theme.DarkBlueGrey
 import com.example.terrabit_app.ui.theme.ErrorRed
-import com.example.terrabit_app.viewmodel.CodiMoManagerViewModel
+import com.example.terrabit_app.utils.CampoTexto
 
 @Composable
 fun ConfigurationScreen(
@@ -46,10 +50,102 @@ fun ConfigurationScreen(
     val viewModel: ConfigurationViewModel = hiltViewModel(activity)
     val isDark by viewModel.isDarkTheme.collectAsState()
     var expandedIdioma by remember { mutableStateOf(false) }
-    val codiMoViewModel = hiltViewModel<CodiMoManagerViewModel>()
+    var agregarMo by remember { mutableStateOf(false) }
+    val codiMo by viewModel.codiMo.observeAsState("")
+    val loading by viewModel.isLoading.observeAsState(false)
+    val succes by viewModel.isSuccess.observeAsState(false)
+    val error by viewModel.isError.observeAsState(false)
 
 
 
+
+
+    if (agregarMo) {
+        Dialog(
+            onDismissRequest = { agregarMo = false }
+        )
+        {
+
+            Card(
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    if (loading) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(64.dp),
+                            color = MainGreen,
+                            strokeWidth = 5.dp
+                        )
+                        Spacer(modifier = Modifier.height(20.dp))
+                        Text(
+                            "Validando Codigo",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = DarkBlueGrey
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                    else{
+                        CampoTexto(
+                            label = "Ingrese el código de la explotación",
+                            valor = codiMo,
+                            placeholder = "",
+                            onValueChange = { viewModel.actualizarCodiMo(it) },
+                            defectColor = true
+                        )
+
+                        Spacer(modifier = Modifier.height(24.dp))
+                        if (succes) {
+                            Text(
+                                "Codigo valido",
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MainGreen
+                            )
+                        }
+                        if (error) {
+                            Text(
+                                "Codigo invalido",
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = ErrorRed
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            OutlinedButton(
+                                onClick = {
+                                    viewModel.resetState()
+                                    agregarMo = false
+                                },
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = BlueGrey)
+                            ) {
+                                Text(stringResource(R.string.cancel_buttom))
+                            }
+                            Button(
+                                onClick = { viewModel.verificarCodiMo() },
+                                colors = ButtonDefaults.buttonColors(containerColor = MainGreen)
+                            ) {
+                                Text("Aceptar")
+                            }
+                        }
+                    }
+
+                }
+            }
+
+        }
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -212,7 +308,7 @@ fun ConfigurationScreen(
                 elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
                 shape = RoundedCornerShape(16.dp),
                 onClick = {
-
+                    agregarMo = true
                 }
             ) {
                 Row(
