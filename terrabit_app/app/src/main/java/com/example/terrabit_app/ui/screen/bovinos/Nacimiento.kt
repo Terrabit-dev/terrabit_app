@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.data.network.Identificadores.Identificadores
@@ -81,7 +82,7 @@ fun Nacimiento(
     val mensajeRegistroError = stringResource(R.string.error_message_born)
     val elementosConCodigos = ElementosConCodigos()
     val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
 
     val usbViewModel = hiltViewModel<UsbSerialViewModel>()
     val usbState by usbViewModel.state.collectAsState()

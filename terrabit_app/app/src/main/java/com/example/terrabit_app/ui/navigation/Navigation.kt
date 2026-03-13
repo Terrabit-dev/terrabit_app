@@ -1,5 +1,6 @@
 package com.example.terrabit_app.ui.navigation
 
+import SplashScreen
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
@@ -29,9 +30,17 @@ fun Navigation(
                 !userPreferences.getPassword().isNullOrEmpty()
     }
 
-    val startDestination = if (haySesionActiva) Routes.Drawer.route else Routes.Login.route
-
-    NavHost(navController = mainNavController, startDestination = startDestination) {
+    NavHost(navController = mainNavController, startDestination = Routes.Splash.route) {
+        composable(Routes.Splash.route) {
+            SplashScreen(
+                onSplashFinished = {
+                    val destino = if (haySesionActiva) Routes.Drawer.route else Routes.Login.route
+                    mainNavController.navigate(destino) {
+                        popUpTo(Routes.Splash.route) { inclusive = true }
+                    }
+                }
+            )
+        }
         composable(Routes.Login.route) {
             Login(navController = mainNavController)
         }

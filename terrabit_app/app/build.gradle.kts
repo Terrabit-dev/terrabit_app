@@ -88,4 +88,7 @@ dependencies {
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     //usb
     implementation("com.github.felHR85:UsbSerial:6.1.0")
+
+    // Fuente
+    implementation("androidx.compose.ui:ui-text-google-fonts:1.7.0")
 }
