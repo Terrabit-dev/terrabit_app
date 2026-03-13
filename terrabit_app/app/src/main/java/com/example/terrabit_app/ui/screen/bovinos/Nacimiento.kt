@@ -32,12 +32,14 @@ import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.screen.bovinos.components.CampoIdentificadorAutoComplete
 import com.example.terrabit_app.ui.screen.bovinos.components.useDebounce
 import com.example.terrabit_app.ui.theme.MainGreen
+import com.example.terrabit_app.utils.CodiMoSelector
 import com.example.terrabit_app.utils.DropdownField
 import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
 import com.example.terrabit_app.utils.bluetooth.BluetoothScanDialog
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 import com.example.terrabit_app.utils.usb.UsbSerialViewModel
+import com.example.terrabit_app.viewmodel.CodiMoManagerViewModel
 
 import com.example.terrabit_app.viewmodel.NacimientoViewmodel
 
@@ -64,7 +66,6 @@ fun Nacimiento(
     val mostrarDatePicker by viewModel.mostrarDatePicker.observeAsState(false)
     val fechaIdentificacion by viewModel.fechaIdentificacion.observeAsState("")
     val mostrarDatePickerIdentificadores by viewModel.mostrarDatePickerIdentificacion.observeAsState(false)
-    val identificadores: Identificadores by viewModel.identificadores.observeAsState(Identificadores(emptyList()))
     val registroExitoso by viewModel.registroExitoso.observeAsState(false)
     val mensajeError by viewModel.mensajeError.observeAsState("")
     val codiError by viewModel.codiError.observeAsState()
@@ -92,6 +93,9 @@ fun Nacimiento(
     var criaUsb by remember { mutableStateOf(false) }
 
     val razas = elementosConCodigos.razasBovinas()
+
+    val codiMoViewModel = hiltViewModel<CodiMoManagerViewModel>()
+    val codisMoExpandido by codiMoViewModel.codisMoExpandido.observeAsState(false)
 
     LaunchedEffect(Unit) {
         usbViewModel.mensajes.collect { mensaje ->
@@ -303,6 +307,20 @@ fun Nacimiento(
                         modifier = Modifier.fillMaxWidth().padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        ) {
+                            CodiMoSelector(
+                                codisMos = codiMoViewModel.getCodisMos(),
+                                seleccionado = null, // cuando tnega estado: codiMoViewModel.seleccionado
+                                expanded = codisMoExpandido,
+                                onToggle = { codiMoViewModel.toggleCodisMoExpandido() },
+                                onDismiss = { codiMoViewModel.cerrarCodisMo() },
+                                onSeleccionar = { codi -> /*  acción futura*/ },
+                                accentColor = MainGreen
+                            )
+                        }
 
                         if (!modoLectura) {
                             useDebounce(idMadre, delayMillis = 300L) { viewModel.searchBovinos(it) }

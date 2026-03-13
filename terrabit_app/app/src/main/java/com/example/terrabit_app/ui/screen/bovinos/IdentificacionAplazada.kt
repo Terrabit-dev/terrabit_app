@@ -29,10 +29,13 @@ import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.screen.bovinos.components.CampoIdentificadorAutoComplete
 import com.example.terrabit_app.ui.screen.bovinos.components.useDebounce
+import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.ui.theme.MainGreen
+import com.example.terrabit_app.utils.CodiMoSelector
 import com.example.terrabit_app.utils.alertsErrosScreens
 import com.example.terrabit_app.utils.bluetooth.BluetoothScanDialog
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
+import com.example.terrabit_app.viewmodel.CodiMoManagerViewModel
 import com.example.terrabit_app.viewmodel.IdentificacionAplazaViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,6 +68,9 @@ fun IdentificacionApalzada(
 
     val tituloExito = stringResource(R.string.successful_message_identification_postpone)
     val titulloError = stringResource(R.string.error_message_identification_postpone)
+
+    val codiMoViewModel = hiltViewModel<CodiMoManagerViewModel>()
+    val codisMoExpandido by codiMoViewModel.codisMoExpandido.observeAsState(false)
 
     if (mostrarBluetooth) {
         BluetoothScanDialog(
@@ -229,6 +235,20 @@ fun IdentificacionApalzada(
                         modifier = Modifier.fillMaxWidth().padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        ) {
+                            CodiMoSelector(
+                                codisMos = codiMoViewModel.getCodisMos(),
+                                seleccionado = null, // cuando tenga estado: codiMoViewModel.seleccionado
+                                expanded = codisMoExpandido,
+                                onToggle = { codiMoViewModel.toggleCodisMoExpandido() },
+                                onDismiss = { codiMoViewModel.cerrarCodisMo() },
+                                onSeleccionar = { codi -> /* acción  futura*/ },
+                                accentColor = MainGreen
+                            )
+                        }
                         if (!modoLectura) {
                             useDebounce(identificadorAnimal, delayMillis = 300L) { viewModel.searchBovinos(it) }
                         }

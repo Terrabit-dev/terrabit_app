@@ -40,12 +40,14 @@ import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
 import com.example.terrabit_app.utils.CampoTexto
+import com.example.terrabit_app.utils.CodiMoSelector
 import com.example.terrabit_app.utils.DropdownField
 import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
 import com.example.terrabit_app.utils.bluetooth.BluetoothScanDialog
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 import com.example.terrabit_app.utils.usb.UsbSerialViewModel
+import com.example.terrabit_app.viewmodel.CodiMoManagerViewModel
 import com.example.terrabit_app.viewmodel.MovimientosViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -98,6 +100,9 @@ fun Movimientos(
     val usbState by usbViewModel.state.collectAsState()
     val usbErrorText = usbState.error?.let { stringResource(it) }
     var indiceUsb by remember { mutableStateOf<Int?>(null) }
+
+    val codiMoViewModel = hiltViewModel<CodiMoManagerViewModel>()
+    val codisMoExpandido by codiMoViewModel.codisMoExpandido.observeAsState(false)
 
     LaunchedEffect(Unit) {
         usbViewModel.mensajes.collect { mensaje ->
@@ -319,6 +324,20 @@ fun Movimientos(
                         modifier = Modifier.fillMaxWidth().padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        ) {
+                            CodiMoSelector(
+                                codisMos = codiMoViewModel.getCodisMos(),
+                                seleccionado = null, // cuando tenga estado: codiMoViewModel.seleccionado
+                                expanded = codisMoExpandido,
+                                onToggle = { codiMoViewModel.toggleCodisMoExpandido() },
+                                onDismiss = { codiMoViewModel.cerrarCodisMo() },
+                                onSeleccionar = { codi -> /* acción  futura*/ },
+                                accentColor = MainOrange
+                            )
+                        }
                         Text(stringResource(R.string.form_movs_title_necessary), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
 
                         SimpleTextField(

@@ -111,11 +111,11 @@ fun ListarBovinos(navController: NavController) {
                 ) {
                     CodiMoSelector(
                         codisMos = codiMoViewModel.getCodisMos(),
-                        seleccionado = null, // cuando tengas estado: codiMoViewModel.seleccionado
+                        seleccionado = null, // cuando tenga estado: codiMoViewModel.seleccionado
                         expanded = codisMoExpandido,
                         onToggle = { codiMoViewModel.toggleCodisMoExpandido() },
                         onDismiss = { codiMoViewModel.cerrarCodisMo() },
-                        onSeleccionar = { codi -> /* tu acción */ },
+                        onSeleccionar = { codi -> /* acción futura*/ },
                         accentColor = MainGreen
                     )
                 }

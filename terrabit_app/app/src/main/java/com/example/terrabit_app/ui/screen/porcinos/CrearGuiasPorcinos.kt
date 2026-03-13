@@ -49,6 +49,7 @@ import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -58,17 +59,21 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.theme.BlueGrey
 import com.example.terrabit_app.ui.theme.DarkBlueGrey
 import com.example.terrabit_app.ui.theme.DarkWhiteBackground
+import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
 import com.example.terrabit_app.ui.theme.WhiteBackground
 import com.example.terrabit_app.utils.CampoTexto
+import com.example.terrabit_app.utils.CodiMoSelector
 import com.example.terrabit_app.utils.DropdownField
 import com.example.terrabit_app.utils.porcinos.ElementosConCodigosPorcinos
+import com.example.terrabit_app.viewmodel.CodiMoManagerViewModel
 import com.example.terrabit_app.viewmodel.porcinos.CrearGuiaPorcinosViewModel
 import kotlinx.coroutines.launch
 
@@ -81,6 +86,8 @@ fun CrearGuiasPorcinos(
     val uiState by viewModel.uiState.collectAsState()
     val scope = rememberCoroutineScope()
     val elementosConCodigos = ElementosConCodigosPorcinos()
+    val codiMoViewModel = hiltViewModel<CodiMoManagerViewModel>()
+    val codisMoExpandido by codiMoViewModel.codisMoExpandido.observeAsState(false)
 
     // DatePickerDialog para fecha de salida
     if (uiState.mostrarDatePickerSalida) {
@@ -266,6 +273,20 @@ fun CrearGuiasPorcinos(
                         .padding(24.dp),
                     verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        CodiMoSelector(
+                            codisMos = codiMoViewModel.getCodisMos(),
+                            seleccionado = null, // cuando tenga estado: codiMoViewModel.seleccionado
+                            expanded = codisMoExpandido,
+                            onToggle = { codiMoViewModel.toggleCodisMoExpandido() },
+                            onDismiss = { codiMoViewModel.cerrarCodisMo() },
+                            onSeleccionar = { codi -> /* acción  futura*/ },
+                            accentColor = MainOrange
+                        )
+                    }
                     // Explotación de Entrada
                     CampoTexto(
                         label = stringResource(R.string.form_porcinos_expl_entrada),

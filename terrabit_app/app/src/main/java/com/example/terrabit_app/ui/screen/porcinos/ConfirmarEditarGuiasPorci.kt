@@ -53,6 +53,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -61,17 +62,21 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.theme.BlueGrey
 import com.example.terrabit_app.ui.theme.DarkBlueGrey
 import com.example.terrabit_app.ui.theme.DarkWhiteBackground
+import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
 import com.example.terrabit_app.ui.theme.WhiteBackground
 import com.example.terrabit_app.utils.CampoTexto
+import com.example.terrabit_app.utils.CodiMoSelector
 import com.example.terrabit_app.utils.DropdownField
 import com.example.terrabit_app.utils.porcinos.ElementosConCodigosPorcinos
+import com.example.terrabit_app.viewmodel.CodiMoManagerViewModel
 import com.example.terrabit_app.viewmodel.porcinos.EditarGuiaPorcinosViewModel
 import com.example.terrabit_app.viewmodel.porcinos.GestionarGuiasViewModel
 
@@ -85,6 +90,8 @@ fun ConfirmarEditarGuiasPorci(
 ) {
     val uiStateEdita by viewModelEditarGuias.uiState.collectAsState()
     val uiStateLista by viewModelGestionarGuias.uiState.collectAsState()
+    val codiMoViewModel = hiltViewModel<CodiMoManagerViewModel>()
+    val codisMoExpandido by codiMoViewModel.codisMoExpandido.observeAsState(false)
 
     Log.d("Guia seleccionada", "Nose: ${uiStateLista.guiaSeleccionada}  ")
     // 1. Cargamos los datos de la lista al formulario al entrar
@@ -281,6 +288,20 @@ fun ConfirmarEditarGuiasPorci(
                         .padding(24.dp),
                     verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        CodiMoSelector(
+                            codisMos = codiMoViewModel.getCodisMos(),
+                            seleccionado = null, // cuando tenga estado: codiMoViewModel.seleccionado
+                            expanded = codisMoExpandido,
+                            onToggle = { codiMoViewModel.toggleCodisMoExpandido() },
+                            onDismiss = { codiMoViewModel.cerrarCodisMo() },
+                            onSeleccionar = { codi -> /* acción  futura*/ },
+                            accentColor = MainGreen
+                        )
+                    }
                     // Codigo de Categoria
                     DropdownField(
                         label = stringResource(R.string.form_porcinos_cod_cat),

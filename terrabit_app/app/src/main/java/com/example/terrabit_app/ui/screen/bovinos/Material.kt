@@ -28,9 +28,12 @@ import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.ui.theme.MainGreen
+import com.example.terrabit_app.ui.theme.MainOrange
 import com.example.terrabit_app.utils.CampoTexto
+import com.example.terrabit_app.utils.CodiMoSelector
 import com.example.terrabit_app.utils.DropdownField
 import com.example.terrabit_app.utils.ElementosConCodigos
+import com.example.terrabit_app.viewmodel.CodiMoManagerViewModel
 import com.example.terrabit_app.viewmodel.MaterialViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,6 +74,9 @@ fun Material(
     val codiMoObligatorio = viewModel.codiMoEsObligatorio()
 
     val mensajeExito = stringResource(R.string.successful_message_material)
+
+    val codiMoViewModel = hiltViewModel<CodiMoManagerViewModel>()
+    val codisMoExpandido by codiMoViewModel.codisMoExpandido.observeAsState(false)
 
     LaunchedEffect(registroExitoso) {
         if (registroExitoso) {
@@ -169,6 +175,20 @@ fun Material(
                     shape = MaterialTheme.shapes.large
                 ) {
                     Column(modifier = Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(24.dp)) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        ) {
+                            CodiMoSelector(
+                                codisMos = codiMoViewModel.getCodisMos(),
+                                seleccionado = null, // cuando tenga estado: codiMoViewModel.seleccionado
+                                expanded = codisMoExpandido,
+                                onToggle = { codiMoViewModel.toggleCodisMoExpandido() },
+                                onDismiss = { codiMoViewModel.cerrarCodisMo() },
+                                onSeleccionar = { codi -> /* acción  futura*/ },
+                                accentColor = MainGreen
+                            )
+                        }
                         DropdownField(
                             label = stringResource(R.string.form_suply_company) + " *",
                             selectedValue = empresaSubministradora,

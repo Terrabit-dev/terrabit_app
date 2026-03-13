@@ -45,6 +45,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,6 +57,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
@@ -67,8 +69,10 @@ import com.example.terrabit_app.ui.theme.DarkBlueGrey
 import com.example.terrabit_app.ui.theme.DarkWhiteBackground
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
+import com.example.terrabit_app.utils.CodiMoSelector
 import com.example.terrabit_app.utils.UserPreferences
 import com.example.terrabit_app.utils.porcinos.ElementosConCodigosPorcinos
+import com.example.terrabit_app.viewmodel.CodiMoManagerViewModel
 import com.example.terrabit_app.viewmodel.porcinos.EditarGuiaPorcinosViewModel
 import com.example.terrabit_app.viewmodel.porcinos.GestionarGuiasViewModel
 import java.time.LocalDateTime
@@ -89,6 +93,9 @@ fun ListaGuiasPorcinas(
 
     // 2. Inicializamos las preferencias
     val userPrefs = remember { UserPreferences(context) }
+
+    val codiMoViewModel = hiltViewModel<CodiMoManagerViewModel>()
+    val codisMoExpandido by codiMoViewModel.codisMoExpandido.observeAsState(false)
 
     // 3. Creamos el ViewModel con la Factory
 
@@ -125,12 +132,28 @@ fun ListaGuiasPorcinas(
         }
     ) { padding ->
         // Contenedor principal
-        Box(
+
+        Column(                          // ← Column en lugar de Box
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-        ) {
-            // CONDICIÓ: Si está cargando, muestra el círculo de carga.
+        ){
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp)
+            ) {
+                CodiMoSelector(
+                    codisMos = codiMoViewModel.getCodisMos(),
+                    seleccionado = null, // cuando tenga estado: codiMoViewModel.seleccionado
+                    expanded = codisMoExpandido,
+                    onToggle = { codiMoViewModel.toggleCodisMoExpandido() },
+                    onDismiss = { codiMoViewModel.cerrarCodisMo() },
+                    onSeleccionar = { codi -> /* acción  futura*/ },
+                    accentColor = MainGreen
+                )
+            }
+
             if (uiStateGestionGuias.isLoading) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
@@ -182,6 +205,15 @@ fun ListaGuiasPorcinas(
                     }
                 }
             }
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
+
+            // CONDICIÓ: Si está cargando, muestra el círculo de carga.
+
         }
     }
 }
