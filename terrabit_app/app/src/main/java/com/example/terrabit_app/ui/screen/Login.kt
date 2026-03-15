@@ -132,7 +132,7 @@ fun Login(
                 Spacer(modifier = Modifier.height(40.dp))
 
                 Image(
-                    painter = painterResource(R.drawable.app_logo),
+                    painter = painterResource(R.drawable.terrabit_prime_sin_letra),
                     contentDescription = "App logo",
                     modifier = Modifier.size(80.dp)
                 )
