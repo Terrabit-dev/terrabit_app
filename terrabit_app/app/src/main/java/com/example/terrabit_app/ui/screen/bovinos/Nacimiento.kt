@@ -96,6 +96,7 @@ fun Nacimiento(
 
     val codiMoViewModel = hiltViewModel<CodiMoManagerViewModel>()
     val codisMoExpandido by codiMoViewModel.codisMoExpandido.observeAsState(false)
+    val codiMoActivo by codiMoViewModel.codiMoActivo.observeAsState(null)
 
     LaunchedEffect(Unit) {
         usbViewModel.mensajes.collect { mensaje ->
@@ -313,11 +314,11 @@ fun Nacimiento(
                         ) {
                             CodiMoSelector(
                                 codisMos = codiMoViewModel.getCodisMos(),
-                                seleccionado = null, // cuando tnega estado: codiMoViewModel.seleccionado
+                                seleccionado = codiMoActivo,
                                 expanded = codisMoExpandido,
                                 onToggle = { codiMoViewModel.toggleCodisMoExpandido() },
                                 onDismiss = { codiMoViewModel.cerrarCodisMo() },
-                                onSeleccionar = { codi -> /*  acción futura*/ },
+                                onSeleccionar = {codi -> codiMoViewModel.seleccionarCodiMo(codi) },
                                 accentColor = MainGreen
                             )
                         }

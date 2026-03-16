@@ -71,6 +71,7 @@ fun IdentificacionApalzada(
 
     val codiMoViewModel = hiltViewModel<CodiMoManagerViewModel>()
     val codisMoExpandido by codiMoViewModel.codisMoExpandido.observeAsState(false)
+    val codiMoActivo by codiMoViewModel.codiMoActivo.observeAsState(null)
 
     if (mostrarBluetooth) {
         BluetoothScanDialog(
@@ -241,11 +242,11 @@ fun IdentificacionApalzada(
                         ) {
                             CodiMoSelector(
                                 codisMos = codiMoViewModel.getCodisMos(),
-                                seleccionado = null, // cuando tenga estado: codiMoViewModel.seleccionado
+                                seleccionado = codiMoActivo,
                                 expanded = codisMoExpandido,
                                 onToggle = { codiMoViewModel.toggleCodisMoExpandido() },
                                 onDismiss = { codiMoViewModel.cerrarCodisMo() },
-                                onSeleccionar = { codi -> /* acción  futura*/ },
+                                onSeleccionar = {  codi -> codiMoViewModel.seleccionarCodiMo(codi) },
                                 accentColor = MainGreen
                             )
                         }

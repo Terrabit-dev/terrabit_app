@@ -95,7 +95,7 @@ fun MaterialDuplicadosScreen(
 
     val codiMoViewModel = hiltViewModel<CodiMoManagerViewModel>()
     val codisMoExpandido by codiMoViewModel.codisMoExpandido.observeAsState(false)
-
+    val codiMoActivo by codiMoViewModel.codiMoActivo.observeAsState(null)
     LaunchedEffect(Unit) {
         usbViewModel.mensajes.collect { mensaje ->
             indiceUsb?.let { viewModel.actualizarIdentificador(it, mensaje) }
@@ -246,11 +246,11 @@ fun MaterialDuplicadosScreen(
                         ) {
                             CodiMoSelector(
                                 codisMos = codiMoViewModel.getCodisMos(),
-                                seleccionado = null, // cuando tenga estado: codiMoViewModel.seleccionado
+                                seleccionado = codiMoActivo, // cuando tenga estado: codiMoViewModel.seleccionado
                                 expanded = codisMoExpandido,
                                 onToggle = { codiMoViewModel.toggleCodisMoExpandido() },
                                 onDismiss = { codiMoViewModel.cerrarCodisMo() },
-                                onSeleccionar = { codi -> /* acción  futura*/ },
+                                onSeleccionar = { codi -> codiMoViewModel.seleccionarCodiMo(codi)},
                                 accentColor = MainGreen
                             )
                         }

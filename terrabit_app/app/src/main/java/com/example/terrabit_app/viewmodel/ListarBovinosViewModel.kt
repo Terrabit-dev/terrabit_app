@@ -19,7 +19,7 @@ class ListarBovinosViewModel @Inject constructor(
 
     val nif = userPreferences.getNif() ?: ""
     val password = userPreferences.getPassword() ?: ""
-    val codiMo = userPreferences.getCodiMO() ?: ""
+    var codiMo = userPreferences.getCodiMO() ?: ""
 
     private val _listaBovinos = MutableLiveData<List<Animal>>()
     val listaBovinos = _listaBovinos
@@ -57,10 +57,12 @@ class ListarBovinosViewModel @Inject constructor(
     }
 
     fun refrescar() {
+        codiMo = userPreferences.getCodiMO() ?: ""
         cargarBovinos(esRefresh = true)
     }
 
     fun cargarBovinos(esRefresh: Boolean = false) {
+        Log.d("PARSEO", "✅ Datos del request: $nif, $password, $codiMo")
         viewModelScope.launch {
             if (esRefresh) _refrescando.value = true else _cargando.value = true
             _error.value = null

@@ -96,7 +96,7 @@ fun ListaGuiasPorcinas(
 
     val codiMoViewModel = hiltViewModel<CodiMoManagerViewModel>()
     val codisMoExpandido by codiMoViewModel.codisMoExpandido.observeAsState(false)
-
+    val codiMoActivo by codiMoViewModel.codiMoActivo.observeAsState(null)
     // 3. Creamos el ViewModel con la Factory
 
 
@@ -145,11 +145,11 @@ fun ListaGuiasPorcinas(
             ) {
                 CodiMoSelector(
                     codisMos = codiMoViewModel.getCodisMos(),
-                    seleccionado = null, // cuando tenga estado: codiMoViewModel.seleccionado
+                    seleccionado = codiMoActivo,
                     expanded = codisMoExpandido,
                     onToggle = { codiMoViewModel.toggleCodisMoExpandido() },
                     onDismiss = { codiMoViewModel.cerrarCodisMo() },
-                    onSeleccionar = { codi -> /* acción  futura*/ },
+                    onSeleccionar = { codi -> codiMoViewModel.seleccionarCodiMo(codi) },
                     accentColor = MainGreen
                 )
             }

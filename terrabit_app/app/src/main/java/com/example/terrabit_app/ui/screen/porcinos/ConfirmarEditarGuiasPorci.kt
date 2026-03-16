@@ -92,7 +92,7 @@ fun ConfirmarEditarGuiasPorci(
     val uiStateLista by viewModelGestionarGuias.uiState.collectAsState()
     val codiMoViewModel = hiltViewModel<CodiMoManagerViewModel>()
     val codisMoExpandido by codiMoViewModel.codisMoExpandido.observeAsState(false)
-
+    val codiMoActivo by codiMoViewModel.codiMoActivo.observeAsState(null)
     Log.d("Guia seleccionada", "Nose: ${uiStateLista.guiaSeleccionada}  ")
     // 1. Cargamos los datos de la lista al formulario al entrar
     LaunchedEffect(Unit) {
@@ -294,11 +294,11 @@ fun ConfirmarEditarGuiasPorci(
                     ) {
                         CodiMoSelector(
                             codisMos = codiMoViewModel.getCodisMos(),
-                            seleccionado = null, // cuando tenga estado: codiMoViewModel.seleccionado
+                            seleccionado = codiMoActivo,
                             expanded = codisMoExpandido,
                             onToggle = { codiMoViewModel.toggleCodisMoExpandido() },
                             onDismiss = { codiMoViewModel.cerrarCodisMo() },
-                            onSeleccionar = { codi -> /* acción  futura*/ },
+                            onSeleccionar = { codi -> codiMoViewModel.seleccionarCodiMo(codi) },
                             accentColor = MainGreen
                         )
                     }

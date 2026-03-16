@@ -162,13 +162,13 @@ fun CampoTexto(
 
 @Composable
 fun CodiMoSelector(
+    modifier: Modifier = Modifier,
     codisMos: List<String>,
     seleccionado: String? = null,
     expanded: Boolean,
     onToggle: () -> Unit,
     onDismiss: () -> Unit,
     onSeleccionar: (String) -> Unit = {},
-    modifier: Modifier = Modifier,
     accentColor: Color = MainGreen
 ) {
     Box(modifier = modifier) {

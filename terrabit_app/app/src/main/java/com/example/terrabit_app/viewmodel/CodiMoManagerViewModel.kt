@@ -2,57 +2,40 @@ package com.example.terrabit_app.viewmodel
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.utils.UserPreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+
 @HiltViewModel
 class CodiMoManagerViewModel @Inject constructor(
     private val userPreferences: UserPreferences
-): ViewModel() {
-    private val _codisMoExpandido = MutableLiveData(false)
+) : ViewModel() {
 
+    private val _codisMoExpandido = MutableLiveData(false)
     val codisMoExpandido = _codisMoExpandido
 
+    // CodiMO actualmente activo en SharedPreferences
+    private val _codiMoActivo = MutableLiveData(userPreferences.getCodiMO())
+    val codiMoActivo = _codiMoActivo
 
-    fun toggleCodisMoExpandido(){
+    fun toggleCodisMoExpandido() {
         _codisMoExpandido.value = !(_codisMoExpandido.value ?: false)
     }
 
-    fun cerrarCodisMo(){
+    fun cerrarCodisMo() {
         _codisMoExpandido.value = false
     }
 
-    fun getCodisMos(): List<String> {
-        return userPreferences.getUserMOList()
+    fun getCodisMos(): List<String> = userPreferences.getUserMOList()
+
+    fun seleccionarCodiMo(nuevoCodi: String) {
+        // Actualiza SharedPreferences manteniendo el resto de credenciales
+        val nif = userPreferences.getNif() ?: return
+        val password = userPreferences.getPassword() ?: return
+        val rememberMe = userPreferences.getRememberMe()
+
+        userPreferences.saveCredentials(nif, password, nuevoCodi, rememberMe)
+        _codiMoActivo.value = nuevoCodi
+        _codisMoExpandido.value = false
     }
 }
-
-
-/**
- *     val context = LocalContext.current
- *     val userPreferences = remember { UserPreferences(context) }
- *     // lista de Mos por usuario
- *     val codisMos = userPreferences.getUserMOList()
- * val codisMosExpandidos by viewModel.codisMoExpandido.observeAsState(false)
- * Box(modifier = Modifier.wrapContentSize(Alignment.TopStart)) {
- *
- *                 Button(onClick = { viewModel.toggleCodisMoExpandido() }) { Text("Codigo MO") }
- *
- *                 DropdownMenu(
- *                     expanded = codisMosExpandidos,
- *                     onDismissRequest = { viewModel.cerrarCodisMo() }
- *                 ) {
- *                     // Items normales
- *                     codisMos.forEach { option ->
- *                         DropdownMenuItem(text = { Text(option) }, onClick = { /* ... */ })
- *                     }
- *
- *                     Divider() // Opcional: una línea divisoria
- *                     DropdownMenuItem(
- *                         text = { Text("Elemento Fijo al Final", color = Color.Red) },
- *                         onClick = { /* Acción especial */ }
- *                     )
- *                 }
- *             }
- * */
