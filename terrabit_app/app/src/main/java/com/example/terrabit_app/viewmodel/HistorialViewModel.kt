@@ -65,6 +65,7 @@ class HistorialViewModel @Inject constructor(
         "MATERIAL_DUPLICADO" -> "Material Duplicado"
         "MOVIMIENTO" -> "Movimiento"
         "GUIA" -> "Guía"
+        "GUIA_PORCINOS" -> "Guía Porcinos"
         else -> tipo
     }
 
