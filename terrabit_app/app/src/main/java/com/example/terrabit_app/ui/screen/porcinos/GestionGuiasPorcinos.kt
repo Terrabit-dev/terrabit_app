@@ -102,7 +102,7 @@ fun GestionGuiasPorcinos(navController: NavController) {
                         subtitulo = "",
                         colorFondo = MainOrange,
                         modifier = Modifier.weight(1f),
-                        onClick = { navController.navigate(Routes.CrearGuiasPorcinos.route) }
+                        onClick = { navController.navigate(Routes.CrearGuiasPorcinos.nuevo()) }
                     )
 
                     TarjetaAccion(

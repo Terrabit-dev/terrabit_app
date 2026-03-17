@@ -277,6 +277,7 @@
     <string name="type_draft_title_material_duplicate">Material Duplicat</string>
     <string name="type_draft_title_movement">Moviment</string>
     <string name="type_draft_title_guide">Guia</string>
+    <string name="type_draft_title_pig_guide">Guia Porcí</string>
 
     <string name="status_draft_saved">Desat</string>
     <string name="status_draft_pending">Pendent</string>
