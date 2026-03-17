@@ -189,7 +189,7 @@ interface ApiInterface {
 
 
     companion object {
-        val BASE_URL = "https://preproduccio.aplicacions.agricultura.gencat.cat/gtr/"
+        val BASE_URL = "https://aplicacions.agricultura.gencat.cat/gtr/"
 
         fun create(): ApiInterface {
             // Configurar timeouts más largos
