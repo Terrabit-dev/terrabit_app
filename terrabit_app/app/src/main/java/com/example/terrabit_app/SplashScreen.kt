@@ -1,3 +1,5 @@
+package com.example.terrabit_app
+
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -10,19 +12,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.googlefonts.Font
-import androidx.compose.ui.text.googlefonts.GoogleFont
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.theme.MainGreen
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 private val comfortaa = FontFamily(
-    androidx.compose.ui.text.font.Font(
+    Font(
         resId = R.font.comfortaa_variablefont_wght,
         weight = FontWeight.Bold
     )

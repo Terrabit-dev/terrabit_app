@@ -69,10 +69,6 @@ fun IdentificacionApalzada(
     val tituloExito = stringResource(R.string.successful_message_identification_postpone)
     val titulloError = stringResource(R.string.error_message_identification_postpone)
 
-    val codiMoViewModel = hiltViewModel<CodiMoManagerViewModel>()
-    val codisMoExpandido by codiMoViewModel.codisMoExpandido.observeAsState(false)
-    val codiMoActivo by codiMoViewModel.codiMoActivo.observeAsState(null)
-
     if (mostrarBluetooth) {
         BluetoothScanDialog(
             bluetoothViewModel = bluetoothViewModel,
@@ -236,20 +232,6 @@ fun IdentificacionApalzada(
                         modifier = Modifier.fillMaxWidth().padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        ) {
-                            CodiMoSelector(
-                                codisMos = codiMoViewModel.getCodisMos(),
-                                seleccionado = codiMoActivo,
-                                expanded = codisMoExpandido,
-                                onToggle = { codiMoViewModel.toggleCodisMoExpandido() },
-                                onDismiss = { codiMoViewModel.cerrarCodisMo() },
-                                onSeleccionar = {  codi -> codiMoViewModel.seleccionarCodiMo(codi) },
-                                accentColor = MainGreen
-                            )
-                        }
                         if (!modoLectura) {
                             useDebounce(identificadorAnimal, delayMillis = 300L) { viewModel.searchBovinos(it) }
                         }

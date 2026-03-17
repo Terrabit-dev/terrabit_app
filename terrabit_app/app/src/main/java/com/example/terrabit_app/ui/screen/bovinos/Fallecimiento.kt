@@ -91,11 +91,6 @@ fun Fallecimiento(
     val usbState by usbViewModel.state.collectAsState()
     val usbErrorText = usbState.error?.let { stringResource(it) }
 
-    val codiMoViewModel = hiltViewModel<CodiMoManagerViewModel>()
-    val codisMoExpandido by codiMoViewModel.codisMoExpandido.observeAsState(false)
-    val codiMoActivo by codiMoViewModel.codiMoActivo.observeAsState(null)
-
-
     LaunchedEffect(Unit) {
         usbViewModel.mensajes.collect { mensaje ->
             viewModel.actualizarIdentificadorMuerte(mensaje)
@@ -244,20 +239,6 @@ fun Fallecimiento(
                         modifier = Modifier.fillMaxWidth().padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        ) {
-                            CodiMoSelector(
-                                codisMos = codiMoViewModel.getCodisMos(),
-                                seleccionado = codiMoActivo,
-                                expanded = codisMoExpandido,
-                                onToggle = { codiMoViewModel.toggleCodisMoExpandido() },
-                                onDismiss = { codiMoViewModel.cerrarCodisMo() },
-                                onSeleccionar = { codi -> codiMoViewModel.seleccionarCodiMo(codi) },
-                                accentColor = ErrorRed
-                            )
-                        }
 
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(

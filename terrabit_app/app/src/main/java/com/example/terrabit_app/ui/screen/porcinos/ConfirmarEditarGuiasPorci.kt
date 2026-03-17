@@ -90,9 +90,7 @@ fun ConfirmarEditarGuiasPorci(
 ) {
     val uiStateEdita by viewModelEditarGuias.uiState.collectAsState()
     val uiStateLista by viewModelGestionarGuias.uiState.collectAsState()
-    val codiMoViewModel = hiltViewModel<CodiMoManagerViewModel>()
-    val codisMoExpandido by codiMoViewModel.codisMoExpandido.observeAsState(false)
-    val codiMoActivo by codiMoViewModel.codiMoActivo.observeAsState(null)
+
     Log.d("Guia seleccionada", "Nose: ${uiStateLista.guiaSeleccionada}  ")
     // 1. Cargamos los datos de la lista al formulario al entrar
     LaunchedEffect(Unit) {
@@ -288,20 +286,7 @@ fun ConfirmarEditarGuiasPorci(
                         .padding(24.dp),
                     verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    ) {
-                        CodiMoSelector(
-                            codisMos = codiMoViewModel.getCodisMos(),
-                            seleccionado = codiMoActivo,
-                            expanded = codisMoExpandido,
-                            onToggle = { codiMoViewModel.toggleCodisMoExpandido() },
-                            onDismiss = { codiMoViewModel.cerrarCodisMo() },
-                            onSeleccionar = { codi -> codiMoViewModel.seleccionarCodiMo(codi) },
-                            accentColor = MainGreen
-                        )
-                    }
+
                     // Codigo de Categoria
                     DropdownField(
                         label = stringResource(R.string.form_porcinos_cod_cat),

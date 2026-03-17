@@ -150,7 +150,7 @@ fun ListaGuiasPorcinas(
                     onToggle = { codiMoViewModel.toggleCodisMoExpandido() },
                     onDismiss = { codiMoViewModel.cerrarCodisMo() },
                     onSeleccionar = { codi -> codiMoViewModel.seleccionarCodiMo(codi) },
-                    accentColor = MainGreen
+                    accentColor = MainOrange
                 )
             }
 

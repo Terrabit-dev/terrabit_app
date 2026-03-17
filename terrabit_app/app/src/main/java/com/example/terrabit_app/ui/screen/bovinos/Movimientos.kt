@@ -101,9 +101,6 @@ fun Movimientos(
     val usbErrorText = usbState.error?.let { stringResource(it) }
     var indiceUsb by remember { mutableStateOf<Int?>(null) }
 
-    val codiMoViewModel = hiltViewModel<CodiMoManagerViewModel>()
-    val codisMoExpandido by codiMoViewModel.codisMoExpandido.observeAsState(false)
-    val codiMoActivo by codiMoViewModel.codiMoActivo.observeAsState(null)
     LaunchedEffect(Unit) {
         usbViewModel.mensajes.collect { mensaje ->
             indiceUsb?.let { viewModel.actualizarIdentificadorAnimal(it, mensaje) }
@@ -324,20 +321,6 @@ fun Movimientos(
                         modifier = Modifier.fillMaxWidth().padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        ) {
-                            CodiMoSelector(
-                                codisMos = codiMoViewModel.getCodisMos(),
-                                seleccionado = codiMoActivo, // cuando tenga estado: codiMoViewModel.seleccionado
-                                expanded = codisMoExpandido,
-                                onToggle = { codiMoViewModel.toggleCodisMoExpandido() },
-                                onDismiss = { codiMoViewModel.cerrarCodisMo() },
-                                onSeleccionar = { codi -> codiMoViewModel.seleccionarCodiMo(codi)  },
-                                accentColor = MainOrange
-                            )
-                        }
                         Text(stringResource(R.string.form_movs_title_necessary), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
 
                         SimpleTextField(

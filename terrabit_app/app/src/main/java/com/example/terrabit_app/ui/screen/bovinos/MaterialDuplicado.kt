@@ -93,9 +93,6 @@ fun MaterialDuplicadosScreen(
     val usbErrorText = usbState.error?.let { stringResource(it) }
     var indiceUsb by remember { mutableStateOf<Int?>(null) }
 
-    val codiMoViewModel = hiltViewModel<CodiMoManagerViewModel>()
-    val codisMoExpandido by codiMoViewModel.codisMoExpandido.observeAsState(false)
-    val codiMoActivo by codiMoViewModel.codiMoActivo.observeAsState(null)
     LaunchedEffect(Unit) {
         usbViewModel.mensajes.collect { mensaje ->
             indiceUsb?.let { viewModel.actualizarIdentificador(it, mensaje) }
@@ -240,20 +237,6 @@ fun MaterialDuplicadosScreen(
                         modifier = Modifier.fillMaxWidth().padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        ) {
-                            CodiMoSelector(
-                                codisMos = codiMoViewModel.getCodisMos(),
-                                seleccionado = codiMoActivo, // cuando tenga estado: codiMoViewModel.seleccionado
-                                expanded = codisMoExpandido,
-                                onToggle = { codiMoViewModel.toggleCodisMoExpandido() },
-                                onDismiss = { codiMoViewModel.cerrarCodisMo() },
-                                onSeleccionar = { codi -> codiMoViewModel.seleccionarCodiMo(codi)},
-                                accentColor = MainGreen
-                            )
-                        }
                         DropdownField(
                             label = stringResource(R.string.form_suply_company) + " *",
                             selectedValue = empresaSubministradora,

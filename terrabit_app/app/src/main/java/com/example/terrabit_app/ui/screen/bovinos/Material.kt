@@ -75,10 +75,6 @@ fun Material(
 
     val mensajeExito = stringResource(R.string.successful_message_material)
 
-    val codiMoViewModel = hiltViewModel<CodiMoManagerViewModel>()
-    val codisMoExpandido by codiMoViewModel.codisMoExpandido.observeAsState(false)
-    val codiMoActivo by codiMoViewModel.codiMoActivo.observeAsState(null)
-
     LaunchedEffect(registroExitoso) {
         if (registroExitoso) {
             snackbarHostState.showSnackbar(mensajeExito, duration = SnackbarDuration.Short)
@@ -176,20 +172,6 @@ fun Material(
                     shape = MaterialTheme.shapes.large
                 ) {
                     Column(modifier = Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(24.dp)) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        ) {
-                            CodiMoSelector(
-                                codisMos = codiMoViewModel.getCodisMos(),
-                                seleccionado = codiMoActivo, // cuando tenga estado: codiMoViewModel.seleccionado
-                                expanded = codisMoExpandido,
-                                onToggle = { codiMoViewModel.toggleCodisMoExpandido() },
-                                onDismiss = { codiMoViewModel.cerrarCodisMo() },
-                                onSeleccionar = { codi -> codiMoViewModel.seleccionarCodiMo(codi) },
-                                accentColor = MainGreen
-                            )
-                        }
                         DropdownField(
                             label = stringResource(R.string.form_suply_company) + " *",
                             selectedValue = empresaSubministradora,

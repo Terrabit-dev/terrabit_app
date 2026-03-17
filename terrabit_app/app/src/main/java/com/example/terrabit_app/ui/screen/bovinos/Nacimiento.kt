@@ -94,10 +94,6 @@ fun Nacimiento(
 
     val razas = elementosConCodigos.razasBovinas()
 
-    val codiMoViewModel = hiltViewModel<CodiMoManagerViewModel>()
-    val codisMoExpandido by codiMoViewModel.codisMoExpandido.observeAsState(false)
-    val codiMoActivo by codiMoViewModel.codiMoActivo.observeAsState(null)
-
     LaunchedEffect(Unit) {
         usbViewModel.mensajes.collect { mensaje ->
             when {
@@ -308,20 +304,6 @@ fun Nacimiento(
                         modifier = Modifier.fillMaxWidth().padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        ) {
-                            CodiMoSelector(
-                                codisMos = codiMoViewModel.getCodisMos(),
-                                seleccionado = codiMoActivo,
-                                expanded = codisMoExpandido,
-                                onToggle = { codiMoViewModel.toggleCodisMoExpandido() },
-                                onDismiss = { codiMoViewModel.cerrarCodisMo() },
-                                onSeleccionar = {codi -> codiMoViewModel.seleccionarCodiMo(codi) },
-                                accentColor = MainGreen
-                            )
-                        }
 
                         if (!modoLectura) {
                             useDebounce(idMadre, delayMillis = 300L) { viewModel.searchBovinos(it) }
