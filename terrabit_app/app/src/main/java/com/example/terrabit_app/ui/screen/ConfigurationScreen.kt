@@ -33,7 +33,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.ui.theme.MainGreen
-import com.example.terrabit_app.viewmodel.ConfigurationViewModel
+import com.example.terrabit_app.viewmodel.bovinos.ConfigurationViewModel
 import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.theme.BlueGrey
 import com.example.terrabit_app.ui.theme.DarkBlueGrey

@@ -28,13 +28,10 @@ import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.ui.theme.MainGreen
-import com.example.terrabit_app.ui.theme.MainOrange
 import com.example.terrabit_app.utils.CampoTexto
-import com.example.terrabit_app.utils.CodiMoSelector
 import com.example.terrabit_app.utils.DropdownField
 import com.example.terrabit_app.utils.ElementosConCodigos
-import com.example.terrabit_app.viewmodel.CodiMoManagerViewModel
-import com.example.terrabit_app.viewmodel.MaterialViewModel
+import com.example.terrabit_app.viewmodel.bovinos.MaterialViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

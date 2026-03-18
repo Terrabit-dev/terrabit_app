@@ -1,6 +1,5 @@
 package com.example.terrabit_app.ui.pantallas
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -37,7 +36,7 @@ import com.example.terrabit_app.utils.CampoTexto
 import com.example.terrabit_app.utils.CodiMoSelector
 import com.example.terrabit_app.utils.DropdownField
 import com.example.terrabit_app.utils.porcinos.ElementosConCodigosPorcinos
-import com.example.terrabit_app.viewmodel.CodiMoManagerViewModel
+import com.example.terrabit_app.viewmodel.bovinos.CodiMoManagerViewModel
 import com.example.terrabit_app.viewmodel.porcinos.CrearGuiaPorcinosViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)

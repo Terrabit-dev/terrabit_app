@@ -1,4 +1,4 @@
-package com.example.terrabit_app.viewmodel
+package com.example.terrabit_app.viewmodel.bovinos
 
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
@@ -21,6 +21,9 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import java.io.IOException
+import java.net.SocketTimeoutException
 import java.util.UUID
 
 @HiltViewModel
@@ -163,7 +166,7 @@ class MaterialViewModel @Inject constructor(
                 borradorSesionId = borrador.id
                 val datos: Map<String, Any?> = Gson().fromJson(
                     borrador.datos,
-                    object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
+                    object : TypeToken<Map<String, Any?>>() {}.type
                 )
                 _empresaSubministradora.value = datos["empresaSubministradora"] as? String ?: ""
                 _codigoEmpresa.value = datos["codigoEmpresa"] as? String ?: ""
@@ -365,9 +368,9 @@ class MaterialViewModel @Inject constructor(
                         }
                     }
                 }
-            } catch (e: java.net.SocketTimeoutException) {
+            } catch (e: SocketTimeoutException) {
                 withContext(Dispatchers.Main) { _cargandoMaterial.value = false; _registroMaterialExitoso.value = false; _mensajeErrorMaterial.value = "Tiempo de espera agotado." }
-            } catch (e: java.io.IOException) {
+            } catch (e: IOException) {
                 withContext(Dispatchers.Main) { _cargandoMaterial.value = false; _registroMaterialExitoso.value = false; _mensajeErrorMaterial.value = "Error de conexión." }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) { _cargandoMaterial.value = false; _registroMaterialExitoso.value = false; _mensajeErrorMaterial.value = "Error inesperado: ${e.message ?: "Error desconocido"}"; e.printStackTrace() }
@@ -411,7 +414,7 @@ class MaterialViewModel @Inject constructor(
                     "listaUnidades" to _listaUnidades.value
                 )
                 historialDao.insert(HistorialEntity(
-                    id = java.util.UUID.randomUUID().toString(),
+                    id = UUID.randomUUID().toString(),
                     tipo = "MATERIAL",
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
                     hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
@@ -431,7 +434,7 @@ class MaterialViewModel @Inject constructor(
                 val registro = historialDao.getAll().find { it.id == id } ?: return@launch
                 val datos: Map<String, Any?> = Gson().fromJson(
                     registro.datos,
-                    object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
+                    object : TypeToken<Map<String, Any?>>() {}.type
                 )
                 _empresaSubministradora.value = datos["empresaSubministradora"] as? String ?: ""
                 _codigoEmpresa.value = datos["codigoEmpresa"] as? String ?: ""

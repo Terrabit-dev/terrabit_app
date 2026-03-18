@@ -35,7 +35,7 @@ import com.example.terrabit_app.ui.theme.Blue
 import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
-import com.example.terrabit_app.viewmodel.BorradorViewModel
+import com.example.terrabit_app.viewmodel.bovinos.BorradorViewModel
 import kotlinx.coroutines.launch
 
 @Composable

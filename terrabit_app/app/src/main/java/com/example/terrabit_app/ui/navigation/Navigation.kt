@@ -11,7 +11,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.terrabit_app.ui.screen.DrawerScreen
 import com.example.terrabit_app.ui.screen.Login
 import com.example.terrabit_app.utils.UserPreferences
-import com.example.terrabit_app.viewmodel.DrawerViewModel
+import com.example.terrabit_app.viewmodel.bovinos.DrawerViewModel
 import androidx.compose.ui.platform.LocalContext
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 

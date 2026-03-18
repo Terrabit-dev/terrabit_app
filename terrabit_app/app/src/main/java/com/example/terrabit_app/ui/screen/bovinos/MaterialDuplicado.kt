@@ -30,16 +30,13 @@ import com.example.terrabit_app.ui.screen.bovinos.components.CampoIdentificadorA
 import com.example.terrabit_app.ui.screen.bovinos.components.useDebounce
 import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.ui.theme.MainGreen
-import com.example.terrabit_app.ui.theme.MainOrange
 import com.example.terrabit_app.utils.CampoTexto
-import com.example.terrabit_app.utils.CodiMoSelector
 import com.example.terrabit_app.utils.DropdownField
 import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.bluetooth.BluetoothScanDialog
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 import com.example.terrabit_app.utils.usb.UsbSerialViewModel
-import com.example.terrabit_app.viewmodel.CodiMoManagerViewModel
-import com.example.terrabit_app.viewmodel.MaterialDuplicadoViewModel
+import com.example.terrabit_app.viewmodel.bovinos.MaterialDuplicadoViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
