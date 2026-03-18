@@ -213,6 +213,13 @@ fun ListaGuiasPorcinas(
     }
 }
 
+@Composable
+private fun RequestCard(
+    modifier: Modifier = Modifier
+){
+
+}
+
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun GuiaCard(

@@ -167,7 +167,7 @@ class EditarGuiaPorcinosViewModel(application: Application): AndroidViewModel(ap
                     // 3. Log de la respuesta bruta exitosa
                     Log.d("EDITAR_GUIA", "Respuesta exitosa del servidor: $body")
 
-                    val resultado = body
+                    val resultado = response.body()?.firstOrNull()
                     if (resultado?.codi == "OK") {
                         Log.i("EDITAR_GUIA", "✅ Trámite completado correctamente")
                         _uiState.update { it.copy(isLoading = false) }
