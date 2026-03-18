@@ -1,5 +1,8 @@
 package com.example.terrabit_app.ui.screen.bovinos
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -9,13 +12,15 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -26,9 +31,9 @@ import com.example.terrabit_app.R
 import com.example.terrabit_app.data.network.lista_bovinos.Animal
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.theme.MainGreen
-import com.example.terrabit_app.viewmodel.bovinos.ListarBovinosViewModel
 import com.example.terrabit_app.utils.CodiMoSelector
 import com.example.terrabit_app.viewmodel.bovinos.CodiMoManagerViewModel
+import com.example.terrabit_app.viewmodel.bovinos.ListarBovinosViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,30 +48,69 @@ fun ListarBovinos(navController: NavController) {
     val codisMoExpandido by codiMoViewModel.codisMoExpandido.observeAsState(false)
     val codiMoActivo by codiMoViewModel.codiMoActivo.observeAsState(null)
 
+    var mostrarBuscador by remember { mutableStateOf(true) }
+
+    val nestedScrollConnection = remember {
+        object : NestedScrollConnection {
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                if (available.y < -1) mostrarBuscador = false
+                else if (available.y > 1) mostrarBuscador = true
+                return Offset.Zero
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.cargarBovinos()
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-    ){
+    Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             topBar = {
-                TopAppBar(
-                    title = { Text(stringResource(R.string.list_bovinos_title), fontSize = 20.sp, fontWeight = FontWeight.SemiBold) },
-                    navigationIcon = {
-                        IconButton(onClick = { navController.navigate(Routes.HomeBovinos.route) }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MainGreen,
-                        titleContentColor = Color.White,
-                        navigationIconContentColor = Color.White
+                Column(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    TopAppBar(
+                        title = { Text(stringResource(R.string.list_bovinos_title), fontSize = 20.sp, fontWeight = FontWeight.SemiBold) },
+                        navigationIcon = {
+                            IconButton(onClick = { navController.navigate(Routes.HomeBovinos.route) }) {
+                                Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                            }
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = MainGreen,
+                            titleContentColor = Color.White,
+                            navigationIconContentColor = Color.White
+                        )
                     )
-                )
+
+                    AnimatedVisibility(
+                        visible = mostrarBuscador,
+                        enter = slideInVertically(initialOffsetY = { -it/4 }),
+                        exit = slideOutVertically(targetOffsetY = { -it/4 })
+                    ) {
+                        OutlinedTextField(
+                            value = busqueda,
+                            onValueChange = { viewModel.actualizarBusqueda(it) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            placeholder = { Text(stringResource(R.string.search_bar_list_bovinos), color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                            leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar", tint = MainGreen) },
+                            singleLine = true,
+                            shape = RoundedCornerShape(12.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = MainGreen,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                                cursorColor = MainGreen,
+                                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                            )
+                        )
+                    }
+                }
             },
             containerColor = MaterialTheme.colorScheme.background
         ) { padding ->
@@ -75,36 +119,10 @@ fun ListarBovinos(navController: NavController) {
                     .fillMaxSize()
                     .padding(padding)
             ) {
-                Card(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    OutlinedTextField(
-                        value = busqueda,
-                        onValueChange = { viewModel.actualizarBusqueda(it) },
-                        modifier = Modifier.fillMaxWidth().padding(8.dp),
-                        placeholder = { Text(stringResource(R.string.search_bar_list_bovinos), color = MaterialTheme.colorScheme.onSurfaceVariant) },
-                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar", tint = MainGreen) },
-                        singleLine = true,
-                        shape = RoundedCornerShape(8.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MainGreen,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                            cursorColor = MainGreen,
-                            focusedContainerColor = MaterialTheme.colorScheme.surface,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
-                        )
-                    )
-                }
-
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
                     CodiMoSelector(
                         codisMos = codiMoViewModel.getCodisMos(),
@@ -112,7 +130,7 @@ fun ListarBovinos(navController: NavController) {
                         expanded = codisMoExpandido,
                         onToggle = { codiMoViewModel.toggleCodisMoExpandido() },
                         onDismiss = { codiMoViewModel.cerrarCodisMo() },
-                        onSeleccionar = { codi -> codiMoViewModel.seleccionarCodiMo(codi); viewModel.refrescar()  },
+                        onSeleccionar = { codi -> codiMoViewModel.seleccionarCodiMo(codi); viewModel.refrescar() },
                         accentColor = MainGreen
                     )
                 }
@@ -120,7 +138,7 @@ fun ListarBovinos(navController: NavController) {
                 PullToRefreshBox(
                     isRefreshing = refrescando,
                     onRefresh = { viewModel.refrescar() },
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize().nestedScroll(nestedScrollConnection)
                 ) {
                     when {
                         cargando -> {
@@ -161,11 +179,7 @@ fun ListarBovinos(navController: NavController) {
                 }
             }
         }
-
-
-
     }
-
 }
 
 @Composable

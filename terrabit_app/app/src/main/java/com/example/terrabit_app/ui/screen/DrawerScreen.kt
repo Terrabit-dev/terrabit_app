@@ -51,7 +51,7 @@ fun DrawerScreen(
     val userPreferences = remember { UserPreferences(context) }
 
     ModalNavigationDrawer(
-        gesturesEnabled = false,
+        gesturesEnabled = true,
         drawerState = drawerState,
         drawerContent = {
             DrawerContent(

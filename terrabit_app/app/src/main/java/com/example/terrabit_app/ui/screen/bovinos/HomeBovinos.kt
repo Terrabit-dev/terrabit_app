@@ -183,37 +183,10 @@ fun Home(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(45.dp))
 
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-                    shape = RoundedCornerShape(16.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(20.dp),
-                        verticalAlignment = Alignment.Top
-                    ) {
-                        Surface(
-                            shape = RoundedCornerShape(12.dp),
-                            color = MainGreen.copy(alpha = 0.2f),
-                            modifier = Modifier.size(48.dp)
-                        ) {
-                            Icon(Icons.Default.Info, contentDescription = null, tint = MainGreen, modifier = Modifier.padding(12.dp))
-                        }
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(stringResource(R.string.information_title_home), fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onPrimaryContainer, letterSpacing = 0.2.sp)
-                            Spacer(modifier = Modifier.height(6.dp))
-                            Text(stringResource(R.string.information_description_home), fontSize = 14.sp, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f), lineHeight = 20.sp, letterSpacing = 0.1.sp)
-                        }
-                    }
-                }
 
-                Spacer(modifier = Modifier.height(24.dp))
+
             }
         }
 
