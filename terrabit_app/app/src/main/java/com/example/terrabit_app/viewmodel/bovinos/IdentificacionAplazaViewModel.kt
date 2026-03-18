@@ -38,7 +38,7 @@ class IdentificacionAplazaViewModel @Inject constructor(
 
     val nif = userPreferences.getNif() ?: ""
     val password = userPreferences.getPassword() ?: ""
-    val codiMo = userPreferences.getCodiMO() ?: ""
+    var codiMo = userPreferences.getCodiMO() ?: ""
     private val _suggestionsBovinos = MutableLiveData<List<Animal>>(emptyList())
     val suggestionsBovinos = _suggestionsBovinos
 
@@ -78,12 +78,13 @@ class IdentificacionAplazaViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 _isLoadingBovinos.postValue(true)
+                codiMo = userPreferences.getCodiMO() ?: ""
                 repositorio.getBovinosWithCache(
                     nif = nif,
                     password = password,
                     tipusVinculacio = "1",
                     explotacio = codiMo,
-                    forceRefresh = false
+                    forceRefresh = true
                 )
                 _bovinosCargados.postValue(true)
                 _isLoadingBovinos.postValue(false)
