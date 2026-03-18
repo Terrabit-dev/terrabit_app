@@ -72,6 +72,7 @@ class BorradorViewModel @Inject constructor(
         "MATERIAL_DUPLICADO" -> "Material Duplicado"
         "MOVIMIENTO" -> "Movimiento"
         "GUIA" -> "Guia"
+        "GUIA_PORCINOS" -> "Guía Porcinos"
         else -> tipo
     }
 
