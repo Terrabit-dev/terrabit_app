@@ -60,7 +60,7 @@ fun ConfigurationScreen(
         Dialog(onDismissRequest = { agregarMo = false }) {
             Card(
                 shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
             ) {
                 Column(
@@ -71,7 +71,7 @@ fun ConfigurationScreen(
                         Spacer(modifier = Modifier.height(8.dp))
                         CircularProgressIndicator(modifier = Modifier.size(64.dp), color = MainGreen, strokeWidth = 5.dp)
                         Spacer(modifier = Modifier.height(20.dp))
-                        Text("Validando Codigo", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = DarkBlueGrey)
+                        Text("Validando Codigo", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                         Spacer(modifier = Modifier.height(8.dp))
                     } else {
                         CampoTexto(
@@ -88,7 +88,7 @@ fun ConfigurationScreen(
                         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                             OutlinedButton(
                                 onClick = { viewModel.resetState(); agregarMo = false },
-                                colors = ButtonDefaults.outlinedButtonColors(contentColor = BlueGrey)
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurfaceVariant)
                             ) { Text(stringResource(R.string.cancel_buttom)) }
                             Button(
                                 onClick = { viewModel.verificarCodiMo() },
