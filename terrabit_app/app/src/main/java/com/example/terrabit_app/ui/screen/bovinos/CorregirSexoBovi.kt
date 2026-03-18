@@ -35,7 +35,7 @@ import com.example.terrabit_app.utils.alertsErrosScreens
 import com.example.terrabit_app.utils.bluetooth.BluetoothScanDialog
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 import com.example.terrabit_app.utils.usb.UsbSerialViewModel
-import com.example.terrabit_app.viewmodel.CorrecionSexoViewModel
+import com.example.terrabit_app.viewmodel.bovinos.CorrecionSexoViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

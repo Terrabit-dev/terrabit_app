@@ -35,7 +35,7 @@ import com.example.terrabit_app.ui.theme.Blue
 import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
-import com.example.terrabit_app.viewmodel.BorradorViewModel
+import com.example.terrabit_app.viewmodel.bovinos.BorradorViewModel
 import kotlinx.coroutines.launch
 
 @Composable
@@ -136,6 +136,7 @@ fun BorradoresScreen(
                                     "MOVIMIENTO" -> Routes.Movimientos.conBorrador(borrador.id)
                                     "MATERIAL" -> Routes.Material.conBorrador(borrador.id)
                                     "MATERIAL_DUPLICADO" -> Routes.MaterialDuplicado.conBorrador(borrador.id)
+                                    "GUIA_PORCINOS" -> Routes.CrearGuiasPorcinos.conBorrador(borrador.id)
                                     else -> return@TarjetaBorrador
                                 }
                             )
@@ -458,6 +459,8 @@ fun TarjetaBorrador(
         "MATERIAL_DUPLICADO" -> stringResource(R.string.type_draft_title_material_duplicate)
         "MOVIMIENTO" -> stringResource(R.string.type_draft_title_movement)
         "GUIA" -> stringResource(R.string.type_draft_title_guide)
+        "GUIA_PORCINOS" -> stringResource(R.string.type_draft_title_pig_guide)
+
 
         else -> tipo
     }
@@ -517,6 +520,7 @@ fun TarjetaBorrador(
                         "NACIMIENTO" -> MainGreen.copy(alpha = 0.15f)
                         "CORRECCION_SEXO" -> Blue.copy(alpha = 0.15f)
                         "IDENTIFICACION_APLAZADA" -> MainGreen.copy(alpha = 0.15f)
+                        "GUIA_PORCINOS" -> MainOrange.copy(alpha = 0.15f)
                         else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.15f)
                     },
                     modifier = Modifier.size(56.dp)
@@ -532,6 +536,7 @@ fun TarjetaBorrador(
                                 "MATERIAL_DUPLICADO" -> Icons.Default.Animation
                                 "MOVIMIENTO" -> Icons.Default.SwapHoriz
                                 "GUIA" -> Icons.Default.Receipt
+                                "GUIA_PORCINOS" -> Icons.Default.Receipt
                                 else -> Icons.Default.Description
                             },
                             contentDescription = null,
@@ -544,6 +549,7 @@ fun TarjetaBorrador(
                                 "MATERIAL_DUPLICADO" -> MainGreen
                                 "MOVIMIENTO" -> MainOrange
                                 "GUIA" -> MainOrange
+                                "GUIA_PORCINOS" -> MainOrange
                                 else -> MaterialTheme.colorScheme.onSurfaceVariant
                             },
                             modifier = Modifier.size(28.dp)

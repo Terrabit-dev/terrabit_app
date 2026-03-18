@@ -26,13 +26,9 @@ import com.example.terrabit_app.R
 import com.example.terrabit_app.data.network.lista_bovinos.Animal
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.theme.MainGreen
-import com.example.terrabit_app.utils.SwipeBackContainer
-import com.example.terrabit_app.viewmodel.ListarBovinosViewModel
-import com.example.terrabit_app.ui.screen.bovinos.Home
+import com.example.terrabit_app.viewmodel.bovinos.ListarBovinosViewModel
 import com.example.terrabit_app.utils.CodiMoSelector
-import com.example.terrabit_app.viewmodel.CodiMoManagerViewModel
-
-import okhttp3.Route
+import com.example.terrabit_app.viewmodel.bovinos.CodiMoManagerViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

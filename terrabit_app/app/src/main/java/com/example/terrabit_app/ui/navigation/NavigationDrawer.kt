@@ -317,9 +317,26 @@ fun NavigationDrawer(
             EntradasPorcinos(navController = navController)
         }
 
-        composable(Routes.CrearGuiasPorcinos.route){
-            CrearGuiasPorcinos(navController = navController)
+        composable(
+            route = Routes.CrearGuiasPorcinos.route,
+            arguments = listOf(
+                navArgument("borradorId") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                    nullable = true
+                },
+                navArgument("historialId") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                    nullable = true
+                }
+            )
+        ) { backStackEntry ->
+            val borradorId = backStackEntry.arguments?.getString("borradorId") ?: ""
+            val historialId = backStackEntry.arguments?.getString("historialId") ?: ""
+            CrearGuiasPorcinos(navController = navController, borradorId = borradorId, historialId = historialId)
         }
+
         composable(Routes.EditarGuiaPorcinos.route) { currentEntry ->
             val parentEntry = remember(currentEntry) {
                 navController.getBackStackEntry(Routes.GestionGuiasPorcinos.route)

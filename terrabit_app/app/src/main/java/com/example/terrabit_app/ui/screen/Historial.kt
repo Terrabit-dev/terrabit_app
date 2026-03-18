@@ -32,7 +32,7 @@ import com.example.terrabit_app.ui.theme.Blue
 import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
-import com.example.terrabit_app.viewmodel.HistorialViewModel
+import com.example.terrabit_app.viewmodel.bovinos.HistorialViewModel
 import kotlinx.coroutines.launch
 
 private fun rutaDetalle(historial: Historial): String? = when (historial.tipo) {
@@ -44,6 +44,7 @@ private fun rutaDetalle(historial: Historial): String? = when (historial.tipo) {
     "IDENTIFICACION_APLAZADA" -> Routes.IdentificacionAplazada.conHistorial(historial.id)
     "MATERIAL" -> Routes.Material.conHistorial(historial.id)
     "MATERIAL_DUPLICADO" -> Routes.MaterialDuplicado.conHistorial(historial.id)
+    "GUIA_PORCINOS" -> Routes.CrearGuiasPorcinos.conHistorial(historial.id)
     else -> null
 }
 
@@ -276,6 +277,7 @@ fun TarjetaHistorial(
         "MATERIAL_DUPLICADO" -> stringResource(R.string.type_draft_title_material_duplicate)
         "MOVIMIENTO" -> stringResource(R.string.type_draft_title_movement)
         "GUIA" -> stringResource(R.string.type_draft_title_guide)
+        "GUIA_PORCINOS" -> stringResource(R.string.type_draft_title_pig_guide)
         else -> tipo
     }
 
@@ -298,6 +300,7 @@ fun TarjetaHistorial(
                     "MOVIMIENTO" -> MainOrange.copy(alpha = 0.15f)
                     "GUIA" -> MainOrange.copy(alpha = 0.15f)
                     "CORRECCION_SEXO" -> Blue.copy(alpha = 0.15f)
+                    "GUIA_PORCINOS" -> MainOrange.copy(alpha = 0.15f)
                     else -> MainGreen.copy(alpha = 0.15f)
                 },
                 modifier = Modifier.size(56.dp)
@@ -313,6 +316,7 @@ fun TarjetaHistorial(
                             "MATERIAL_DUPLICADO" -> Icons.Default.ContentCopy
                             "MOVIMIENTO" -> Icons.Default.SwapHoriz
                             "GUIA" -> Icons.Default.Receipt
+                            "GUIA_PORCINOS" -> Icons.Default.Receipt
                             else -> Icons.Default.CheckCircle
                         },
                         contentDescription = null,
@@ -321,6 +325,7 @@ fun TarjetaHistorial(
                             "MOVIMIENTO" -> MainOrange
                             "GUIA" -> MainOrange
                             "CORRECCION_SEXO" -> Blue
+                            "GUIA_PORCINOS" -> MainOrange
                             else -> MainGreen
                         },
                         modifier = Modifier.size(28.dp)

@@ -1,11 +1,9 @@
-package com.example.terrabit_app.viewmodel
+package com.example.terrabit_app.viewmodel.bovinos
 
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.terrabit_app.data.Borrador
-import com.example.terrabit_app.data.SharedPreferencesManager
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.Identificadores.Identificadores
 import com.example.terrabit_app.data.network.animales.RegistroNacimientoBovi
@@ -28,7 +26,9 @@ import com.example.terrabit_app.data.local.dao.BorradorDao
 import com.example.terrabit_app.data.local.dao.HistorialDao
 import com.example.terrabit_app.data.local.database.BorradorEntity
 import com.example.terrabit_app.data.local.database.HistorialEntity
-import com.example.terrabit_app.data.local.database.toBorrador
+import com.google.gson.reflect.TypeToken
+import java.io.IOException
+import java.net.SocketTimeoutException
 import java.util.UUID
 
 @HiltViewModel
@@ -220,7 +220,7 @@ class NacimientoViewmodel @Inject constructor(
                 borradorSesionId = borrador.id
                 val datos: Map<String, Any?> = Gson().fromJson(
                     borrador.datos,
-                    object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
+                    object : TypeToken<Map<String, Any?>>() {}.type
                 )
                 _idMadre.value = datos["idMadre"] as? String ?: ""
                 _idCria.value = datos["idCria"] as? String ?: ""
@@ -390,13 +390,13 @@ class NacimientoViewmodel @Inject constructor(
                         }
                     }
                 }
-            } catch (e: java.net.SocketTimeoutException) {
+            } catch (e: SocketTimeoutException) {
                 withContext(Dispatchers.Main) {
                     _cargandoNacimiento.value = false
                     _registroExitoso.value = false
                     _mensajeError.value = "Tiempo de espera agotado. La operación puede haberse completado, por favor verifique."
                 }
-            } catch (e: java.io.IOException) {
+            } catch (e: IOException) {
                 withContext(Dispatchers.Main) {
                     _cargandoNacimiento.value = false
                     _registroExitoso.value = false
@@ -453,7 +453,7 @@ class NacimientoViewmodel @Inject constructor(
                     "codigoAptitud" to codigoAptitud
                 )
                 historialDao.insert(HistorialEntity(
-                    id = java.util.UUID.randomUUID().toString(),
+                    id = UUID.randomUUID().toString(),
                     tipo = "NACIMIENTO",
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
                     hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
@@ -472,7 +472,7 @@ class NacimientoViewmodel @Inject constructor(
                 val registro = historialDao.getAll().find { it.id == id } ?: return@launch
                 val datos: Map<String, Any?> = Gson().fromJson(
                     registro.datos,
-                    object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
+                    object : TypeToken<Map<String, Any?>>() {}.type
                 )
                 _idMadre.value = datos["idMadre"] as? String ?: ""
                 _idCria.value = datos["idCria"] as? String ?: ""

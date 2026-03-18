@@ -1,4 +1,4 @@
-package com.example.terrabit_app.viewmodel
+package com.example.terrabit_app.viewmodel.bovinos
 
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.local.dao.HistorialDao
 import com.example.terrabit_app.data.local.database.Historial
-import com.example.terrabit_app.data.local.database.HistorialEntity
 import com.example.terrabit_app.data.local.database.toHistorial
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -65,6 +64,7 @@ class HistorialViewModel @Inject constructor(
         "MATERIAL_DUPLICADO" -> "Material Duplicado"
         "MOVIMIENTO" -> "Movimiento"
         "GUIA" -> "Guía"
+        "GUIA_PORCINOS" -> "Guía Porcinos"
         else -> tipo
     }
 

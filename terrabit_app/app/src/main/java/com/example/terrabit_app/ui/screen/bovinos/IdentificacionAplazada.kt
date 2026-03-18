@@ -29,14 +29,11 @@ import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.screen.bovinos.components.CampoIdentificadorAutoComplete
 import com.example.terrabit_app.ui.screen.bovinos.components.useDebounce
-import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.ui.theme.MainGreen
-import com.example.terrabit_app.utils.CodiMoSelector
 import com.example.terrabit_app.utils.alertsErrosScreens
 import com.example.terrabit_app.utils.bluetooth.BluetoothScanDialog
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
-import com.example.terrabit_app.viewmodel.CodiMoManagerViewModel
-import com.example.terrabit_app.viewmodel.IdentificacionAplazaViewModel
+import com.example.terrabit_app.viewmodel.bovinos.IdentificacionAplazaViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

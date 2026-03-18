@@ -44,8 +44,8 @@ import com.example.terrabit_app.utils.alertsErrosScreens
 import com.example.terrabit_app.utils.bluetooth.BluetoothScanDialog
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 import com.example.terrabit_app.utils.usb.UsbSerialViewModel
-import com.example.terrabit_app.viewmodel.CodiMoManagerViewModel
-import com.example.terrabit_app.viewmodel.GuiasViewModel
+import com.example.terrabit_app.viewmodel.bovinos.CodiMoManagerViewModel
+import com.example.terrabit_app.viewmodel.bovinos.GuiasViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

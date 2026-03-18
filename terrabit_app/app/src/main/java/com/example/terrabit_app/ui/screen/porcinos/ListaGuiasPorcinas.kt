@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,13 +17,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.FlightLand
-import androidx.compose.material.icons.filled.FlightTakeoff
 import androidx.compose.material.icons.filled.LocalShipping
 import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material3.CardDefaults
@@ -67,12 +63,11 @@ import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.theme.BlueGrey
 import com.example.terrabit_app.ui.theme.DarkBlueGrey
 import com.example.terrabit_app.ui.theme.DarkWhiteBackground
-import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
 import com.example.terrabit_app.utils.CodiMoSelector
 import com.example.terrabit_app.utils.UserPreferences
 import com.example.terrabit_app.utils.porcinos.ElementosConCodigosPorcinos
-import com.example.terrabit_app.viewmodel.CodiMoManagerViewModel
+import com.example.terrabit_app.viewmodel.bovinos.CodiMoManagerViewModel
 import com.example.terrabit_app.viewmodel.porcinos.EditarGuiaPorcinosViewModel
 import com.example.terrabit_app.viewmodel.porcinos.GestionarGuiasViewModel
 import java.time.LocalDateTime

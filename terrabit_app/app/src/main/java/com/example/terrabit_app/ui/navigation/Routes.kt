@@ -68,7 +68,15 @@ sealed class Routes(val route: String) {
     object GestionGuiasPorcinos : Routes("gestion_guias_porcinos")
     object EntradasPorcinos : Routes("entradas_porcinos")
     object EditarGuiaPorcinos : Routes("editar_guia_porcinos")
-    object CrearGuiasPorcinos : Routes("crear_guias_porcinos")
+
+
+    object CrearGuiasPorcinos : Routes("crear_guias_porcinos?borradorId={borradorId}&historialId={historialId}") {
+        fun nuevo() = "crear_guias_porcinos?borradorId=&historialId="
+        fun conBorrador(id: String) = "crear_guias_porcinos?borradorId=$id&historialId="
+        fun conHistorial(id: String) = "crear_guias_porcinos?borradorId=&historialId=$id"
+    }
+
+
     object GestionarGuiasPorcinos : Routes("editar_confirmar_guias_porcin")
 
     object Drawer : Routes("drawer_screen")

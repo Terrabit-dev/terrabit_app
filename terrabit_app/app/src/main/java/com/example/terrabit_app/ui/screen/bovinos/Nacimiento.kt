@@ -16,7 +16,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -24,24 +23,20 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
-import com.example.terrabit_app.data.network.Identificadores.Identificadores
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.screen.bovinos.components.CampoIdentificadorAutoComplete
 import com.example.terrabit_app.ui.screen.bovinos.components.useDebounce
 import com.example.terrabit_app.ui.theme.MainGreen
-import com.example.terrabit_app.utils.CodiMoSelector
 import com.example.terrabit_app.utils.DropdownField
 import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
 import com.example.terrabit_app.utils.bluetooth.BluetoothScanDialog
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 import com.example.terrabit_app.utils.usb.UsbSerialViewModel
-import com.example.terrabit_app.viewmodel.CodiMoManagerViewModel
 
-import com.example.terrabit_app.viewmodel.NacimientoViewmodel
+import com.example.terrabit_app.viewmodel.bovinos.NacimientoViewmodel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

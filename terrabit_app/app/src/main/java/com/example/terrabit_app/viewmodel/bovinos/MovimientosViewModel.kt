@@ -1,11 +1,9 @@
-package com.example.terrabit_app.viewmodel
+package com.example.terrabit_app.viewmodel.bovinos
 
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.terrabit_app.data.Borrador
-import com.example.terrabit_app.data.SharedPreferencesManager
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.Identificadores.IdenMovimiento
 import com.example.terrabit_app.data.network.lista_bovinos.Animal
@@ -29,7 +27,8 @@ import com.example.terrabit_app.data.local.dao.BorradorDao
 import com.example.terrabit_app.data.local.dao.HistorialDao
 import com.example.terrabit_app.data.local.database.BorradorEntity
 import com.example.terrabit_app.data.local.database.HistorialEntity
-import com.example.terrabit_app.data.local.database.toBorrador
+import java.io.IOException
+import java.net.SocketTimeoutException
 import java.util.UUID
 
 @HiltViewModel
@@ -532,13 +531,13 @@ class MovimientosViewModel @Inject constructor(
                         }
                     }
                 }
-            } catch (e: java.net.SocketTimeoutException) {
+            } catch (e: SocketTimeoutException) {
                 withContext(Dispatchers.Main) {
                     _cargandoMovimiento.value = false; _registroExitoso.value = false
                     _mensajeError.value = "Tiempo de espera agotado. La operación puede haberse completado, por favor verifique."
                     Log.e("Error Movimiento", "Timeout: ${e.message}", e)
                 }
-            } catch (e: java.io.IOException) {
+            } catch (e: IOException) {
                 withContext(Dispatchers.Main) {
                     _cargandoMovimiento.value = false; _registroExitoso.value = false
                     _mensajeError.value = "Error de conexión. Verifique su conexión a internet."
@@ -600,7 +599,7 @@ class MovimientosViewModel @Inject constructor(
                     "codiTransport" to _codiTransport.value
                 )
                 historialDao.insert(HistorialEntity(
-                    id = java.util.UUID.randomUUID().toString(),
+                    id = UUID.randomUUID().toString(),
                     tipo = "MOVIMIENTO",
                     fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
                     hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
@@ -619,7 +618,7 @@ class MovimientosViewModel @Inject constructor(
                 val registro = historialDao.getAll().find { it.id == id } ?: return@launch
                 val datos: Map<String, Any?> = Gson().fromJson(
                     registro.datos,
-                    object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
+                    object : TypeToken<Map<String, Any?>>() {}.type
                 )
                 _codiRemo.value = datos["codiRemo"] as? String ?: ""
                 _dataArribada.value = datos["dataArribada"] as? String ?: ""

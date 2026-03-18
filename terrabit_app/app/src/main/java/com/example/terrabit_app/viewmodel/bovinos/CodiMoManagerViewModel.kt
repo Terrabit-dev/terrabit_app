@@ -1,4 +1,4 @@
-package com.example.terrabit_app.viewmodel
+package com.example.terrabit_app.viewmodel.bovinos
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
