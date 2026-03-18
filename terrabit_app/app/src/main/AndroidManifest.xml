@@ -30,7 +30,10 @@
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.Terrabit_app">
+            android:theme="@style/Theme.Terrabit_app"
+            android:configChanges="locale|layoutDirection|fontScale|screenSize|uiMode"
+            >
+
 
             <!-- Solo el launcher aquí, sin USB -->
             <intent-filter>

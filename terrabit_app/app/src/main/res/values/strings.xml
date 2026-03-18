@@ -409,6 +409,7 @@
     <string name="category_females">Hembras</string>
     <string name="category_replacement">Reposición</string>
     <string name="category_boars">Sementales</string>
+    <string name="reloading_title_changing_language">Cambiando de idioma...</string>
 
     <string name="usb_error_not_found">Dispositivo no encontrado</string>
     <string name="usb_error_permission_denied">Permiso denegado</string>

@@ -1,5 +1,6 @@
 package com.example.terrabit_app.ui.pantallas
 
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -35,7 +36,9 @@ import com.example.terrabit_app.ui.theme.Blue
 import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
+import com.example.terrabit_app.utils.PantallaCargaIdioma
 import com.example.terrabit_app.viewmodel.bovinos.BorradorViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
@@ -44,7 +47,6 @@ fun BorradoresScreen(
     navController: NavController,
     viewModel: BorradorViewModel = hiltViewModel()
 ) {
-
     val borradores by viewModel.borradores.observeAsState(emptyList())
     val borradoresFiltered by viewModel.borradoresFiltrados.observeAsState(emptyList())
     val textoBusqueda by viewModel.textoBusqueda.observeAsState("")
@@ -53,6 +55,7 @@ fun BorradoresScreen(
     var mostrarDialogoEliminarSeleccion by remember { mutableStateOf(false) }
     var selectedIds by remember { mutableStateOf<Set<String>>(emptySet()) }
     val enModoSeleccion = selectedIds.isNotEmpty()
+    var cambiandoIdioma by remember { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
 
@@ -60,102 +63,117 @@ fun BorradoresScreen(
         viewModel.cargarBorradores()
     }
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background
-    ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-            verticalArrangement = Arrangement.spacedBy(0.dp)
-        ) {
-            item {
-                HeaderBorradores(
-                    totalBorradores = borradores.size,
-                    onMenuClick = if (enModoSeleccion) {
-                        { selectedIds = emptySet() }
-                    } else {
-                        onMenuClick
-                    },
-                    onEliminarTodos = { mostrarDialogoEliminarTodos = true },
-                    enModoSeleccion = enModoSeleccion,
-                    totalSeleccionados = selectedIds.size,
-                    onEliminarSeleccionados = { mostrarDialogoEliminarSeleccion = true }
-                )
-            }
-
-            item {
-                Spacer(modifier = Modifier.height(24.dp))
-                BarraBusqueda(
-                    texto = textoBusqueda,
-                    onTextoChange = { viewModel.actualizarBusqueda(it) }
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            if (borradoresFiltered.isEmpty()) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            containerColor = MaterialTheme.colorScheme.background
+        ) { padding ->
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                verticalArrangement = Arrangement.spacedBy(0.dp)
+            ) {
                 item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp)
-                            .padding(top = 48.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(
-                                Icons.Default.Description,
-                                contentDescription = null,
-                                modifier = Modifier.size(64.dp),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                stringResource(R.string.no_results_description_draft),
-                                fontSize = 16.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                    HeaderBorradores(
+                        totalBorradores = borradores.size,
+                        onMenuClick = if (enModoSeleccion) {
+                            { selectedIds = emptySet() }
+                        } else {
+                            onMenuClick
+                        },
+                        onEliminarTodos = { mostrarDialogoEliminarTodos = true },
+                        enModoSeleccion = enModoSeleccion,
+                        totalSeleccionados = selectedIds.size,
+                        onEliminarSeleccionados = { mostrarDialogoEliminarSeleccion = true },
+                        onCambiarIdioma = { idioma ->
+                            val localeActual = AppCompatDelegate.getApplicationLocales().toLanguageTags()
+                            if (!localeActual.startsWith(idioma)) {
+                                scope.launch {
+                                    cambiandoIdioma = true
+                                    delay(300)
+                                    cambiarIdioma(idioma)
+                                    delay(300)
+                                    cambiandoIdioma = false
+                                }
+                            }
+                        }
+                    )
+                }
+
+                item {
+                    Spacer(modifier = Modifier.height(24.dp))
+                    BarraBusqueda(
+                        texto = textoBusqueda,
+                        onTextoChange = { viewModel.actualizarBusqueda(it) }
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+
+                if (borradoresFiltered.isEmpty()) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(20.dp)
+                                .padding(top = 48.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(
+                                    Icons.Default.Description,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(64.dp),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    stringResource(R.string.no_results_description_draft),
+                                    fontSize = 16.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
                     }
-                }
-            } else {
-                items(borradoresFiltered, key = { it.id }) { borrador ->
-                    TarjetaBorrador(
-                        borrador = borrador,
-                        enModoSeleccion = enModoSeleccion,
-                        estaSeleccionado = borrador.id in selectedIds,
-                        onEliminarClick = { viewModel.eliminarBorrador(borrador.id) },
-                        onEditarClick = {
-                            navController.navigate(
-                                when (borrador.tipo) {
-                                    "CORRECCION_SEXO" -> Routes.CorregirBovino.conBorrador(borrador.id)
-                                    "MUERTE" -> Routes.Fallecimiento.conBorrador(borrador.id)
-                                    "NACIMIENTO" -> Routes.Nacimiento.conBorrador(borrador.id)
-                                    "IDENTIFICACION_APLAZADA" -> Routes.IdentificacionAplazada.conBorrador(borrador.id)
-                                    "GUIA" -> Routes.GestionGuias.conBorrador(borrador.id)
-                                    "MOVIMIENTO" -> Routes.Movimientos.conBorrador(borrador.id)
-                                    "MATERIAL" -> Routes.Material.conBorrador(borrador.id)
-                                    "MATERIAL_DUPLICADO" -> Routes.MaterialDuplicado.conBorrador(borrador.id)
-                                    "GUIA_PORCINOS" -> Routes.CrearGuiasPorcinos.conBorrador(borrador.id)
-                                    else -> return@TarjetaBorrador
+                } else {
+                    items(borradoresFiltered, key = { it.id }) { borrador ->
+                        TarjetaBorrador(
+                            borrador = borrador,
+                            enModoSeleccion = enModoSeleccion,
+                            estaSeleccionado = borrador.id in selectedIds,
+                            onEliminarClick = { viewModel.eliminarBorrador(borrador.id) },
+                            onEditarClick = {
+                                navController.navigate(
+                                    when (borrador.tipo) {
+                                        "CORRECCION_SEXO" -> Routes.CorregirBovino.conBorrador(borrador.id)
+                                        "MUERTE" -> Routes.Fallecimiento.conBorrador(borrador.id)
+                                        "NACIMIENTO" -> Routes.Nacimiento.conBorrador(borrador.id)
+                                        "IDENTIFICACION_APLAZADA" -> Routes.IdentificacionAplazada.conBorrador(borrador.id)
+                                        "GUIA" -> Routes.GestionGuias.conBorrador(borrador.id)
+                                        "MOVIMIENTO" -> Routes.Movimientos.conBorrador(borrador.id)
+                                        "MATERIAL" -> Routes.Material.conBorrador(borrador.id)
+                                        "MATERIAL_DUPLICADO" -> Routes.MaterialDuplicado.conBorrador(borrador.id)
+                                        "GUIA_PORCINOS" -> Routes.CrearGuiasPorcinos.conBorrador(borrador.id)
+                                        else -> return@TarjetaBorrador
+                                    }
+                                )
+                            },
+                            onToggleSeleccion = {
+                                selectedIds = if (borrador.id in selectedIds) {
+                                    selectedIds - borrador.id
+                                } else {
+                                    selectedIds + borrador.id
                                 }
-                            )
-                        },
-                        onToggleSeleccion = {
-                            selectedIds = if (borrador.id in selectedIds) {
-                                selectedIds - borrador.id
-                            } else {
-                                selectedIds + borrador.id
-                            }
-                        },
-                        modifier = Modifier.padding(horizontal = 20.dp)
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
+                            },
+                            modifier = Modifier.padding(horizontal = 20.dp)
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
+                    item { Spacer(modifier = Modifier.height(24.dp)) }
                 }
-
-                item { Spacer(modifier = Modifier.height(24.dp)) }
             }
         }
+
+        PantallaCargaIdioma(visible = cambiandoIdioma)
     }
 
     DialogoConfirmacion(
@@ -192,7 +210,8 @@ fun HeaderBorradores(
     onEliminarTodos: () -> Unit,
     enModoSeleccion: Boolean = false,
     totalSeleccionados: Int = 0,
-    onEliminarSeleccionados: () -> Unit = {}
+    onEliminarSeleccionados: () -> Unit = {},
+    onCambiarIdioma: (String) -> Unit = {}
 ) {
     var expandedConfig by remember { mutableStateOf(false) }
     var expandedOpciones by remember { mutableStateOf(false) }
@@ -243,11 +262,11 @@ fun HeaderBorradores(
                     ) {
                         DropdownMenuItem(
                             text = { Text("Castellano", color = MaterialTheme.colorScheme.onSurface) },
-                            onClick = { expandedConfig = false; cambiarIdioma("es") }
+                            onClick = { expandedConfig = false; onCambiarIdioma("es") }
                         )
                         DropdownMenuItem(
                             text = { Text("Català", color = MaterialTheme.colorScheme.onSurface) },
-                            onClick = { expandedConfig = false; cambiarIdioma("ca") }
+                            onClick = { expandedConfig = false; onCambiarIdioma("ca") }
                         )
                     }
                 }
@@ -280,19 +299,9 @@ fun HeaderBorradores(
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            Icons.Default.Description,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(16.dp)
-                        )
+                        Icon(Icons.Default.Description, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            "$totalBorradores ${stringResource(R.string.counter_draft)}",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = Color.White
-                        )
+                        Text("$totalBorradores ${stringResource(R.string.counter_draft)}", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color.White)
                     }
                 }
 
@@ -307,17 +316,11 @@ fun HeaderBorradores(
                                 .size(32.dp)
                                 .background(color = Color.White.copy(alpha = 0.2f), shape = CircleShape)
                         ) {
-                            Icon(
-                                Icons.Default.Delete,
-                                contentDescription = "Eliminar seleccionados",
-                                tint = Color.White,
-                                modifier = Modifier.size(20.dp)
-                            )
+                            Icon(Icons.Default.Delete, contentDescription = "Eliminar seleccionados", tint = Color.White, modifier = Modifier.size(20.dp))
                         }
                     }
 
                     Spacer(modifier = Modifier.width(10.dp))
-
 
                     Box {
                         IconButton(
@@ -326,12 +329,7 @@ fun HeaderBorradores(
                                 .size(32.dp)
                                 .background(color = Color.White.copy(alpha = 0.2f), shape = CircleShape)
                         ) {
-                            Icon(
-                                Icons.Default.MoreVert,
-                                contentDescription = "Opciones",
-                                tint = Color.White,
-                                modifier = Modifier.size(20.dp)
-                            )
+                            Icon(Icons.Default.MoreVert, contentDescription = "Opciones", tint = Color.White, modifier = Modifier.size(20.dp))
                         }
                         DropdownMenu(
                             expanded = expandedOpciones,
@@ -341,12 +339,7 @@ fun HeaderBorradores(
                             DropdownMenuItem(
                                 text = {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Icon(
-                                            Icons.Default.Delete,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(20.dp),
-                                            tint = ErrorRed
-                                        )
+                                        Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(20.dp), tint = ErrorRed)
                                         Spacer(modifier = Modifier.width(12.dp))
                                         Text(stringResource(R.string.delete_all_option), color = ErrorRed)
                                     }
@@ -402,10 +395,7 @@ fun BarraBusqueda(
             .fillMaxWidth()
             .padding(horizontal = 20.dp),
         placeholder = {
-            Text(
-                stringResource(R.string.search_bar_text),
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Text(stringResource(R.string.search_bar_text), color = MaterialTheme.colorScheme.onSurfaceVariant)
         },
         leadingIcon = {
             Icon(Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -460,8 +450,6 @@ fun TarjetaBorrador(
         "MOVIMIENTO" -> stringResource(R.string.type_draft_title_movement)
         "GUIA" -> stringResource(R.string.type_draft_title_guide)
         "GUIA_PORCINOS" -> stringResource(R.string.type_draft_title_pig_guide)
-
-
         else -> tipo
     }
 
@@ -479,9 +467,7 @@ fun TarjetaBorrador(
             .fillMaxWidth()
             .height(96.dp)
             .combinedClickable(
-                onClick = {
-                    if (enModoSeleccion) onToggleSeleccion() else onEditarClick()
-                },
+                onClick = { if (enModoSeleccion) onToggleSeleccion() else onEditarClick() },
                 onLongClick = onToggleSeleccion
             ),
         colors = CardDefaults.cardColors(containerColor = cardColor),
@@ -492,7 +478,6 @@ fun TarjetaBorrador(
             modifier = Modifier.fillMaxSize(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Barra lateral de selección
             if (estaSeleccionado) {
                 Box(
                     modifier = Modifier
@@ -560,9 +545,7 @@ fun TarjetaBorrador(
                 Spacer(modifier = Modifier.width(16.dp))
 
                 Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight(),
+                    modifier = Modifier.weight(1f).fillMaxHeight(),
                     verticalArrangement = Arrangement.Center
                 ) {
                     Row(
@@ -609,50 +592,20 @@ fun TarjetaBorrador(
                     Spacer(modifier = Modifier.height(6.dp))
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            Icons.Default.CalendarToday,
-                            contentDescription = null,
-                            modifier = Modifier.size(14.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        Icon(Icons.Default.CalendarToday, contentDescription = null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            borrador.fecha,
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                        Text(borrador.fecha, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Icon(
-                            Icons.Default.AccessTime,
-                            contentDescription = null,
-                            modifier = Modifier.size(14.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        Icon(Icons.Default.AccessTime, contentDescription = null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            borrador.hora ?: stringResource(R.string.no_hour_value),
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                        Text(borrador.hora ?: stringResource(R.string.no_hour_value), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                 }
 
                 if (!enModoSeleccion) {
                     Box {
-                        IconButton(
-                            onClick = { mostrarMenu = true },
-                            modifier = Modifier.size(40.dp)
-                        ) {
-                            Icon(
-                                Icons.Default.MoreVert,
-                                contentDescription = "Opciones",
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(24.dp)
-                            )
+                        IconButton(onClick = { mostrarMenu = true }, modifier = Modifier.size(40.dp)) {
+                            Icon(Icons.Default.MoreVert, contentDescription = "Opciones", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
                         }
                         DropdownMenu(
                             expanded = mostrarMenu,

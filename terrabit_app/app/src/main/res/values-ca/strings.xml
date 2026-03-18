@@ -427,6 +427,7 @@
     <string name="category_females">Famelles</string>
     <string name="category_replacement">Reposició</string>
     <string name="category_boars">Sementals</string>
+    <string name="reloading_title_changing_language">Canviant idioma...</string>
 
     <string name="usb_error_not_found">Dispositiu no trobat</string>
     <string name="usb_error_permission_denied">Permís denegat</string>
