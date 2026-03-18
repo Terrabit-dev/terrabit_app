@@ -491,9 +491,9 @@ fun ConfirmarEditarGuiasPorci(
 
                     // Opcional - Código SIR
                     CampoTexto(
-                        label = stringResource(R.string.form_porcinos_cod_sir),
+                        label = stringResource(R.string.form_codi_ates),
                         valor = uiStateEdita.codigoSIR,
-                        placeholder = stringResource(R.string.form_porcinos_descr_sir),
+                        placeholder = stringResource(R.string.form_codi_ates_description),
                         onValueChange = { viewModelEditarGuias.actualizarCodigoSIR(it) },
                         defectColor = false
                     )

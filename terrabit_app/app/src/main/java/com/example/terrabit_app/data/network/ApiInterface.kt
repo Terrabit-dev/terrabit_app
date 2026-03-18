@@ -30,6 +30,7 @@ import com.example.terrabit_app.data.network.DataClassPorcinos.GuiaGTRLista
 import com.example.terrabit_app.data.network.DataClassPorcinos.ModificarMovimentsAGias
 
 import okhttp3.OkHttpClient
+import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -160,7 +161,7 @@ interface ApiInterface {
     @PUT("WSMobilitat/AppJava/WSModificarGuiasMovilitat")
     suspend fun tramitarMovimientoMovilidadPorcina(
         @Body request: ModificarMovimentsAGias
-    ): Response<List<GtrStandardResponse>>
+    ): Response<ResponseBody>
 
 
     // --- SECCIÓN 2: CONFIRMACIÓN DE ENTRADAS (DESTINO) ---

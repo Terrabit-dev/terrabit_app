@@ -6,11 +6,13 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.terrabit_app.data.network.DataClassPorcinos.GtrStandardResponse
 import com.example.terrabit_app.data.network.DataClassPorcinos.GuiaGTRLista
 import com.example.terrabit_app.data.network.DataClassPorcinos.ModificarMovimentsAGias
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.ui.screen.porcinos.EditarGuiasPorcionsUiState
 import com.example.terrabit_app.utils.porcinos.ElementosConCodigosPorcinos
+import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -133,18 +135,31 @@ class EditarGuiaPorcinosViewModel(application: Application): AndroidViewModel(ap
     }
 
     fun editarYConfirmarGuia(onSuccess: () -> Unit) {
+        val state = _uiState.value
+
+        val camposVacios = state.categoriaCodigo.isBlank() ||
+                state.numAnimales.isBlank() ||
+                state.fechaSalida.isBlank() ||
+                state.horaSalida.isBlank() ||
+                state.fechaLlegada.isBlank() ||
+                state.horaLlegada.isBlank() ||
+                state.codigoSIR.isBlank() ||
+                state.matricula.isBlank() ||
+                state.nifConductor.isBlank()
+
+        if (camposVacios) {
+            _uiState.update { it.copy(error = "Todos los campos son obligatorios.") }
+            return
+        }
+
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            val state = _uiState.value
-
-            // 1. Log de los datos de entrada del formulario
-            Log.d("EDITAR_GUIA", "Iniciando proceso para REMO: ${state.remoActual}")
 
             val fechaS = combinarFechaHora(state.fechaSalida, state.horaSalida)
             val fechaA = combinarFechaHora(state.fechaLlegada, state.horaLlegada)
 
             val request = ModificarMovimentsAGias(
-                nif = "37370803N", // TODO: Obtener de userPreferences
+                nif = "37370803N",
                 password = "5Q62h4rP",
                 remo = state.remoActual,
                 categoria = state.categoriaCodigo,
@@ -156,35 +171,41 @@ class EditarGuiaPorcinosViewModel(application: Application): AndroidViewModel(ap
                 dataArribada = fechaA
             )
 
-            // 2. Log del objeto que se va a enviar (Verifica formatos aquí)
             Log.d("EDITAR_GUIA", "Request enviada: $request")
 
             try {
                 val response = repositorio.tramitarGuiaPorcina(request)
 
                 if (response.isSuccessful) {
-                    val body = response.body()
-                    // 3. Log de la respuesta bruta exitosa
-                    Log.d("EDITAR_GUIA", "Respuesta exitosa del servidor: $body")
+                    val rawJson = response.body()?.string() ?: ""
+                    Log.d("EDITAR_GUIA", "Raw JSON: $rawJson")
 
-                    val resultado = response.body()?.firstOrNull()
-                    if (resultado?.codi == "OK") {
-                        Log.i("EDITAR_GUIA", "✅ Trámite completado correctamente")
-                        _uiState.update { it.copy(isLoading = false) }
-                        onSuccess()
+                    // Parseamos manualmente según si empieza por [ o {
+                    val gson = Gson()
+                    if (rawJson.trimStart().startsWith("[")) {
+                        // Array de errores → tomamos el primero
+                        val errores = gson.fromJson(rawJson, Array<GtrStandardResponse>::class.java)
+                        val primerError = errores.firstOrNull()
+                        Log.w("EDITAR_GUIA", "❌ API devolvió errores: ${primerError?.descripcio}")
+                        _uiState.update { it.copy(isLoading = false, error = primerError?.descripcio) }
                     } else {
-                        // 4. Log de error de lógica de la API (ej: "Vehículo no válido")
-                        Log.w("EDITAR_GUIA", "❌ API rechazó los datos: ${resultado?.descripcio}")
-                        _uiState.update { it.copy(isLoading = false, error = resultado?.descripcio) }
+                        // Objeto único → respuesta de éxito
+                        val resultado = gson.fromJson(rawJson, GtrStandardResponse::class.java)
+                        if (resultado.codi == "OK") {
+                            Log.i("EDITAR_GUIA", "✅ Trámite completado correctamente")
+                            _uiState.update { it.copy(isLoading = false) }
+                            onSuccess()
+                        } else {
+                            Log.w("EDITAR_GUIA", "❌ API rechazó: ${resultado.descripcio}")
+                            _uiState.update { it.copy(isLoading = false, error = resultado.descripcio) }
+                        }
                     }
                 } else {
-                    // 5. Log de error de protocolo (404, 500, 401)
                     val errorBody = response.errorBody()?.string()
                     Log.e("EDITAR_GUIA", "🔥 Error HTTP ${response.code()}: $errorBody")
                     _uiState.update { it.copy(isLoading = false, error = "Error servidor (${response.code()})") }
                 }
             } catch (e: Exception) {
-                // 6. Log de excepción crítica (Sin internet, Timeout, Crash de parsing)
                 Log.e("EDITAR_GUIA", "💥 EXCEPCIÓN: ${e.localizedMessage}", e)
                 _uiState.update { it.copy(isLoading = false, error = e.localizedMessage) }
             }

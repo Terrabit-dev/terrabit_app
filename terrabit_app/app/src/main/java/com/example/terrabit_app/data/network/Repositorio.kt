@@ -22,6 +22,7 @@ import com.example.terrabit_app.data.network.DataClassPorcinos.ConfirmarMovimien
 import com.example.terrabit_app.data.network.DataClassPorcinos.GtrStandardResponse
 import com.example.terrabit_app.data.network.DataClassPorcinos.ModificarMovimentsAGias
 import com.example.terrabit_app.data.network.lista_bovinos.Animal
+import okhttp3.ResponseBody
 import retrofit2.Response
 
 class Repositorio(context: Context) {
@@ -156,7 +157,7 @@ class Repositorio(context: Context) {
     ) = apiInterface.listarMovimientosOrigenPorcino(nif, password, codiMo, codiRega, dataSortida)
 
     // 5.3 Modificar y emitir guía (Cierre)
-    suspend fun tramitarGuiaPorcina(request: ModificarMovimentsAGias): Response<List<GtrStandardResponse>> {
+    suspend fun tramitarGuiaPorcina(request: ModificarMovimentsAGias): Response<ResponseBody> {
         return apiInterface.tramitarMovimientoMovilidadPorcina(request)
     }
 
