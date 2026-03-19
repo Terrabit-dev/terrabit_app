@@ -23,6 +23,9 @@ import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.LocalShipping
 import androidx.compose.material.icons.filled.Pets
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
@@ -32,6 +35,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -64,6 +68,7 @@ import com.example.terrabit_app.ui.theme.BlueGrey
 import com.example.terrabit_app.ui.theme.DarkBlueGrey
 import com.example.terrabit_app.ui.theme.DarkWhiteBackground
 import com.example.terrabit_app.ui.theme.MainOrange
+import com.example.terrabit_app.utils.CampoTexto
 import com.example.terrabit_app.utils.CodiMoSelector
 import com.example.terrabit_app.utils.UserPreferences
 import com.example.terrabit_app.utils.porcinos.ElementosConCodigosPorcinos
@@ -82,26 +87,12 @@ fun ListaGuiasPorcinas(
     viewModelEditarGuias: EditarGuiaPorcinosViewModel
 ) {
     val context = LocalContext.current
-
-    // 1. Inicializamos la API usando tu propio companion object
-    val repo = remember { Repositorio(context) }
-
-    // 2. Inicializamos las preferencias
     val userPrefs = remember { UserPreferences(context) }
+    val nif = userPrefs.getNif() ?: ""
+    val pass = userPrefs.getPassword() ?: ""
+    val codiMo = userPrefs.getCodiMO() ?: ""
 
-    val codiMoViewModel = hiltViewModel<CodiMoManagerViewModel>()
-    val codisMoExpandido by codiMoViewModel.codisMoExpandido.observeAsState(false)
-    val codiMoActivo by codiMoViewModel.codiMoActivo.observeAsState(null)
-    // 3. Creamos el ViewModel con la Factory
-
-
-
-    val uiStateGestionGuias by viewModelGestionarGuias.uiState.collectAsState()
-
-    // Cargar datos al entrar
-    LaunchedEffect(Unit) {
-        viewModelGestionarGuias.cargarMovimientosDesdeApi()
-    }
+    val uiState by viewModelGestionarGuias.uiState.collectAsState()
 
     Scaffold(
         topBar = {
@@ -126,98 +117,149 @@ fun ListaGuiasPorcinas(
             )
         }
     ) { padding ->
-        // Contenedor principal
-
-        Column(                          // ← Column en lugar de Box
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-        ){
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 4.dp)
-            ) {
-                CodiMoSelector(
-                    codisMos = codiMoViewModel.getCodisMos(),
-                    seleccionado = codiMoActivo,
-                    expanded = codisMoExpandido,
-                    onToggle = { codiMoViewModel.toggleCodisMoExpandido() },
-                    onDismiss = { codiMoViewModel.cerrarCodisMo() },
-                    onSeleccionar = { codi -> codiMoViewModel.seleccionarCodiMo(codi) },
-                    accentColor = MainOrange
-                )
-            }
-
-            if (uiStateGestionGuias.isLoading) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    CircularProgressIndicator(
-                        color = MainOrange,
-                        strokeWidth = 4.dp
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = stringResource(R.string.gest_porcinos_cargando_mov),
-                        color = Color.Gray,
-                        fontSize = 14.sp
+        ) {
+            when {
+                // 1. Formulario inicial — antes de consultar
+                !uiState.consultaIniciada -> {
+                    Log.d("DEBUG", "Request: $nif $pass $codiMo")
+                    Log.d("DEBUG", "UI State: $uiState elementos")
+                    FormularioConsulta(
+                        rega = uiState.rega,
+                        fechaCorte = uiState.fechaCorte,
+                        mensajeError = uiState.mensajeError,
+                        onRegaChange = { viewModelGestionarGuias.actualizarRega(it) },
+                        onFechaCorteChange = { viewModelGestionarGuias.actualizarFechaCorte(it) },
+                        onConsultar = { viewModelGestionarGuias.consultarLista(nif, pass, codiMo) }
                     )
                 }
-            } else {
-                // Si NO está cargando, muestra la lista o el mensaje de vacío
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    if (uiStateGestionGuias.listaGuiasPorcinos.isEmpty()) {
-                        item {
-                            Box(
-                                modifier = Modifier.fillParentMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    stringResource(R.string.gest_porcinos_no_guias),
-                                    fontSize = 16.sp,
-                                    color = Color.Gray
+
+                // 2. Cargando
+                uiState.isLoading -> {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        CircularProgressIndicator(color = MainOrange, strokeWidth = 4.dp)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(stringResource(R.string.gest_porcinos_cargando_mov), color = Color.Gray, fontSize = 14.sp)
+                    }
+                }
+
+                // 3. Lista de resultados
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        if (uiState.listaGuiasPorcinos.isEmpty()) {
+                            item {
+                                Box(
+                                    modifier = Modifier.fillParentMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(stringResource(R.string.gest_porcinos_no_guias), fontSize = 16.sp, color = Color.Gray)
+                                }
+                            }
+                        } else {
+                            items(uiState.listaGuiasPorcinos) { guia ->
+                                GuiaCard(
+                                    navController = navController,
+                                    guia = guia,
+                                    viewModelGestionarGuias = viewModelGestionarGuias,
+                                    viewModelEditarGuias = viewModelEditarGuias
                                 )
                             }
-                        }
-                    } else {
-                        items(uiStateGestionGuias.listaGuiasPorcinos) { guia ->
-                            GuiaCard(
-                                navController = navController,
-                                guia = guia,
-                                viewModelGestionarGuias = viewModelGestionarGuias,
-                                viewModelEditarGuias = viewModelEditarGuias
-                            )
                         }
                     }
                 }
             }
         }
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
-
-            // CONDICIÓ: Si está cargando, muestra el círculo de carga.
-
-        }
     }
 }
 
 @Composable
-private fun RequestCard(
-    modifier: Modifier = Modifier
-){
+fun FormularioConsulta(
+    rega: String,
+    fechaCorte: String,
+    mensajeError: String?,
+    onRegaChange: (String) -> Unit,
+    onFechaCorteChange: (String) -> Unit,
+    onConsultar: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(20.dp),
+        verticalArrangement = Arrangement.Center
+    ) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            shape = MaterialTheme.shapes.large
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.gest_porcinos_edit_confirm),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = DarkBlueGrey
+                )
 
+                CampoTexto(
+                    label = "Código REGA",
+                    valor = rega,
+                    placeholder = "Ej: ES080470001881",
+                    onValueChange = onRegaChange,
+                    defectColor = false
+                )
+
+                CampoTexto(
+                    label = "Fecha de corte",
+                    valor = fechaCorte,
+                    placeholder = "Ej: 202401010000",
+                    onValueChange = onFechaCorteChange,
+                    defectColor = false
+                )
+
+                if (!mensajeError.isNullOrBlank()) {
+                    Text(
+                        text = mensajeError,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 13.sp
+                    )
+                }
+
+                Button(
+                    onClick = onConsultar,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MainOrange),
+                    shape = MaterialTheme.shapes.medium
+                ) {
+                    Text(
+                        text = "Consultar lista",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+        }
+    }
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -405,7 +447,12 @@ fun InfoChip(icon: ImageVector, label: String) {
 
 @RequiresApi(Build.VERSION_CODES.O)
 fun formatearFecha(dateLong: Long): String {
-    val inputFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmm")
-    val dateTime = LocalDateTime.parse(dateLong.toString(), inputFormatter)
-    return dateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+    if (dateLong == 0L) return "--/--/----"
+    return try {
+        val inputFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmm")
+        val dateTime = LocalDateTime.parse(dateLong.toString(), inputFormatter)
+        dateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
+    } catch (e: Exception) {
+        "--/--/----"
+    }
 }

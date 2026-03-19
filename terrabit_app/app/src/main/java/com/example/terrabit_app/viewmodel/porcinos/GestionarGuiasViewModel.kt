@@ -4,18 +4,21 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.terrabit_app.data.network.DataClassPorcinos.GtrErrorResponseLista
 import com.example.terrabit_app.data.network.DataClassPorcinos.GtrStandardResponse
 import com.example.terrabit_app.data.network.DataClassPorcinos.GuiaGTRLista
 import com.example.terrabit_app.data.network.DataClassPorcinos.ModificarMovimentsAGias
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.ui.screen.porcinos.GestionarGuiasPorcinosUiState
 import com.example.terrabit_app.utils.UserPreferences
+import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.collections.firstOrNull
+import okhttp3.ResponseBody
 
 class GestionarGuiasViewModel(application: Application): AndroidViewModel(application) {
 
@@ -24,63 +27,94 @@ class GestionarGuiasViewModel(application: Application): AndroidViewModel(applic
     private val repo = Repositorio(application)
     private lateinit var userPreferences: UserPreferences
 
+    // Funciones del formulario
+    fun actualizarRega(valor: String) {
+        _uiState.update { it.copy(rega = valor) }
+    }
 
-    fun cargarMovimientosDesdeApi() {
+    fun actualizarFechaCorte(valor: String) {
+        _uiState.update { it.copy(fechaCorte = valor) }
+    }
+
+    fun consultarLista(nif: String, pass: String, codiMo: String) {
+        val state = _uiState.value
+
+        if (state.rega.isBlank() || state.fechaCorte.isBlank()) {
+            _uiState.update { it.copy(mensajeError = "El código REGA y la fecha son obligatorios.") }
+            return
+        }
+
+        // Marcamos que la consulta ha iniciado → desaparece el formulario
+        _uiState.update { it.copy(consultaIniciada = true, mensajeError = null) }
+        cargarMovimientosDesdeApi(nif, pass, codiMo, state.rega, state.fechaCorte)
+    }
+
+    fun cargarMovimientosDesdeApi(
+        nif: String, pass: String, codiMo: String, rega: String, fechaCorte: String
+    ) {
         viewModelScope.launch {
-            Log.d("DEBUG_API", "--- Iniciando llamada a la API ---")
             _uiState.update { it.copy(isLoading = true) }
-
-            // Datos del administrador (Recordar cambiarlo por userPreferences después)
-            val nif = "37370803N"
-            val pass = "5Q62h4rP"
-            val codiMo = "1880AE"
-            val rega = "ES080470001881"
-            val fechaCorte = "202401010000"
-
-            Log.d("DEBUG_API", "Parámetros enviados: NIF=$nif, MO=$codiMo, REGA=$rega, Fecha=$fechaCorte")
-
             try {
                 val response = repo.getGuiasMobilitatPorcinas(nif, pass, codiMo, rega, fechaCorte)
 
                 if (response.isSuccessful) {
-                    val body = response.body()
-                    Log.d("DEBUG_API", "Respuesta Exitosa (Código ${response.code()})")
-                    Log.d("DEBUG_API", "Número de elementos recibidos: ${body?.size ?: 0}")
+                    val rawJson = response.body()?.string() ?: ""
+                    Log.d("DEBUG_API", "Raw JSON: $rawJson")
 
-                    if (body != null) {
-                        // Logueamos el primer elemento para ver si los nombres de los campos coinciden
-                        if (body.isNotEmpty()) {
-                            Log.d("DEBUG_API", "Ejemplo primer elemento: ${body[0]}")
-                        }
+                    val gson = Gson()
 
+                    // Comprobamos si el primer elemento tiene "codi" → es un error
+                    // Si tiene "moOrigen" → es una lista de guías
+                    val jsonArray = com.google.gson.JsonParser.parseString(rawJson).asJsonArray
+                    val primerElemento = jsonArray.firstOrNull()?.asJsonObject
+
+                    if (primerElemento?.has("moOrigen") == true) {
+                        // Es una lista de guías válida
+                        val listaGuias = gson.fromJson(rawJson, Array<GuiaGTRLista>::class.java)
+                        Log.d("DEBUG_API", "Guías recibidas: ${listaGuias.size}")
                         _uiState.update { it.copy(
-                            listaGuiasPorcinos = body,
-                            isLoading = false
+                            listaGuiasPorcinos = listaGuias.toList(),
+                            isLoading = false,
+                            mensajeError = null
+                        )}
+                    } else {
+                        // Es una lista de errores
+                        val errores = gson.fromJson(rawJson, Array<GtrErrorResponseLista>::class.java)
+                        val mensajeError = errores.firstOrNull()?.descripcio ?: "Error desconocido"
+                        Log.e("DEBUG_API", "Error de la API: $mensajeError")
+                        _uiState.update { it.copy(
+                            isLoading = false,
+                            mensajeError = mensajeError,
+                            consultaIniciada = false
                         )}
                     }
                 } else {
-                    // Error de la API (ej: 404, 500, 401)
                     val errorMsg = response.errorBody()?.string()
-                    Log.e("DEBUG_API", "Error de la API: Código ${response.code()}")
-                    Log.e("DEBUG_API", "Cuerpo del error: $errorMsg")
-
+                    Log.e("DEBUG_API", "Error HTTP ${response.code()}: $errorMsg")
                     _uiState.update { it.copy(
                         isLoading = false,
-                        mensajeError = "Error ${response.code()}: $errorMsg"
+                        mensajeError = "Error ${response.code()}: $errorMsg",
+                        consultaIniciada = false
                     )}
                 }
             } catch (e: Exception) {
-                // Error de conexión o crash de la App
-                Log.e("DEBUG_API", "EXCEPCIÓN CRÍTICA: ${e.message}")
-                e.printStackTrace() // Esto imprime toda la traza en la consola
-
+                Log.e("DEBUG_API", "EXCEPCIÓN: ${e.message}")
                 _uiState.update { it.copy(
                     isLoading = false,
-                    mensajeError = "Excepción: ${e.localizedMessage}"
+                    mensajeError = "Excepción: ${e.localizedMessage}",
+                    consultaIniciada = false
                 )}
             }
-            Log.d("DEBUG_API", "--- Finalización llamada a la API ---")
         }
+    }
+
+    // Para volver al formulario desde la lista
+    fun resetearConsulta() {
+        _uiState.update { it.copy(
+            consultaIniciada = false,
+            listaGuiasPorcinos = emptyList(),
+            mensajeError = null
+        )}
     }
 
 

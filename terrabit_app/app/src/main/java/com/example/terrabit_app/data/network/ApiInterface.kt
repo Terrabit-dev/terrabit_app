@@ -152,7 +152,7 @@ interface ApiInterface {
         @Query("codiMo") codiMo: String?,
         @Query("codiRega") codiRega: String,
         @Query("dataSortida") dataSortida: String // Format: yyyymmddHHMM
-    ): Response<List<GuiaGTRLista>>
+    ): Response<ResponseBody>
 
     /**
      * 5.3 SW DST’s tramitats en App Mòbil
