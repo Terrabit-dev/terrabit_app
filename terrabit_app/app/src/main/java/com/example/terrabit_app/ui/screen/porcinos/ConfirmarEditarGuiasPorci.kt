@@ -55,11 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
-import com.example.terrabit_app.ui.theme.BlueGrey
-import com.example.terrabit_app.ui.theme.DarkBlueGrey
-import com.example.terrabit_app.ui.theme.DarkWhiteBackground
 import com.example.terrabit_app.ui.theme.MainOrange
-import com.example.terrabit_app.ui.theme.WhiteBackground
 import com.example.terrabit_app.utils.CampoTexto
 import com.example.terrabit_app.utils.DropdownField
 import com.example.terrabit_app.utils.porcinos.ElementosConCodigosPorcinos
@@ -71,14 +67,14 @@ import com.example.terrabit_app.viewmodel.porcinos.GestionarGuiasViewModel
 @Composable
 fun ConfirmarEditarGuiasPorci(
     navController: NavController,
-    viewModelGestionarGuias : GestionarGuiasViewModel,
-    viewModelEditarGuias : EditarGuiaPorcinosViewModel
+    viewModelGestionarGuias: GestionarGuiasViewModel,
+    viewModelEditarGuias: EditarGuiaPorcinosViewModel
 ) {
     val uiStateEdita by viewModelEditarGuias.uiState.collectAsState()
     val uiStateLista by viewModelGestionarGuias.uiState.collectAsState()
 
     Log.d("Guia seleccionada", "Nose: ${uiStateLista.guiaSeleccionada}  ")
-    // 1. Cargamos los datos de la lista al formulario al entrar
+
     LaunchedEffect(Unit) {
         uiStateLista.guiaSeleccionada?.let { guia ->
             viewModelEditarGuias.cargarDatosGuia(guia)
@@ -88,7 +84,6 @@ fun ConfirmarEditarGuiasPorci(
 
     val elementosConCodigos = ElementosConCodigosPorcinos()
 
-    // DatePickerDialog para fecha de salida
     if (uiStateEdita.mostrarDatePickerSalida) {
         val datePickerState = rememberDatePickerState()
         DatePickerDialog(
@@ -106,7 +101,7 @@ fun ConfirmarEditarGuiasPorci(
             },
             dismissButton = {
                 TextButton(onClick = { viewModelEditarGuias.ocultarDatePickerSalida() }) {
-                    Text(stringResource(R.string.cancel_buttom), color = BlueGrey)
+                    Text(stringResource(R.string.cancel_buttom), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         ) {
@@ -120,7 +115,6 @@ fun ConfirmarEditarGuiasPorci(
         }
     }
 
-    // TimePickerDialog para fecha de salida
     if (uiStateEdita.mostrarTimePickerSalida) {
         val timePickerState = rememberTimePickerState()
         AlertDialog(
@@ -140,7 +134,7 @@ fun ConfirmarEditarGuiasPorci(
             },
             dismissButton = {
                 TextButton(onClick = { viewModelEditarGuias.ocultarTimePickerSalida() }) {
-                    Text(stringResource(R.string.cancel_buttom), color = BlueGrey)
+                    Text(stringResource(R.string.cancel_buttom), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             },
             text = {
@@ -155,7 +149,6 @@ fun ConfirmarEditarGuiasPorci(
         )
     }
 
-    // DatePickerDialog para fecha de llegada
     if (uiStateEdita.mostrarDatePickerLlegada) {
         val datePickerState = rememberDatePickerState()
         DatePickerDialog(
@@ -173,7 +166,7 @@ fun ConfirmarEditarGuiasPorci(
             },
             dismissButton = {
                 TextButton(onClick = { viewModelEditarGuias.ocultarDatePickerLlegada() }) {
-                    Text(stringResource(R.string.cancel_buttom), color = BlueGrey)
+                    Text(stringResource(R.string.cancel_buttom), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         ) {
@@ -187,7 +180,6 @@ fun ConfirmarEditarGuiasPorci(
         }
     }
 
-    // TimePickerDialog para fecha de llegada
     if (uiStateEdita.mostrarTimePickerLlegada) {
         val timePickerState = rememberTimePickerState()
         AlertDialog(
@@ -207,7 +199,7 @@ fun ConfirmarEditarGuiasPorci(
             },
             dismissButton = {
                 TextButton(onClick = { viewModelEditarGuias.ocultarTimePickerLlegada() }) {
-                    Text(stringResource(R.string.cancel_buttom), color = BlueGrey)
+                    Text(stringResource(R.string.cancel_buttom), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             },
             text = {
@@ -246,7 +238,7 @@ fun ConfirmarEditarGuiasPorci(
                 )
             )
         },
-        containerColor = WhiteBackground
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -261,7 +253,7 @@ fun ConfirmarEditarGuiasPorci(
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.surface
                 ),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                 shape = MaterialTheme.shapes.large
@@ -273,7 +265,6 @@ fun ConfirmarEditarGuiasPorci(
                     verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
 
-                    // Codigo de Categoria
                     DropdownField(
                         label = stringResource(R.string.form_porcinos_cod_cat),
                         selectedValue = uiStateEdita.categoriaSeleccionada,
@@ -286,8 +277,6 @@ fun ConfirmarEditarGuiasPorci(
                         defectColor = false
                     )
 
-
-                    // Número de Animales
                     CampoTexto(
                         label = stringResource(R.string.form_porcinos_nAnimales),
                         valor = uiStateEdita.numAnimales,
@@ -307,7 +296,7 @@ fun ConfirmarEditarGuiasPorci(
                                 stringResource(R.string.form_date_departure),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = DarkBlueGrey,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -323,7 +312,7 @@ fun ConfirmarEditarGuiasPorci(
                                     placeholder = {
                                         Text(
                                             stringResource(R.string.form_date_arrival_description),
-                                            color = BlueGrey
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     },
                                     leadingIcon = {
@@ -337,10 +326,10 @@ fun ConfirmarEditarGuiasPorci(
                                     enabled = false,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        disabledTextColor = DarkBlueGrey,
-                                        disabledBorderColor = DarkWhiteBackground,
+                                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                        disabledBorderColor = MaterialTheme.colorScheme.surfaceVariant,
                                         disabledLeadingIconColor = MainOrange,
-                                        disabledPlaceholderColor = BlueGrey
+                                        disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant
                                     ),
                                     singleLine = true
                                 )
@@ -352,7 +341,7 @@ fun ConfirmarEditarGuiasPorci(
                                 stringResource(R.string.form_hour_arrival),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = DarkBlueGrey,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -368,7 +357,7 @@ fun ConfirmarEditarGuiasPorci(
                                     placeholder = {
                                         Text(
                                             text = stringResource(R.string.form_hour_arrival_description),
-                                            color = BlueGrey
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     },
                                     leadingIcon = {
@@ -382,10 +371,10 @@ fun ConfirmarEditarGuiasPorci(
                                     enabled = false,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        disabledTextColor = DarkBlueGrey,
-                                        disabledBorderColor = DarkWhiteBackground,
+                                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                        disabledBorderColor = MaterialTheme.colorScheme.surfaceVariant,
                                         disabledLeadingIconColor = MainOrange,
-                                        disabledPlaceholderColor = BlueGrey
+                                        disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant
                                     ),
                                     singleLine = true
                                 )
@@ -403,7 +392,7 @@ fun ConfirmarEditarGuiasPorci(
                                 stringResource(R.string.form_date_arrival),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = DarkBlueGrey,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -419,7 +408,7 @@ fun ConfirmarEditarGuiasPorci(
                                     placeholder = {
                                         Text(
                                             stringResource(R.string.form_date_arrival_description),
-                                            color = BlueGrey
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     },
                                     leadingIcon = {
@@ -433,10 +422,10 @@ fun ConfirmarEditarGuiasPorci(
                                     enabled = false,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        disabledTextColor = DarkBlueGrey,
-                                        disabledBorderColor = DarkWhiteBackground,
+                                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                        disabledBorderColor = MaterialTheme.colorScheme.surfaceVariant,
                                         disabledLeadingIconColor = MainOrange,
-                                        disabledPlaceholderColor = BlueGrey
+                                        disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant
                                     ),
                                     singleLine = true
                                 )
@@ -448,7 +437,7 @@ fun ConfirmarEditarGuiasPorci(
                                 stringResource(R.string.form_hour_arrival),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = DarkBlueGrey,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -464,24 +453,24 @@ fun ConfirmarEditarGuiasPorci(
                                     placeholder = {
                                         Text(
                                             stringResource(R.string.form_hour_arrival_description),
-                                            color = BlueGrey
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     },
                                     leadingIcon = {
                                         Icon(
                                             Icons.Default.Schedule,
                                             contentDescription = stringResource(R.string.form_hour_arrival_description),
-                                            tint =MainOrange
+                                            tint = MainOrange
                                         )
                                     },
                                     readOnly = true,
                                     enabled = false,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        disabledTextColor = DarkBlueGrey,
-                                        disabledBorderColor = DarkWhiteBackground,
+                                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                        disabledBorderColor = MaterialTheme.colorScheme.surfaceVariant,
                                         disabledLeadingIconColor = MainOrange,
-                                        disabledPlaceholderColor = BlueGrey
+                                        disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant
                                     ),
                                     singleLine = true
                                 )
@@ -489,7 +478,6 @@ fun ConfirmarEditarGuiasPorci(
                         }
                     }
 
-                    // Opcional - Código SIR
                     CampoTexto(
                         label = stringResource(R.string.form_codi_ates),
                         valor = uiStateEdita.codigoSIR,
@@ -498,7 +486,6 @@ fun ConfirmarEditarGuiasPorci(
                         defectColor = false
                     )
 
-                    // Opcional - Matrícula
                     CampoTexto(
                         label = stringResource(R.string.form_porcinos_matricula),
                         valor = uiStateEdita.matricula,
@@ -507,8 +494,6 @@ fun ConfirmarEditarGuiasPorci(
                         defectColor = false
                     )
 
-
-                    // Opcional - NIF Conductor
                     CampoTexto(
                         label = stringResource(R.string.form_porcinos_nifCond),
                         valor = uiStateEdita.nifConductor,
@@ -517,7 +502,6 @@ fun ConfirmarEditarGuiasPorci(
                         defectColor = false
                     )
 
-                    // Botón Editar
                     Button(
                         onClick = {
                             viewModelEditarGuias.editarYConfirmarGuia {
@@ -530,7 +514,7 @@ fun ConfirmarEditarGuiasPorci(
                             .height(56.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MainOrange,
-                            disabledContainerColor = DarkWhiteBackground
+                            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant
                         ),
                         shape = MaterialTheme.shapes.medium,
                         elevation = ButtonDefaults.buttonElevation(

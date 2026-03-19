@@ -30,11 +30,8 @@ import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.screen.bovinos.cambiarIdioma
-import com.example.terrabit_app.ui.theme.BlueGrey
-import com.example.terrabit_app.ui.theme.DarkBlueGrey
 import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.ui.theme.MainOrange
-import com.example.terrabit_app.ui.theme.WhiteBackground
 import com.example.terrabit_app.utils.PantallaCargaIdioma
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -49,7 +46,7 @@ fun HomePorcinos(
     val scope = rememberCoroutineScope()
 
     Box(modifier = Modifier.fillMaxSize()) {
-        Scaffold(containerColor = WhiteBackground) { padding ->
+        Scaffold(containerColor = MaterialTheme.colorScheme.background) { padding ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -78,7 +75,7 @@ fun HomePorcinos(
                     text = stringResource(R.string.subtitle_home),
                     fontSize = 26.sp,
                     fontWeight = FontWeight.Bold,
-                    color = DarkBlueGrey,
+                    color = MaterialTheme.colorScheme.onBackground,
                     letterSpacing = 0.3.sp,
                     modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
                 )
@@ -124,7 +121,7 @@ fun TarjetaMenuPorcinos(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth().height(120.dp).clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp, pressedElevation = 6.dp),
         shape = RoundedCornerShape(16.dp)
     ) {
@@ -146,12 +143,12 @@ fun TarjetaMenuPorcinos(
             Spacer(modifier = Modifier.width(20.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(titulo, fontWeight = FontWeight.SemiBold, fontSize = 17.sp, color = DarkBlueGrey, letterSpacing = 0.2.sp)
+                Text(titulo, fontWeight = FontWeight.SemiBold, fontSize = 17.sp, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.2.sp)
                 Spacer(modifier = Modifier.height(6.dp))
-                Text(descripcion, fontSize = 14.sp, color = BlueGrey, lineHeight = 18.sp)
+                Text(descripcion, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 18.sp)
             }
 
-            Icon(Icons.Default.ChevronRight, contentDescription = "Ver más", tint = BlueGrey, modifier = Modifier.size(28.dp))
+            Icon(Icons.Default.ChevronRight, contentDescription = "Ver más", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(28.dp))
         }
     }
 }

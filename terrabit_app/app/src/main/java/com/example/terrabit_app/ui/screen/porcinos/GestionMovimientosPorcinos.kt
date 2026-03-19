@@ -12,11 +12,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -32,10 +32,7 @@ import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.components.TarjetaAccion
 import com.example.terrabit_app.ui.navigation.Routes
-import com.example.terrabit_app.ui.theme.BlueGrey
-import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
-import com.example.terrabit_app.ui.theme.WhiteBackground
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,7 +61,7 @@ fun GuiasMovimientosPorcinos(navController: NavController) {
                 )
             )
         },
-        containerColor = WhiteBackground
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -74,25 +71,22 @@ fun GuiasMovimientosPorcinos(navController: NavController) {
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Descripción
             Text(
                 text = stringResource(R.string.gestion_subtitle_porcinos),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = BlueGrey,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 20.dp)
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Tarjetas de acciones
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Gestionar Guías y Confirmar Movimientos
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
