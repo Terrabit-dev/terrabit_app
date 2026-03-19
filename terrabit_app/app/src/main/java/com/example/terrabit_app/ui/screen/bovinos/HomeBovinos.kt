@@ -171,7 +171,6 @@ fun Home(
                         titulo = stringResource(R.string.card_name_guias),
                         descripcion = stringResource(R.string.card_description_guias),
                         colorFondo = MainOrange,
-                        contadorBadge = 2,
                         onClick = { navController.navigate(Routes.GuiasMovimientos.route) }
                     )
                     TarjetaMenu(
