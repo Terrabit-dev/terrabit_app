@@ -415,7 +415,7 @@ class GuiasViewModel @Inject constructor(
                     when {
                         response.isSuccessful && response.body() != null -> {
                             val body = response.body()!!
-                            if (body.codiRemo == "0" || body.descripcio?.contains("correcte", ignoreCase = true) == true) {
+                            if (body.codiRemo == "0" || body.descripcio?.contains("correcte", ignoreCase = true) == true || body.descripcio?.equals("OK", ignoreCase = true) == true) {
                                 _registroExitoso.value = true
                                 _mensajeError.value = ""
                                 Log.d("Alta Guía", "Guía creada exitosamente")
