@@ -258,10 +258,9 @@ class ViewModelMuerteBovi @Inject constructor(
         _mostrarDatePickerMuerte.value = false
     }
 
-    fun obtenerUbicacionActual() {
-        _coordenadaX.value = "123456,12"
-        _coordenadaY.value = "1234567,12"
-        Log.d("GPS", "Ubicación obtenida - X: ${_coordenadaX.value}, Y: ${_coordenadaY.value}")
+    fun actualizarUbicacion(x: String, y: String) {
+        _coordenadaX.value = x
+        _coordenadaY.value = y
     }
 
     fun esFormularioMuerteValido(): Boolean {
