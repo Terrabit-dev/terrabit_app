@@ -23,6 +23,9 @@ import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.LocalShipping
 import androidx.compose.material.icons.filled.Pets
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
@@ -32,16 +35,15 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,21 +55,15 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.data.network.DataClassPorcinos.GuiaGTRLista
-import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.ui.navigation.Routes
-import com.example.terrabit_app.ui.theme.BlueGrey
-import com.example.terrabit_app.ui.theme.DarkBlueGrey
-import com.example.terrabit_app.ui.theme.DarkWhiteBackground
 import com.example.terrabit_app.ui.theme.MainOrange
-import com.example.terrabit_app.utils.CodiMoSelector
+import com.example.terrabit_app.utils.CampoTexto
 import com.example.terrabit_app.utils.UserPreferences
 import com.example.terrabit_app.utils.porcinos.ElementosConCodigosPorcinos
-import com.example.terrabit_app.viewmodel.bovinos.CodiMoManagerViewModel
 import com.example.terrabit_app.viewmodel.porcinos.EditarGuiaPorcinosViewModel
 import com.example.terrabit_app.viewmodel.porcinos.GestionarGuiasViewModel
 import java.time.LocalDateTime
@@ -82,26 +78,12 @@ fun ListaGuiasPorcinas(
     viewModelEditarGuias: EditarGuiaPorcinosViewModel
 ) {
     val context = LocalContext.current
-
-    // 1. Inicializamos la API usando tu propio companion object
-    val repo = remember { Repositorio(context) }
-
-    // 2. Inicializamos las preferencias
     val userPrefs = remember { UserPreferences(context) }
+    val nif = userPrefs.getNif() ?: ""
+    val pass = userPrefs.getPassword() ?: ""
+    val codiMo = userPrefs.getCodiMO() ?: ""
 
-    val codiMoViewModel = hiltViewModel<CodiMoManagerViewModel>()
-    val codisMoExpandido by codiMoViewModel.codisMoExpandido.observeAsState(false)
-    val codiMoActivo by codiMoViewModel.codiMoActivo.observeAsState(null)
-    // 3. Creamos el ViewModel con la Factory
-
-
-
-    val uiStateGestionGuias by viewModelGestionarGuias.uiState.collectAsState()
-
-    // Cargar datos al entrar
-    LaunchedEffect(Unit) {
-        viewModelGestionarGuias.cargarMovimientosDesdeApi()
-    }
+    val uiState by viewModelGestionarGuias.uiState.collectAsState()
 
     Scaffold(
         topBar = {
@@ -126,89 +108,152 @@ fun ListaGuiasPorcinas(
             )
         }
     ) { padding ->
-        // Contenedor principal
-
-        Column(                          // ← Column en lugar de Box
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-        ){
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 4.dp)
-            ) {
-                CodiMoSelector(
-                    codisMos = codiMoViewModel.getCodisMos(),
-                    seleccionado = codiMoActivo,
-                    expanded = codisMoExpandido,
-                    onToggle = { codiMoViewModel.toggleCodisMoExpandido() },
-                    onDismiss = { codiMoViewModel.cerrarCodisMo() },
-                    onSeleccionar = { codi -> codiMoViewModel.seleccionarCodiMo(codi) },
-                    accentColor = MainOrange
-                )
-            }
-
-            if (uiStateGestionGuias.isLoading) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    CircularProgressIndicator(
-                        color = MainOrange,
-                        strokeWidth = 4.dp
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = stringResource(R.string.gest_porcinos_cargando_mov),
-                        color = Color.Gray,
-                        fontSize = 14.sp
+        ) {
+            when {
+                !uiState.consultaIniciada -> {
+                    Log.d("DEBUG", "Request: $nif $pass $codiMo")
+                    Log.d("DEBUG", "UI State: $uiState elementos")
+                    FormularioConsulta(
+                        rega = uiState.rega,
+                        fechaCorte = uiState.fechaCorte,
+                        mensajeError = uiState.mensajeError,
+                        onRegaChange = { viewModelGestionarGuias.actualizarRega(it) },
+                        onFechaCorteChange = { viewModelGestionarGuias.actualizarFechaCorte(it) },
+                        onConsultar = { viewModelGestionarGuias.consultarLista(nif, pass, codiMo) }
                     )
                 }
-            } else {
-                // Si NO está cargando, muestra la lista o el mensaje de vacío
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    if (uiStateGestionGuias.listaGuiasPorcinos.isEmpty()) {
-                        item {
-                            Box(
-                                modifier = Modifier.fillParentMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    stringResource(R.string.gest_porcinos_no_guias),
-                                    fontSize = 16.sp,
-                                    color = Color.Gray
+
+                uiState.isLoading -> {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        CircularProgressIndicator(color = MainOrange, strokeWidth = 4.dp)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            stringResource(R.string.gest_porcinos_cargando_mov),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 14.sp
+                        )
+                    }
+                }
+
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        if (uiState.listaGuiasPorcinos.isEmpty()) {
+                            item {
+                                Box(
+                                    modifier = Modifier.fillParentMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        stringResource(R.string.gest_porcinos_no_guias),
+                                        fontSize = 16.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        } else {
+                            items(uiState.listaGuiasPorcinos) { guia ->
+                                GuiaCard(
+                                    navController = navController,
+                                    guia = guia,
+                                    viewModelGestionarGuias = viewModelGestionarGuias,
+                                    viewModelEditarGuias = viewModelEditarGuias
                                 )
                             }
-                        }
-                    } else {
-                        items(uiStateGestionGuias.listaGuiasPorcinos) { guia ->
-                            GuiaCard(
-                                navController = navController,
-                                guia = guia,
-                                viewModelGestionarGuias = viewModelGestionarGuias,
-                                viewModelEditarGuias = viewModelEditarGuias
-                            )
                         }
                     }
                 }
             }
         }
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
+    }
+}
+
+@Composable
+fun FormularioConsulta(
+    rega: String,
+    fechaCorte: String,
+    mensajeError: String?,
+    onRegaChange: (String) -> Unit,
+    onFechaCorteChange: (String) -> Unit,
+    onConsultar: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(20.dp),
+        verticalArrangement = Arrangement.Center
+    ) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            shape = MaterialTheme.shapes.large
         ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.gest_porcinos_edit_confirm),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
 
-            // CONDICIÓ: Si está cargando, muestra el círculo de carga.
+                CampoTexto(
+                    label = "Código REGA",
+                    valor = rega,
+                    placeholder = "Ej: ES080470001881",
+                    onValueChange = onRegaChange,
+                    defectColor = false
+                )
 
+                CampoTexto(
+                    label = "Fecha de corte",
+                    valor = fechaCorte,
+                    placeholder = "Ej: 202401010000",
+                    onValueChange = onFechaCorteChange,
+                    defectColor = false
+                )
+
+                if (!mensajeError.isNullOrBlank()) {
+                    Text(
+                        text = mensajeError,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 13.sp
+                    )
+                }
+
+                Button(
+                    onClick = onConsultar,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MainOrange),
+                    shape = MaterialTheme.shapes.medium
+                ) {
+                    Text(
+                        text = "Consultar lista",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
         }
     }
 }
@@ -223,7 +268,7 @@ fun GuiaCard(
 ) {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
@@ -232,7 +277,6 @@ fun GuiaCard(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // ── Cabecera: Origen → Destino + botón editar ──
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -242,12 +286,11 @@ fun GuiaCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // Origen
                     Text(
                         text = guia.moOrigen,
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp,
-                        color = DarkBlueGrey
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Icon(
                         imageVector = Icons.Default.ArrowForward,
@@ -255,12 +298,11 @@ fun GuiaCard(
                         tint = MainOrange,
                         modifier = Modifier.size(18.dp)
                     )
-                    // Destino
                     Text(
                         text = guia.moDesti,
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp,
-                        color = DarkBlueGrey
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
 
@@ -282,67 +324,60 @@ fun GuiaCard(
                 }
             }
 
-            // ── Código REMO (secundario) ──
             Text(
                 text = guia.remo,
                 fontSize = 17.sp,
-                color = BlueGrey,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 letterSpacing = 0.5.sp,
                 fontFamily = FontFamily.Monospace
             )
 
-            HorizontalDivider(color = DarkWhiteBackground)
+            HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
 
-            // ── Fechas ──
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Salida
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     modifier = Modifier.weight(1f)
                 ) {
-
                     Column {
                         Text(
                             text = stringResource(R.string.form_porcino_entradas_fecha_salida),
                             fontSize = 14.sp,
-                            color = BlueGrey
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
                             text = formatearFecha(guia.dataSortida),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium,
-                            color = DarkBlueGrey
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
-                // Llegada
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     modifier = Modifier.weight(1f)
                 ) {
-
                     Column {
                         Text(
                             text = stringResource(R.string.form_porcinos_entradas_fecha_llegada),
                             fontSize = 14.sp,
-                            color = BlueGrey
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
                             text = formatearFecha(guia.dataArribada),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium,
-                            color = DarkBlueGrey
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
             }
 
-            // ── Chips: animales + categoría + matrícula ──
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -350,11 +385,9 @@ fun GuiaCard(
                     icon = Icons.Default.Pets,
                     label = "${guia.nombreAnimals}"
                 )
-
                 InfoChip(
                     icon = Icons.Default.Category,
                     label = "Cat. ${ElementosConCodigosPorcinos().categorias()[guia.categoria]}"
-
                 )
                 Log.d("Guia info", "Informacion: ${guia} - ${guia.categoria}  ")
                 guia.vehicle?.let {
@@ -368,12 +401,11 @@ fun GuiaCard(
     }
 }
 
-// ── Chip reutilizable ──
 @Composable
 fun InfoChip(icon: ImageVector, label: String) {
     Surface(
         shape = RoundedCornerShape(20.dp),
-        color = DarkWhiteBackground
+        color = MaterialTheme.colorScheme.surfaceVariant
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
@@ -389,7 +421,7 @@ fun InfoChip(icon: ImageVector, label: String) {
             Text(
                 text = label,
                 fontSize = 11.sp,
-                color = DarkBlueGrey,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontWeight = FontWeight.Medium
             )
         }
@@ -398,7 +430,12 @@ fun InfoChip(icon: ImageVector, label: String) {
 
 @RequiresApi(Build.VERSION_CODES.O)
 fun formatearFecha(dateLong: Long): String {
-    val inputFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmm")
-    val dateTime = LocalDateTime.parse(dateLong.toString(), inputFormatter)
-    return dateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+    if (dateLong == 0L) return "--/--/----"
+    return try {
+        val inputFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmm")
+        val dateTime = LocalDateTime.parse(dateLong.toString(), inputFormatter)
+        dateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
+    } catch (e: Exception) {
+        "--/--/----"
+    }
 }

@@ -26,12 +26,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
-import com.example.terrabit_app.ui.theme.BlueGrey
-import com.example.terrabit_app.ui.theme.DarkBlueGrey
-import com.example.terrabit_app.ui.theme.DarkWhiteBackground
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
-import com.example.terrabit_app.ui.theme.WhiteBackground
 import com.example.terrabit_app.utils.CampoTexto
 import com.example.terrabit_app.utils.CodiMoSelector
 import com.example.terrabit_app.utils.DropdownField
@@ -137,7 +133,7 @@ fun CrearGuiasPorcinos(
         DatePickerDialog(
             onDismissRequest = { viewModel.ocultarDatePickerSalida() },
             confirmButton = { TextButton(onClick = { datePickerState.selectedDateMillis?.let { viewModel.seleccionarFechaSalida(it) } }) { Text(stringResource(R.string.accept_buttom), color = MainOrange) } },
-            dismissButton = { TextButton(onClick = { viewModel.ocultarDatePickerSalida() }) { Text(stringResource(R.string.cancel_buttom), color = BlueGrey) } }
+            dismissButton = { TextButton(onClick = { viewModel.ocultarDatePickerSalida() }) { Text(stringResource(R.string.cancel_buttom), color = MaterialTheme.colorScheme.onSurfaceVariant) } }
         ) { DatePicker(state = datePickerState, colors = DatePickerDefaults.colors(selectedDayContainerColor = MainOrange, todayDateBorderColor = MainOrange)) }
     }
 
@@ -146,7 +142,7 @@ fun CrearGuiasPorcinos(
         AlertDialog(
             onDismissRequest = { viewModel.ocultarTimePickerSalida() },
             confirmButton = { TextButton(onClick = { viewModel.actualizarHoraSalida(timePickerState.hour.toString(), timePickerState.minute.toString()); viewModel.ocultarTimePickerSalida() }) { Text(stringResource(R.string.accept_buttom), color = MainOrange) } },
-            dismissButton = { TextButton(onClick = { viewModel.ocultarTimePickerSalida() }) { Text(stringResource(R.string.cancel_buttom), color = BlueGrey) } },
+            dismissButton = { TextButton(onClick = { viewModel.ocultarTimePickerSalida() }) { Text(stringResource(R.string.cancel_buttom), color = MaterialTheme.colorScheme.onSurfaceVariant) } },
             text = { TimePicker(state = timePickerState, colors = TimePickerDefaults.colors(clockDialSelectedContentColor = Color.White, selectorColor = MainOrange)) }
         )
     }
@@ -156,7 +152,7 @@ fun CrearGuiasPorcinos(
         DatePickerDialog(
             onDismissRequest = { viewModel.ocultarDatePickerLlegada() },
             confirmButton = { TextButton(onClick = { datePickerState.selectedDateMillis?.let { viewModel.seleccionarFechaLlegada(it) } }) { Text(stringResource(R.string.accept_buttom), color = MainOrange) } },
-            dismissButton = { TextButton(onClick = { viewModel.ocultarDatePickerLlegada() }) { Text(stringResource(R.string.cancel_buttom), color = BlueGrey) } }
+            dismissButton = { TextButton(onClick = { viewModel.ocultarDatePickerLlegada() }) { Text(stringResource(R.string.cancel_buttom), color = MaterialTheme.colorScheme.onSurfaceVariant) } }
         ) { DatePicker(state = datePickerState, colors = DatePickerDefaults.colors(selectedDayContainerColor = MainOrange, todayDateBorderColor = MainOrange)) }
     }
 
@@ -165,7 +161,7 @@ fun CrearGuiasPorcinos(
         AlertDialog(
             onDismissRequest = { viewModel.ocultarTimePickerLlegada() },
             confirmButton = { TextButton(onClick = { viewModel.actualizarHoraLlegada(timePickerState.hour.toString(), timePickerState.minute.toString()); viewModel.ocultarTimePickerLlegada() }) { Text(stringResource(R.string.accept_buttom), color = MainOrange) } },
-            dismissButton = { TextButton(onClick = { viewModel.ocultarTimePickerLlegada() }) { Text(stringResource(R.string.cancel_buttom), color = BlueGrey) } },
+            dismissButton = { TextButton(onClick = { viewModel.ocultarTimePickerLlegada() }) { Text(stringResource(R.string.cancel_buttom), color = MaterialTheme.colorScheme.onSurfaceVariant) } },
             text = { TimePicker(state = timePickerState, colors = TimePickerDefaults.colors(clockDialSelectedContentColor = Color.White, selectorColor = MainOrange)) }
         )
     }
@@ -192,7 +188,7 @@ fun CrearGuiasPorcinos(
                 Snackbar(snackbarData = data, containerColor = MainGreen, contentColor = Color.White, shape = RoundedCornerShape(12.dp))
             }
         },
-        containerColor = WhiteBackground
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -204,7 +200,7 @@ fun CrearGuiasPorcinos(
 
             Card(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                 shape = MaterialTheme.shapes.large
             ) {
@@ -258,31 +254,41 @@ fun CrearGuiasPorcinos(
                     // Fecha y hora de salida
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(stringResource(R.string.form_date_departure), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = DarkBlueGrey, letterSpacing = 0.15.sp)
+                            Text(stringResource(R.string.form_date_departure), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
                             Spacer(modifier = Modifier.height(10.dp))
                             Box(modifier = Modifier.fillMaxWidth().clickable { if (!modoLectura) viewModel.mostrarDatePickerSalida() }) {
                                 OutlinedTextField(
                                     value = uiState.fechaSalida, onValueChange = {},
                                     modifier = Modifier.fillMaxWidth(),
-                                    placeholder = { Text(stringResource(R.string.form_date_arrival_description), color = BlueGrey) },
+                                    placeholder = { Text(stringResource(R.string.form_date_arrival_description), color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                     leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = MainOrange) },
                                     readOnly = true, enabled = false, shape = MaterialTheme.shapes.medium,
-                                    colors = OutlinedTextFieldDefaults.colors(disabledTextColor = DarkBlueGrey, disabledBorderColor = DarkWhiteBackground, disabledLeadingIconColor = MainOrange, disabledPlaceholderColor = BlueGrey),
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                        disabledBorderColor = MaterialTheme.colorScheme.surfaceVariant,
+                                        disabledLeadingIconColor = MainOrange,
+                                        disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                    ),
                                     singleLine = true
                                 )
                             }
                         }
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(stringResource(R.string.form_hour_arrival), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = DarkBlueGrey, letterSpacing = 0.15.sp)
+                            Text(stringResource(R.string.form_hour_arrival), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
                             Spacer(modifier = Modifier.height(10.dp))
                             Box(modifier = Modifier.fillMaxWidth().clickable { if (!modoLectura) viewModel.mostrarTimePickerSalida() }) {
                                 OutlinedTextField(
                                     value = uiState.horaSalida, onValueChange = {},
                                     modifier = Modifier.fillMaxWidth(),
-                                    placeholder = { Text(stringResource(R.string.form_hour_arrival_description), color = BlueGrey) },
+                                    placeholder = { Text(stringResource(R.string.form_hour_arrival_description), color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                     leadingIcon = { Icon(Icons.Default.Schedule, contentDescription = null, tint = MainOrange) },
                                     readOnly = true, enabled = false, shape = MaterialTheme.shapes.medium,
-                                    colors = OutlinedTextFieldDefaults.colors(disabledTextColor = DarkBlueGrey, disabledBorderColor = DarkWhiteBackground, disabledLeadingIconColor = MainOrange, disabledPlaceholderColor = BlueGrey),
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                        disabledBorderColor = MaterialTheme.colorScheme.surfaceVariant,
+                                        disabledLeadingIconColor = MainOrange,
+                                        disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                    ),
                                     singleLine = true
                                 )
                             }
@@ -292,31 +298,41 @@ fun CrearGuiasPorcinos(
                     // Fecha y hora de llegada
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(stringResource(R.string.form_date_arrival), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = DarkBlueGrey, letterSpacing = 0.15.sp)
+                            Text(stringResource(R.string.form_date_arrival), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
                             Spacer(modifier = Modifier.height(10.dp))
                             Box(modifier = Modifier.fillMaxWidth().clickable { if (!modoLectura) viewModel.mostrarDatePickerLlegada() }) {
                                 OutlinedTextField(
                                     value = uiState.fechaLlegada, onValueChange = {},
                                     modifier = Modifier.fillMaxWidth(),
-                                    placeholder = { Text(stringResource(R.string.form_date_arrival_description), color = BlueGrey) },
+                                    placeholder = { Text(stringResource(R.string.form_date_arrival_description), color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                     leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = MainOrange) },
                                     readOnly = true, enabled = false, shape = MaterialTheme.shapes.medium,
-                                    colors = OutlinedTextFieldDefaults.colors(disabledTextColor = DarkBlueGrey, disabledBorderColor = DarkWhiteBackground, disabledLeadingIconColor = MainOrange, disabledPlaceholderColor = BlueGrey),
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                        disabledBorderColor = MaterialTheme.colorScheme.surfaceVariant,
+                                        disabledLeadingIconColor = MainOrange,
+                                        disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                    ),
                                     singleLine = true
                                 )
                             }
                         }
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(stringResource(R.string.form_hour_arrival), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = DarkBlueGrey, letterSpacing = 0.15.sp)
+                            Text(stringResource(R.string.form_hour_arrival), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
                             Spacer(modifier = Modifier.height(10.dp))
                             Box(modifier = Modifier.fillMaxWidth().clickable { if (!modoLectura) viewModel.mostrarTimePickerLlegada() }) {
                                 OutlinedTextField(
                                     value = uiState.horaLlegada, onValueChange = {},
                                     modifier = Modifier.fillMaxWidth(),
-                                    placeholder = { Text(stringResource(R.string.form_hour_arrival_description), color = BlueGrey) },
+                                    placeholder = { Text(stringResource(R.string.form_hour_arrival_description), color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                     leadingIcon = { Icon(Icons.Default.Schedule, contentDescription = null, tint = MainOrange) },
                                     readOnly = true, enabled = false, shape = MaterialTheme.shapes.medium,
-                                    colors = OutlinedTextFieldDefaults.colors(disabledTextColor = DarkBlueGrey, disabledBorderColor = DarkWhiteBackground, disabledLeadingIconColor = MainOrange, disabledPlaceholderColor = BlueGrey),
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                        disabledBorderColor = MaterialTheme.colorScheme.surfaceVariant,
+                                        disabledLeadingIconColor = MainOrange,
+                                        disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                    ),
                                     singleLine = true
                                 )
                             }
@@ -367,7 +383,10 @@ fun CrearGuiasPorcinos(
                             onClick = { viewModel.crearGuia() },
                             modifier = Modifier.fillMaxWidth().padding(top = 8.dp).height(56.dp),
                             enabled = !uiState.isLoading,
-                            colors = ButtonDefaults.buttonColors(containerColor = MainOrange, disabledContainerColor = DarkWhiteBackground),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MainOrange,
+                                disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant
+                            ),
                             shape = MaterialTheme.shapes.medium,
                             elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp, pressedElevation = 6.dp)
                         ) {

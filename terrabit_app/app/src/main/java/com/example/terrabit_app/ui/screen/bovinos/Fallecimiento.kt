@@ -31,19 +31,27 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
-import com.example.terrabit_app.ui.screen.bovinos.components.CampoIdentificadorAutoComplete
-import com.example.terrabit_app.ui.screen.bovinos.components.useDebounce
+import com.example.terrabit_app.utils.components.CampoIdentificadorAutoComplete
+import com.example.terrabit_app.utils.components.useDebounce
 import com.example.terrabit_app.ui.theme.DarkOrange
 import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
 import com.example.terrabit_app.ui.theme.Yellow
+import com.example.terrabit_app.utils.CodiMoSelector
 import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
 import com.example.terrabit_app.utils.bluetooth.BluetoothScanDialog
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 import com.example.terrabit_app.utils.usb.UsbSerialViewModel
+import com.example.terrabit_app.viewmodel.bovinos.CodiMoManagerViewModel
 import com.example.terrabit_app.viewmodel.bovinos.ViewModelMuerteBovi
+import android.Manifest
+import android.annotation.SuppressLint
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import com.example.terrabit_app.utils.LocationUtils
+import com.google.android.gms.location.LocationServices
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -88,6 +96,22 @@ fun Fallecimiento(
     val usbViewModel = hiltViewModel<UsbSerialViewModel>()
     val usbState by usbViewModel.state.collectAsState()
     val usbErrorText = usbState.error?.let { stringResource(it) }
+
+    val codiMoViewModel = hiltViewModel<CodiMoManagerViewModel>()
+    val codisMoExpandido by codiMoViewModel.codisMoExpandido.observeAsState(false)
+    val codiMoActivo by codiMoViewModel.codiMoActivo.observeAsState(null)
+
+    val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val granted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true
+                || permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        if (granted) {
+            obtenerUbicacion(fusedLocationClient, viewModel)
+        }
+    }
 
     LaunchedEffect(Unit) {
         usbViewModel.mensajes.collect { mensaje ->
@@ -237,6 +261,20 @@ fun Fallecimiento(
                         modifier = Modifier.fillMaxWidth().padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        ) {
+                            CodiMoSelector(
+                                codisMos = codiMoViewModel.getCodisMos(),
+                                seleccionado = codiMoActivo,
+                                expanded = codisMoExpandido,
+                                onToggle = { codiMoViewModel.toggleCodisMoExpandido() },
+                                onDismiss = { codiMoViewModel.cerrarCodisMo() },
+                                onSeleccionar = { codi -> codiMoViewModel.seleccionarCodiMo(codi) },
+                                accentColor = ErrorRed
+                            )
+                        }
 
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
@@ -431,7 +469,13 @@ fun Fallecimiento(
 
                                     if (!modoLectura) {
                                         Button(
-                                            onClick = { viewModel.obtenerUbicacionActual() },
+                                            onClick = {
+                                                val permisos = arrayOf(
+                                                    Manifest.permission.ACCESS_FINE_LOCATION,
+                                                    Manifest.permission.ACCESS_COARSE_LOCATION
+                                                )
+                                                locationPermissionLauncher.launch(permisos)
+                                            },
                                             modifier = Modifier.fillMaxWidth(),
                                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),
                                             shape = RoundedCornerShape(10.dp),
@@ -441,7 +485,6 @@ fun Fallecimiento(
                                             Spacer(modifier = Modifier.width(8.dp))
                                             Text(stringResource(R.string.buttom_gps), color = ErrorRed, fontWeight = FontWeight.SemiBold)
                                         }
-                                        Spacer(modifier = Modifier.height(16.dp))
                                     }
 
                                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -551,6 +594,20 @@ fun Fallecimiento(
                     }
                 }
             }
+        }
+    }
+}
+
+
+@SuppressLint("MissingPermission")
+private fun obtenerUbicacion(
+    fusedLocationClient: com.google.android.gms.location.FusedLocationProviderClient,
+    viewModel: ViewModelMuerteBovi
+) {
+    fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+        if (location != null) {
+            val (x, y) = LocationUtils.latLonToUTM(location.latitude, location.longitude)
+            viewModel.actualizarUbicacion(x, y)
         }
     }
 }

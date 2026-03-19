@@ -109,10 +109,10 @@
     <string name="footer_copyright">© 2026 Terrabit. Gestió ramadera moderna i eficient</string>
 
     <string name="title_login">Iniciar sessió</string>
-    <string name="label_nif">NIF</string>
-    <string name="hint_nif">El teu NIF</string>
-    <string name="label_password">Contrasenya</string>
-    <string name="hint_password">La teva contrasenya</string>
+    <string name="label_user_code">Codi Usuari</string>
+    <string name="hint_user_code">El teu codi d\'usuari</string>
+    <string name="label_password_mobility">Contrasenya de Mobilitat</string>
+    <string name="hint_password_mobility">La teva contrasenya</string>
     <string name="label_codimo">Codi MO</string>
     <string name="hint_codimo">El teu codi MO</string>
     <string name="label_remember_me">Recorda\'m</string>
@@ -136,7 +136,7 @@
     <string name="form_exploitation_destination_description">Codi d\'explotació REGA</string>
     <string name="form_state_arrival">Estat d\'arribada *</string>
     <string name="form_state_arrival_description">Seleccionar estat</string>
-    <string name="form_movs_title_transport">Informaci\ó del transport</string>
+    <string name="form_movs_title_transport">Informació del transport</string>
     <string name="form_movs_title_optionals">Dades Opcionals del Transport</string>
     <string name="form_ways_transports">Mitjà de Transport</string>
     <string name="form_ways_transports_description">Seleccionar mitjà</string>
@@ -427,6 +427,7 @@
     <string name="category_females">Famelles</string>
     <string name="category_replacement">Reposició</string>
     <string name="category_boars">Sementals</string>
+    <string name="reloading_title_changing_language">Canviant idioma...</string>
 
     <string name="usb_error_not_found">Dispositiu no trobat</string>
     <string name="usb_error_permission_denied">Permís denegat</string>

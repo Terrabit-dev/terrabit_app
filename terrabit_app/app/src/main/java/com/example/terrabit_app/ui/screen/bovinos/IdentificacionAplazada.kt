@@ -27,8 +27,8 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
-import com.example.terrabit_app.ui.screen.bovinos.components.CampoIdentificadorAutoComplete
-import com.example.terrabit_app.ui.screen.bovinos.components.useDebounce
+import com.example.terrabit_app.utils.components.CampoIdentificadorAutoComplete
+import com.example.terrabit_app.utils.components.useDebounce
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.utils.alertsErrosScreens
 import com.example.terrabit_app.utils.bluetooth.BluetoothScanDialog

@@ -7,6 +7,9 @@ data class GestionarGuiasPorcinosUiState(
     val listaGuiasPorcinos: List<GuiaGTRLista> = mutableListOf(),
     val isLoading: Boolean = false,
     val mensajeError: String? = null,
+    val guiaSeleccionada: GuiaGTRLista? = null,
 
-    val guiaSeleccionada: GuiaGTRLista? = null
+    val rega: String = "",
+    val fechaCorte: String = "",
+    val consultaIniciada: Boolean = false
 )

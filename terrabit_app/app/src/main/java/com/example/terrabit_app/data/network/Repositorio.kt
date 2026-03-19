@@ -19,8 +19,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.example.terrabit_app.data.network.DataClassPorcinos.AltaMovimientoGTR
 import com.example.terrabit_app.data.network.DataClassPorcinos.ConfirmarMovimientosRequest
+import com.example.terrabit_app.data.network.DataClassPorcinos.GtrStandardResponse
 import com.example.terrabit_app.data.network.DataClassPorcinos.ModificarMovimentsAGias
 import com.example.terrabit_app.data.network.lista_bovinos.Animal
+import okhttp3.ResponseBody
+import retrofit2.Response
 
 class Repositorio(context: Context) {
     val apiInterface = ApiInterface.create()
@@ -154,8 +157,9 @@ class Repositorio(context: Context) {
     ) = apiInterface.listarMovimientosOrigenPorcino(nif, password, codiMo, codiRega, dataSortida)
 
     // 5.3 Modificar y emitir guía (Cierre)
-    suspend fun tramitarGuiaPorcina(request: ModificarMovimentsAGias) =
-        apiInterface.tramitarMovimientoMovilidadPorcina(request)
+    suspend fun tramitarGuiaPorcina(request: ModificarMovimentsAGias): Response<ResponseBody> {
+        return apiInterface.tramitarMovimientoMovilidadPorcina(request)
+    }
 
 
     // --- FLUJO DE ENTRADAS (DESTINO) ---

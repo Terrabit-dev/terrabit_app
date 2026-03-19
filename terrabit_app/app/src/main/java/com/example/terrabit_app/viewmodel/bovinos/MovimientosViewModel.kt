@@ -41,7 +41,7 @@ class MovimientosViewModel @Inject constructor(
 
     val nif = userPreferences.getNif() ?: ""
     val password = userPreferences.getPassword() ?: ""
-    val codiMo = userPreferences.getCodiMO() ?: ""
+    var codiMo = userPreferences.getCodiMO() ?: ""
     val listaCodigosAtes = listOf(CodigoAtes("D", "D - Transportista"))
 
     private var borradorSesionId: String = ""
@@ -165,9 +165,13 @@ class MovimientosViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 _isLoadingBovinos.postValue(true)
+                codiMo = userPreferences.getCodiMO() ?: ""
                 repositorio.getBovinosWithCache(
-                    nif = nif, password = password,
-                    tipusVinculacio = "1", explotacio = codiMo, forceRefresh = false
+                    nif = nif,
+                    password = password,
+                    tipusVinculacio = "1",
+                    explotacio = codiMo,
+                    forceRefresh = true
                 )
                 _bovinosCargados.postValue(true)
                 _isLoadingBovinos.postValue(false)

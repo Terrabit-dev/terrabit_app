@@ -38,7 +38,7 @@ class ViewModelMuerteBovi @Inject constructor(
 
     val nif = userPreferences.getNif() ?: ""
     val password = userPreferences.getPassword() ?: ""
-    val codiMo = userPreferences.getCodiMO() ?: ""
+    var codiMo = userPreferences.getCodiMO() ?: ""
 
     private val _suggestionsBovinos = MutableLiveData<List<Animal>>(emptyList())
     val suggestionsBovinos = _suggestionsBovinos
@@ -100,12 +100,13 @@ class ViewModelMuerteBovi @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 _isLoadingBovinos.postValue(true)
+                codiMo = userPreferences.getCodiMO() ?: ""
                 repositorio.getBovinosWithCache(
                     nif = nif,
                     password = password,
                     tipusVinculacio = "1",
                     explotacio = codiMo,
-                    forceRefresh = false
+                    forceRefresh = true
                 )
                 _bovinosCargados.postValue(true)
                 _isLoadingBovinos.postValue(false)
@@ -257,10 +258,9 @@ class ViewModelMuerteBovi @Inject constructor(
         _mostrarDatePickerMuerte.value = false
     }
 
-    fun obtenerUbicacionActual() {
-        _coordenadaX.value = "123456,12"
-        _coordenadaY.value = "1234567,12"
-        Log.d("GPS", "Ubicación obtenida - X: ${_coordenadaX.value}, Y: ${_coordenadaY.value}")
+    fun actualizarUbicacion(x: String, y: String) {
+        _coordenadaX.value = x
+        _coordenadaY.value = y
     }
 
     fun esFormularioMuerteValido(): Boolean {

@@ -30,6 +30,7 @@ import com.example.terrabit_app.data.network.DataClassPorcinos.GuiaGTRLista
 import com.example.terrabit_app.data.network.DataClassPorcinos.ModificarMovimentsAGias
 
 import okhttp3.OkHttpClient
+import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -151,7 +152,7 @@ interface ApiInterface {
         @Query("codiMo") codiMo: String?,
         @Query("codiRega") codiRega: String,
         @Query("dataSortida") dataSortida: String // Format: yyyymmddHHMM
-    ): Response<List<GuiaGTRLista>>
+    ): Response<ResponseBody>
 
     /**
      * 5.3 SW DST’s tramitats en App Mòbil
@@ -160,7 +161,7 @@ interface ApiInterface {
     @PUT("WSMobilitat/AppJava/WSModificarGuiasMovilitat")
     suspend fun tramitarMovimientoMovilidadPorcina(
         @Body request: ModificarMovimentsAGias
-    ): Response<GtrStandardResponse> // Quitamos el List
+    ): Response<ResponseBody>
 
 
     // --- SECCIÓN 2: CONFIRMACIÓN DE ENTRADAS (DESTINO) ---

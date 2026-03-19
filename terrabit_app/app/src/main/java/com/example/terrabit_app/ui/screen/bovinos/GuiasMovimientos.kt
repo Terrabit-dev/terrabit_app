@@ -83,7 +83,6 @@ fun GuiasMovimientos(navController: NavController) {
                         titulo = stringResource(R.string.action_confirm_movement),
                         subtitulo = "",
                         colorFondo = MainOrange,
-                        contadorBadge = 2,
                         modifier = Modifier.weight(1f),
                         onClick = { navController.navigate(Routes.Movimientos.nuevo()) }
                     )

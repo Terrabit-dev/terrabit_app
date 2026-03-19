@@ -111,10 +111,10 @@
     <string name="footer_copyright">© 2026 Terrabit. Gestión ganadera moderna y eficiente</string>
 
     <string name="title_login">Iniciar sesión</string>
-    <string name="label_nif">NIF</string>
-    <string name="hint_nif">Tu NIF</string>
-    <string name="label_password">Contraseña</string>
-    <string name="hint_password">Tu contraseña</string>
+    <string name="label_user_code">Código Usuario</string>
+    <string name="hint_user_code">Tu Código Usuario</string>
+    <string name="label_password_mobility">Contraseña Mobilidad</string>
+    <string name="hint_password_mobility">Tu contraseña</string>
     <string name="label_codimo">Código MO</string>
     <string name="hint_codimo">Tu código MO</string>
     <string name="label_remember_me">Recordarme</string>
@@ -432,6 +432,7 @@
     <string name="category_females">Hembras</string>
     <string name="category_replacement">Reposición</string>
     <string name="category_boars">Sementales</string>
+    <string name="reloading_title_changing_language">Cambiando de idioma...</string>
 
     <string name="usb_error_not_found">Dispositivo no encontrado</string>
     <string name="usb_error_permission_denied">Permiso denegado</string>

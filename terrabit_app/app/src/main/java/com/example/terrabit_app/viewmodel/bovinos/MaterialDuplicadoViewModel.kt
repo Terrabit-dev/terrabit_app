@@ -40,7 +40,7 @@ class MaterialDuplicadoViewModel @Inject constructor(
 
     val nif = userPreferences.getNif() ?: ""
     val password = userPreferences.getPassword() ?: ""
-    val codiMo = userPreferences.getCodiMO() ?: ""
+    var codiMo = userPreferences.getCodiMO() ?: ""
 
     private val _suggestionsBovinos = MutableLiveData<List<Animal>>(emptyList())
     val suggestionsBovinos = _suggestionsBovinos
@@ -122,7 +122,14 @@ class MaterialDuplicadoViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 _isLoadingBovinos.postValue(true)
-                repositorio.getBovinosWithCache(nif = nif, password = password, tipusVinculacio = "1", explotacio = codiMo, forceRefresh = false)
+                codiMo = userPreferences.getCodiMO() ?: ""
+                repositorio.getBovinosWithCache(
+                    nif = nif,
+                    password = password,
+                    tipusVinculacio = "1",
+                    explotacio = codiMo,
+                    forceRefresh = true
+                )
                 _bovinosCargados.postValue(true)
                 _isLoadingBovinos.postValue(false)
             } catch (e: Exception) {

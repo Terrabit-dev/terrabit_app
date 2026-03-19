@@ -36,6 +36,9 @@ import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
+import com.example.terrabit_app.utils.PantallaCargaIdioma
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun Home(
@@ -45,6 +48,8 @@ fun Home(
 ) {
     val context = LocalContext.current
     var mostrarDialogo by remember { mutableStateOf(false) }
+    var cambiandoIdioma by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
     val launcherBluetooth = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -101,126 +106,90 @@ fun Home(
         )
     }
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-        ) {
-            HeaderBienvenida(
-                tipoAnimal = tipoAnimalSeleccionado,
-                onMenuClick = onMenuClick
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                stringResource(R.string.subtitle_home),
-                fontSize = 26.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground,
-                letterSpacing = 0.3.sp,
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            containerColor = MaterialTheme.colorScheme.background
+        ) { padding ->
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .fillMaxSize()
+                    .padding(padding)
+                    .verticalScroll(rememberScrollState())
             ) {
-                TarjetaMenu(
-                    icono = Icons.Default.List,
-                    titulo = stringResource(R.string.list_bovinos),
-                    descripcion = stringResource(R.string.list_bovinos_subtitle),
-                    colorFondo = Color(0xFFE28F41),
-                    onClick = { navController.navigate(Routes.ListarBovinos.route) }
+                HeaderBienvenida(
+                    tipoAnimal = tipoAnimalSeleccionado,
+                    onMenuClick = onMenuClick,
+                    onCambiarIdioma = { idioma ->
+                        val localeActual = AppCompatDelegate.getApplicationLocales().toLanguageTags()
+                        if (!localeActual.startsWith(idioma)) {
+                            scope.launch {
+                                cambiandoIdioma = true
+                                delay(300)
+                                cambiarIdioma(idioma)
+                                delay(300)
+                                cambiandoIdioma = false
+                            }
+                        }
+                    }
                 )
-                TarjetaMenu(
-                    icono = Icons.Default.Agriculture,
-                    titulo = stringResource(R.string.card_name_animals),
-                    descripcion = stringResource(R.string.card_description_animals),
-                    colorFondo = MainGreen,
-                    onClick = { navController.navigate(Routes.GestionBovinos.route) }
-                )
-                TarjetaMenu(
-                    icono = Icons.Default.LocalShipping,
-                    titulo = stringResource(R.string.card_name_guias),
-                    descripcion = stringResource(R.string.card_description_guias),
-                    colorFondo = MainOrange,
-                    contadorBadge = 2,
-                    onClick = { navController.navigate(Routes.GuiasMovimientos.route) }
-                )
-                TarjetaMenu(
-                    icono = Icons.Default.ShoppingCart,
-                    titulo = stringResource(R.string.card_name_material),
-                    descripcion = stringResource(R.string.card_description_material),
-                    colorFondo = MainGreen,
-                    onClick = { navController.navigate(Routes.MaterialCategoria.route) }
-                )
-            }
 
-            Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-            // Card de información — usa primaryContainer del tema
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                ),
-                shape = RoundedCornerShape(16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
-            ) {
-                Row(
+                Text(
+                    stringResource(R.string.subtitle_home),
+                    fontSize = 26.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    letterSpacing = 0.3.sp,
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(20.dp),
-                    verticalAlignment = Alignment.Top
+                        .padding(horizontal = 20.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = MainGreen.copy(alpha = 0.2f),
-                        modifier = Modifier.size(48.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.Info,
-                            contentDescription = null,
-                            tint = MainGreen,
-                            modifier = Modifier.padding(12.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(16.dp))
-
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            stringResource(R.string.information_title_home),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            letterSpacing = 0.2.sp
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            stringResource(R.string.information_description_home),
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
-                            lineHeight = 20.sp,
-                            letterSpacing = 0.1.sp
-                        )
-                    }
+                    TarjetaMenu(
+                        icono = Icons.Default.List,
+                        titulo = stringResource(R.string.list_bovinos),
+                        descripcion = stringResource(R.string.list_bovinos_subtitle),
+                        colorFondo = Color(0xFFE28F41),
+                        onClick = { navController.navigate(Routes.ListarBovinos.route) }
+                    )
+                    TarjetaMenu(
+                        icono = Icons.Default.Agriculture,
+                        titulo = stringResource(R.string.card_name_animals),
+                        descripcion = stringResource(R.string.card_description_animals),
+                        colorFondo = MainGreen,
+                        onClick = { navController.navigate(Routes.GestionBovinos.route) }
+                    )
+                    TarjetaMenu(
+                        icono = Icons.Default.LocalShipping,
+                        titulo = stringResource(R.string.card_name_guias),
+                        descripcion = stringResource(R.string.card_description_guias),
+                        colorFondo = MainOrange,
+                        onClick = { navController.navigate(Routes.GuiasMovimientos.route) }
+                    )
+                    TarjetaMenu(
+                        icono = Icons.Default.ShoppingCart,
+                        titulo = stringResource(R.string.card_name_material),
+                        descripcion = stringResource(R.string.card_description_material),
+                        colorFondo = MainGreen,
+                        onClick = { navController.navigate(Routes.MaterialCategoria.route) }
+                    )
                 }
-            }
 
-            Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(45.dp))
+
+
+
+            }
         }
+
+        PantallaCargaIdioma(visible = cambiandoIdioma)
     }
 }
 
@@ -238,19 +207,12 @@ fun TarjetaMenu(
             .fillMaxWidth()
             .height(120.dp)
             .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 3.dp,
-            pressedElevation = 6.dp
-        ),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp, pressedElevation = 6.dp),
         shape = RoundedCornerShape(16.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(20.dp),
+            modifier = Modifier.fillMaxSize().padding(20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(contentAlignment = Alignment.TopEnd) {
@@ -260,55 +222,21 @@ fun TarjetaMenu(
                     modifier = Modifier.size(70.dp),
                     shadowElevation = 2.dp
                 ) {
-                    Icon(
-                        icono,
-                        contentDescription = titulo,
-                        tint = Color.White,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp)
-                    )
+                    Icon(icono, contentDescription = titulo, tint = Color.White, modifier = Modifier.fillMaxSize().padding(16.dp))
                 }
                 if (contadorBadge != null) {
-                    Badge(
-                        containerColor = ErrorRed,
-                        modifier = Modifier.offset(x = 4.dp, y = (-4).dp)
-                    ) {
-                        Text(
-                            contadorBadge.toString(),
-                            color = Color.White,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                    Badge(containerColor = ErrorRed, modifier = Modifier.offset(x = 4.dp, y = (-4).dp)) {
+                        Text(contadorBadge.toString(), color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
-
             Spacer(modifier = Modifier.width(20.dp))
-
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    titulo,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 17.sp,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    letterSpacing = 0.2.sp
-                )
+                Text(titulo, fontWeight = FontWeight.SemiBold, fontSize = 17.sp, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.2.sp)
                 Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    descripcion,
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    lineHeight = 18.sp
-                )
+                Text(descripcion, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 18.sp)
             }
-
-            Icon(
-                Icons.Default.ChevronRight,
-                contentDescription = "Ver más",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(28.dp)
-            )
+            Icon(Icons.Default.ChevronRight, contentDescription = "Ver más", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(28.dp))
         }
     }
 }
@@ -321,7 +249,8 @@ fun cambiarIdioma(codigoIdioma: String) {
 @Composable
 fun HeaderBienvenida(
     tipoAnimal: String,
-    onMenuClick: () -> Unit
+    onMenuClick: () -> Unit,
+    onCambiarIdioma: (String) -> Unit = {}
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -333,9 +262,7 @@ fun HeaderBienvenida(
             .background(color = MainGreen)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(20.dp)
+            modifier = Modifier.fillMaxSize().padding(20.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -344,9 +271,7 @@ fun HeaderBienvenida(
             ) {
                 IconButton(
                     onClick = onMenuClick,
-                    modifier = Modifier
-                        .size(40.dp)
-                        .background(color = Color.White.copy(alpha = 0.2f), shape = CircleShape)
+                    modifier = Modifier.size(40.dp).background(color = Color.White.copy(alpha = 0.2f), shape = CircleShape)
                 ) {
                     Icon(Icons.Default.Menu, contentDescription = "Menú", tint = Color.White)
                 }
@@ -354,9 +279,7 @@ fun HeaderBienvenida(
                 Box(contentAlignment = Alignment.Center) {
                     IconButton(
                         onClick = { expanded = true },
-                        modifier = Modifier
-                            .size(40.dp)
-                            .background(color = Color.White.copy(alpha = 0.2f), shape = CircleShape)
+                        modifier = Modifier.size(40.dp).background(color = Color.White.copy(alpha = 0.2f), shape = CircleShape)
                     ) {
                         Icon(Icons.Default.Language, contentDescription = "Idioma", tint = Color.White)
                     }
@@ -366,11 +289,11 @@ fun HeaderBienvenida(
                     ) {
                         DropdownMenuItem(
                             text = { Text("Castellano") },
-                            onClick = { expanded = false; cambiarIdioma("es") }
+                            onClick = { expanded = false; onCambiarIdioma("es") }
                         )
                         DropdownMenuItem(
                             text = { Text("Català") },
-                            onClick = { expanded = false; cambiarIdioma("ca") }
+                            onClick = { expanded = false; onCambiarIdioma("ca") }
                         )
                     }
                 }
@@ -378,36 +301,18 @@ fun HeaderBienvenida(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Text(
-                stringResource(R.string.title_home),
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
+            Text(stringResource(R.string.title_home), fontSize = 32.sp, fontWeight = FontWeight.Bold, color = Color.White)
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Surface(
-                color = Color.White.copy(alpha = 0.2f),
-                shape = RoundedCornerShape(20.dp)
-            ) {
+            Surface(color = Color.White.copy(alpha = 0.2f), shape = RoundedCornerShape(20.dp)) {
                 Row(
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        Icons.Default.Agriculture,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(16.dp)
-                    )
+                    Icon(Icons.Default.Agriculture, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        tipoAnimal,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color.White
-                    )
+                    Text(tipoAnimal, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color.White)
                 }
             }
         }
