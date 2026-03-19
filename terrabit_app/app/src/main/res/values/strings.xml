@@ -28,10 +28,10 @@
     <string name="loading_processing">Procesando...</string>
     <string name="subtitle_login">Gestión Ganadera Inteligente</string>
     <string name="title_login">Iniciar sesión</string>
-    <string name="label_nif">NIF</string>
-    <string name="hint_nif">Tu NIF</string>
-    <string name="label_password">Contraseña</string>
-    <string name="hint_password">Tu contraseña</string>
+    <string name="label_user_code">Código Usuario</string>
+    <string name="hint_user_code">Tu Código Usuario</string>
+    <string name="label_password_mobility">Contraseña Mobilidad</string>
+    <string name="hint_password_mobility">Tu contraseña</string>
     <string name="label_codimo">Código MO</string>
     <string name="hint_codimo">Tu código MO</string>
     <string name="label_remember_me">Recordarme</string>

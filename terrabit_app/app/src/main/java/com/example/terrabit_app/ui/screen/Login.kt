@@ -197,11 +197,11 @@ fun LoginCard(
             ) {
                 Text(stringResource(R.string.title_login), fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurface)
 
-                Text("NIF", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                Text(stringResource(R.string.label_user_code), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                 CustomOutlinedTextField(
                     value = nif,
                     onValueChange = { nif = it; viewModel.clearFieldError("nif") },
-                    placeholder = stringResource(R.string.hint_nif),
+                    placeholder = stringResource(R.string.hint_user_code),
                     icon = Icons.Outlined.AccountCircle,
                     isError = nifError != null,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next, autoCorrect = false),
@@ -211,11 +211,11 @@ fun LoginCard(
                     Text(nifError ?: "", color = ErrorRed, fontSize = 12.sp, modifier = Modifier.padding(start = 16.dp))
                 }
 
-                Text(stringResource(R.string.label_password), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                Text(stringResource(R.string.label_password_mobility), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                 CustomOutlinedTextField(
                     value = password,
                     onValueChange = { password = it; viewModel.clearFieldError("password") },
-                    placeholder = stringResource(R.string.hint_password),
+                    placeholder = stringResource(R.string.hint_password_mobility),
                     icon = Icons.Outlined.Lock,
                     isPassword = true,
                     isError = passwordError != null,

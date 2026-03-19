@@ -35,7 +35,6 @@ import com.example.terrabit_app.utils.alertsErrosScreens
 import com.example.terrabit_app.utils.bluetooth.BluetoothScanDialog
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 import com.example.terrabit_app.utils.usb.UsbSerialViewModel
-
 import com.example.terrabit_app.viewmodel.bovinos.NacimientoViewmodel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -67,6 +66,7 @@ fun Nacimiento(
     val estadoCarga by viewModel.cargandoNacimiento.observeAsState(false)
     val suggestionsBovinos by viewModel.suggestionsBovinos.observeAsState(emptyList())
     val isLoadingBovinos by viewModel.isLoadingBovinos.observeAsState(false)
+    val activeFieldIndex by viewModel.activeFieldIndex.observeAsState(-1)
 
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
@@ -104,7 +104,6 @@ fun Nacimiento(
         }
     }
 
-    // Error USB via snackbar
     LaunchedEffect(usbErrorText) {
         usbErrorText?.let {
             snackbarHostState.showSnackbar(
@@ -301,18 +300,17 @@ fun Nacimiento(
                     ) {
 
                         if (!modoLectura) {
-                            useDebounce(idMadre, delayMillis = 300L) { viewModel.searchBovinos(it) }
+                            useDebounce(idMadre, delayMillis = 300L) { viewModel.searchBovinos(0, it) }
                         }
                         CampoIdentificadorAutoComplete(
                             label = stringResource(R.string.form_id_mother),
                             valor = idMadre,
                             placeholder = stringResource(R.string.form_mother_description),
-                            // CAMBIO: propagamos enabled para que no muestre cursor ni abra teclado
                             enabled = !modoLectura,
                             onValueChange = { if (!modoLectura) viewModel.actualizarIdMadre(it) },
-                            suggestions = if (modoLectura) emptyList() else suggestionsBovinos,
+                            suggestions = if (modoLectura) emptyList() else if (activeFieldIndex == 0) suggestionsBovinos else emptyList(),
                             onAnimalSelected = { if (!modoLectura) viewModel.onMotherselected(it) },
-                            isLoadingSuggestions = if (modoLectura) false else isLoadingBovinos,
+                            isLoadingSuggestions = if (modoLectura) false else (isLoadingBovinos && activeFieldIndex == 0),
                             onClickBluetooth = {
                                 if (!modoLectura) {
                                     madreBluetooth = true; criaBluetooth = false
@@ -327,20 +325,18 @@ fun Nacimiento(
                             }
                         )
 
-
                         if (!modoLectura) {
-                            useDebounce(idCria, delayMillis = 300L) { viewModel.searchBovinos(it) }
+                            useDebounce(idCria, delayMillis = 300L) { viewModel.searchBovinos(1, it) }
                         }
                         CampoIdentificadorAutoComplete(
                             label = stringResource(R.string.form_id_breeding),
                             valor = idCria,
                             placeholder = stringResource(R.string.form_id_breeding_description),
-                            // CAMBIO: propagamos enabled para que no muestre cursor ni abra teclado
                             enabled = !modoLectura,
                             onValueChange = { if (!modoLectura) viewModel.actualizarIdCria(it) },
-                            suggestions = if (modoLectura) emptyList() else suggestionsBovinos,
+                            suggestions = if (modoLectura) emptyList() else if (activeFieldIndex == 1) suggestionsBovinos else emptyList(),
                             onAnimalSelected = { if (!modoLectura) viewModel.onBreedingSelected(it) },
-                            isLoadingSuggestions = if (modoLectura) false else isLoadingBovinos,
+                            isLoadingSuggestions = if (modoLectura) false else (isLoadingBovinos && activeFieldIndex == 1),
                             onClickBluetooth = {
                                 if (!modoLectura) {
                                     madreBluetooth = false; criaBluetooth = true
@@ -354,7 +350,6 @@ fun Nacimiento(
                                 }
                             }
                         )
-
 
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(stringResource(R.string.form_birthdate), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
@@ -371,8 +366,6 @@ fun Nacimiento(
                                     placeholder = { Text(stringResource(R.string.form_date_description), color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                     leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = MainGreen) },
                                     readOnly = true,
-                                    // CAMBIO: enabled=false bloquea cursor/teclado; colores disabled
-                                    // iguales a Movimientos para que se vea igual de profesional
                                     enabled = false,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
@@ -386,7 +379,6 @@ fun Nacimiento(
                                 )
                             }
                         }
-
 
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(stringResource(R.string.form_date_identification), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
@@ -403,7 +395,6 @@ fun Nacimiento(
                                     placeholder = { Text(stringResource(R.string.form_date_description), color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                     leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = MainGreen) },
                                     readOnly = true,
-                                    // CAMBIO: igual que fecha nacimiento
                                     enabled = false,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
@@ -417,7 +408,6 @@ fun Nacimiento(
                                 )
                             }
                         }
-
 
                         DropdownField(
                             label = stringResource(R.string.form_sex),

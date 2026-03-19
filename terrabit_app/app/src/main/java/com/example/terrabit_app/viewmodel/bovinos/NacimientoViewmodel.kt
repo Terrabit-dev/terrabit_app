@@ -51,6 +51,9 @@ class NacimientoViewmodel @Inject constructor(
     private val _isLoadingBovinos = MutableLiveData(false)
     val isLoadingBovinos = _isLoadingBovinos
 
+    private val _activeFieldIndex = MutableLiveData(-1)
+    val activeFieldIndex = _activeFieldIndex
+
     private val _bovinosCargados = MutableLiveData(false)
 
     val listaAptitudes = listOf("Carne", "Leche", "Doble propósito")
@@ -111,8 +114,6 @@ class NacimientoViewmodel @Inject constructor(
     private val _cargandoNacimiento = MutableLiveData(false)
     val cargandoNacimiento = _cargandoNacimiento
 
-
-
     init {
         borradorSesionId = "nacimiento_auto_${System.currentTimeMillis()}"
         cargarBovinosEnCache()
@@ -141,7 +142,8 @@ class NacimientoViewmodel @Inject constructor(
         }
     }
 
-    fun searchBovinos(query: String) {
+    fun searchBovinos(fieldIndex: Int, query: String) {
+        _activeFieldIndex.value = fieldIndex
         if (query.isBlank()) {
             _suggestionsBovinos.value = emptyList()
             return
@@ -161,12 +163,14 @@ class NacimientoViewmodel @Inject constructor(
     fun onMotherselected(animal: Animal) {
         _idMadre.value = animal.identificador
         _suggestionsBovinos.value = emptyList()
+        _activeFieldIndex.value = -1
         Log.d("NacimientoVM", "Bovino seleccionado: ${animal.identificador}")
     }
 
     fun onBreedingSelected(animal: Animal) {
         _idCria.value = animal.identificador
         _suggestionsBovinos.value = emptyList()
+        _activeFieldIndex.value = -1
     }
 
     fun tieneContenido(): Boolean {
@@ -178,7 +182,6 @@ class NacimientoViewmodel @Inject constructor(
                 !_razaSeleccionada.value.isNullOrEmpty() ||
                 !_aptitudSeleccionada.value.isNullOrEmpty()
     }
-
 
     fun guardarBorradorAutomatico() {
         if (!tieneContenido()) return
@@ -427,6 +430,7 @@ class NacimientoViewmodel @Inject constructor(
         codigoAptitud = "0"
         borradorSesionId = ""
         editandoBorrador = false
+        _activeFieldIndex.value = -1
     }
 
     fun resetearEstadoRegistro() {
@@ -436,7 +440,6 @@ class NacimientoViewmodel @Inject constructor(
     }
 
     fun validarIdentificador(id: String): Boolean = id.length >= 5
-
 
     private fun guardarEnHistorial(resumen: String = "") {
         viewModelScope.launch {
@@ -489,8 +492,5 @@ class NacimientoViewmodel @Inject constructor(
                 Log.e("NacimientoVM", "Error al cargar desde historial: ${e.message}", e)
             }
         }
-
     }
-
-
 }
