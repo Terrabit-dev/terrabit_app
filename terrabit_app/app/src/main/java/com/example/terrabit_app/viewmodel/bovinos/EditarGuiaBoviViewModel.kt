@@ -275,10 +275,10 @@ class EditarGuiaBoviViewModel @Inject constructor(
                         _error.postValue(body?.descripcio ?: "Error desconocido")
                     }
                 } else {
-                    val errorMsg = response.errorBody()?.string() ?: "Error de comunicación"
-                    Log.e("EDITAR_BOVI_VM", "HTTP ${response.code()}: $errorMsg")
+                    val rawError = response.errorBody()?.string() ?: ""
+                    Log.e("EDITAR_BOVI_VM", "HTTP ${response.code()}: $rawError")
                     _cargando.postValue(false)
-                    _error.postValue("Error ${response.code()}: $errorMsg")
+                    _error.postValue(extraerDescripcion(rawError, response.code()))
                 }
 
             } catch (e: Exception) {
@@ -326,5 +326,34 @@ class EditarGuiaBoviViewModel @Inject constructor(
             val (h, m)           = hora.split(":")
             "$anio$mes$dia$h$m"
         } catch (e: Exception) { "" }
+    }
+    private fun extraerDescripcion(rawJson: String, httpCode: Int): String {
+        if (rawJson.isBlank()) return "Error $httpCode"
+        return try {
+            val element = com.google.gson.JsonParser.parseString(rawJson)
+            when {
+                element.isJsonArray -> {
+                    element.asJsonArray
+                        .mapNotNull { it.asJsonObject.get("descripcio")?.asString }
+                        .filter { it.isNotBlank() }
+                        .joinToString("\n")
+                        .ifBlank { "Error $httpCode" }
+                }
+                element.isJsonObject -> {
+                    val obj = element.asJsonObject
+                    // Soporta { "errors": [...] } y { "descripcio": "..." }
+                    obj.getAsJsonArray("errors")
+                        ?.mapNotNull { it.asJsonObject.get("descripcio")?.asString }
+                        ?.filter { it.isNotBlank() }
+                        ?.joinToString("\n")
+                        ?.ifBlank { obj.get("descripcio")?.asString ?: "Error $httpCode" }
+                        ?: obj.get("descripcio")?.asString
+                        ?: "Error $httpCode"
+                }
+                else -> "Error $httpCode"
+            }
+        } catch (e: Exception) {
+            "Error $httpCode"
+        }
     }
 }

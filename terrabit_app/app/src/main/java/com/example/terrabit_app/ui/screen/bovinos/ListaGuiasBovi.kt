@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -24,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.terrabit_app.R
 import com.example.terrabit_app.data.network.guias.Guia
 import com.example.terrabit_app.ui.navigation.Routes
@@ -47,8 +49,74 @@ fun ListaGuiasBovi(
     val consultaIniciada by viewModel.consultaIniciada.observeAsState(false)
     val error           by viewModel.error.observeAsState(null)
     val rega            by viewModel.codiRega.observeAsState("")
-    val dataSortida     by viewModel.dataSortida.observeAsState("")
+    val mostrarDatePicker  by viewModel.mostrarDatePicker.observeAsState(false)
+    val mostrarTimePicker  by viewModel.mostrarTimePicker.observeAsState(false)
+    val fechaDisplay       by viewModel.fechaDisplay.observeAsState("")
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    LaunchedEffect(navBackStackEntry) {
+        if (
+            navBackStackEntry?.destination?.route == Routes.GuiasBovinos.route &&
+            consultaIniciada &&          // Solo si ya habíamos consultado
+            !cargando                    // Y no estamos ya cargando
+        ) {
+            viewModel.cargarGuias()
+        }
+    }
 
+
+    // ── DatePicker ────────────────────────────────────────────────────────────
+    if (mostrarDatePicker) {
+        val dpState = rememberDatePickerState()
+        DatePickerDialog(
+            onDismissRequest = { viewModel.ocultarDatePicker() },
+            confirmButton = {
+                TextButton(onClick = {
+                    dpState.selectedDateMillis?.let { viewModel.seleccionarFecha(it) }
+                }) { Text("Aceptar", color = MainOrange) }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.ocultarDatePicker() }) {
+                    Text("Cancelar", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        ) {
+            DatePicker(
+                state  = dpState,
+                colors = DatePickerDefaults.colors(
+                    selectedDayContainerColor = MainOrange,
+                    todayDateBorderColor      = MainOrange
+                )
+            )
+        }
+    }
+
+    // ── TimePicker ────────────────────────────────────────────────────────────
+    if (mostrarTimePicker) {
+        val tpState = rememberTimePickerState()
+        AlertDialog(
+            onDismissRequest = { viewModel.ocultarTimePicker() },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.seleccionarHora(tpState.hour, tpState.minute)
+                }) { Text("Aceptar", color = MainOrange) }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.ocultarTimePicker() }) {
+                    Text("Cancelar", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            text = {
+                TimePicker(
+                    state  = tpState,
+                    colors = TimePickerDefaults.colors(
+                        clockDialSelectedContentColor = Color.White,
+                        selectorColor                = MainOrange
+                    )
+                )
+            }
+        )
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -89,12 +157,12 @@ fun ListaGuiasBovi(
                 // ── 1. Formulario de consulta ──────────────────────────────
                 !consultaIniciada -> {
                     MiniFormulario(
-                        rega = rega,
-                        dataSortida = dataSortida,
-                        error = error,
-                        onRegaChange    = viewModel::onRegaChange,
-                        onFechaChange   = viewModel::onFechaChange,
-                        onConsultar     = viewModel::validarPeticion
+                        rega          = rega,
+                        fechaDisplay  = fechaDisplay,
+                        error         = error,
+                        onRegaChange  = viewModel::onRegaChange,
+                        onFechaClick  = viewModel::mostrarDatePicker,   // ← abre el picker
+                        onConsultar   = viewModel::validarPeticion
                     )
                 }
 
@@ -195,16 +263,14 @@ fun ListaGuiasBovi(
 @Composable
 private fun MiniFormulario(
     rega: String,
-    dataSortida: String,
+    fechaDisplay: String,
     error: String?,
     onRegaChange: (String) -> Unit,
-    onFechaChange: (String) -> Unit,
+    onFechaClick: () -> Unit,        // ← en lugar de onFechaChange
     onConsultar: () -> Unit
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(20.dp),
+        modifier = Modifier.fillMaxSize().padding(20.dp),
         verticalArrangement = Arrangement.Center
     ) {
         Card(
@@ -214,12 +280,9 @@ private fun MiniFormulario(
             shape     = MaterialTheme.shapes.large
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp),
+                modifier = Modifier.fillMaxWidth().padding(24.dp),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                // Título con icono
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -245,23 +308,55 @@ private fun MiniFormulario(
 
                 HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
 
+                // Campo REGA — igual que antes
                 CampoTexto(
-                    label       = "Código REGA",
-                    valor       = rega,
-                    placeholder = "Ej: ES080470001881",
+                    label         = "Código REGA",
+                    valor         = rega,
+                    placeholder   = "Ej: ES080470001881",
                     onValueChange = onRegaChange,
-                    defectColor = false
+                    defectColor   = false
                 )
 
-                CampoTexto(
-                    label       = "Fecha de salida",
-                    valor       = dataSortida,
-                    placeholder = "Ej: 202401010000",
-                    onValueChange = onFechaChange,
-                    defectColor = false
-                )
+                // Fecha de salida — ahora es un campo de solo lectura que abre el picker
+                Column {
+                    Text(
+                        text       = "Fecha de salida",
+                        fontSize   = 15.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color      = MaterialTheme.colorScheme.onSurface,
+                        letterSpacing = 0.15.sp
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Box(modifier = Modifier.fillMaxWidth().clickable { onFechaClick() }) {
+                        OutlinedTextField(
+                            value         = fechaDisplay,
+                            onValueChange = {},
+                            modifier      = Modifier.fillMaxWidth(),
+                            placeholder   = {
+                                Text(
+                                    "Selecciona fecha y hora",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            },
+                            leadingIcon   = {
+                                Icon(Icons.Default.DateRange, contentDescription = null, tint = MainOrange)
+                            },
+                            readOnly      = true,
+                            enabled       = false,
+                            shape         = MaterialTheme.shapes.medium,
+                            colors        = OutlinedTextFieldDefaults.colors(
+                                disabledTextColor         = MaterialTheme.colorScheme.onSurface,
+                                disabledBorderColor       = MaterialTheme.colorScheme.outline,
+                                disabledLeadingIconColor  = MainOrange,
+                                disabledPlaceholderColor  = MaterialTheme.colorScheme.onSurfaceVariant,
+                                disabledContainerColor    = MaterialTheme.colorScheme.surface
+                            ),
+                            singleLine    = true
+                        )
+                    }
+                }
 
-                // Mensaje de error
+                // Error
                 AnimatedVisibility(visible = !error.isNullOrBlank()) {
                     Surface(
                         shape = RoundedCornerShape(8.dp),
@@ -293,17 +388,9 @@ private fun MiniFormulario(
                     colors   = ButtonDefaults.buttonColors(containerColor = MainOrange),
                     shape    = MaterialTheme.shapes.medium
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
+                    Icon(Icons.Default.Search, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text       = "Consultar guías",
-                        fontSize   = 16.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
+                    Text(text = "Consultar guías", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
         }

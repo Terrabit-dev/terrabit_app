@@ -3,6 +3,7 @@ package com.example.terrabit_app.ui.screen.porcinos
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,14 +21,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.LocalShipping
 import androidx.compose.material.icons.filled.Pets
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
@@ -36,11 +42,18 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -83,8 +96,62 @@ fun ListaGuiasPorcinas(
     val pass = userPrefs.getPassword() ?: ""
     val codiMo = userPrefs.getCodiMO() ?: ""
 
-    val uiState by viewModelGestionarGuias.uiState.collectAsState()
 
+    val uiState by viewModelGestionarGuias.uiState.collectAsState()
+    val mostrarDatePicker = uiState.mostrarDatePicker
+    val mostrarTimePicker = uiState.mostrarTimePicker
+
+    if (mostrarDatePicker) {
+        val dpState = rememberDatePickerState()
+        DatePickerDialog(
+            onDismissRequest = { viewModelGestionarGuias.ocultarDatePicker() },
+            confirmButton = {
+                TextButton(onClick = {
+                    dpState.selectedDateMillis?.let { viewModelGestionarGuias.seleccionarFecha(it) }
+                }) { Text("Aceptar", color = MainOrange) }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModelGestionarGuias.ocultarDatePicker() }) {
+                    Text("Cancelar", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        ) {
+            DatePicker(
+                state  = dpState,
+                colors = DatePickerDefaults.colors(
+                    selectedDayContainerColor = MainOrange,
+                    todayDateBorderColor      = MainOrange
+                )
+            )
+        }
+    }
+
+    if (mostrarTimePicker) {
+        val tpState = rememberTimePickerState()
+        AlertDialog(
+            onDismissRequest = { viewModelGestionarGuias.ocultarTimePicker() },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModelGestionarGuias.seleccionarHora(tpState.hour, tpState.minute)
+                }) { Text("Aceptar", color = MainOrange) }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModelGestionarGuias.ocultarTimePicker() }) {
+                    Text("Cancelar", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            text = {
+                TimePicker(
+                    state  = tpState,
+                    colors = TimePickerDefaults.colors(
+                        clockDialSelectedContentColor = Color.White,
+                        selectorColor                = MainOrange
+                    )
+                )
+            }
+        )
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -118,12 +185,12 @@ fun ListaGuiasPorcinas(
                     Log.d("DEBUG", "Request: $nif $pass $codiMo")
                     Log.d("DEBUG", "UI State: $uiState elementos")
                     FormularioConsulta(
-                        rega = uiState.rega,
-                        fechaCorte = uiState.fechaCorte,
-                        mensajeError = uiState.mensajeError,
-                        onRegaChange = { viewModelGestionarGuias.actualizarRega(it) },
-                        onFechaCorteChange = { viewModelGestionarGuias.actualizarFechaCorte(it) },
-                        onConsultar = { viewModelGestionarGuias.consultarLista(nif, pass, codiMo) }
+                        rega             = uiState.rega,
+                        fechaDisplay     = uiState.fechaCorteDisplay,   // ← en lugar de fechaCorte
+                        mensajeError     = uiState.mensajeError,
+                        onRegaChange     = { viewModelGestionarGuias.actualizarRega(it) },
+                        onFechaClick     = { viewModelGestionarGuias.mostrarDatePicker() }, // ← nuevo
+                        onConsultar      = { viewModelGestionarGuias.consultarLista(nif, pass, codiMo) }
                     )
                 }
 
@@ -184,72 +251,98 @@ fun ListaGuiasPorcinas(
 @Composable
 fun FormularioConsulta(
     rega: String,
-    fechaCorte: String,
+    fechaDisplay: String,           // ← antes era fechaCorte: String
     mensajeError: String?,
     onRegaChange: (String) -> Unit,
-    onFechaCorteChange: (String) -> Unit,
+    onFechaClick: () -> Unit,       // ← antes era onFechaCorteChange
     onConsultar: () -> Unit
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(20.dp),
+        modifier = Modifier.fillMaxSize().padding(20.dp),
         verticalArrangement = Arrangement.Center
     ) {
         Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            modifier  = Modifier.fillMaxWidth(),
+            colors    = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-            shape = MaterialTheme.shapes.large
+            shape     = MaterialTheme.shapes.large
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp),
+                modifier = Modifier.fillMaxWidth().padding(24.dp),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 Text(
-                    text = stringResource(R.string.gest_porcinos_edit_confirm),
-                    fontSize = 18.sp,
+                    text       = stringResource(R.string.gest_porcinos_edit_confirm),
+                    fontSize   = 18.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color      = MaterialTheme.colorScheme.onSurface
                 )
 
+                // Campo REGA — sin cambios
                 CampoTexto(
-                    label = "Código REGA",
-                    valor = rega,
-                    placeholder = "Ej: ES080470001881",
+                    label         = "Código REGA",
+                    valor         = rega,
+                    placeholder   = "Ej: ES080470001881",
                     onValueChange = onRegaChange,
-                    defectColor = false
+                    defectColor   = false
                 )
 
-                CampoTexto(
-                    label = "Fecha de corte",
-                    valor = fechaCorte,
-                    placeholder = "Ej: 202401010000",
-                    onValueChange = onFechaCorteChange,
-                    defectColor = false
-                )
+                // Fecha de corte — ahora abre el picker
+                Column {
+                    Text(
+                        text          = "Fecha de corte",
+                        fontSize      = 15.sp,
+                        fontWeight    = FontWeight.SemiBold,
+                        color         = MaterialTheme.colorScheme.onSurface,
+                        letterSpacing = 0.15.sp
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Box(modifier = Modifier.fillMaxWidth().clickable { onFechaClick() }) {
+                        OutlinedTextField(
+                            value         = fechaDisplay,
+                            onValueChange = {},
+                            modifier      = Modifier.fillMaxWidth(),
+                            placeholder   = {
+                                Text(
+                                    "Selecciona fecha y hora",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            },
+                            leadingIcon   = {
+                                Icon(Icons.Default.DateRange, contentDescription = null, tint = MainOrange)
+                            },
+                            readOnly      = true,
+                            enabled       = false,
+                            shape         = MaterialTheme.shapes.medium,
+                            colors        = OutlinedTextFieldDefaults.colors(
+                                disabledTextColor        = MaterialTheme.colorScheme.onSurface,
+                                disabledBorderColor      = MaterialTheme.colorScheme.outline,
+                                disabledLeadingIconColor = MainOrange,
+                                disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                disabledContainerColor   = MaterialTheme.colorScheme.surface
+                            ),
+                            singleLine    = true
+                        )
+                    }
+                }
 
                 if (!mensajeError.isNullOrBlank()) {
                     Text(
-                        text = mensajeError,
-                        color = MaterialTheme.colorScheme.error,
+                        text     = mensajeError,
+                        color    = MaterialTheme.colorScheme.error,
                         fontSize = 13.sp
                     )
                 }
 
                 Button(
-                    onClick = onConsultar,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MainOrange),
-                    shape = MaterialTheme.shapes.medium
+                    onClick  = onConsultar,
+                    modifier = Modifier.fillMaxWidth().height(52.dp),
+                    colors   = ButtonDefaults.buttonColors(containerColor = MainOrange),
+                    shape    = MaterialTheme.shapes.medium
                 ) {
                     Text(
-                        text = "Consultar lista",
-                        fontSize = 16.sp,
+                        text       = "Consultar lista",
+                        fontSize   = 16.sp,
                         fontWeight = FontWeight.SemiBold
                     )
                 }
