@@ -95,7 +95,7 @@ class LoginViewModel @Inject constructor(
                     passwordMobilitat = password,
                     codiMO = codiMO
                 )
-                if (response.isSuccessful  && response.body() != null) {
+                if (response.isSuccessful && response.body() != null) {
                     val body = response.body()!!
                     if (body.errors == null) {
                         userPreferences.saveCredentials(nif, password, codiMO, rememberMe)
@@ -110,6 +110,12 @@ class LoginViewModel @Inject constructor(
                 _loginState.value = LoginState.Error("Error de conexión: ${e.message}")
             }
         }
+    }
+
+    fun guardarYContinuar(nif: String, password: String, codiMO: String, rememberMe: Boolean) {
+        if (!validateFields(nif, password, codiMO)) return
+        userPreferences.saveCredentials(nif, password, codiMO, rememberMe)
+        _loginState.value = LoginState.Success(nif, password, codiMO)
     }
 
     fun resetState() {

@@ -118,6 +118,7 @@
     <string name="label_remember_me">Recorda\'m</string>
     <string name="action_forgot_password">Has oblidat la contrasenya?</string>
     <string name="btn_login">Accedir</string>
+    <string name="btn_next">Següent</string>
 
     <string name="content_description_hide">Ocultar</string>
     <string name="content_description_show">Mostrar</string>
