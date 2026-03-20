@@ -156,15 +156,7 @@ fun CampoIdentificadorAutoComplete(
                                 )
                             }
                         }
-                        if (onClickUsb != null) {
-                            IconButton(onClick = onClickUsb) {
-                                Icon(
-                                    Icons.Outlined.Usb,
-                                    contentDescription = "Leer crotal por USB",
-                                    tint = accentColor
-                                )
-                            }
-                        }
+
                         IconButton(onClick = onClickBluetooth) {
                             Icon(
                                 Icons.Outlined.Bluetooth,
