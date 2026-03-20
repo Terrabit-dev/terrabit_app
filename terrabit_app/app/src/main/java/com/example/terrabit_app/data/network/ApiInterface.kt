@@ -88,7 +88,7 @@ interface ApiInterface {
         @Body request: PeticionAltaGuia
     ): Response<ResAltaGuia>
 
-    @PUT("WSBoviGuies/AppJava/guies/WSAltaGuia/")
+    @PUT("WSBoviGuies/AppJava/guies/WSModificarGuiaMobilitat")
     suspend fun putModificarGuia(
         @Body request: PeticionModificarGuia
     ): Response<ResModificarGuia>

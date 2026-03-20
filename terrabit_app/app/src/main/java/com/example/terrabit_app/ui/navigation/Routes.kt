@@ -83,4 +83,8 @@ sealed class Routes(val route: String) {
     object Configuration : Routes("configuration")
     object Historial : Routes("historial")
     object Usb : Routes("usb")
+
+    object GuiasBovinos : Routes("lista_guias_bovinos")
+    object GuiasPorcinos : Routes("lista_guias_porcinos")
+    object EditarGuiaBovi : Routes("editar_guia_bovi")
 }
