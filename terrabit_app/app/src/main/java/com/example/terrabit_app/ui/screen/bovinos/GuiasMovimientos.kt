@@ -100,6 +100,7 @@ fun GuiasMovimientos(navController: NavController) {
                         modifier = Modifier.weight(1f),
                         onClick = { navController.navigate(Routes.GuiasBovinos.route) }
                     )
+                    Box(modifier = Modifier.weight(1f))
                 }
             }
 

@@ -1,6 +1,7 @@
 package com.example.terrabit_app.ui.pantallas
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -99,6 +100,7 @@ fun GuiasMovimientosPorcinos(navController: NavController) {
                         modifier = Modifier.weight(1f),
                         onClick = { navController.navigate(Routes.EntradasPorcinos.route) }
                     )
+                    Box(modifier = Modifier.weight(1f))
                 }
             }
 
