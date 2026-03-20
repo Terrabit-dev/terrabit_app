@@ -96,7 +96,6 @@ fun CorregirSexoBovi(
         when {
             historialId.isNotEmpty() -> viewModel.cargarDesdeHistorial(historialId)
             borradorId.isNotEmpty() -> viewModel.cargarBorradorPorId(borradorId)
-            else -> viewModel.cargarBorradorExistente()
         }
     }
 
