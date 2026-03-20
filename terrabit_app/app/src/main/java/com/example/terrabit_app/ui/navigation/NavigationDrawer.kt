@@ -3,6 +3,8 @@ package com.example.terrabit_app.ui.navigation
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -35,7 +37,10 @@ import com.example.terrabit_app.ui.screen.porcinos.HomePorcinos
 import com.example.terrabit_app.ui.screen.porcinos.GestionGuiasPorcinos
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 import com.example.terrabit_app.ui.screen.bovinos.ConfigurationScreen
+import com.example.terrabit_app.ui.screen.bovinos.EditarGuiaBovi
+import com.example.terrabit_app.ui.screen.bovinos.ListaGuiasBovi
 import com.example.terrabit_app.ui.screen.bovinos.UsbTestScreen
+import com.example.terrabit_app.viewmodel.bovinos.ListarGuiasBoviViewModel
 import com.example.terrabit_app.viewmodel.porcinos.EditarGuiaPorcinosViewModel
 import com.example.terrabit_app.viewmodel.porcinos.GestionarGuiasViewModel
 
@@ -315,6 +320,32 @@ fun NavigationDrawer(
 
         composable(Routes.EntradasPorcinos.route) {
             EntradasPorcinos(navController = navController)
+        }
+        composable(Routes.GuiasBovinos.route) {
+            val viewModel = hiltViewModel<ListarGuiasBoviViewModel>(it)   // ViewModel vive en esta entrada
+            ListaGuiasBovi(
+                navController = navController,
+                viewModel     = viewModel
+            )
+        }
+
+        composable(Routes.EditarGuiaBovi.route) { currentEntry ->
+            // Obtenemos el ViewModel del padre (GuiasBovinos), igual que en porcinos
+            val parentEntry = remember(currentEntry) {
+                navController.getBackStackEntry(Routes.GuiasBovinos.route)
+            }
+            val viewModelLista = hiltViewModel<ListarGuiasBoviViewModel>(parentEntry)
+
+            // La guía seleccionada viene del ViewModel compartido
+            val guiaSeleccionada by viewModelLista.guiaSeleccionada.observeAsState(null)
+
+            guiaSeleccionada?.let { guia ->
+                EditarGuiaBovi(
+                    navController     = navController,
+                    guiaSeleccionada  = guia
+                    // EditarGuiaBoviViewModel lo crea hiltViewModel() internamente
+                )
+            }
         }
 
         composable(

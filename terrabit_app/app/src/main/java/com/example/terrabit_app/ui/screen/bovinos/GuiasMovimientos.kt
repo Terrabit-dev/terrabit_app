@@ -5,6 +5,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Checklist
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
@@ -86,6 +87,20 @@ fun GuiasMovimientos(navController: NavController) {
                         modifier = Modifier.weight(1f),
                         onClick = { navController.navigate(Routes.Movimientos.nuevo()) }
                     )
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    TarjetaAccion(
+                        icono = Icons.Default.Checklist,
+                        titulo = "Lista Guias",
+                        subtitulo = "",
+                        colorFondo = MainOrange,
+                        modifier = Modifier.weight(1f),
+                        onClick = { navController.navigate(Routes.GuiasBovinos.route) }
+                    )
+                    Box(modifier = Modifier.weight(1f))
                 }
             }
 

@@ -479,7 +479,7 @@ fun GestionGuias(
 }
 
 @Composable
-private fun DateTimeField(
+ fun DateTimeField(
     modifier: Modifier = Modifier,
     label: String,
     value: String,

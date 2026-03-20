@@ -262,7 +262,8 @@ fun LoginCard(
 
             Column(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Button(
                     modifier = Modifier.fillMaxWidth(),
@@ -276,6 +277,20 @@ fun LoginCard(
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     Text(stringResource(R.string.btn_login), fontWeight = FontWeight.Bold)
+                }
+
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { viewModel.guardarYContinuar(nif, password, codiMO, rememberMe) },
+                    enabled = loginState !is LoginState.Loading,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MainGreen,
+                        contentColor = Color.White,
+                        disabledContainerColor = MaterialTheme.colorScheme.outline
+                    ),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text(stringResource(R.string.btn_next), fontWeight = FontWeight.Bold)
                 }
             }
         }
