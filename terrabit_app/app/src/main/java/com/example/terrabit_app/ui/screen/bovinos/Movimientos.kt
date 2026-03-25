@@ -426,55 +426,19 @@ fun Movimientos(
                     ) {
                         Text(stringResource(R.string.form_movs_title_animals), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
 
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            Text(stringResource(R.string.form_ways_transports), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
-                            Spacer(modifier = Modifier.height(10.dp))
-                            ExposedDropdownMenuBox(
-                                expanded = if (modoLectura) false else mitjaTransportExpandido,
-                                onExpandedChange = { if (!modoLectura) viewModel.toggleMitjaTransportExpandido() }
-                            ) {
-                                OutlinedTextField(
-                                    value = mitjaTransport,
-                                    onValueChange = {},
-                                    modifier = Modifier.fillMaxWidth().menuAnchor(),
-                                    enabled = !modoLectura,
-                                    readOnly = true,
-                                    placeholder = { Text(stringResource(R.string.form_ways_transports_description), color = MaterialTheme.colorScheme.onSurfaceVariant) },
-                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = if (modoLectura) false else mitjaTransportExpandido) },
-                                    singleLine = true,
-                                    shape = MaterialTheme.shapes.medium,
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = MainOrange,
-                                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                        focusedContainerColor = MaterialTheme.colorScheme.surface,
-                                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                                        disabledBorderColor = MaterialTheme.colorScheme.outline,
-                                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        disabledContainerColor = MaterialTheme.colorScheme.surface,
-                                    )
-                                )
-                                if (!modoLectura) {
-                                    ExposedDropdownMenu(
-                                        expanded = mitjaTransportExpandido,
-                                        onDismissRequest = { viewModel.cerrarMitjaTransportMenu() },
-                                        modifier = Modifier.background(MaterialTheme.colorScheme.surface)
-                                    ) {
-                                        elementosConCodigos.transporte().forEach { (medio, codigo) ->
-                                            DropdownMenuItem(
-                                                text = { Text(medio, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Normal) },
-                                                onClick = { viewModel.seleccionarMitjaTransport(medio, codigo) },
-                                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        DropdownField(
+                            label = stringResource(R.string.form_ways_transports),
+                            selectedValue = mitjaTransport,
+                            expanded = if (modoLectura) false else mitjaTransportExpandido,
+                            placeholder = stringResource(R.string.form_ways_transports_description),
+                            opciones = elementosConCodigos.transporte(),
+                            enabled = !modoLectura,
+                            onExpandedChange = { if (!modoLectura) viewModel.toggleMitjaTransportExpandido() },
+                            onDismissRequest = { viewModel.cerrarMitjaTransportMenu() },
+                            onSeleccionar = { codigo, nombre -> if (!modoLectura) viewModel.seleccionarMitjaTransport(nombre, codigo) },
+                            defectColor = false
+                        )
+
 
                         SimpleTextField(label = stringResource(R.string.form_matricule_transport), value = matricula, placeholder = stringResource(R.string.form_matricule_transports_description), onValueChange = { viewModel.actualizarMatricula(it) }, enabled = !modoLectura, imeAction = ImeAction.Next)
                         SimpleTextField(label = stringResource(R.string.form_name_transportits), value = nomTransportista, placeholder = stringResource(R.string.form_name_transportits_description), onValueChange = { viewModel.actualizarNomTransportista(it) }, enabled = !modoLectura, imeAction = ImeAction.Next)
