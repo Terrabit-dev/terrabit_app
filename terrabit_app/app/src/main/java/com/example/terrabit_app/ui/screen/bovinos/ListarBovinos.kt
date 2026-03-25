@@ -225,7 +225,7 @@ fun DialogAccionBovino(
         onDismissRequest = onDismiss,
         title = {
             Column {
-                Text("¿Qué deseas hacer?", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurface)
+                Text(stringResource(R.string.title_list_action_popup), fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurface)
                 Text(animal.identificador, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         },
@@ -233,32 +233,32 @@ fun DialogAccionBovino(
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 DialogOpcionItem(
                     icono = Icons.Default.Warning,
-                    titulo = "Reportar Mort",
-                    subtitulo = "Reportar fallecimiento de este animal",
+                    titulo = stringResource(R.string.action_report_dead),
+                    subtitulo = stringResource(R.string.description_option_death_popup),
                     color = ErrorRed,
                     onClick = onFallecimiento
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f))
                 DialogOpcionItem(
                     icono = Icons.Default.Edit,
-                    titulo = "Corregir Sexe",
-                    subtitulo = "Corregir el sexo de este animal",
+                    titulo = stringResource(R.string.action_correct_sex),
+                    subtitulo = stringResource(R.string.description_option_sex_correction_popup),
                     color = MainOrange,
                     onClick = onCorregirSexo
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f))
                 DialogOpcionItem(
                     icono = Icons.Default.Receipt,
-                    titulo = "Gestió de Guies",
-                    subtitulo = "Crear una guía para este animal",
+                    titulo = stringResource(R.string.name_manage_guides),
+                    subtitulo = stringResource(R.string.description_option_create_guide_popup),
                     color = MainOrange,
                     onClick = onGuias
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f))
                 DialogOpcionItem(
                     icono = Icons.Default.ContentCopy,
-                    titulo = "Solicitar Duplicat",
-                    subtitulo = "Solicitar duplicado de identificador",
+                    titulo = stringResource(R.string.btn_duplicate_request),
+                    subtitulo = stringResource(R.string.description_option_duplicate_material_popup),
                     color = MainGreen,
                     onClick = onMaterialDuplicado
                 )
@@ -267,7 +267,7 @@ fun DialogAccionBovino(
         confirmButton = {},
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancelar", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.cancel_buttom), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         },
         containerColor = MaterialTheme.colorScheme.surface,

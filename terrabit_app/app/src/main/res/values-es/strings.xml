@@ -52,7 +52,11 @@
     <string name="card_info_date_born">Fecha Nac.</string>
     <string name="card_info_mom">Madre</string>
 
-
+    <string name="title_list_action_popup">Elige una accion</string>
+    <string name="description_option_death_popup">Reportar fallecimiento de este animal</string>
+    <string name="description_option_sex_correction_popup">Corregir el sexo de este animal</string>
+    <string name="description_option_create_guide_popup">Crear una guía para este animal</string>
+    <string name="description_option_duplicate_material_popup">Solicitar duplicado de material</string>
 
 
     <string name="born_register_name">Registrar Nacimiento</string>

@@ -52,6 +52,12 @@
     <string name="card_info_date_born">Data Naix.</string>
     <string name="card_info_mom">Mare</string>
 
+    <string name="title_list_action_popup">Escull una acció</string>
+    <string name="description_option_death_popup">Reportar Mort d\'aquest animal</string>
+    <string name="description_option_sex_correction_popup">Corregir el sexe d\'aquest animal</string>
+    <string name="description_option_create_guide_popup">Crear una guia per aquest animal</string>
+    <string name="description_option_duplicate_material_popup">Sol·licitar duplicat de material</string>
+
 
     <string name="born_register_name">Registrar Naixement</string>
     <string name="form_id_mother">ID Mare *</string>
