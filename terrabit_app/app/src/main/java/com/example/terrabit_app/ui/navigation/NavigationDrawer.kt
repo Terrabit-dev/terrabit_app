@@ -39,8 +39,10 @@ import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 import com.example.terrabit_app.ui.screen.bovinos.ConfigurationScreen
 import com.example.terrabit_app.ui.screen.bovinos.EditarGuiaBovi
 import com.example.terrabit_app.ui.screen.bovinos.ListaGuiasBovi
+import com.example.terrabit_app.ui.screen.bovinos.ListarMovimientosBovi
 import com.example.terrabit_app.ui.screen.bovinos.UsbTestScreen
 import com.example.terrabit_app.viewmodel.bovinos.ListarGuiasBoviViewModel
+import com.example.terrabit_app.viewmodel.bovinos.ListarMovisBoviViewModel
 import com.example.terrabit_app.viewmodel.porcinos.EditarGuiaPorcinosViewModel
 import com.example.terrabit_app.viewmodel.porcinos.GestionarGuiasViewModel
 
@@ -324,6 +326,13 @@ fun NavigationDrawer(
         composable(Routes.GuiasBovinos.route) {
             val viewModel = hiltViewModel<ListarGuiasBoviViewModel>(it)   // ViewModel vive en esta entrada
             ListaGuiasBovi(
+                navController = navController,
+                viewModel     = viewModel
+            )
+        }
+        composable(Routes.MovimientosBovinos.route) {
+            val viewModel = hiltViewModel<ListarMovisBoviViewModel>(it)   // ViewModel vive en esta entrada
+            ListarMovimientosBovi(
                 navController = navController,
                 viewModel     = viewModel
             )

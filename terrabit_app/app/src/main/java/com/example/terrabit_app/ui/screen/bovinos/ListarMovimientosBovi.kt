@@ -4,20 +4,58 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.LocalShipping
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Pets
+import androidx.compose.material.icons.filled.SearchOff
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerDefaults
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -28,43 +66,37 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.terrabit_app.R
 import com.example.terrabit_app.data.network.guias.Guia
+import com.example.terrabit_app.data.network.moviminetos.modelos.Moviment
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.theme.MainOrange
-import com.example.terrabit_app.utils.CampoTexto
-import com.example.terrabit_app.viewmodel.bovinos.ListarGuiasBoviViewModel
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  Pantalla principal
-// ─────────────────────────────────────────────────────────────────────────────
+import com.example.terrabit_app.viewmodel.bovinos.ListarMovisBoviViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ListaGuiasBovi(
+fun ListarMovimientosBovi(
     navController: NavController,
-    viewModel: ListarGuiasBoviViewModel = hiltViewModel()
-) {
-    // Observamos las LiveData como estado de Compose
-    val listaGuias      by viewModel.listaGuias.observeAsState(emptyList())
-    val cargando        by viewModel.cargando.observeAsState(false)
+    viewModel: ListarMovisBoviViewModel = hiltViewModel()
+){
+    val listaMovimientos by viewModel.listaMovimientos.observeAsState(emptyList())
+    val cargando by viewModel.cargando.observeAsState(false)
     val consultaIniciada by viewModel.consultaIniciada.observeAsState(false)
-    val error           by viewModel.error.observeAsState(null)
-    val rega            by viewModel.codiRega.observeAsState("")
+    val error by viewModel.error.observeAsState(null)
+    val codiExplotacionDesti by viewModel.codiExplotacionDesti.observeAsState("")
     val mostrarDatePicker  by viewModel.mostrarDatePicker.observeAsState(false)
     val mostrarTimePicker  by viewModel.mostrarTimePicker.observeAsState(false)
     val fechaDisplay       by viewModel.fechaDisplay.observeAsState("")
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     LaunchedEffect(navBackStackEntry) {
-        if (
-            navBackStackEntry?.destination?.route == Routes.GuiasBovinos.route &&
-            consultaIniciada &&          // Solo si ya habíamos consultado
-            !cargando                    // Y no estamos ya cargando
-        ) {
-            viewModel.cargarGuias()
+        if(
+            navBackStackEntry?.destination?.route == Routes.MovimientosBovinos.route &&
+            consultaIniciada &&
+            !cargando
+        ){
+            viewModel.cargarMovimientos()
         }
     }
 
-
-    // ── DatePicker ────────────────────────────────────────────────────────────
+    // Data picker
     if (mostrarDatePicker) {
         val dpState = rememberDatePickerState()
         DatePickerDialog(
@@ -89,8 +121,7 @@ fun ListaGuiasBovi(
             )
         }
     }
-
-    // ── TimePicker ────────────────────────────────────────────────────────────
+    // time picker
     if (mostrarTimePicker) {
         val tpState = rememberTimePickerState()
         AlertDialog(
@@ -122,7 +153,7 @@ fun ListaGuiasBovi(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Gestión de guías bovinas",
+                        text = "Gestión de Movimientos de bovinos",
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
@@ -146,27 +177,24 @@ fun ListaGuiasBovi(
                 )
             )
         }
-    ) { padding ->
-
+    ) {
+        padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            when {
-                // ── 1. Formulario de consulta ──────────────────────────────
-                !consultaIniciada -> {
+            when{
+                !consultaIniciada ->{
                     MiniFormulario(
-                        rega          = rega,
+                        rega          = codiExplotacionDesti,
                         fechaDisplay  = fechaDisplay,
                         error         = error,
-                        onRegaChange  = viewModel::onRegaChange,
+                        onRegaChange  = viewModel::onCodiChange,
                         onFechaClick  = viewModel::mostrarDatePicker,   // ← abre el picker
                         onConsultar   = viewModel::validarPeticion
                     )
                 }
-
-                // ── 2. Cargando ────────────────────────────────────────────
                 cargando -> {
                     Column(
                         modifier = Modifier.fillMaxSize(),
@@ -186,10 +214,8 @@ fun ListaGuiasBovi(
                         )
                     }
                 }
-
-                // ── 3. Lista de resultados ─────────────────────────────────
                 else -> {
-                    if (listaGuias.isEmpty()) {
+                    if (listaMovimientos.isEmpty()) {
                         Box(
                             modifier        = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
@@ -214,35 +240,34 @@ fun ListaGuiasBovi(
                                 }
                             }
                         }
-                    } else {
+                    }
+                    else{
                         LazyColumn(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(horizontal = 16.dp),
                             verticalArrangement = Arrangement.spacedBy(10.dp),
-                            contentPadding      = PaddingValues(vertical = 16.dp)
+                            contentPadding = PaddingValues(vertical = 16.dp)
                         ) {
-                            // Cabecera con contador
                             item {
                                 Text(
-                                    text       = "${listaGuias.size} guía(s) encontrada(s)",
+                                    text       = "${listaMovimientos.size} movimiento(s) encontrado(s)",
                                     fontSize   = 13.sp,
                                     color      = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier   = Modifier.padding(start = 4.dp, bottom = 4.dp)
                                 )
                             }
-
-                            itemsIndexed(listaGuias) { index, guia ->
+                            itemsIndexed(listaMovimientos) { index, guia ->
                                 AnimatedVisibility(
                                     visible = true,
-                                    enter   = fadeIn() + slideInVertically(initialOffsetY = { it / 3 }),
+                                    enter = fadeIn() + slideInVertically(initialOffsetY = { it / 3 }),
                                     exit    = fadeOut()
                                 ) {
-                                    GuiaCardBovi(
+                                    MovimientoCardBovi(
                                         guia          = guia,
                                         navController = navController,
                                         onEditarClick = {
-                                            viewModel.seleccionarGuia(guia)                 // 1. Guardamos la guía
+                                            viewModel.seleccionarMovi(guia)                 // 1. Guardamos la guía
                                             navController.navigate(Routes.EditarGuiaBovi.route) // 2. Navegamos
                                         }
                                     )
@@ -255,155 +280,9 @@ fun ListaGuiasBovi(
         }
     }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  Formulario de consulta
-// ─────────────────────────────────────────────────────────────────────────────
-
 @Composable
- fun MiniFormulario(
-    rega: String,
-    fechaDisplay: String,
-    error: String?,
-    onRegaChange: (String) -> Unit,
-    onFechaClick: () -> Unit,        // ← en lugar de onFechaChange
-    onConsultar: () -> Unit
-) {
-    Column(
-        modifier = Modifier.fillMaxSize().padding(20.dp),
-        verticalArrangement = Arrangement.Center
-    ) {
-        Card(
-            modifier  = Modifier.fillMaxWidth(),
-            colors    = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-            shape     = MaterialTheme.shapes.large
-        ) {
-            Column(
-                modifier = Modifier.fillMaxWidth().padding(24.dp),
-                verticalArrangement = Arrangement.spacedBy(20.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    Surface(
-                        shape = RoundedCornerShape(10.dp),
-                        color = MainOrange.copy(alpha = 0.12f)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.List,
-                            contentDescription = null,
-                            tint     = MainOrange,
-                            modifier = Modifier.padding(8.dp).size(20.dp)
-                        )
-                    }
-                    Text(
-                        text       = "Consultar guías bovinas",
-                        fontSize   = 18.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color      = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-
-                HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
-
-                // Campo REGA — igual que antes
-                CampoTexto(
-                    label         = "Código REGA",
-                    valor         = rega,
-                    placeholder   = "Ej: ES080470001881",
-                    onValueChange = onRegaChange,
-                    defectColor   = false
-                )
-
-                // Fecha de salida — ahora es un campo de solo lectura que abre el picker
-                Column {
-                    Text(
-                        text       = "Fecha de salida",
-                        fontSize   = 15.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color      = MaterialTheme.colorScheme.onSurface,
-                        letterSpacing = 0.15.sp
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Box(modifier = Modifier.fillMaxWidth().clickable { onFechaClick() }) {
-                        OutlinedTextField(
-                            value         = fechaDisplay,
-                            onValueChange = {},
-                            modifier      = Modifier.fillMaxWidth(),
-                            placeholder   = {
-                                Text(
-                                    "Selecciona fecha y hora",
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            },
-                            leadingIcon   = {
-                                Icon(Icons.Default.DateRange, contentDescription = null, tint = MainOrange)
-                            },
-                            readOnly      = true,
-                            enabled       = false,
-                            shape         = MaterialTheme.shapes.medium,
-                            colors        = OutlinedTextFieldDefaults.colors(
-                                disabledTextColor         = MaterialTheme.colorScheme.onSurface,
-                                disabledBorderColor       = MaterialTheme.colorScheme.outline,
-                                disabledLeadingIconColor  = MainOrange,
-                                disabledPlaceholderColor  = MaterialTheme.colorScheme.onSurfaceVariant,
-                                disabledContainerColor    = MaterialTheme.colorScheme.surface
-                            ),
-                            singleLine    = true
-                        )
-                    }
-                }
-
-                // Error
-                AnimatedVisibility(visible = !error.isNullOrBlank()) {
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = MaterialTheme.colorScheme.errorContainer
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(10.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment     = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.ErrorOutline,
-                                contentDescription = null,
-                                tint     = MaterialTheme.colorScheme.error,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Text(
-                                text     = error.orEmpty(),
-                                color    = MaterialTheme.colorScheme.error,
-                                fontSize = 13.sp
-                            )
-                        }
-                    }
-                }
-
-                Button(
-                    onClick  = onConsultar,
-                    modifier = Modifier.fillMaxWidth().height(52.dp),
-                    colors   = ButtonDefaults.buttonColors(containerColor = MainOrange),
-                    shape    = MaterialTheme.shapes.medium
-                ) {
-                    Icon(Icons.Default.Search, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = "Consultar guías", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
-                }
-            }
-        }
-    }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  Tarjeta de cada guía
-// ─────────────────────────────────────────────────────────────────────────────
-
-@Composable
-private fun GuiaCardBovi(
-    guia: Guia,
+private fun MovimientoCardBovi(
+    guia: Moviment,
     navController: NavController,
     onEditarClick: () -> Unit
 ) {
@@ -430,7 +309,7 @@ private fun GuiaCardBovi(
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
-                        text       = guia.explotacioOrigen,
+                        text       = guia.moOrigen ?: "",
                         fontWeight = FontWeight.Bold,
                         fontSize   = 15.sp,
                         color      = MaterialTheme.colorScheme.onSurface,
@@ -443,7 +322,7 @@ private fun GuiaCardBovi(
                         modifier = Modifier.size(16.dp)
                     )
                     Text(
-                        text       = guia.explotacioDestinacio,
+                        text       = guia.moDestinacio,
                         fontWeight = FontWeight.Bold,
                         fontSize   = 15.sp,
                         color      = MaterialTheme.colorScheme.onSurface,
@@ -468,7 +347,7 @@ private fun GuiaCardBovi(
 
             // ── REMO en monospace ──────────────────────────────────────────
             Text(
-                text          = guia.remo,
+                text          = guia.codiRemo,
                 fontSize      = 14.sp,
                 color         = MaterialTheme.colorScheme.onSurfaceVariant,
                 letterSpacing = 0.5.sp,
@@ -512,43 +391,12 @@ private fun GuiaCardBovi(
 
             // ── Chips informativos ─────────────────────────────────────────
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                BoviInfoChip(icon = Icons.Default.Pets,          label = "${guia.numeroAnimals} animales")
-                BoviInfoChip(icon = Icons.Default.LocalShipping, label = guia.matricula.ifBlank { "Sin matrícula" })
-                if (guia.nifConductor.isNotBlank()) {
+                BoviInfoChip(icon = Icons.Default.Pets,          label = "${guia.identificadors.size} animales")
+                BoviInfoChip(icon = Icons.Default.LocalShipping, label = guia.matricula ?: "Sin matricula")
+                if (guia.nifConductor != null) {
                     BoviInfoChip(icon = Icons.Default.Person, label = guia.nifConductor)
                 }
             }
-        }
-    }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  Chip pequeño reutilizable
-// ─────────────────────────────────────────────────────────────────────────────
-
-@Composable
-fun BoviInfoChip(icon: ImageVector, label: String) {
-    Surface(
-        shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            verticalAlignment      = Alignment.CenterVertically,
-            horizontalArrangement  = Arrangement.spacedBy(4.dp)
-        ) {
-            Icon(
-                imageVector    = icon,
-                contentDescription = null,
-                tint     = MainOrange,
-                modifier = Modifier.size(12.dp)
-            )
-            Text(
-                text       = label,
-                fontSize   = 11.sp,
-                color      = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontWeight = FontWeight.Medium
-            )
         }
     }
 }

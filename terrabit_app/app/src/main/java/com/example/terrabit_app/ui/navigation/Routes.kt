@@ -85,6 +85,8 @@ sealed class Routes(val route: String) {
     object Usb : Routes("usb")
 
     object GuiasBovinos : Routes("lista_guias_bovinos")
+    object MovimientosBovinos : Routes("lista_movimientos_bovinos")
     object GuiasPorcinos : Routes("lista_guias_porcinos")
     object EditarGuiaBovi : Routes("editar_guia_bovi")
+    object EditarMovimientoBovi : Routes("editar_movimiento_bovi")
 }
