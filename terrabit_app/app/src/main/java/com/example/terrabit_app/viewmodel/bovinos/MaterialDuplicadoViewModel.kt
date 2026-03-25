@@ -118,6 +118,16 @@ class MaterialDuplicadoViewModel @Inject constructor(
         cargarBovinosEnCache()
     }
 
+
+    fun precargarAnimal(animalId: String) {
+        val listaActual = _listaAnimales.value?.toMutableList() ?: mutableListOf()
+        if (listaActual.isEmpty()) {
+            listaActual.add(IdenSolicitudDupli(identificador = animalId, tipusMaterial = ""))
+        } else {
+            listaActual[0] = listaActual[0].copy(identificador = animalId)
+        }
+        _listaAnimales.value = listaActual
+    }
     private fun cargarBovinosEnCache() {
         viewModelScope.launch(Dispatchers.IO) {
             try {

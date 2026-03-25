@@ -50,6 +50,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import com.example.terrabit_app.utils.AnimalSeleccionadoHolder
 import com.example.terrabit_app.utils.LocationUtils
 import com.google.android.gms.location.LocationServices
 
@@ -137,9 +138,11 @@ fun Fallecimiento(
     }
 
     LaunchedEffect(Unit) {
+        val animalId = AnimalSeleccionadoHolder.consume()
         when {
             historialId.isNotEmpty() -> viewModel.cargarDesdeHistorial(historialId)
             borradorId.isNotEmpty() -> viewModel.cargarBorradorPorId(borradorId)
+            animalId.isNotEmpty() -> viewModel.precargarAnimal(animalId)
         }
     }
 

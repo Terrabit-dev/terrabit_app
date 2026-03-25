@@ -177,6 +177,12 @@ class GuiasViewModel @Inject constructor(
         }
     }
 
+    fun precargarAnimal(animalId: String) {
+        val lista = _identificadors.value?.toMutableList() ?: mutableListOf()
+        if (lista.isEmpty()) lista.add(animalId) else lista[0] = animalId
+        _identificadors.value = lista
+    }
+
     fun searchBovinos(index: Int, query: String) {
         _activeFieldIndex.value = index
         if (query.isBlank()) { _suggestionsBovinos.value = emptyList(); return }

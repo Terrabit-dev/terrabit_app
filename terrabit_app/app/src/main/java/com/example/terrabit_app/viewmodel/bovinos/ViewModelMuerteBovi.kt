@@ -1,8 +1,8 @@
 package com.example.terrabit_app.viewmodel.bovinos
 
 import android.util.Log
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.animales.RegistroMuerteBovi
@@ -32,7 +32,7 @@ class ViewModelMuerteBovi @Inject constructor(
     private val userPreferences: UserPreferences,
     private val borradorDao: BorradorDao,
     private val historialDao: HistorialDao
-) : ViewModel() {
+) : BaseBovinoViewModel() {
 
     private var borradorSesionId: String = ""
 
@@ -52,8 +52,8 @@ class ViewModelMuerteBovi @Inject constructor(
     private val _tipoMuerte = MutableLiveData("")
     val tipoMuerte = _tipoMuerte
 
-    private val _identificadorMuerte = MutableLiveData("")
-    val identificadorMuerte = _identificadorMuerte
+    override val _identificadorAnimal = MutableLiveData("")
+    val identificadorMuerte: LiveData<String> = _identificadorAnimal
 
     private val _fechaMuerte = MutableLiveData("")
     val fechaMuerte = _fechaMuerte
@@ -81,9 +81,6 @@ class ViewModelMuerteBovi @Inject constructor(
 
     private val _mensajeErrorMuerte = MutableLiveData<String>()
     val mensajeErrorMuerte = _mensajeErrorMuerte
-
-    private val _codiError = MutableLiveData<Int?>()
-    val codiError = _codiError
 
     private val _cargandoMuerte = MutableLiveData(false)
     val cargandoMuerte = _cargandoMuerte
@@ -137,21 +134,20 @@ class ViewModelMuerteBovi @Inject constructor(
     }
 
     fun onBovinoSelected(animal: Animal) {
-        _identificadorMuerte.value = animal.identificador
+        _identificadorAnimal.value = animal.identificador
         _suggestionsBovinos.value = emptyList()
         Log.d("MuerteVM", "Bovino seleccionado: ${animal.identificador}")
     }
 
     fun tieneContenido(): Boolean {
         return !_tipoMuerte.value.isNullOrEmpty() ||
-                !_identificadorMuerte.value.isNullOrEmpty() ||
+                !_identificadorAnimal.value.isNullOrEmpty() ||
                 !_fechaMuerte.value.isNullOrEmpty() ||
                 !_mesesGestacion.value.isNullOrEmpty() ||
                 _cadaverInaccesible.value == true ||
                 !_coordenadaX.value.isNullOrEmpty() ||
                 !_coordenadaY.value.isNullOrEmpty()
     }
-
 
     fun guardarBorradorAutomatico() {
         if (!tieneContenido()) return
@@ -160,7 +156,7 @@ class ViewModelMuerteBovi @Inject constructor(
                 val datos = mapOf(
                     "tipo" to _tipoMuerte.value,
                     "codigoTipo" to _codigoTipoMuerte.value,
-                    "identificador" to _identificadorMuerte.value,
+                    "identificador" to _identificadorAnimal.value,
                     "fecha" to _fechaMuerte.value,
                     "mesesGestacion" to _mesesGestacion.value,
                     "cadaverInaccesible" to _cadaverInaccesible.value,
@@ -195,7 +191,7 @@ class ViewModelMuerteBovi @Inject constructor(
                 )
                 _tipoMuerte.value = datos["tipo"] as? String ?: ""
                 _codigoTipoMuerte.value = datos["codigoTipo"] as? String ?: ""
-                _identificadorMuerte.value = datos["identificador"] as? String ?: ""
+                _identificadorAnimal.value = datos["identificador"] as? String ?: ""
                 _fechaMuerte.value = datos["fecha"] as? String ?: ""
                 _mesesGestacion.value = datos["mesesGestacion"] as? String ?: ""
                 _cadaverInaccesible.value = datos["cadaverInaccesible"] as? Boolean ?: false
@@ -227,7 +223,7 @@ class ViewModelMuerteBovi @Inject constructor(
         if (tipo.contains("Mort")) _mesesGestacion.value = ""
     }
 
-    fun actualizarIdentificadorMuerte(nuevoId: String) { _identificadorMuerte.value = nuevoId }
+    fun actualizarIdentificadorMuerte(nuevoId: String) { _identificadorAnimal.value = nuevoId }
 
     fun actualizarMesesGestacion(valor: String) {
         if (valor.isEmpty() || (valor.toIntOrNull() in 1..9)) _mesesGestacion.value = valor
@@ -265,7 +261,7 @@ class ViewModelMuerteBovi @Inject constructor(
 
     fun esFormularioMuerteValido(): Boolean {
         val tipoValido = !_tipoMuerte.value.isNullOrEmpty()
-        val identificadorValido = !_identificadorMuerte.value.isNullOrEmpty()
+        val identificadorValido = !_identificadorAnimal.value.isNullOrEmpty()
         val fechaValida = !_fechaMuerte.value.isNullOrEmpty()
         val mesesValidos = if (_tipoMuerte.value?.contains("Avortament") == true) {
             !_mesesGestacion.value.isNullOrEmpty() && _mesesGestacion.value?.toIntOrNull() in 1..9
@@ -277,7 +273,7 @@ class ViewModelMuerteBovi @Inject constructor(
     }
 
     fun limpiarFormularioMuerte() {
-        _tipoMuerte.value = ""; _codigoTipoMuerte.value = ""; _identificadorMuerte.value = ""
+        _tipoMuerte.value = ""; _codigoTipoMuerte.value = ""; _identificadorAnimal.value = ""
         _fechaMuerte.value = ""; _mesesGestacion.value = ""; _cadaverInaccesible.value = false
         _coordenadaX.value = ""; _coordenadaY.value = ""; borradorSesionId = ""
     }
@@ -285,15 +281,15 @@ class ViewModelMuerteBovi @Inject constructor(
     fun resetearEstadoRegistroMuerte() {
         _registroMuerteExitoso.value = false
         _mensajeErrorMuerte.value = ""
-        _codiError.value = null
+        resetearCodiError()
     }
 
     fun putMuerteBovino() {
-        _codiError.value = null
+        resetearCodiError()
         if (!esFormularioMuerteValido()) {
             _codiError.value = when {
                 _tipoMuerte.value.isNullOrEmpty() -> 7
-                _identificadorMuerte.value.isNullOrEmpty() -> 0
+                _identificadorAnimal.value.isNullOrEmpty() -> 0
                 _fechaMuerte.value.isNullOrEmpty() -> 8
                 _tipoMuerte.value?.contains("Avortament") == true && _mesesGestacion.value.isNullOrEmpty() -> 9
                 _cadaverInaccesible.value == true && _coordenadaX.value.isNullOrEmpty() -> 10
@@ -317,7 +313,7 @@ class ViewModelMuerteBovi @Inject constructor(
                     coordenadaX = coordX,
                     coordenadaY = coordY,
                     dataMort = fechaAPI,
-                    identificador = _identificadorMuerte.value,
+                    identificador = _identificadorAnimal.value,
                     mesosGestacio = mesesGest,
                     nif = nif,
                     passwordMobilitat = password,
@@ -385,14 +381,13 @@ class ViewModelMuerteBovi @Inject constructor(
         }
     }
 
-
     private fun guardarEnHistorial(resumen: String = "") {
         viewModelScope.launch {
             try {
                 val datos = mapOf(
                     "tipo" to _tipoMuerte.value,
                     "codigoTipo" to _codigoTipoMuerte.value,
-                    "identificador" to _identificadorMuerte.value,
+                    "identificador" to _identificadorAnimal.value,
                     "fecha" to _fechaMuerte.value,
                     "mesesGestacion" to _mesesGestacion.value,
                     "cadaverInaccesible" to _cadaverInaccesible.value,
@@ -413,7 +408,6 @@ class ViewModelMuerteBovi @Inject constructor(
         }
     }
 
-
     fun cargarDesdeHistorial(id: String) {
         viewModelScope.launch {
             try {
@@ -424,7 +418,7 @@ class ViewModelMuerteBovi @Inject constructor(
                 )
                 _tipoMuerte.value = datos["tipo"] as? String ?: ""
                 _codigoTipoMuerte.value = datos["codigoTipo"] as? String ?: ""
-                _identificadorMuerte.value = datos["identificador"] as? String ?: ""
+                _identificadorAnimal.value = datos["identificador"] as? String ?: ""
                 _fechaMuerte.value = datos["fecha"] as? String ?: ""
                 _mesesGestacion.value = datos["mesesGestacion"] as? String ?: ""
                 _cadaverInaccesible.value = datos["cadaverInaccesible"] as? Boolean ?: false
@@ -435,5 +429,4 @@ class ViewModelMuerteBovi @Inject constructor(
             }
         }
     }
-
 }

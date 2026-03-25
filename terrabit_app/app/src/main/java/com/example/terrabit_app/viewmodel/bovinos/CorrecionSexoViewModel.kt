@@ -1,8 +1,8 @@
 package com.example.terrabit_app.viewmodel.bovinos
 
 import android.util.Log
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.animales.PetModicarAnimal
@@ -33,7 +33,7 @@ class CorrecionSexoViewModel @Inject constructor(
     private val userPreferences: UserPreferences,
     private val borradorDao: BorradorDao,
     private val historialDao: HistorialDao
-) : ViewModel() {
+) : BaseBovinoViewModel() {
 
     private var borradorSesionId: String = ""
 
@@ -50,8 +50,8 @@ class CorrecionSexoViewModel @Inject constructor(
     private val _bovinosCargados = MutableLiveData(false)
     val bovinosCargados = _bovinosCargados
 
-    private val _identificadorCorreccionSexo = MutableLiveData("")
-    val identificadorCorreccionSexo = _identificadorCorreccionSexo
+    override val _identificadorAnimal = MutableLiveData("")
+    val identificadorCorreccionSexo: LiveData<String> = _identificadorAnimal
 
     private val _sexoCorreccionSeleccionado = MutableLiveData("")
     val sexoCorreccionSeleccionado = _sexoCorreccionSeleccionado
@@ -65,9 +65,6 @@ class CorrecionSexoViewModel @Inject constructor(
     private val _mensajeErrorCorreccionSexo = MutableLiveData<String>()
     val mensajeErrorCorreccionSexo = _mensajeErrorCorreccionSexo
 
-    private val _codiError = MutableLiveData<Int?>()
-    val codiError = _codiError
-
     private val _estadoCarga = MutableLiveData(false)
     val estadoCarga = _estadoCarga
 
@@ -78,7 +75,6 @@ class CorrecionSexoViewModel @Inject constructor(
         borradorSesionId = "correccion_sexo_auto_${System.currentTimeMillis()}"
         cargarBovinosEnCache()
     }
-
 
     private fun cargarBovinosEnCache() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -121,23 +117,40 @@ class CorrecionSexoViewModel @Inject constructor(
     }
 
     fun onBovinoSelected(animal: Animal) {
-        _identificadorCorreccionSexo.value = animal.identificador
+        _identificadorAnimal.value = animal.identificador
         _suggestionsBovinos.value = emptyList()
         Log.d("CorrecionSexoVM", "Bovino seleccionado: ${animal.identificador}")
     }
 
     fun tieneContenido(): Boolean {
-        return !_identificadorCorreccionSexo.value.isNullOrEmpty() ||
+        return !_identificadorAnimal.value.isNullOrEmpty() ||
                 !_sexoCorreccionSeleccionado.value.isNullOrEmpty()
     }
 
+    fun actualizarIdentificadorCorreccionSexo(nuevoId: String) {
+        _identificadorAnimal.value = nuevoId
+    }
+
+    fun seleccionarSexoCorreccion(sexo: String, codigo: String) {
+        _sexoCorreccionSeleccionado.value = sexo
+        codigoSexo = codigo
+        _sexoCorreccionExpandido.value = false
+    }
+
+    fun toggleSexoCorreccionExpandido() { _sexoCorreccionExpandido.value = !(_sexoCorreccionExpandido.value ?: false) }
+    fun cerrarSexoCorreccionMenu() { _sexoCorreccionExpandido.value = false }
+
+    fun esFormularioCorreccionSexoValido(): Boolean {
+        return !_identificadorAnimal.value.isNullOrEmpty() &&
+                !_sexoCorreccionSeleccionado.value.isNullOrEmpty()
+    }
 
     fun guardarBorradorAutomatico() {
         if (!tieneContenido()) return
         viewModelScope.launch {
             try {
                 val datos = mapOf(
-                    "identificador" to _identificadorCorreccionSexo.value,
+                    "identificador" to _identificadorAnimal.value,
                     "sexoSeleccionado" to _sexoCorreccionSeleccionado.value,
                     "codigoSexo" to codigoSexo
                 )
@@ -167,7 +180,7 @@ class CorrecionSexoViewModel @Inject constructor(
                     borrador.datos,
                     object : TypeToken<Map<String, Any?>>() {}.type
                 )
-                _identificadorCorreccionSexo.value = datos["identificador"] as? String ?: ""
+                _identificadorAnimal.value = datos["identificador"] as? String ?: ""
                 _sexoCorreccionSeleccionado.value = datos["sexoSeleccionado"] as? String ?: ""
                 codigoSexo = datos["codigoSexo"] as? String ?: ""
             } catch (e: Exception) {
@@ -201,7 +214,7 @@ class CorrecionSexoViewModel @Inject constructor(
                     borrador.datos,
                     object : TypeToken<Map<String, Any?>>() {}.type
                 )
-                _identificadorCorreccionSexo.value = datos["identificador"] as? String ?: ""
+                _identificadorAnimal.value = datos["identificador"] as? String ?: ""
                 _sexoCorreccionSeleccionado.value = datos["sexoSeleccionado"] as? String ?: ""
                 codigoSexo = datos["codigoSexo"] as? String ?: ""
             } catch (e: Exception) {
@@ -210,28 +223,11 @@ class CorrecionSexoViewModel @Inject constructor(
         }
     }
 
-
-    fun actualizarIdentificadorCorreccionSexo(nuevoId: String) { _identificadorCorreccionSexo.value = nuevoId }
-
-    fun seleccionarSexoCorreccion(sexo: String, codigo: String) {
-        _sexoCorreccionSeleccionado.value = sexo
-        codigoSexo = codigo
-        _sexoCorreccionExpandido.value = false
-    }
-
-    fun toggleSexoCorreccionExpandido() { _sexoCorreccionExpandido.value = !(_sexoCorreccionExpandido.value ?: false) }
-    fun cerrarSexoCorreccionMenu() { _sexoCorreccionExpandido.value = false }
-
-    fun esFormularioCorreccionSexoValido(): Boolean {
-        return !_identificadorCorreccionSexo.value.isNullOrEmpty() &&
-                !_sexoCorreccionSeleccionado.value.isNullOrEmpty()
-    }
-
     fun corregirSexoAnimal() {
         _codiError.value = null
         if (!esFormularioCorreccionSexoValido()) {
             _codiError.value = when {
-                _identificadorCorreccionSexo.value.isNullOrEmpty() -> 12
+                _identificadorAnimal.value.isNullOrEmpty() -> 12
                 _sexoCorreccionSeleccionado.value.isNullOrEmpty() -> 4
                 else -> 0
             }
@@ -242,7 +238,7 @@ class CorrecionSexoViewModel @Inject constructor(
             _estadoCarga.value = true
             try {
                 val request = PetModicarAnimal(
-                    identificador = _identificadorCorreccionSexo.value ?: "",
+                    identificador = _identificadorAnimal.value ?: "",
                     nif = nif,
                     passwordMobilitat = password,
                     sexe = codigoSexo
@@ -311,7 +307,7 @@ class CorrecionSexoViewModel @Inject constructor(
     }
 
     fun limpiarFormularioCorreccionSexo() {
-        _identificadorCorreccionSexo.value = ""
+        _identificadorAnimal.value = ""
         _sexoCorreccionSeleccionado.value = ""
         codigoSexo = ""
         borradorSesionId = ""
@@ -327,7 +323,7 @@ class CorrecionSexoViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val datos = mapOf(
-                    "identificador" to _identificadorCorreccionSexo.value,
+                    "identificador" to _identificadorAnimal.value,
                     "sexoSeleccionado" to _sexoCorreccionSeleccionado.value,
                     "codigoSexo" to codigoSexo
                 )
@@ -353,7 +349,7 @@ class CorrecionSexoViewModel @Inject constructor(
                     registro.datos,
                     object : TypeToken<Map<String, Any?>>() {}.type
                 )
-                _identificadorCorreccionSexo.value = datos["identificador"] as? String ?: ""
+                _identificadorAnimal.value = datos["identificador"] as? String ?: ""
                 _sexoCorreccionSeleccionado.value = datos["sexoSeleccionado"] as? String ?: ""
                 codigoSexo = datos["codigoSexo"] as? String ?: ""
             } catch (e: Exception) {

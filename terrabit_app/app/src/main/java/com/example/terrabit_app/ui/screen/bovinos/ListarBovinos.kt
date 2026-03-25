@@ -3,13 +3,22 @@ package com.example.terrabit_app.ui.screen.bovinos
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
@@ -18,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -30,7 +40,10 @@ import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.data.network.lista_bovinos.Animal
 import com.example.terrabit_app.ui.navigation.Routes
+import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.ui.theme.MainGreen
+import com.example.terrabit_app.ui.theme.MainOrange
+import com.example.terrabit_app.utils.AnimalSeleccionadoHolder
 import com.example.terrabit_app.utils.CodiMoSelector
 import com.example.terrabit_app.viewmodel.bovinos.CodiMoManagerViewModel
 import com.example.terrabit_app.viewmodel.bovinos.ListarBovinosViewModel
@@ -49,6 +62,7 @@ fun ListarBovinos(navController: NavController) {
     val codiMoActivo by codiMoViewModel.codiMoActivo.observeAsState(null)
 
     var mostrarBuscador by remember { mutableStateOf(true) }
+    var animalSeleccionado by remember { mutableStateOf<Animal?>(null) }
 
     val nestedScrollConnection = remember {
         object : NestedScrollConnection {
@@ -60,16 +74,39 @@ fun ListarBovinos(navController: NavController) {
         }
     }
 
-    LaunchedEffect(Unit) {
-        viewModel.cargarBovinos()
+    LaunchedEffect(Unit) { viewModel.cargarBovinos() }
+
+    animalSeleccionado?.let { animal ->
+        DialogAccionBovino(
+            animal = animal,
+            onDismiss = { animalSeleccionado = null },
+            onFallecimiento = {
+                AnimalSeleccionadoHolder.set(animal.identificador)
+                animalSeleccionado = null
+                navController.navigate(Routes.Fallecimiento.nuevo())
+            },
+            onCorregirSexo = {
+                AnimalSeleccionadoHolder.set(animal.identificador)
+                animalSeleccionado = null
+                navController.navigate(Routes.CorregirBovino.nuevo())
+            },
+            onGuias = {
+                AnimalSeleccionadoHolder.set(animal.identificador)
+                animalSeleccionado = null
+                navController.navigate(Routes.GestionGuias.nuevo())
+            },
+            onMaterialDuplicado = {
+                AnimalSeleccionadoHolder.set(animal.identificador)
+                animalSeleccionado = null
+                navController.navigate(Routes.MaterialDuplicado.nuevo())
+            }
+        )
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             topBar = {
-                Column(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
                     TopAppBar(
                         title = { Text(stringResource(R.string.list_bovinos_title), fontSize = 20.sp, fontWeight = FontWeight.SemiBold) },
                         navigationIcon = {
@@ -83,18 +120,15 @@ fun ListarBovinos(navController: NavController) {
                             navigationIconContentColor = Color.White
                         )
                     )
-
                     AnimatedVisibility(
                         visible = mostrarBuscador,
-                        enter = slideInVertically(initialOffsetY = { -it/4 }),
-                        exit = slideOutVertically(targetOffsetY = { -it/4 })
+                        enter = slideInVertically(initialOffsetY = { -it / 4 }),
+                        exit = slideOutVertically(targetOffsetY = { -it / 4 })
                     ) {
                         OutlinedTextField(
                             value = busqueda,
                             onValueChange = { viewModel.actualizarBusqueda(it) },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
                             placeholder = { Text(stringResource(R.string.search_bar_list_bovinos), color = MaterialTheme.colorScheme.onSurfaceVariant) },
                             leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar", tint = MainGreen) },
                             singleLine = true,
@@ -114,15 +148,9 @@ fun ListarBovinos(navController: NavController) {
             },
             containerColor = MaterialTheme.colorScheme.background
         ) { padding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-            ) {
+            Column(modifier = Modifier.fillMaxSize().padding(padding)) {
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
                     CodiMoSelector(
                         codisMos = codiMoViewModel.getCodisMos(),
@@ -172,7 +200,9 @@ fun ListarBovinos(navController: NavController) {
                                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                                 verticalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
-                                items(listaFiltrada) { animal -> TarjetaBovino(animal) }
+                                items(listaFiltrada) { animal ->
+                                    TarjetaBovino(animal = animal, onClick = { animalSeleccionado = animal })
+                                }
                             }
                         }
                     }
@@ -183,9 +213,96 @@ fun ListarBovinos(navController: NavController) {
 }
 
 @Composable
-fun TarjetaBovino(animal: Animal) {
+fun DialogAccionBovino(
+    animal: Animal,
+    onDismiss: () -> Unit,
+    onFallecimiento: () -> Unit,
+    onCorregirSexo: () -> Unit,
+    onGuias: () -> Unit,
+    onMaterialDuplicado: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Column {
+                Text("¿Qué deseas hacer?", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurface)
+                Text(animal.identificador, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                DialogOpcionItem(
+                    icono = Icons.Default.Warning,
+                    titulo = "Reportar Mort",
+                    subtitulo = "Reportar fallecimiento de este animal",
+                    color = ErrorRed,
+                    onClick = onFallecimiento
+                )
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f))
+                DialogOpcionItem(
+                    icono = Icons.Default.Edit,
+                    titulo = "Corregir Sexe",
+                    subtitulo = "Corregir el sexo de este animal",
+                    color = MainOrange,
+                    onClick = onCorregirSexo
+                )
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f))
+                DialogOpcionItem(
+                    icono = Icons.Default.Receipt,
+                    titulo = "Gestió de Guies",
+                    subtitulo = "Crear una guía para este animal",
+                    color = MainOrange,
+                    onClick = onGuias
+                )
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f))
+                DialogOpcionItem(
+                    icono = Icons.Default.ContentCopy,
+                    titulo = "Solicitar Duplicat",
+                    subtitulo = "Solicitar duplicado de identificador",
+                    color = MainGreen,
+                    onClick = onMaterialDuplicado
+                )
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        },
+        containerColor = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(16.dp)
+    )
+}
+
+@Composable
+private fun DialogOpcionItem(
+    icono: ImageVector,
+    titulo: String,
+    subtitulo: String,
+    color: Color,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(vertical = 10.dp, horizontal = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Icon(icono, contentDescription = null, tint = color, modifier = Modifier.size(24.dp))
+        Column {
+            Text(titulo, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+            Text(subtitulo, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+@Composable
+fun TarjetaBovino(animal: Animal, onClick: () -> Unit = {}) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable { onClick() },
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(12.dp)

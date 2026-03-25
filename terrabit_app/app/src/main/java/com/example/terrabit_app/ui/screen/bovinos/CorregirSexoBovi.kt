@@ -29,6 +29,7 @@ import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.utils.components.CampoIdentificadorAutoComplete
 import com.example.terrabit_app.utils.components.useDebounce
 import com.example.terrabit_app.ui.theme.MainGreen
+import com.example.terrabit_app.utils.AnimalSeleccionadoHolder
 import com.example.terrabit_app.utils.DropdownField
 import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
@@ -93,9 +94,11 @@ fun CorregirSexoBovi(
     }
 
     LaunchedEffect(Unit) {
+        val animalId = AnimalSeleccionadoHolder.consume()
         when {
             historialId.isNotEmpty() -> viewModel.cargarDesdeHistorial(historialId)
             borradorId.isNotEmpty() -> viewModel.cargarBorradorPorId(borradorId)
+            animalId.isNotEmpty() -> viewModel.precargarAnimal(animalId)
         }
     }
 

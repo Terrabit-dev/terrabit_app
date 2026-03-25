@@ -36,6 +36,7 @@ import com.example.terrabit_app.utils.components.useDebounce
 import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
+import com.example.terrabit_app.utils.AnimalSeleccionadoHolder
 import com.example.terrabit_app.utils.CampoTexto
 import com.example.terrabit_app.utils.CodiMoSelector
 import com.example.terrabit_app.utils.DropdownField
@@ -136,9 +137,11 @@ fun GestionGuias(
     }
 
     LaunchedEffect(Unit) {
+        val animalId = AnimalSeleccionadoHolder.consume()
         when {
             historialId.isNotEmpty() -> viewModel.cargarDesdeHistorial(historialId)
             borradorId.isNotEmpty() -> viewModel.cargarBorradorPorId(borradorId)
+            animalId.isNotEmpty() -> viewModel.precargarAnimal(animalId)
             else -> {
                 cantidadBorradores = viewModel.obtenerCantidadBorradoresGuia()
                 if (cantidadBorradores >= 2) mostrarDialogoAviso = true
