@@ -91,6 +91,8 @@ fun MaterialDuplicadosScreen(
     val usbErrorText = usbState.error?.let { stringResource(it) }
     var indiceUsb by remember { mutableStateOf<Int?>(null) }
 
+    var procedeDeLista by remember { mutableStateOf(false) }
+
     LaunchedEffect(Unit) {
         usbViewModel.mensajes.collect { mensaje ->
             indiceUsb?.let { viewModel.actualizarIdentificador(it, mensaje) }
@@ -121,7 +123,11 @@ fun MaterialDuplicadosScreen(
         when {
             historialId.isNotEmpty() -> viewModel.cargarDesdeHistorial(historialId)
             borradorId.isNotEmpty() -> viewModel.cargarBorradorPorId(borradorId)
-            animalId.isNotEmpty() -> viewModel.precargarAnimal(animalId)
+            animalId.isNotEmpty() -> {
+                viewModel.precargarAnimal(animalId)
+                procedeDeLista = true
+
+            }
         }
     }
 
@@ -199,6 +205,7 @@ fun MaterialDuplicadosScreen(
                             when {
                                 historialId.isNotEmpty() -> navController.popBackStack()
                                 borradorId.isNotEmpty() -> navController.popBackStack()
+                                procedeDeLista -> navController.navigate(Routes.ListarBovinos.route)
                                 else -> navController.navigate(Routes.MaterialCategoria.route)
                             }
                         }) {

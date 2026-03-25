@@ -109,9 +109,14 @@ fun GestionGuias(
     val usbErrorText = usbState.error?.let { stringResource(it) }
     var indiceUsb by remember { mutableStateOf<Int?>(null) }
 
+
     val codiMoViewModel = hiltViewModel<CodiMoManagerViewModel>()
     val codisMoExpandido by codiMoViewModel.codisMoExpandido.observeAsState(false)
     val codiMoActivo by codiMoViewModel.codiMoActivo.observeAsState(null)
+
+    var procedeDeLista  by remember { mutableStateOf(false) }
+
+
     LaunchedEffect(Unit) {
         usbViewModel.mensajes.collect { mensaje ->
             indiceUsb?.let { viewModel.actualizarIdentificador(it, mensaje) }
@@ -141,7 +146,10 @@ fun GestionGuias(
         when {
             historialId.isNotEmpty() -> viewModel.cargarDesdeHistorial(historialId)
             borradorId.isNotEmpty() -> viewModel.cargarBorradorPorId(borradorId)
-            animalId.isNotEmpty() -> viewModel.precargarAnimal(animalId)
+            animalId.isNotEmpty() -> {
+                viewModel.precargarAnimal(animalId)
+                procedeDeLista = true
+            }
             else -> {
                 cantidadBorradores = viewModel.obtenerCantidadBorradoresGuia()
                 if (cantidadBorradores >= 2) mostrarDialogoAviso = true
@@ -291,6 +299,7 @@ fun GestionGuias(
                             when {
                                 historialId.isNotEmpty() -> navController.popBackStack()
                                 borradorId.isNotEmpty() -> navController.popBackStack()
+                                procedeDeLista -> navController.navigate(Routes.ListarBovinos.route)
                                 else -> navController.navigate(Routes.GuiasMovimientos.route)
                             }
                         }) {

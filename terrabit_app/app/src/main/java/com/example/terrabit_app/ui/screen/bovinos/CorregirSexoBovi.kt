@@ -73,6 +73,8 @@ fun CorregirSexoBovi(
     val usbState by usbViewModel.state.collectAsState()
     val usbErrorText = usbState.error?.let { stringResource(it) }
 
+    var procedeDeLista  by remember { mutableStateOf(false) }
+
     LaunchedEffect(Unit) {
         usbViewModel.mensajes.collect { mensaje ->
             viewModel.actualizarIdentificadorCorreccionSexo(mensaje)
@@ -98,7 +100,10 @@ fun CorregirSexoBovi(
         when {
             historialId.isNotEmpty() -> viewModel.cargarDesdeHistorial(historialId)
             borradorId.isNotEmpty() -> viewModel.cargarBorradorPorId(borradorId)
-            animalId.isNotEmpty() -> viewModel.precargarAnimal(animalId)
+            animalId.isNotEmpty() -> {
+                viewModel.precargarAnimal(animalId)
+                procedeDeLista = true
+            }
         }
     }
 
@@ -153,6 +158,7 @@ fun CorregirSexoBovi(
                             when {
                                 historialId.isNotEmpty() -> navController.popBackStack()
                                 borradorId.isNotEmpty() -> navController.popBackStack()
+                                procedeDeLista -> navController.navigate(Routes.ListarBovinos.route)
                                 else -> navController.navigate(Routes.GestionBovinos.route)
                             }
                         }) { Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.content_description_back)) }

@@ -104,6 +104,8 @@ fun Fallecimiento(
 
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
 
+    var procedeDeLista  by remember { mutableStateOf(false) }
+
     val locationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -142,7 +144,11 @@ fun Fallecimiento(
         when {
             historialId.isNotEmpty() -> viewModel.cargarDesdeHistorial(historialId)
             borradorId.isNotEmpty() -> viewModel.cargarBorradorPorId(borradorId)
-            animalId.isNotEmpty() -> viewModel.precargarAnimal(animalId)
+            animalId.isNotEmpty() -> {
+                viewModel.precargarAnimal(animalId)
+                procedeDeLista = true
+            }
+
         }
     }
 
@@ -226,6 +232,7 @@ fun Fallecimiento(
                             when {
                                 historialId.isNotEmpty() -> navController.popBackStack()
                                 borradorId.isNotEmpty() -> navController.popBackStack()
+                                procedeDeLista -> navController.navigate(Routes.ListarBovinos.route)
                                 else -> navController.navigate(Routes.GestionBovinos.route)
                             }
                         }) {
