@@ -1,5 +1,6 @@
 package com.example.terrabit_app.viewmodel.porcinos
 
+import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
 import android.os.Build
@@ -19,97 +20,155 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.Calendar
 
 @RequiresApi(Build.VERSION_CODES.O)
-class EntradasPorcinosViewModel(application: Application): AndroidViewModel(application){
+class EntradasPorcinosViewModel(application: Application) : AndroidViewModel(application) {
+
     private val _uiState = MutableStateFlow(EntradasPorcinosUiState())
-    val uiState : StateFlow<EntradasPorcinosUiState> = _uiState.asStateFlow()
+    val uiState: StateFlow<EntradasPorcinosUiState> = _uiState.asStateFlow()
 
     private val repositorio = Repositorio(application)
-
     private lateinit var userPreferences: UserPreferences
 
-    fun inicializarUserPreferences(application: Context) {
-        userPreferences = UserPreferences(application)
+    // ── Fecha ────────────────────────────────────────────────────────────────
+    private val _fechaDisplay = MutableStateFlow("")
+    val fechaDisplay: StateFlow<String> = _fechaDisplay
 
+    private val _mostrarDatePicker = MutableStateFlow(false)
+    val mostrarDatePicker: StateFlow<Boolean> = _mostrarDatePicker
+
+    private val _mostrarTimePicker = MutableStateFlow(false)
+    val mostrarTimePicker: StateFlow<Boolean> = _mostrarTimePicker
+
+    private val _consultaIniciada = MutableStateFlow(false)
+    val consultaIniciada: StateFlow<Boolean> = _consultaIniciada
+
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
+    private var fechaMillisSeleccionada: Long = 0L
+
+    // ── Pickers ──────────────────────────────────────────────────────────────
+    fun mostrarDatePicker() { _mostrarDatePicker.value = true }
+    fun ocultarDatePicker() { _mostrarDatePicker.value = false }
+    fun ocultarTimePicker() { _mostrarTimePicker.value = false }
+
+    fun seleccionarFecha(millis: Long) {
+        fechaMillisSeleccionada = millis
+        _mostrarDatePicker.value = false
+        _mostrarTimePicker.value = true
+    }
+
+    @SuppressLint("DefaultLocale")
+    fun seleccionarHora(hora: Int, minutos: Int) {
+        val cal = Calendar.getInstance()
+        cal.timeInMillis = fechaMillisSeleccionada
+        _fechaDisplay.value = String.format(
+            "%02d/%02d/%04d %02d:%02d",
+            cal.get(Calendar.DAY_OF_MONTH),
+            cal.get(Calendar.MONTH) + 1,
+            cal.get(Calendar.YEAR),
+            hora, minutos
+        )
+        _mostrarTimePicker.value = false
+    }
+
+    // ── Inicialización ───────────────────────────────────────────────────────
+    fun inicializarUserPreferences(context: Context) {
+        userPreferences = UserPreferences(context)
+    }
+
+    // ── Validar y lanzar consulta ────────────────────────────────────────────
+    fun validarYConsultar() {
+        if (_fechaDisplay.value.isBlank()) {
+            _error.value = "La fecha de sortida és obligatòria."
+            return
+        }
+        _error.value = null
+        _consultaIniciada.value = true
         cargarGuiasPendientes()
     }
 
+    fun resetearConsulta() {
+        _consultaIniciada.value = false
+        _uiState.update { it.copy(listaEntradasPorcinos = emptyList()) }
+        _fechaDisplay.value = ""
+        _error.value = null
+    }
+
+    // ── GET ──────────────────────────────────────────────────────────────────
     private fun cargarGuiasPendientes() {
         val fechaFin = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"))
+        val fechaInicio = displayToApiFormat(_fechaDisplay.value)
 
         viewModelScope.launch {
-            // 1. Iniciamos carga
-            _uiState.value = _uiState.value.copy(isLoading = true)
-
+            _uiState.update { it.copy(isLoading = true) }
             try {
                 val response = repositorio.getPendientesConfirmarEntradaPorcina(
-                    /*nif = userPreferences.getNif(),
-                    password = userPreferences.getPassword(),
-                    moDesti = userPreferences.getCodiMO(),*/
-                    nif = "37370803N",
-                    password = "5Q62h4rP",
-                    moDesti = "1880AE",
-                    desde = "000101010000",
-                    fins = fechaFin
+                    nif          = userPreferences.getNif()      ?: "",
+                    password     = userPreferences.getPassword() ?: "",
+                    moDesti      = userPreferences.getCodiMO()   ?: "",
+                    desde        = fechaInicio,
+                    fins         = fechaFin
                 )
-
                 if (response.isSuccessful) {
-                    val nuevasGuias = response.body()?.llistat ?: emptyList()
-                    _uiState.value = _uiState.value.copy(
-                        listaEntradasPorcinos = nuevasGuias,
-                        isLoading = false // 2. Éxito: quitamos carga
-                    )
+                    _uiState.update { it.copy(
+                        listaEntradasPorcinos = response.body()?.llistat ?: emptyList(),
+                        isLoading = false
+                    )}
                 } else {
-                    _uiState.value = _uiState.value.copy(isLoading = false) // Error de API
-                    Log.e("EntradasPorcinosViewModel", "Error: ${response.code()}")
+                    _error.value = "Error ${response.code()}"
+                    _uiState.update { it.copy(isLoading = false) }
+                    _consultaIniciada.value = false
                 }
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(isLoading = false) // Error de Red
-                Log.e("EntradasPorcinosViewModel", "Error en la llamada", e)
+                _error.value = "Error de connexió: ${e.localizedMessage}"
+                _uiState.update { it.copy(isLoading = false) }
+                _consultaIniciada.value = false
             }
         }
     }
 
+    // ── Confirmar entrada ────────────────────────────────────────────────────
     fun confirmarEntrada(guia: MovimentPteDetail) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-
-            // Mapeo desde MovimentPteDetail a ConfirmarMovimientosRequest
             val request = ConfirmarMovimientosRequest(
-                nif = "37370803N", // TODO: userPreferences.getNif()
-                password = "5Q62h4rP", // TODO: userPreferences.getPass()
-                moDesti = guia.moDesti,
-                remo = guia.codiRemo,
-                codiAtes = guia.codiAtes, // Ajustar si MovimentPteDetail tiene transportista
-                nifConductor = guia.nifConductor?: "",
-                matricula = guia.matricula?: "",
-                nombreAnimals = guia.numAnimals?: "0" // Ajustar si el detalle incluye cantidad
+                nif          = userPreferences.getNif()      ?: "",
+                password     = userPreferences.getPassword() ?: "",
+                moDesti      = guia.moDesti,
+                remo         = guia.codiRemo,
+                codiAtes     = guia.codiAtes,
+                nifConductor = guia.nifConductor ?: "",
+                matricula    = guia.matricula    ?: "",
+                nombreAnimals = guia.numAnimals  ?: "0"
             )
-
             try {
                 val response = repositorio.confirmarEntradaPorcina(request)
-
                 if (response.isSuccessful && response.body()?.codi == "OK") {
-                    // Filtramos la lista eliminando la guía confirmada por su código REMO
-                    val listaActualizada = _uiState.value.listaEntradasPorcinos.filter {
-                        it.codiRemo != guia.codiRemo
-                    }
-
                     _uiState.update { it.copy(
-                        listaEntradasPorcinos = listaActualizada,
+                        listaEntradasPorcinos = it.listaEntradasPorcinos.filter { it.codiRemo != guia.codiRemo },
                         isLoading = false
                     )}
-                    Log.d("DEBUG_API", "Confirmación OK: ${guia.codiRemo}")
                 } else {
-                    val errorMsg = response.body()?.descripcio ?: "Error al confirmar"
+                    _error.value = response.body()?.descripcio ?: "Error al confirmar"
                     _uiState.update { it.copy(isLoading = false) }
-                    Log.e("DEBUG_API", "Error Negocio: $errorMsg")
                 }
             } catch (e: Exception) {
+                _error.value = e.localizedMessage
                 _uiState.update { it.copy(isLoading = false) }
-                Log.e("DEBUG_API", "Error Conexión: ${e.localizedMessage}")
             }
         }
+    }
+
+    // ── Utils ────────────────────────────────────────────────────────────────
+    private fun displayToApiFormat(display: String): String {
+        return try {
+            val partes = display.trim().split(" ")
+            val (dia, mes, anio) = partes[0].split("/")
+            val (h, m) = partes[1].split(":")
+            "$anio$mes$dia$h$m"
+        } catch (e: Exception) { "000101010000" }
     }
 }

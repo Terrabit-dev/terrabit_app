@@ -18,6 +18,7 @@ material3 = "1.4.0"
 roomKtx = "2.8.4"
 playServicesLocation = "21.3.0"
 foundationVersion = "1.10.5"
+foundationLayoutVersion = "1.10.5"
 
 
 [libraries]
@@ -45,6 +46,7 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3",
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 androidx-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundationVersion" }
+androidx-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundationLayoutVersion" }
 
 
 [plugins]
