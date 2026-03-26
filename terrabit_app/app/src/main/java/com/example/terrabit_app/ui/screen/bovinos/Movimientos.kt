@@ -33,6 +33,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
+import com.example.terrabit_app.data.network.moviminetos.modelos.Moviment
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.utils.components.CampoIdentificadorAutoComplete
 import com.example.terrabit_app.utils.components.useDebounce
@@ -54,9 +55,20 @@ fun Movimientos(
     navController: NavController,
     bluetoothViewModel: BluetoothViewModel,
     borradorId: String = "",
-    historialId: String = ""
+    historialId: String = "",
+    movimientoSeleccionado: Moviment
 ) {
     val viewModel = hiltViewModel<MovimientosViewModel>()
+    // Cargar datos al entrar a la pantalla
+    val elementosConCodigos = ElementosConCodigos()
+    val transportMap = elementosConCodigos.transporte()
+    LaunchedEffect(movimientoSeleccionado.codiRemo) {
+        if (movimientoSeleccionado.codiRemo.isNotEmpty()) {
+            val transportNombre = transportMap[movimientoSeleccionado.mitjaTransport] ?: ""
+            viewModel.cargarDatosMovimiento(movimientoSeleccionado, transportNombre)
+        }
+    }
+
     val modoLectura = historialId.isNotEmpty()
 
     val context = LocalContext.current
@@ -92,7 +104,6 @@ fun Movimientos(
     var mostrarBluetooth by remember { mutableStateOf(false) }
 
     val successMessage = stringResource(R.string.successful_message_confirm_movs)
-    val elementosConCodigos = ElementosConCodigos()
 
     val usbViewModel = hiltViewModel<UsbSerialViewModel>()
     val usbState by usbViewModel.state.collectAsState()

@@ -27,6 +27,7 @@ import com.example.terrabit_app.data.local.dao.BorradorDao
 import com.example.terrabit_app.data.local.dao.HistorialDao
 import com.example.terrabit_app.data.local.database.BorradorEntity
 import com.example.terrabit_app.data.local.database.HistorialEntity
+import com.example.terrabit_app.data.network.moviminetos.modelos.Moviment
 import java.io.IOException
 import java.net.SocketTimeoutException
 import java.util.UUID
@@ -157,6 +158,57 @@ class MovimientosViewModel @Inject constructor(
         cargarBovinosEnCache()
     }
 
+    fun cargarDatosMovimiento(movimiento: Moviment, transportNombre: String = "") {
+        _codiRemo.value = movimiento.codiRemo
+        _codiAtes.value = movimiento.codiAtes
+        val (fecha, hora) = parsearFechaAPI(movimiento.dataArribada)
+        _dataArribada.value = fecha
+        _horaArribada.value = hora
+        _explotacioDestinacio.value = movimiento.moDestinacio
+        if (!movimiento.mitjaTransport.isNullOrEmpty()) {
+            _codiTransport.value = movimiento.mitjaTransport
+            _mitjaTransport.value = transportNombre   // ← nombre visual
+        }
+        if (movimiento.nomConductor != null) _nomConductor.value = movimiento.nomConductor
+        if (movimiento.nomTransportista != null) _nomTransportista.value = movimiento.nomTransportista
+        if (movimiento.matricula != null) _matricula.value = movimiento.matricula
+        if (movimiento.nifConductor != null) _nifConductor.value = movimiento.nifConductor
+
+        // Mapeo IdenBovi → IdenMovimiento
+        val animalesMapeados = movimiento.identificadors
+            .map { idenBovi ->
+                IdenMovimiento(
+                    identificador = idenBovi.identificador,
+                    estatArribada = null,
+                    classCanal = null,
+                    dataSacrMort = null,
+                    pesCanal = null,
+                    tipusPresentacio = null
+                )
+            }
+            .ifEmpty {
+                listOf(IdenMovimiento(identificador = "", estatArribada = null, classCanal = null, dataSacrMort = null, pesCanal = null, tipusPresentacio = null))
+            }
+
+        if (animalesMapeados.isNotEmpty()) {
+            _listaAnimales.value = animalesMapeados
+        }
+    }
+
+    // En MovimientosViewModel
+    private fun parsearFechaAPI(fechaAPI: String): Pair<String, String> {
+        // Entrada: "202203010001"  →  Salida: "01/03/2022" a "00:01"
+        return try {
+            if (fechaAPI.length >= 12) {
+                val year  = fechaAPI.substring(0, 4)
+                val month = fechaAPI.substring(4, 6)
+                val day   = fechaAPI.substring(6, 8)
+                val hour  = fechaAPI.substring(8, 10)
+                val min   = fechaAPI.substring(10, 12)
+                "$day/$month/$year" to "$hour:$min"
+            } else "" to ""
+        } catch (e: Exception) { "" to "" }
+    }
 
     suspend fun obtenerCantidadBorradoresMovimiento(): Int {
         return borradorDao.getAll().count { it.tipo == "MOVIMIENTO" && it.estado == "BORRADOR_AUTO" }
@@ -506,7 +558,7 @@ class MovimientosViewModel @Inject constructor(
                     when {
                         response.isSuccessful && response.body() != null -> {
                             val body = response.body()!!
-                            if (body.codiRemo == "0" || body.descripcio?.contains("correcte", ignoreCase = true) == true) {
+                            if (body.descripcio.equals("OK", ignoreCase = true)) {
                                 _registroExitoso.value = true; _mensajeError.value = ""
                                 Log.d("Confirmar Movimiento", "Movimiento confirmado exitosamente")
                                 guardarEnHistorial("Movimiento Registrado")

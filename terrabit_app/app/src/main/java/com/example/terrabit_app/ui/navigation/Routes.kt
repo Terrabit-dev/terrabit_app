@@ -87,6 +87,7 @@ sealed class Routes(val route: String) {
     object GuiasBovinos : Routes("lista_guias_bovinos")
     object MovimientosBovinos : Routes("lista_movimientos_bovinos")
     object GuiasPorcinos : Routes("lista_guias_porcinos")
+    object ConfirmarMovimientoBovi : Routes("confirmar_movimiento_bovi")
     object EditarGuiaBovi : Routes("editar_guia_bovi")
     object EditarMovimientoBovi : Routes("editar_movimiento_bovi")
 }

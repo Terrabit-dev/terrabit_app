@@ -13,6 +13,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.terrabit_app.data.network.moviminetos.modelos.Moviment
 import com.example.terrabit_app.ui.pantallas.BorradoresScreen
 import com.example.terrabit_app.ui.pantallas.CrearGuiasPorcinos
 import com.example.terrabit_app.ui.pantallas.GestionBovinos
@@ -221,7 +222,24 @@ fun NavigationDrawer(
         ) { backStackEntry ->
             val borradorId = backStackEntry.arguments?.getString("borradorId") ?: ""
             val historialId = backStackEntry.arguments?.getString("historialId") ?: ""
-            Movimientos(navController = navController, bluetooth, borradorId, historialId)
+            Movimientos(navController = navController, bluetooth, borradorId, historialId, Moviment())
+        }
+        composable(Routes.ConfirmarMovimientoBovi.route) { currentEntry ->
+            val parentEntry = remember(currentEntry) {
+                navController.getBackStackEntry(Routes.MovimientosBovinos.route)
+            }
+            val viewModelLista = hiltViewModel<ListarMovisBoviViewModel>(parentEntry)
+            val movimientoSeleccionado by viewModelLista.movimientoSeleccionado.observeAsState(null)
+
+            movimientoSeleccionado?.let { movimiento ->
+                Movimientos(
+                    navController = navController,
+                    bluetoothViewModel = bluetooth,
+                    borradorId = "",
+                    historialId = "",
+                    movimientoSeleccionado = movimiento
+                )
+            }
         }
 
 

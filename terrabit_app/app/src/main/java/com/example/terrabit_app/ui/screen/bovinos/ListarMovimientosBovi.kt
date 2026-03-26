@@ -267,8 +267,8 @@ fun ListarMovimientosBovi(
                                         guia          = guia,
                                         navController = navController,
                                         onEditarClick = {
-                                            viewModel.seleccionarMovi(guia)                 // 1. Guardamos la guía
-                                            navController.navigate(Routes.EditarGuiaBovi.route) // 2. Navegamos
+                                            viewModel.seleccionarMovi(guia)
+                                            navController.navigate(Routes.ConfirmarMovimientoBovi.route)
                                         }
                                     )
                                 }
