@@ -94,4 +94,5 @@ dependencies {
 
     // Fuente
     implementation("androidx.compose.ui:ui-text-google-fonts:1.7.0")
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
 }
