@@ -416,6 +416,8 @@
     <string name="bluetooth_error_no_permissions">Sense permisos Bluetooth. Activa\'ls als Ajustos del dispositiu.</string>
     <string name="bluetooth_error_prefix">Error de connexió: %1$s</string>
     <string name="bluetooth_error_unknown">Error desconegut</string>
+    <string name="bluetooth_description_activation_menu">L\'Applicació necessita Bluetooth per comunicar-se amb l\'ESP32. Activar-ho?</string>
+    <string name="bluetooth_activate_button">Activar</string>
 
 
     <string name="configuration_title">Configuració</string>

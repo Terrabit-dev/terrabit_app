@@ -52,19 +52,19 @@ fun GestionBovinos(navController: NavController) {
                 mostrarDialogo = false
                 BluetoothUtils.marcarCancelado(context)
             },
-            title = { Text("Bluetooth desactivado") },
-            text = { Text("La app necesita Bluetooth para comunicarse con el ESP32. ¿Quieres activarlo?") },
+            title = { stringResource(R.string.bluetooth_disabled_title) },
+            text = { stringResource(R.string.bluetooth_description_activation_menu) },
             confirmButton = {
                 Button(onClick = {
                     mostrarDialogo = false
                     launcherBluetooth.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
-                }) { Text("Activar") }
+                }) { stringResource(R.string.bluetooth_activate_button) }
             },
             dismissButton = {
                 TextButton(onClick = {
                     mostrarDialogo = false
                     BluetoothUtils.marcarCancelado(context)
-                }) { Text("Cancelar") }
+                }) { stringResource(R.string.cancel_buttom) }
             }
         )
     }

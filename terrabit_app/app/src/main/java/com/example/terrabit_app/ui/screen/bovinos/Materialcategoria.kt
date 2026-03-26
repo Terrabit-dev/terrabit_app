@@ -16,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -24,7 +25,7 @@ import com.example.terrabit_app.ui.components.TarjetaAccion
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.utils.bluetooth.BluetoothUtils
-
+import com.example.terrabit_app.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MaterialCategoria(navController: NavController) {
@@ -47,19 +48,19 @@ fun MaterialCategoria(navController: NavController) {
                 mostrarDialogo = false
                 BluetoothUtils.marcarCancelado(context)
             },
-            title = { Text("Bluetooth desactivado") },
-            text = { Text("La app necesita Bluetooth para comunicarse con el ESP32. ¿Quieres activarlo?") },
+            title = { stringResource(R.string.bluetooth_disabled_title) },
+            text = { stringResource(R.string.bluetooth_description_activation_menu) },
             confirmButton = {
                 Button(onClick = {
                     mostrarDialogo = false
                     launcherBluetooth.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
-                }) { Text("Activar") }
+                }) { stringResource(R.string.bluetooth_activate_button) }
             },
             dismissButton = {
                 TextButton(onClick = {
                     mostrarDialogo = false
                     BluetoothUtils.marcarCancelado(context)
-                }) { Text("Cancelar") }
+                }) { stringResource(R.string.cancel_buttom) }
             }
         )
     }
@@ -87,7 +88,7 @@ fun MaterialCategoria(navController: NavController) {
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                "Selecciona una acción",
+                stringResource(R.string.gestion_subtitle_bovinos),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -106,7 +107,7 @@ fun MaterialCategoria(navController: NavController) {
                 ) {
                     TarjetaAccion(
                         icono = Icons.Default.ShoppingCart,
-                        titulo = "Solicitar Material",
+                        titulo = stringResource(R.string.name_request_material),
                         subtitulo = "",
                         colorFondo = MainGreen,
                         modifier = Modifier.weight(1f),
@@ -114,7 +115,7 @@ fun MaterialCategoria(navController: NavController) {
                     )
                     TarjetaAccion(
                         icono = Icons.Default.ContentCopy,
-                        titulo = "Solicitar duplicado",
+                        titulo = stringResource(R.string.btn_duplicate_request),
                         subtitulo = "",
                         colorFondo = MainGreen,
                         modifier = Modifier.weight(1f),
