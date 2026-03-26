@@ -17,20 +17,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.os.LocaleListCompat
 import androidx.navigation.NavController
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothManager
-import android.content.Intent
-import android.content.pm.PackageManager
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
 import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.theme.ErrorRed
@@ -46,65 +38,8 @@ fun Home(
     onMenuClick: () -> Unit,
     navController: NavController
 ) {
-    val context = LocalContext.current
-    var mostrarDialogo by remember { mutableStateOf(false) }
     var cambiandoIdioma by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-
-    val launcherBluetooth = rememberLauncherForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode != android.app.Activity.RESULT_OK) {
-            mostrarDialogo = true
-        }
-    }
-
-    val launcherPermiso = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { concedido ->
-        if (concedido) {
-            val bluetoothManager = context.getSystemService(BluetoothManager::class.java)
-            val bluetoothAdapter = bluetoothManager?.adapter
-            if (bluetoothAdapter != null && !bluetoothAdapter.isEnabled) {
-                val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-                launcherBluetooth.launch(intent)
-            }
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        val bluetoothManager = context.getSystemService(BluetoothManager::class.java)
-        val bluetoothAdapter = bluetoothManager?.adapter
-        val permisoOk = ContextCompat.checkSelfPermission(
-            context, android.Manifest.permission.BLUETOOTH_CONNECT
-        ) == PackageManager.PERMISSION_GRANTED
-        if (permisoOk && bluetoothAdapter != null && !bluetoothAdapter.isEnabled) {
-            val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-            launcherBluetooth.launch(intent)
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        launcherPermiso.launch(android.Manifest.permission.BLUETOOTH_CONNECT)
-    }
-
-    if (mostrarDialogo) {
-        AlertDialog(
-            onDismissRequest = { mostrarDialogo = false },
-            title = { Text("Bluetooth desactivado") },
-            text = { Text("La app necesita Bluetooth para comunicarse con el ESP32. ¿Quieres activarlo?") },
-            confirmButton = {
-                Button(onClick = {
-                    mostrarDialogo = false
-                    val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-                    launcherBluetooth.launch(intent)
-                }) { Text("Activar") }
-            },
-            dismissButton = {
-                TextButton(onClick = { mostrarDialogo = false }) { Text("Cancelar") }
-            }
-        )
-    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
@@ -183,9 +118,6 @@ fun Home(
                 }
 
                 Spacer(modifier = Modifier.height(45.dp))
-
-
-
             }
         }
 
