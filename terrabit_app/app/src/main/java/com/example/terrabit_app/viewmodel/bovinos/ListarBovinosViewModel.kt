@@ -1,6 +1,7 @@
 package com.example.terrabit_app.viewmodel.bovinos
 
 import android.util.Log
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -38,7 +39,10 @@ class ListarBovinosViewModel @Inject constructor(
 
     private val _busqueda = MutableLiveData("")
     val busqueda = _busqueda
+    private val _animalSeleccionado = MutableLiveData<Animal?>(null)
+    val animalSeleccionado: LiveData<Animal?> = _animalSeleccionado
 
+    fun seleccionarAnimal(animal: Animal) { _animalSeleccionado.value = animal }
     fun actualizarBusqueda(texto: String) {
         _busqueda.value = texto
         filtrarBovinos(texto)

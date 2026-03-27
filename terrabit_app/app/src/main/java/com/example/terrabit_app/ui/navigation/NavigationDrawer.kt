@@ -38,10 +38,12 @@ import com.example.terrabit_app.ui.screen.porcinos.HomePorcinos
 import com.example.terrabit_app.ui.screen.porcinos.GestionGuiasPorcinos
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 import com.example.terrabit_app.ui.screen.bovinos.ConfigurationScreen
+import com.example.terrabit_app.ui.screen.bovinos.DetailBovino
 import com.example.terrabit_app.ui.screen.bovinos.EditarGuiaBovi
 import com.example.terrabit_app.ui.screen.bovinos.ListaGuiasBovi
 import com.example.terrabit_app.ui.screen.bovinos.ListarMovimientosBovi
 import com.example.terrabit_app.ui.screen.bovinos.UsbTestScreen
+import com.example.terrabit_app.viewmodel.bovinos.ListarBovinosViewModel
 import com.example.terrabit_app.viewmodel.bovinos.ListarGuiasBoviViewModel
 import com.example.terrabit_app.viewmodel.bovinos.ListarMovisBoviViewModel
 import com.example.terrabit_app.viewmodel.porcinos.EditarGuiaPorcinosViewModel
@@ -113,6 +115,17 @@ fun NavigationDrawer(
         // Listado de Bovinos
         composable(Routes.ListarBovinos.route) {
             ListarBovinos(navController)
+        }
+        composable(Routes.DeatilBovino.route) { currentEntry ->
+            val parentEntry = remember(currentEntry) {
+                navController.getBackStackEntry(Routes.ListarBovinos.route)
+            }
+            val viewModelLista = hiltViewModel<ListarBovinosViewModel>(parentEntry)
+            val animal by viewModelLista.animalSeleccionado.observeAsState(null)
+
+            animal?.let {
+                DetailBovino(navController = navController, animal = it)
+            }
         }
 
         // Gestión de Bovinos

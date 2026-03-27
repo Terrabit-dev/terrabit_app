@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -61,14 +62,14 @@ fun ListarBovinos(navController: NavController) {
     val codisMoExpandido by codiMoViewModel.codisMoExpandido.observeAsState(false)
     val codiMoActivo by codiMoViewModel.codiMoActivo.observeAsState(null)
 
-    var mostrarBuscador by remember { mutableStateOf(true) }
+    var mostrarHeader  by remember { mutableStateOf(true) }
     var animalSeleccionado by remember { mutableStateOf<Animal?>(null) }
 
     val nestedScrollConnection = remember {
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                if (available.y < -1) mostrarBuscador = false
-                else if (available.y > 1) mostrarBuscador = true
+                if (available.y < -1) mostrarHeader = false
+                else if (available.y > 1) mostrarHeader = true
                 return Offset.Zero
             }
         }
@@ -121,47 +122,50 @@ fun ListarBovinos(navController: NavController) {
                         )
                     )
                     AnimatedVisibility(
-                        visible = mostrarBuscador,
+                        visible = mostrarHeader,
                         enter = slideInVertically(initialOffsetY = { -it / 4 }),
                         exit = slideOutVertically(targetOffsetY = { -it / 4 })
                     ) {
-                        OutlinedTextField(
-                            value = busqueda,
-                            onValueChange = { viewModel.actualizarBusqueda(it) },
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-                            placeholder = { Text(stringResource(R.string.search_bar_list_bovinos), color = MaterialTheme.colorScheme.onSurfaceVariant) },
-                            leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar", tint = MainGreen) },
-                            singleLine = true,
-                            shape = RoundedCornerShape(12.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = MainGreen,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                                cursorColor = MainGreen,
-                                focusedContainerColor = MaterialTheme.colorScheme.surface,
-                                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                        Column() {
+                            OutlinedTextField(
+                                value = busqueda,
+                                onValueChange = { viewModel.actualizarBusqueda(it) },
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                                placeholder = { Text(stringResource(R.string.search_bar_list_bovinos), color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar", tint = MainGreen) },
+                                singleLine = true,
+                                shape = RoundedCornerShape(12.dp),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = MainGreen,
+                                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                                    cursorColor = MainGreen,
+                                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                                )
                             )
-                        )
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)
+                            ) {
+                                CodiMoSelector(
+                                    codisMos    = codiMoViewModel.getCodisMos(),
+                                    seleccionado = codiMoActivo,
+                                    expanded    = codisMoExpandido,
+                                    onToggle    = { codiMoViewModel.toggleCodisMoExpandido() },
+                                    onDismiss   = { codiMoViewModel.cerrarCodisMo() },
+                                    onSeleccionar = { codi -> codiMoViewModel.seleccionarCodiMo(codi); viewModel.refrescar() },
+                                    accentColor = MainGreen
+                                )
+                            }
+                        }
                     }
                 }
             },
             containerColor = MaterialTheme.colorScheme.background
         ) { padding ->
             Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
-                ) {
-                    CodiMoSelector(
-                        codisMos = codiMoViewModel.getCodisMos(),
-                        seleccionado = codiMoActivo,
-                        expanded = codisMoExpandido,
-                        onToggle = { codiMoViewModel.toggleCodisMoExpandido() },
-                        onDismiss = { codiMoViewModel.cerrarCodisMo() },
-                        onSeleccionar = { codi -> codiMoViewModel.seleccionarCodiMo(codi); viewModel.refrescar() },
-                        accentColor = MainGreen
-                    )
-                }
+
 
                 PullToRefreshBox(
                     isRefreshing = refrescando,
@@ -201,7 +205,16 @@ fun ListarBovinos(navController: NavController) {
                                 verticalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
                                 items(listaFiltrada) { animal ->
-                                    TarjetaBovino(animal = animal, onClick = { animalSeleccionado = animal })
+                                    TarjetaBovino(
+                                        animal = animal,
+                                        onClick = {
+                                            viewModel.seleccionarAnimal(animal)
+                                            navController.navigate(Routes.DeatilBovino.route)
+                                        },
+                                        onLongClick = {
+                                            animalSeleccionado = animal  // el estado local que ya tienes para el dialog
+                                        }
+                                    )
                                 }
                             }
                         }
@@ -300,9 +313,15 @@ private fun DialogOpcionItem(
 }
 
 @Composable
-fun TarjetaBovino(animal: Animal, onClick: () -> Unit = {}) {
+fun TarjetaBovino(animal: Animal,
+                  onClick: () -> Unit = {},
+                  onLongClick: () -> Unit = {}
+) {
     Card(
-        modifier = Modifier.fillMaxWidth().clickable { onClick() },
+        modifier = Modifier.fillMaxWidth().combinedClickable(
+            onClick = onClick,
+            onLongClick = onLongClick
+        ),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(12.dp)
@@ -311,7 +330,8 @@ fun TarjetaBovino(animal: Animal, onClick: () -> Unit = {}) {
             modifier = Modifier.fillMaxWidth().padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(text = animal.identificador, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+            Text(text = animal.identificador.takeLast(4), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+            Text(text = animal.identificador, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 InfoItem(
                     label = stringResource(R.string.card_info_sex),
