@@ -47,6 +47,7 @@ import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 import com.example.terrabit_app.utils.usb.UsbSerialViewModel
 import com.example.terrabit_app.viewmodel.bovinos.CodiMoManagerViewModel
 import com.example.terrabit_app.viewmodel.bovinos.GuiasViewModel
+import com.example.terrabit_app.ui.components.HistorialAutoCompleteField
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -115,6 +116,7 @@ fun GestionGuias(
     val codiMoActivo by codiMoViewModel.codiMoActivo.observeAsState(null)
 
     var procedeDeLista  by remember { mutableStateOf(false) }
+    val historialManager = viewModel.historialCamposManager
 
 
     LaunchedEffect(Unit) {
@@ -344,13 +346,31 @@ fun GestionGuias(
                         }
                         Text(stringResource(R.string.form_movs_title_necessary), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
 
-                        CampoTexto(label = stringResource(R.string.form_origin_exploitation), valor = explotacioOrigen, placeholder = stringResource(R.string.form_format_mo_rega), onValueChange = { if (!modoLectura) viewModel.actualizarExplotacioOrigen(it) }, defectColor = false, enabled = !modoLectura)
-                        CampoTexto(label = stringResource(R.string.form_exploitation_destination), valor = explotacioDestinacio, placeholder = stringResource(R.string.form_format_mo_rega), onValueChange = { if (!modoLectura) viewModel.actualizarExplotacioDestinacio(it) }, defectColor = false, enabled = !modoLectura)
+                        HistorialAutoCompleteField(
+                            valor = explotacioOrigen,
+                            onValorChange = { if (!modoLectura) viewModel.actualizarExplotacioOrigen(it) },
+                            label = stringResource(R.string.form_origin_exploitation),
+                            clave = "explotacio_origen",
+                            historialManager = historialManager,
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !modoLectura
+                        )
+                        HistorialAutoCompleteField(
+                            valor = explotacioDestinacio,
+                            onValorChange = { if (!modoLectura) viewModel.actualizarExplotacioDestinacio(it) },
+                            label = stringResource(R.string.form_exploitation_destination),
+                            clave = "explotacio_destino",
+                            historialManager = historialManager,
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !modoLectura
+                        )
+
 
                         DropdownField(
                             label = stringResource(R.string.form_temporal), selectedValue = temporal,
                             expanded = if (modoLectura) false else temporalExpandido,
-                            placeholder = stringResource(R.string.form_yes_no), opciones = elementosConCodigos.opcionesSiNo(),
+                            placeholder = stringResource(R.string.form_yes_no),
+                            opciones = elementosConCodigos.opcionesSiNo(),
                             onExpandedChange = { if (!modoLectura) viewModel.toggleTemporalExpandido() },
                             onDismissRequest = { viewModel.cerrarTemporalMenu() },
                             onSeleccionar = { codigo, nombre -> if (!modoLectura) viewModel.seleccionarTemporal(nombre, codigo) },
@@ -392,8 +412,25 @@ fun GestionGuias(
                     Column(modifier = Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(24.dp)) {
                         Text(stringResource(R.string.form_movs_title_optionals), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
 
-                        CampoTexto(label = stringResource(R.string.form_codi_ates), valor = codiAtes, placeholder = stringResource(R.string.form_codi_ates_description), onValueChange = { if (!modoLectura) viewModel.campoCodiAtes(it) }, defectColor = false, enabled = !modoLectura)
-                        CampoTexto(label = stringResource(R.string.form_name_transportits), valor = nomTransportista, placeholder = stringResource(R.string.form_name_transportits_description), onValueChange = { if (!modoLectura) viewModel.actualizarNomTransportista(it) }, defectColor = false, enabled = !modoLectura)
+                        HistorialAutoCompleteField(
+                            valor = codiAtes,
+                            onValorChange = { if (!modoLectura) viewModel.campoCodiAtes(it) },
+                            label = stringResource(R.string.form_codi_ates),
+                            clave = "codi_ates",
+                            historialManager = historialManager,
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !modoLectura
+                        )
+
+                        HistorialAutoCompleteField(
+                            valor = nomTransportista,
+                            onValorChange = { if (!modoLectura) viewModel.actualizarNomTransportista(it) },
+                            label = stringResource(R.string.form_name_transportits),
+                            clave = "nom_transportista",
+                            historialManager = historialManager,
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !modoLectura
+                        )
 
                         DropdownField(
                             label = stringResource(R.string.form_ways_transports), selectedValue = mitjaTransport,
@@ -405,9 +442,35 @@ fun GestionGuias(
                             defectColor = true
                         )
 
-                        CampoTexto(label = stringResource(R.string.form_matricule_transport), valor = matricula, placeholder = stringResource(R.string.form_matricule_transports_description), onValueChange = { if (!modoLectura) viewModel.actualizarMatricula(it) }, defectColor = false, enabled = !modoLectura)
-                        CampoTexto(label = stringResource(R.string.form_nif_driver), valor = nifConductor, placeholder = stringResource(R.string.form_nif_driver_description), onValueChange = { if (!modoLectura) viewModel.actualizarNifConductor(it) }, defectColor = false, enabled = !modoLectura)
-                        CampoTexto(label = stringResource(R.string.form_name_driver), valor = nomConductor, placeholder = stringResource(R.string.form_name_driver_description), onValueChange = { if (!modoLectura) viewModel.actualizarNomConductor(it) }, defectColor = false, enabled = !modoLectura)
+                        HistorialAutoCompleteField(
+                            valor = matricula,
+                            onValorChange = { if (!modoLectura) viewModel.actualizarMatricula(it) },
+                            label = stringResource(R.string.form_matricule_transport),
+                            clave = "matricula_vehicle",
+                            historialManager = historialManager,
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !modoLectura
+                        )
+
+                        HistorialAutoCompleteField(
+                            valor = nifConductor,
+                            onValorChange = { if (!modoLectura) viewModel.actualizarNifConductor(it) },
+                            label = stringResource(R.string.form_nif_driver),
+                            clave = "nif_conductor",
+                            historialManager = historialManager,
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !modoLectura
+                        )
+
+                        HistorialAutoCompleteField(
+                            valor = nomConductor,
+                            onValorChange = { if (!modoLectura) viewModel.actualizarNomConductor(it) },
+                            label = stringResource(R.string.form_name_driver),
+                            clave = "nom_conductor",
+                            historialManager = historialManager,
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !modoLectura
+                        )
 
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {

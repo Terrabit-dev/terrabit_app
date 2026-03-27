@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.terrabit_app.data.local.HistorialCamposManager
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.guias.PeticionAltaGuia
 import com.example.terrabit_app.data.network.lista_bovinos.Animal
@@ -33,7 +34,8 @@ class GuiasViewModel @Inject constructor(
     private val repositorio: Repositorio,
     private val userPreferences: UserPreferences,
     private val borradorDao: BorradorDao,
-    private val historialDao: HistorialDao
+    private val historialDao: HistorialDao,
+    val historialCamposManager: HistorialCamposManager
 ) : ViewModel() {
 
 
