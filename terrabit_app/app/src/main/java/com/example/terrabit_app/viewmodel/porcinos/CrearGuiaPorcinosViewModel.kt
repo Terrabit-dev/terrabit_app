@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.terrabit_app.data.local.HistorialCamposManager
 import com.example.terrabit_app.data.local.dao.BorradorDao
 import com.example.terrabit_app.data.local.dao.HistorialDao
 import com.example.terrabit_app.data.local.database.BorradorEntity
@@ -32,7 +33,8 @@ class CrearGuiaPorcinosViewModel @Inject constructor(
     private val repositorio: Repositorio,
     private val userPreferences: UserPreferences,
     private val borradorDao: BorradorDao,
-    private val historialDao: HistorialDao
+    private val historialDao: HistorialDao,
+    val historialCamposManager: HistorialCamposManager
 ) : ViewModel() {
 
     private var borradorSesionId: String = ""
@@ -172,6 +174,16 @@ class CrearGuiaPorcinosViewModel @Inject constructor(
         }
     }
 
+    private fun guardarHistorialCampos() {
+        viewModelScope.launch {
+            val s = _uiState.value
+            if (s.explotacion.isNotBlank()) historialCamposManager.guardarValor("porcinos_explotacion", s.explotacion)
+            if (s.codigoSIR.isNotBlank())   historialCamposManager.guardarValor("porcinos_sir", s.codigoSIR)
+            if (s.matricula.isNotBlank())    historialCamposManager.guardarValor("porcinos_matricula", s.matricula)
+            if (s.nifConductor.isNotBlank()) historialCamposManager.guardarValor("porcinos_nif_conductor", s.nifConductor)
+        }
+    }
+
     fun cargarDesdeHistorial(id: String) {
         viewModelScope.launch {
             try {
@@ -230,10 +242,10 @@ class CrearGuiaPorcinosViewModel @Inject constructor(
         }
     }
 
-    fun mostrarDatePickerSalida() { _uiState.update { it.copy(mostrarDatePickerSalida = true) } }
-    fun ocultarDatePickerSalida() { _uiState.update { it.copy(mostrarDatePickerSalida = false) } }
-    fun mostrarTimePickerSalida() { _uiState.update { it.copy(mostrarTimePickerSalida = true) } }
-    fun ocultarTimePickerSalida() { _uiState.update { it.copy(mostrarTimePickerSalida = false) } }
+    fun mostrarDatePickerSalida()  { _uiState.update { it.copy(mostrarDatePickerSalida = true) } }
+    fun ocultarDatePickerSalida()  { _uiState.update { it.copy(mostrarDatePickerSalida = false) } }
+    fun mostrarTimePickerSalida()  { _uiState.update { it.copy(mostrarTimePickerSalida = true) } }
+    fun ocultarTimePickerSalida()  { _uiState.update { it.copy(mostrarTimePickerSalida = false) } }
 
     @SuppressLint("DefaultLocale")
     fun actualizarHoraSalida(hora: String, minutos: String) {
@@ -251,10 +263,10 @@ class CrearGuiaPorcinosViewModel @Inject constructor(
         }
     }
 
-    fun mostrarDatePickerLlegada() { _uiState.update { it.copy(mostrarDatePickerLlegada = true) } }
-    fun ocultarDatePickerLlegada() { _uiState.update { it.copy(mostrarDatePickerLlegada = false) } }
-    fun mostrarTimePickerLlegada() { _uiState.update { it.copy(mostrarTimePickerLlegada = true) } }
-    fun ocultarTimePickerLlegada() { _uiState.update { it.copy(mostrarTimePickerLlegada = false) } }
+    fun mostrarDatePickerLlegada()  { _uiState.update { it.copy(mostrarDatePickerLlegada = true) } }
+    fun ocultarDatePickerLlegada()  { _uiState.update { it.copy(mostrarDatePickerLlegada = false) } }
+    fun mostrarTimePickerLlegada()  { _uiState.update { it.copy(mostrarTimePickerLlegada = true) } }
+    fun ocultarTimePickerLlegada()  { _uiState.update { it.copy(mostrarTimePickerLlegada = false) } }
 
     @SuppressLint("DefaultLocale")
     fun actualizarHoraLlegada(hora: String, minutos: String) {
@@ -334,6 +346,7 @@ class CrearGuiaPorcinosViewModel @Inject constructor(
                         val codigoGuia = body.descripcio.getOrNull(1)
                         Log.d(TAG, "Guía generada: $codigoGuia")
                         guardarEnHistorial("Guía porcinos enviada")
+                        guardarHistorialCampos()
                         eliminarBorradorAutomatico()
                         _uiState.update { CrearGuiasPorcinosUiState(mensajeExito = "Guía creada: $codigoGuia") }
                     } else {

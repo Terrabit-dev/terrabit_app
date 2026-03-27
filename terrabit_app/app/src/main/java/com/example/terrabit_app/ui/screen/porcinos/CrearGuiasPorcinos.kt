@@ -26,6 +26,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
+import com.example.terrabit_app.ui.components.HistorialAutoCompleteField
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
 import com.example.terrabit_app.utils.CampoTexto
@@ -47,6 +48,7 @@ fun CrearGuiasPorcinos(
     val uiState by viewModel.uiState.collectAsState()
     val lifecycleOwner = LocalLifecycleOwner.current
     val elementosConCodigos = ElementosConCodigosPorcinos()
+    val historialManager = viewModel.historialCamposManager
 
     val codiMoViewModel = hiltViewModel<CodiMoManagerViewModel>()
     val codisMoExpandido by codiMoViewModel.codisMoExpandido.observeAsState(false)
@@ -60,7 +62,7 @@ fun CrearGuiasPorcinos(
     LaunchedEffect(Unit) {
         when {
             historialId.isNotEmpty() -> viewModel.cargarDesdeHistorial(historialId)
-            borradorId.isNotEmpty() -> viewModel.cargarBorradorPorId(borradorId)
+            borradorId.isNotEmpty()  -> viewModel.cargarBorradorPorId(borradorId)
             else -> {
                 cantidadBorradores = viewModel.obtenerCantidadBorradoresPorcinos()
                 if (cantidadBorradores >= 2) mostrarDialogoAviso = true
@@ -220,13 +222,15 @@ fun CrearGuiasPorcinos(
                         )
                     }
 
-                    CampoTexto(
-                        label = stringResource(R.string.form_porcinos_expl_entrada),
-                        valor = uiState.explotacion,
-                        placeholder = stringResource(R.string.form_porcinos_cod_expl_entrada),
-                        onValueChange = { if (!modoLectura) viewModel.actualizarExplotacion(it) },
-                        defectColor = false,
-                        enabled = !modoLectura
+                    HistorialAutoCompleteField(
+                        valor            = uiState.explotacion,
+                        onValorChange    = { if (!modoLectura) viewModel.actualizarExplotacion(it) },
+                        label            = stringResource(R.string.form_porcinos_expl_entrada),
+                        clave            = "porcinos_explotacion",
+                        historialManager = historialManager,
+                        modifier         = Modifier.fillMaxWidth(),
+                        enabled          = !modoLectura,
+                        accentColor      = MainOrange
                     )
 
                     DropdownField(
@@ -251,7 +255,6 @@ fun CrearGuiasPorcinos(
                         enabled = !modoLectura
                     )
 
-                    // Fecha y hora de salida
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(stringResource(R.string.form_date_departure), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
@@ -295,7 +298,6 @@ fun CrearGuiasPorcinos(
                         }
                     }
 
-                    // Fecha y hora de llegada
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(stringResource(R.string.form_date_arrival), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
@@ -339,13 +341,15 @@ fun CrearGuiasPorcinos(
                         }
                     }
 
-                    CampoTexto(
-                        label = stringResource(R.string.form_porcinos_cod_sir),
-                        valor = uiState.codigoSIR,
-                        placeholder = stringResource(R.string.form_porcinos_descr_sir),
-                        onValueChange = { if (!modoLectura) viewModel.actualizarCodigoSIR(it) },
-                        defectColor = false,
-                        enabled = !modoLectura
+                    HistorialAutoCompleteField(
+                        valor            = uiState.codigoSIR,
+                        onValorChange    = { if (!modoLectura) viewModel.actualizarCodigoSIR(it) },
+                        label            = stringResource(R.string.form_porcinos_cod_sir),
+                        clave            = "porcinos_sir",
+                        historialManager = historialManager,
+                        modifier         = Modifier.fillMaxWidth(),
+                        enabled          = !modoLectura,
+                        accentColor      = MainOrange
                     )
 
                     DropdownField(
@@ -360,22 +364,26 @@ fun CrearGuiasPorcinos(
                         defectColor = false
                     )
 
-                    CampoTexto(
-                        label = stringResource(R.string.form_porcinos_matricula),
-                        valor = uiState.matricula,
-                        placeholder = stringResource(R.string.form_porcinos_descr_matricula),
-                        onValueChange = { if (!modoLectura) viewModel.actualizarMatricula(it) },
-                        defectColor = false,
-                        enabled = !modoLectura
+                    HistorialAutoCompleteField(
+                        valor            = uiState.matricula,
+                        onValorChange    = { if (!modoLectura) viewModel.actualizarMatricula(it) },
+                        label            = stringResource(R.string.form_porcinos_matricula),
+                        clave            = "porcinos_matricula",
+                        historialManager = historialManager,
+                        modifier         = Modifier.fillMaxWidth(),
+                        enabled          = !modoLectura,
+                        accentColor      = MainOrange
                     )
 
-                    CampoTexto(
-                        label = stringResource(R.string.form_porcinos_nifCond),
-                        valor = uiState.nifConductor,
-                        placeholder = stringResource(R.string.form_porcinos_descr_nifCond),
-                        onValueChange = { if (!modoLectura) viewModel.actualizarNifConductor(it) },
-                        defectColor = false,
-                        enabled = !modoLectura
+                    HistorialAutoCompleteField(
+                        valor            = uiState.nifConductor,
+                        onValorChange    = { if (!modoLectura) viewModel.actualizarNifConductor(it) },
+                        label            = stringResource(R.string.form_porcinos_nifCond),
+                        clave            = "porcinos_nif_conductor",
+                        historialManager = historialManager,
+                        modifier         = Modifier.fillMaxWidth(),
+                        enabled          = !modoLectura,
+                        accentColor      = MainOrange
                     )
 
                     if (!modoLectura) {
