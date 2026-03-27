@@ -14,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.terrabit_app.data.local.HistorialCamposManager
 import com.example.terrabit_app.ui.theme.MainOrange
@@ -30,6 +31,7 @@ fun HistorialAutoCompleteField(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     isError: Boolean = false,
+    accentColor: Color = MainOrange,
     supportingText: @Composable (() -> Unit)? = null
 ) {
     val scope = rememberCoroutineScope()
@@ -75,10 +77,10 @@ fun HistorialAutoCompleteField(
             singleLine = true,
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor   = MainOrange,
+                focusedBorderColor   = accentColor,
                 unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                focusedLabelColor    = MainOrange,
-                cursorColor          = MainOrange,
+                focusedLabelColor    = accentColor,
+                cursorColor          = accentColor,
                 disabledBorderColor  = MaterialTheme.colorScheme.outline,
                 disabledTextColor    = MaterialTheme.colorScheme.onSurface,
                 disabledLabelColor   = MaterialTheme.colorScheme.onSurfaceVariant

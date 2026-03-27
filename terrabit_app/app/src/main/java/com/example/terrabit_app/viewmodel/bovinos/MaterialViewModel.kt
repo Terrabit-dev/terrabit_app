@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.terrabit_app.data.local.HistorialCamposManager
 import com.example.terrabit_app.data.local.dao.BorradorDao
 import com.example.terrabit_app.data.local.dao.HistorialDao
 import com.example.terrabit_app.data.local.database.BorradorEntity
@@ -31,7 +32,8 @@ class MaterialViewModel @Inject constructor(
     private val repositorio: Repositorio,
     private val userPreferences: UserPreferences,
     private val borradorDao: BorradorDao,
-    private val historialDao: HistorialDao
+    private val historialDao: HistorialDao,
+    val historialCamposManager: HistorialCamposManager
 ) : ViewModel() {
 
     private var borradorSesionId: String = "material_auto_${System.currentTimeMillis()}"
@@ -349,8 +351,10 @@ class MaterialViewModel @Inject constructor(
                         response.isSuccessful && response.body() != null -> {
                             val body = response.body()!!
                             if (body.codi == "0" || body.descripcio == "OK") {
-                                _registroMaterialExitoso.value = true; _mensajeErrorMaterial.value = ""
+                                _registroMaterialExitoso.value = true
+                                _mensajeErrorMaterial.value = ""
                                 guardarEnHistorial("Solicitud de material enviada")
+                                guardarHistorialCampos()
                                 eliminarBorradorAutomatico()
                                 limpiarFormularioMaterial()
                             } else {
@@ -392,6 +396,16 @@ class MaterialViewModel @Inject constructor(
 
     fun resetearEstadoRegistroMaterial() { _registroMaterialExitoso.value = false; _mensajeErrorMaterial.value = "" }
 
+    private fun guardarHistorialCampos() {
+        viewModelScope.launch {
+            _listaUnidades.value?.forEach { unitat ->
+                if (!unitat.codiExplotacio.isNullOrBlank()) {
+                    historialCamposManager.guardarValor("codi_mo", unitat.codiExplotacio)
+                }
+            }
+        }
+    }
+
     private fun guardarEnHistorial(resumen: String = "") {
         viewModelScope.launch {
             try {
@@ -426,7 +440,6 @@ class MaterialViewModel @Inject constructor(
             }
         }
     }
-
 
     fun cargarDesdeHistorial(id: String) {
         viewModelScope.launch {
@@ -467,5 +480,4 @@ class MaterialViewModel @Inject constructor(
             }
         }
     }
-
 }

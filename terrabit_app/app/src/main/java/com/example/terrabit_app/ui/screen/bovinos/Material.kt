@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
+import com.example.terrabit_app.data.local.HistorialCamposManager
+import com.example.terrabit_app.ui.components.HistorialAutoCompleteField
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.ui.theme.MainGreen
@@ -62,6 +64,7 @@ fun Material(
     val mensajeError by viewModel.mensajeErrorMaterial.observeAsState("")
     val estadoCarga by viewModel.cargandoMaterial.observeAsState(false)
     val listaUnidades by viewModel.listaUnidades.observeAsState(emptyList())
+    val historialManager = viewModel.historialCamposManager
 
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
@@ -282,6 +285,7 @@ fun Material(
                                 mostrarEliminar = !modoLectura && listaUnidades.size > 1,
                                 codiMoObligatorio = codiMoObligatorio,
                                 modoLectura = modoLectura,
+                                historialManager = historialManager,
                                 oncodiMoChange = { viewModel.actualizarCodiExplotacio(indice, it) },
                                 onEliminar = { viewModel.eliminarUnidades(indice) },
                                 onUnidadesChange = { viewModel.actualizarUnidades(indice, it) }
@@ -326,6 +330,7 @@ private fun UnidadesItem(
     mostrarEliminar: Boolean,
     codiMoObligatorio: Boolean,
     modoLectura: Boolean = false,
+    historialManager: HistorialCamposManager,
     oncodiMoChange: (String) -> Unit,
     onUnidadesChange: (String) -> Unit,
     onEliminar: () -> Unit
@@ -340,40 +345,21 @@ private fun UnidadesItem(
             }
         }
 
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Text(
-                text = stringResource(R.string.label_codimo) + if (codiMoObligatorio) " *" else "",
-                fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(
-                value = codiMo ?: "",
-                onValueChange = { oncodiMoChange(it) },
-                enabled = !modoLectura,
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text(stringResource(R.string.form_codiMo_description), color = MaterialTheme.colorScheme.onSurfaceVariant) },
-                singleLine = true,
-                shape = MaterialTheme.shapes.medium,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = if (codiMoObligatorio && codiMo.isNullOrEmpty()) ErrorRed else MainGreen,
-                    unfocusedBorderColor = if (codiMoObligatorio && codiMo.isNullOrEmpty()) ErrorRed.copy(alpha = 0.5f) else MaterialTheme.colorScheme.outline,
-                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    cursorColor = MainGreen,
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                    disabledBorderColor = if (codiMoObligatorio && codiMo.isNullOrEmpty()) ErrorRed.copy(alpha = 0.5f) else MaterialTheme.colorScheme.outline,
-                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                    disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    disabledContainerColor = MaterialTheme.colorScheme.surface,
-                ),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, autoCorrect = false)
-            )
-            if (codiMoObligatorio && codiMo.isNullOrEmpty()) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(stringResource(R.string.alert_necessary_codiMO), fontSize = 12.sp, color = ErrorRed)
-            }
+        val esError = codiMoObligatorio && codiMo.isNullOrEmpty()
+
+        HistorialAutoCompleteField(
+            valor            = codiMo ?: "",
+            onValorChange    = oncodiMoChange,
+            label            = stringResource(R.string.label_codimo) + if (codiMoObligatorio) " *" else "",
+            clave            = "codi_mo",
+            historialManager = historialManager,
+            modifier         = Modifier.fillMaxWidth(),
+            enabled          = !modoLectura,
+            isError          = esError,
+            accentColor      = if (esError) ErrorRed else MainGreen
+        )
+        if (esError) {
+            Text(stringResource(R.string.alert_necessary_codiMO), fontSize = 12.sp, color = ErrorRed)
         }
 
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -388,18 +374,18 @@ private fun UnidadesItem(
                 singleLine = true,
                 shape = MaterialTheme.shapes.medium,
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MainGreen,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    cursorColor = MainGreen,
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    focusedBorderColor      = MainGreen,
+                    unfocusedBorderColor    = MaterialTheme.colorScheme.outline,
+                    focusedTextColor        = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor      = MaterialTheme.colorScheme.onSurface,
+                    cursorColor             = MainGreen,
+                    focusedContainerColor   = MaterialTheme.colorScheme.surface,
                     unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                    disabledBorderColor = MaterialTheme.colorScheme.outline,
-                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                    disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    disabledBorderColor     = MaterialTheme.colorScheme.outline,
+                    disabledTextColor       = MaterialTheme.colorScheme.onSurface,
+                    disabledLabelColor      = MaterialTheme.colorScheme.onSurfaceVariant,
                     disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    disabledContainerColor = MaterialTheme.colorScheme.surface,
+                    disabledContainerColor  = MaterialTheme.colorScheme.surface
                 ),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
