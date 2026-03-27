@@ -132,7 +132,7 @@ fun DetailBovino(navController: NavController, animal: Animal) {
                 DetailDivider()
                 DetailRow(
                     label = "Raza",
-                    value = elements.getRazaBovinas(animal.raca)
+                    value = stringResource(elements.getRazaBovinasId(animal.raca))
                 )
             }
 
@@ -155,7 +155,7 @@ fun DetailBovino(navController: NavController, animal: Animal) {
                         if (!animal.explotacioNaixement.isNullOrEmpty()) DetailDivider()
                         DetailRow(
                             label = "Pais de nacimientos",
-                            value = elements.getNombrePais(animal.paisNaixement)
+                            value = stringResource(elements.getNombrePaisId(animal.paisNaixement))
                         )
                     }
                     if (!animal.identificadorMare.isNullOrEmpty()) {
