@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.terrabit_app.data.local.HistorialCamposManager
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.Identificadores.IdenMovimiento
 import com.example.terrabit_app.data.network.lista_bovinos.Animal
@@ -37,7 +38,8 @@ class MovimientosViewModel @Inject constructor(
     private val repositorio: Repositorio,
     private val userPreferences: UserPreferences,
     private val borradorDao: BorradorDao,
-    private val historialDao: HistorialDao
+    private val historialDao: HistorialDao,
+    val historialCamposManager: HistorialCamposManager
 ) : ViewModel() {
 
     val nif = userPreferences.getNif() ?: ""
@@ -167,14 +169,13 @@ class MovimientosViewModel @Inject constructor(
         _explotacioDestinacio.value = movimiento.moDestinacio
         if (!movimiento.mitjaTransport.isNullOrEmpty()) {
             _codiTransport.value = movimiento.mitjaTransport
-            _mitjaTransport.value = transportNombre   // ← nombre visual
+            _mitjaTransport.value = transportNombre
         }
         if (movimiento.nomConductor != null) _nomConductor.value = movimiento.nomConductor
         if (movimiento.nomTransportista != null) _nomTransportista.value = movimiento.nomTransportista
         if (movimiento.matricula != null) _matricula.value = movimiento.matricula
         if (movimiento.nifConductor != null) _nifConductor.value = movimiento.nifConductor
 
-        // Mapeo IdenBovi → IdenMovimiento
         val animalesMapeados = movimiento.identificadors
             .map { idenBovi ->
                 IdenMovimiento(
@@ -195,9 +196,7 @@ class MovimientosViewModel @Inject constructor(
         }
     }
 
-    // En MovimientosViewModel
     private fun parsearFechaAPI(fechaAPI: String): Pair<String, String> {
-        // Entrada: "202203010001"  →  Salida: "01/03/2022" a "00:01"
         return try {
             if (fechaAPI.length >= 12) {
                 val year  = fechaAPI.substring(0, 4)
@@ -213,6 +212,7 @@ class MovimientosViewModel @Inject constructor(
     suspend fun obtenerCantidadBorradoresMovimiento(): Int {
         return borradorDao.getAll().count { it.tipo == "MOVIMIENTO" && it.estado == "BORRADOR_AUTO" }
     }
+
     private fun cargarBovinosEnCache() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
@@ -369,10 +369,7 @@ class MovimientosViewModel @Inject constructor(
         }
     }
 
-
-
     data class CodigoAtes(val codigo: String, val nombre: String)
-
 
     fun actualizarCodiRemo(nuevoValor: String) { _codiRemo.value = nuevoValor }
     fun actualizarDataArribada(nuevaFecha: String) { _dataArribada.value = nuevaFecha }
@@ -562,6 +559,7 @@ class MovimientosViewModel @Inject constructor(
                                 _registroExitoso.value = true; _mensajeError.value = ""
                                 Log.d("Confirmar Movimiento", "Movimiento confirmado exitosamente")
                                 guardarEnHistorial("Movimiento Registrado")
+                                guardarHistorialCampos()
                                 eliminarBorradorAutomatico()
                                 limpiarFormulario()
                             } else {
@@ -635,6 +633,15 @@ class MovimientosViewModel @Inject constructor(
         } catch (e: Exception) {
             Log.e("Error conversión fecha/hora", e.message ?: "Error desconocido"); ""
         }
+    }
+
+    private suspend fun guardarHistorialCampos() {
+        historialCamposManager.guardarValor("codi_remo_guia", _codiRemo.value ?: "")
+        historialCamposManager.guardarValor("explotacio_destino", _explotacioDestinacio.value ?: "")
+        historialCamposManager.guardarValor("matricula_vehicle", _matricula.value ?: "")
+        historialCamposManager.guardarValor("nom_transportista", _nomTransportista.value ?: "")
+        historialCamposManager.guardarValor("nif_conductor", _nifConductor.value ?: "")
+        historialCamposManager.guardarValor("nom_conductor", _nomConductor.value ?: "")
     }
 
     private fun guardarEnHistorial(resumen: String = "") {

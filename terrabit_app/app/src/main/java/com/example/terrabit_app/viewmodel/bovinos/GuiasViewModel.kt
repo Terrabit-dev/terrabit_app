@@ -38,7 +38,6 @@ class GuiasViewModel @Inject constructor(
     val historialCamposManager: HistorialCamposManager
 ) : ViewModel() {
 
-
     private var borradorSesionId: String = ""
 
     val nif = userPreferences.getNif() ?: ""
@@ -145,18 +144,15 @@ class GuiasViewModel @Inject constructor(
     private val _codiError = MutableLiveData<Int?>()
     val codiError = _codiError
 
-
-
-
     init {
         borradorSesionId = "guia_auto_${System.currentTimeMillis()}"
         cargarBovinosEnCache()
     }
 
-
     suspend fun obtenerCantidadBorradoresGuia(): Int {
         return borradorDao.getAll().count { it.tipo == "GUIA" && it.estado == "BORRADOR_AUTO" }
     }
+
     private fun cargarBovinosEnCache() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
@@ -218,7 +214,6 @@ class GuiasViewModel @Inject constructor(
                 !_nifConductor.value.isNullOrEmpty() || !_nomConductor.value.isNullOrEmpty() ||
                 (_identificadors.value?.any { it.isNotEmpty() } == true)
     }
-
 
     fun guardarBorradorAutomatico() {
         if (!tieneContenido()) return
@@ -308,7 +303,6 @@ class GuiasViewModel @Inject constructor(
             }
         }
     }
-
 
     fun actualizarExplotacioOrigen(valor: String) { _explotacioOrigen.value = valor }
     fun actualizarExplotacioDestinacio(valor: String) { _explotacioDestinacio.value = valor }
@@ -428,6 +422,7 @@ class GuiasViewModel @Inject constructor(
                                 _mensajeError.value = ""
                                 Log.d("Alta Guía", "Guía creada exitosamente")
                                 guardarEnHistorial("Guía enviada")
+                                guardarHistorialCampos()
                                 eliminarBorradorAutomatico()
                                 limpiarFormulario()
                             } else {
@@ -502,6 +497,16 @@ class GuiasViewModel @Inject constructor(
         } catch (e: Exception) {
             Log.e("Error conversión fecha/hora", e.message ?: "Error desconocido"); ""
         }
+    }
+
+    private suspend fun guardarHistorialCampos() {
+        historialCamposManager.guardarValor("explotacio_origen", _explotacioOrigen.value ?: "")
+        historialCamposManager.guardarValor("explotacio_destino", _explotacioDestinacio.value ?: "")
+        historialCamposManager.guardarValor("codi_ates", _codiAtes.value ?: "")
+        historialCamposManager.guardarValor("nom_transportista", _nomTransportista.value ?: "")
+        historialCamposManager.guardarValor("matricula_vehicle", _matricula.value ?: "")
+        historialCamposManager.guardarValor("nif_conductor", _nifConductor.value ?: "")
+        historialCamposManager.guardarValor("nom_conductor", _nomConductor.value ?: "")
     }
 
     private fun guardarEnHistorial(resumen: String = "") {

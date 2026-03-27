@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.unit.dp
 import com.example.terrabit_app.data.local.HistorialCamposManager
+import com.example.terrabit_app.ui.theme.MainOrange
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -24,7 +25,7 @@ fun HistorialAutoCompleteField(
     valor: String,
     onValorChange: (String) -> Unit,
     label: String,
-    clave: String,                          // Clave única por campo, ej: "explotacion_destino"
+    clave: String,
     historialManager: HistorialCamposManager,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
@@ -36,12 +37,10 @@ fun HistorialAutoCompleteField(
     var sugerencias by remember { mutableStateOf<List<String>>(emptyList()) }
     var mostrarSugerencias by remember { mutableStateOf(false) }
 
-    // Carga historial inicial
     LaunchedEffect(clave) {
         historial = historialManager.obtenerHistorial(clave)
     }
 
-    // Filtra sugerencias al cambiar el texto
     LaunchedEffect(valor, historial) {
         sugerencias = if (valor.isBlank()) {
             historial
@@ -67,13 +66,6 @@ fun HistorialAutoCompleteField(
                             historial = historialManager.obtenerHistorial(clave)
                         }
                     } else {
-                        // Al perder foco, guarda el valor actual si no está vacío
-                        if (valor.isNotBlank()) {
-                            scope.launch {
-                                historialManager.guardarValor(clave, valor)
-                                historial = historialManager.obtenerHistorial(clave)
-                            }
-                        }
                         mostrarSugerencias = false
                     }
                 },
@@ -83,11 +75,13 @@ fun HistorialAutoCompleteField(
             singleLine = true,
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                focusedBorderColor   = MainOrange,
                 unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                disabledBorderColor = MaterialTheme.colorScheme.outline,
-                disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                focusedLabelColor    = MainOrange,
+                cursorColor          = MainOrange,
+                disabledBorderColor  = MaterialTheme.colorScheme.outline,
+                disabledTextColor    = MaterialTheme.colorScheme.onSurface,
+                disabledLabelColor   = MaterialTheme.colorScheme.onSurfaceVariant
             )
         )
 
@@ -100,9 +94,7 @@ fun HistorialAutoCompleteField(
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
-                LazyColumn(
-                    modifier = Modifier.heightIn(max = 200.dp)
-                ) {
+                LazyColumn(modifier = Modifier.heightIn(max = 200.dp)) {
                     items(sugerencias) { entrada ->
                         Row(
                             modifier = Modifier
@@ -110,10 +102,6 @@ fun HistorialAutoCompleteField(
                                 .clickable {
                                     onValorChange(entrada)
                                     mostrarSugerencias = false
-                                    scope.launch {
-                                        historialManager.guardarValor(clave, entrada)
-                                        historial = historialManager.obtenerHistorial(clave)
-                                    }
                                 }
                                 .padding(horizontal = 16.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically,

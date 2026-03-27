@@ -65,7 +65,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.terrabit_app.R
-import com.example.terrabit_app.data.network.guias.Guia
 import com.example.terrabit_app.data.network.moviminetos.modelos.Moviment
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.theme.MainOrange
@@ -76,27 +75,28 @@ import com.example.terrabit_app.viewmodel.bovinos.ListarMovisBoviViewModel
 fun ListarMovimientosBovi(
     navController: NavController,
     viewModel: ListarMovisBoviViewModel = hiltViewModel()
-){
-    val listaMovimientos by viewModel.listaMovimientos.observeAsState(emptyList())
-    val cargando by viewModel.cargando.observeAsState(false)
-    val consultaIniciada by viewModel.consultaIniciada.observeAsState(false)
-    val error by viewModel.error.observeAsState(null)
+) {
+    val listaMovimientos     by viewModel.listaMovimientos.observeAsState(emptyList())
+    val cargando             by viewModel.cargando.observeAsState(false)
+    val consultaIniciada     by viewModel.consultaIniciada.observeAsState(false)
+    val error                by viewModel.error.observeAsState(null)
     val codiExplotacionDesti by viewModel.codiExplotacionDesti.observeAsState("")
-    val mostrarDatePicker  by viewModel.mostrarDatePicker.observeAsState(false)
-    val mostrarTimePicker  by viewModel.mostrarTimePicker.observeAsState(false)
-    val fechaDisplay       by viewModel.fechaDisplay.observeAsState("")
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val mostrarDatePicker    by viewModel.mostrarDatePicker.observeAsState(false)
+    val mostrarTimePicker    by viewModel.mostrarTimePicker.observeAsState(false)
+    val fechaDisplay         by viewModel.fechaDisplay.observeAsState("")
+    val navBackStackEntry    by navController.currentBackStackEntryAsState()
+    val historialManager     = viewModel.historialCamposManager
+
     LaunchedEffect(navBackStackEntry) {
-        if(
+        if (
             navBackStackEntry?.destination?.route == Routes.MovimientosBovinos.route &&
             consultaIniciada &&
             !cargando
-        ){
+        ) {
             viewModel.cargarMovimientos()
         }
     }
 
-    // Data picker
     if (mostrarDatePicker) {
         val dpState = rememberDatePickerState()
         DatePickerDialog(
@@ -121,7 +121,7 @@ fun ListarMovimientosBovi(
             )
         }
     }
-    // time picker
+
     if (mostrarTimePicker) {
         val tpState = rememberTimePickerState()
         AlertDialog(
@@ -148,6 +148,7 @@ fun ListarMovimientosBovi(
             }
         )
     }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -171,30 +172,31 @@ fun ListarMovimientosBovi(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MainOrange,
-                    titleContentColor = Color.White,
+                    containerColor            = MainOrange,
+                    titleContentColor         = Color.White,
                     navigationIconContentColor = Color.White
                 )
             )
         }
-    ) {
-        padding ->
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            when{
-                !consultaIniciada ->{
+            when {
+                !consultaIniciada -> {
                     MiniFormulario(
-                        rega          = codiExplotacionDesti,
-                        fechaDisplay  = fechaDisplay,
-                        error         = error,
-                        onRegaChange  = viewModel::onCodiChange,
-                        onFechaClick  = viewModel::mostrarDatePicker,   // ← abre el picker
-                        onConsultar   = viewModel::validarPeticion
+                        rega             = codiExplotacionDesti,
+                        fechaDisplay     = fechaDisplay,
+                        error            = error,
+                        historialManager = historialManager,
+                        onRegaChange     = viewModel::onCodiChange,
+                        onFechaClick     = viewModel::mostrarDatePicker,
+                        onConsultar      = viewModel::validarPeticion
                     )
                 }
+
                 cargando -> {
                     Column(
                         modifier = Modifier.fillMaxSize(),
@@ -208,16 +210,17 @@ fun ListarMovimientosBovi(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text  = "Cargando guías...",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            text     = "Cargando movimientos...",
+                            color    = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 14.sp
                         )
                     }
                 }
+
                 else -> {
                     if (listaMovimientos.isEmpty()) {
                         Box(
-                            modifier        = Modifier.fillMaxSize(),
+                            modifier         = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
                             Column(
@@ -225,13 +228,13 @@ fun ListarMovimientosBovi(
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.SearchOff,
+                                    imageVector        = Icons.Default.SearchOff,
                                     contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.size(48.dp)
+                                    tint               = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier           = Modifier.size(48.dp)
                                 )
                                 Text(
-                                    text     = "No se encontraron guías",
+                                    text     = "No se encontraron movimientos",
                                     fontSize = 16.sp,
                                     color    = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -240,34 +243,33 @@ fun ListarMovimientosBovi(
                                 }
                             }
                         }
-                    }
-                    else{
+                    } else {
                         LazyColumn(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(horizontal = 16.dp),
                             verticalArrangement = Arrangement.spacedBy(10.dp),
-                            contentPadding = PaddingValues(vertical = 16.dp)
+                            contentPadding      = PaddingValues(vertical = 16.dp)
                         ) {
                             item {
                                 Text(
-                                    text       = "${listaMovimientos.size} movimiento(s) encontrado(s)",
-                                    fontSize   = 13.sp,
-                                    color      = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier   = Modifier.padding(start = 4.dp, bottom = 4.dp)
+                                    text     = "${listaMovimientos.size} movimiento(s) encontrado(s)",
+                                    fontSize = 13.sp,
+                                    color    = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)
                                 )
                             }
-                            itemsIndexed(listaMovimientos) { index, guia ->
+                            itemsIndexed(listaMovimientos) { _, movimiento ->
                                 AnimatedVisibility(
                                     visible = true,
-                                    enter = fadeIn() + slideInVertically(initialOffsetY = { it / 3 }),
+                                    enter   = fadeIn() + slideInVertically(initialOffsetY = { it / 3 }),
                                     exit    = fadeOut()
                                 ) {
                                     MovimientoCardBovi(
-                                        guia          = guia,
+                                        guia          = movimiento,
                                         navController = navController,
                                         onEditarClick = {
-                                            viewModel.seleccionarMovi(guia)
+                                            viewModel.seleccionarMovi(movimiento)
                                             navController.navigate(Routes.ConfirmarMovimientoBovi.route)
                                         }
                                     )
@@ -280,6 +282,7 @@ fun ListarMovimientosBovi(
         }
     }
 }
+
 @Composable
 private fun MovimientoCardBovi(
     guia: Moviment,
@@ -297,16 +300,15 @@ private fun MovimientoCardBovi(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // ── Cabecera: origen → destino + botón editar ──────────────────
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier              = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment     = Alignment.CenterVertically
             ) {
                 Row(
-                    verticalAlignment      = Alignment.CenterVertically,
-                    horizontalArrangement  = Arrangement.spacedBy(6.dp),
-                    modifier = Modifier.weight(1f)
+                    verticalAlignment     = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier              = Modifier.weight(1f)
                 ) {
                     Text(
                         text       = guia.moOrigen ?: "",
@@ -316,10 +318,10 @@ private fun MovimientoCardBovi(
                         maxLines   = 1
                     )
                     Icon(
-                        imageVector = Icons.Default.ArrowForward,
+                        imageVector        = Icons.Default.ArrowForward,
                         contentDescription = null,
-                        tint     = MainOrange,
-                        modifier = Modifier.size(16.dp)
+                        tint               = MainOrange,
+                        modifier           = Modifier.size(16.dp)
                     )
                     Text(
                         text       = guia.moDestinacio,
@@ -329,70 +331,48 @@ private fun MovimientoCardBovi(
                         maxLines   = 1
                     )
                 }
-
                 FilledIconButton(
-                    onClick = {  onEditarClick() },
-                    shape   = RoundedCornerShape(8.dp),
-                    colors  = IconButtonDefaults.iconButtonColors(containerColor = MainOrange),
+                    onClick  = { onEditarClick() },
+                    shape    = RoundedCornerShape(8.dp),
+                    colors   = IconButtonDefaults.iconButtonColors(containerColor = MainOrange),
                     modifier = Modifier.size(36.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Edit,
                         contentDescription = stringResource(R.string.content_description_edit),
-                        tint     = Color.White,
+                        tint = Color.White,
                         modifier = Modifier.size(18.dp)
                     )
                 }
             }
 
-            // ── REMO en monospace ──────────────────────────────────────────
             Text(
-                text          = guia.codiRemo,
-                fontSize      = 14.sp,
-                color         = MaterialTheme.colorScheme.onSurfaceVariant,
+                text = guia.codiRemo,
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 letterSpacing = 0.5.sp,
-                fontFamily    = FontFamily.Monospace
+                fontFamily = FontFamily.Monospace
             )
 
             HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
 
-            // ── Fechas ─────────────────────────────────────────────────────
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier              = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text     = "Fecha de salida",
-                        fontSize = 12.sp,
-                        color    = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text       = guia.dataSortida.ifBlank { "--/--/----" },
-                        fontSize   = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                        color      = MaterialTheme.colorScheme.onSurface
-                    )
+                    Text(text = "Fecha de salida",  fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(text = guia.dataSortida.ifBlank { "--/--/----" },  fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text     = "Fecha de llegada",
-                        fontSize = 12.sp,
-                        color    = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text       = guia.dataArribada.ifBlank { "--/--/----" },
-                        fontSize   = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                        color      = MaterialTheme.colorScheme.onSurface
-                    )
+                    Text(text = "Fecha de llegada", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(text = guia.dataArribada.ifBlank { "--/--/----" }, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
                 }
             }
 
-            // ── Chips informativos ─────────────────────────────────────────
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 BoviInfoChip(icon = Icons.Default.Pets,          label = "${guia.identificadors.size} animales")
-                BoviInfoChip(icon = Icons.Default.LocalShipping, label = guia.matricula ?: "Sin matricula")
+                BoviInfoChip(icon = Icons.Default.LocalShipping, label = guia.matricula ?: "Sin matrícula")
                 if (guia.nifConductor != null) {
                     BoviInfoChip(icon = Icons.Default.Person, label = guia.nifConductor)
                 }

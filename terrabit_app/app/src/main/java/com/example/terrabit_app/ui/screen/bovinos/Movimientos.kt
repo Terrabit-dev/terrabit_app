@@ -34,6 +34,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.data.network.moviminetos.modelos.Moviment
+import com.example.terrabit_app.ui.components.HistorialAutoCompleteField
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.utils.components.CampoIdentificadorAutoComplete
 import com.example.terrabit_app.utils.components.useDebounce
@@ -59,7 +60,6 @@ fun Movimientos(
     movimientoSeleccionado: Moviment
 ) {
     val viewModel = hiltViewModel<MovimientosViewModel>()
-    // Cargar datos al entrar a la pantalla
     val elementosConCodigos = ElementosConCodigos()
     val transportMap = elementosConCodigos.transporte()
     LaunchedEffect(movimientoSeleccionado.codiRemo) {
@@ -70,9 +70,9 @@ fun Movimientos(
     }
 
     val modoLectura = historialId.isNotEmpty()
-
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+    val historialManager = viewModel.historialCamposManager
 
     val codiRemo by viewModel.codiRemo.observeAsState("")
     val dataArribada by viewModel.dataArribada.observeAsState("")
@@ -256,10 +256,7 @@ fun Movimientos(
 
     if (estadoCarga) {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.5f))
-                .clickable(enabled = false) {},
+            modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)).clickable(enabled = false) {},
             contentAlignment = Alignment.Center
         ) {
             Card(
@@ -313,10 +310,7 @@ fun Movimientos(
             containerColor = MaterialTheme.colorScheme.background
         ) { padding ->
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .verticalScroll(rememberScrollState())
+                modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())
             ) {
                 Spacer(modifier = Modifier.height(20.dp))
 
@@ -332,13 +326,14 @@ fun Movimientos(
                     ) {
                         Text(stringResource(R.string.form_movs_title_necessary), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
 
-                        SimpleTextField(
+                        HistorialAutoCompleteField(
+                            valor = codiRemo,
+                            onValorChange = { if (!modoLectura) viewModel.actualizarCodiRemo(it) },
                             label = stringResource(R.string.form_codi_remo),
-                            value = codiRemo,
-                            placeholder = stringResource(R.string.form_codi_remo_description),
-                            onValueChange = { viewModel.actualizarCodiRemo(it) },
-                            enabled = !modoLectura,
-                            imeAction = ImeAction.Next
+                            clave = "codi_remo_guia",
+                            historialManager = historialManager,
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !modoLectura
                         )
 
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -412,13 +407,14 @@ fun Movimientos(
                             }
                         }
 
-                        SimpleTextField(
+                        HistorialAutoCompleteField(
+                            valor = explotacioDestinacio,
+                            onValorChange = { if (!modoLectura) viewModel.actualizarExplotacioDestinacio(it) },
                             label = stringResource(R.string.form_exploitation_destination),
-                            value = explotacioDestinacio,
-                            placeholder = stringResource(R.string.form_exploitation_destination_description),
-                            onValueChange = { viewModel.actualizarExplotacioDestinacio(it) },
-                            enabled = !modoLectura,
-                            imeAction = ImeAction.Next
+                            clave = "explotacio_destino",
+                            historialManager = historialManager,
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !modoLectura
                         )
                     }
                 }
@@ -450,11 +446,42 @@ fun Movimientos(
                             defectColor = false
                         )
 
-
-                        SimpleTextField(label = stringResource(R.string.form_matricule_transport), value = matricula, placeholder = stringResource(R.string.form_matricule_transports_description), onValueChange = { viewModel.actualizarMatricula(it) }, enabled = !modoLectura, imeAction = ImeAction.Next)
-                        SimpleTextField(label = stringResource(R.string.form_name_transportits), value = nomTransportista, placeholder = stringResource(R.string.form_name_transportits_description), onValueChange = { viewModel.actualizarNomTransportista(it) }, enabled = !modoLectura, imeAction = ImeAction.Next)
-                        SimpleTextField(label = stringResource(R.string.form_nif_driver), value = nifConductor, placeholder = stringResource(R.string.form_nif_driver_description), onValueChange = { viewModel.actualizarNifConductor(it) }, enabled = !modoLectura, imeAction = ImeAction.Next)
-                        SimpleTextField(label = stringResource(R.string.form_name_driver), value = nomConductor, placeholder = stringResource(R.string.form_name_driver_description), onValueChange = { viewModel.actualizarNomConductor(it) }, enabled = !modoLectura, imeAction = ImeAction.Done)
+                        HistorialAutoCompleteField(
+                            valor = matricula,
+                            onValorChange = { if (!modoLectura) viewModel.actualizarMatricula(it) },
+                            label = stringResource(R.string.form_matricule_transport),
+                            clave = "matricula_vehicle",
+                            historialManager = historialManager,
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !modoLectura
+                        )
+                        HistorialAutoCompleteField(
+                            valor = nomTransportista,
+                            onValorChange = { if (!modoLectura) viewModel.actualizarNomTransportista(it) },
+                            label = stringResource(R.string.form_name_transportits),
+                            clave = "nom_transportista",
+                            historialManager = historialManager,
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !modoLectura
+                        )
+                        HistorialAutoCompleteField(
+                            valor = nifConductor,
+                            onValorChange = { if (!modoLectura) viewModel.actualizarNifConductor(it) },
+                            label = stringResource(R.string.form_nif_driver),
+                            clave = "nif_conductor",
+                            historialManager = historialManager,
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !modoLectura
+                        )
+                        HistorialAutoCompleteField(
+                            valor = nomConductor,
+                            onValorChange = { if (!modoLectura) viewModel.actualizarNomConductor(it) },
+                            label = stringResource(R.string.form_name_driver),
+                            clave = "nom_conductor",
+                            historialManager = historialManager,
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !modoLectura
+                        )
                     }
                 }
 
@@ -666,10 +693,7 @@ private fun DateTimeFieldMovs(
         Text(label, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
         Spacer(modifier = Modifier.height(10.dp))
         Box(
-            modifier = if (enabled)
-                Modifier.fillMaxWidth().clickable { onClick() }
-            else
-                Modifier.fillMaxWidth()
+            modifier = if (enabled) Modifier.fillMaxWidth().clickable { onClick() } else Modifier.fillMaxWidth()
         ) {
             OutlinedTextField(
                 value = value,

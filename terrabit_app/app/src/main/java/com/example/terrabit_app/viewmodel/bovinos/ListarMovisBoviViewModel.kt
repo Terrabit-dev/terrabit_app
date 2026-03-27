@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.terrabit_app.data.local.HistorialCamposManager
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.moviminetos.modelos.Moviment
 import com.example.terrabit_app.utils.UserPreferences
@@ -16,12 +17,12 @@ import java.util.Calendar
 import javax.inject.Inject
 
 @HiltViewModel
-class ListarMovisBoviViewModel@Inject constructor(
+class ListarMovisBoviViewModel @Inject constructor(
     private val repositorio: Repositorio,
     private val userPreferences: UserPreferences,
+    val historialCamposManager: HistorialCamposManager
 ) : ViewModel() {
 
-    // Estado Observable
     private val _listaMovimientos = MutableLiveData<List<Moviment>>(emptyList())
     val listaMovimientos = _listaMovimientos
 
@@ -34,42 +35,29 @@ class ListarMovisBoviViewModel@Inject constructor(
     private val _error = MutableLiveData<String?>(null)
     val error: LiveData<String?> = _error
 
-    // Campo Rega
-
-    private val _codiExplotacionDesti = MutableLiveData("") //Puede ser rega o mo
+    private val _codiExplotacionDesti = MutableLiveData("")
     val codiExplotacionDesti = _codiExplotacionDesti
 
-    // fecha mostrada al usuario
     private val _fechaDisplay = MutableLiveData("")
     val fechaDisplay: LiveData<String> = _fechaDisplay
 
-    //control de picker
     private val _mostrarDatePicker = MutableLiveData(false)
     val mostrarDatePicker: LiveData<Boolean> = _mostrarDatePicker
 
     private val _mostrarTimePicker = MutableLiveData(false)
     val mostrarTimePicker: LiveData<Boolean> = _mostrarTimePicker
 
-    // Millis de la fecha elegida para combinar con la hora después
     private var fechaMillisSeleccionada: Long = 0L
 
-    // Credenciales
     private val nif      = userPreferences.getNif()      ?: ""
     private val password = userPreferences.getPassword() ?: ""
 
-    // movimiento/guia seleccionada para confirmar
-
     private val _movimientoSeleccionado = MutableLiveData<Moviment?>(null)
-
     val movimientoSeleccionado = _movimientoSeleccionado
 
-    fun seleccionarMovi(movimiento : Moviment){ _movimientoSeleccionado.value = movimiento }
-
-    // actualizar campos
+    fun seleccionarMovi(movimiento: Moviment) { _movimientoSeleccionado.value = movimiento }
 
     fun onCodiChange(valor: String) { _codiExplotacionDesti.value = valor }
-
-    // Logica del DatePicker
 
     fun mostrarDatePicker()  { _mostrarDatePicker.value = true }
     fun ocultarDatePicker()  { _mostrarDatePicker.value = false }
@@ -86,7 +74,6 @@ class ListarMovisBoviViewModel@Inject constructor(
     fun seleccionarHora(hora: Int, minutos: Int) {
         val cal = Calendar.getInstance()
         cal.timeInMillis = fechaMillisSeleccionada
-        // Display legible para el usuario
         _fechaDisplay.value = String.format(
             "%02d/%02d/%04d %02d:%02d",
             cal.get(Calendar.DAY_OF_MONTH),
@@ -98,17 +85,15 @@ class ListarMovisBoviViewModel@Inject constructor(
         _mostrarTimePicker.value = false
     }
 
-    // Logico de negocio
-
-    fun validarPeticion(){
-        val codi = _codiExplotacionDesti.value.orEmpty().trim()
+    fun validarPeticion() {
+        val codi  = _codiExplotacionDesti.value.orEmpty().trim()
         val fecha = _fechaDisplay.value.orEmpty().trim()
         if (codi.isBlank()) {
             _error.value = "El código REGA es obligatorio."
             return
         }
         if (fecha.isBlank()) {
-            _error.value = "El código REGA es obligatorio."
+            _error.value = "La fecha de salida es obligatoria."
             return
         }
         _error.value = null
@@ -116,32 +101,30 @@ class ListarMovisBoviViewModel@Inject constructor(
         cargarMovimientos()
     }
 
-    fun cargarMovimientos(){
+    fun cargarMovimientos() {
         viewModelScope.launch {
             _cargando.postValue(true)
-            try{
+            try {
                 val response = repositorio.getConfirmacionMovimientos(
-                    nif = nif,
-                    passwordMobilitat = password,
+                    nif                  = nif,
+                    passwordMobilitat    = password,
                     explotacioDestinacio = _codiExplotacionDesti.value.orEmpty(),
-                    dataSortida = displayToApiFormat(_fechaDisplay.value.orEmpty())
+                    dataSortida          = displayToApiFormat(_fechaDisplay.value.orEmpty())
                 )
-                if (response.isSuccessful){
+                if (response.isSuccessful) {
                     val movimientos = response.body()?.moviments ?: emptyList()
                     Log.d("BOVI_VM", "Movimientos recibidos: ${movimientos.size}")
                     _listaMovimientos.postValue(movimientos)
                     _cargando.postValue(false)
-                    Log.d("BOVI_VM", "Movimientos recibidas: ${_listaMovimientos.value}")
-
-                } else{
+                    guardarHistorialCampos()
+                } else {
                     val rawError = response.errorBody()?.string() ?: ""
                     Log.e("BOVI_VM", "HTTP ${response.code()}: $rawError")
                     _error.postValue(extraerDescripcion(rawError, response.code()))
                     _cargando.postValue(false)
                     _consultaIniciada.postValue(false)
                 }
-
-            } catch (e: Exception){
+            } catch (e: Exception) {
                 Log.e("BOVI_VM", "Excepción: ${e.message}")
                 _error.postValue("Error de conexión: ${e.localizedMessage}")
                 _cargando.postValue(false)
@@ -149,10 +132,15 @@ class ListarMovisBoviViewModel@Inject constructor(
             }
         }
     }
+
     fun resetearConsulta() {
-        _consultaIniciada.value = false
-        _listaMovimientos.value = emptyList()
-        _error.value = null
+        _consultaIniciada.value  = false
+        _listaMovimientos.value  = emptyList()
+        _error.value             = null
+    }
+
+    private suspend fun guardarHistorialCampos() {
+        historialCamposManager.guardarValor("codi_rega", _codiExplotacionDesti.value ?: "")
     }
 
     private fun displayToApiFormat(display: String): String {
@@ -163,6 +151,7 @@ class ListarMovisBoviViewModel@Inject constructor(
             "$anio$mes$dia$h$m"
         } catch (e: Exception) { "" }
     }
+
     private fun extraerDescripcion(rawJson: String, httpCode: Int): String {
         if (rawJson.isBlank()) return "Error $httpCode"
         return try {
@@ -191,5 +180,4 @@ class ListarMovisBoviViewModel@Inject constructor(
             "Error $httpCode"
         }
     }
-
 }
