@@ -57,25 +57,21 @@ import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.data.network.DataClassPorcinos.GuiaGTRLista
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.theme.MainOrange
 import com.example.terrabit_app.utils.CampoTexto
-import com.example.terrabit_app.utils.UserPreferences
 import com.example.terrabit_app.utils.porcinos.ElementosConCodigosPorcinos
 import com.example.terrabit_app.viewmodel.porcinos.EditarGuiaPorcinosViewModel
 import com.example.terrabit_app.viewmodel.porcinos.GestionarGuiasViewModel
@@ -90,18 +86,9 @@ fun ListaGuiasPorcinas(
     viewModelGestionarGuias: GestionarGuiasViewModel,
     viewModelEditarGuias: EditarGuiaPorcinosViewModel
 ) {
-    val context = LocalContext.current
-    val userPrefs = remember { UserPreferences(context) }
-    val nif = userPrefs.getNif() ?: ""
-    val pass = userPrefs.getPassword() ?: ""
-    val codiMo = userPrefs.getCodiMO() ?: ""
-
-
     val uiState by viewModelGestionarGuias.uiState.collectAsState()
-    val mostrarDatePicker = uiState.mostrarDatePicker
-    val mostrarTimePicker = uiState.mostrarTimePicker
 
-    if (mostrarDatePicker) {
+    if (uiState.mostrarDatePicker) {
         val dpState = rememberDatePickerState()
         DatePickerDialog(
             onDismissRequest = { viewModelGestionarGuias.ocultarDatePicker() },
@@ -116,17 +103,11 @@ fun ListaGuiasPorcinas(
                 }
             }
         ) {
-            DatePicker(
-                state  = dpState,
-                colors = DatePickerDefaults.colors(
-                    selectedDayContainerColor = MainOrange,
-                    todayDateBorderColor      = MainOrange
-                )
-            )
+            DatePicker(state = dpState, colors = DatePickerDefaults.colors(selectedDayContainerColor = MainOrange, todayDateBorderColor = MainOrange))
         }
     }
 
-    if (mostrarTimePicker) {
+    if (uiState.mostrarTimePicker) {
         val tpState = rememberTimePickerState()
         AlertDialog(
             onDismissRequest = { viewModelGestionarGuias.ocultarTimePicker() },
@@ -142,103 +123,54 @@ fun ListaGuiasPorcinas(
             },
             containerColor = MaterialTheme.colorScheme.surface,
             text = {
-                TimePicker(
-                    state  = tpState,
-                    colors = TimePickerDefaults.colors(
-                        clockDialSelectedContentColor = Color.White,
-                        selectorColor                = MainOrange
-                    )
-                )
+                TimePicker(state = tpState, colors = TimePickerDefaults.colors(clockDialSelectedContentColor = Color.White, selectorColor = MainOrange))
             }
         )
     }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(R.string.gest_porcinos_edit_confirm),
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                },
+                title = { Text(text = stringResource(R.string.gest_porcinos_edit_confirm), fontWeight = FontWeight.Bold, color = Color.White) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MainOrange,
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
-                )
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MainOrange, titleContentColor = Color.White, navigationIconContentColor = Color.White)
             )
         }
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
+        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
             when {
                 !uiState.consultaIniciada -> {
-                    Log.d("DEBUG", "Request: $nif $pass $codiMo")
-                    Log.d("DEBUG", "UI State: $uiState elementos")
                     FormularioConsulta(
-                        rega             = uiState.rega,
-                        fechaDisplay     = uiState.fechaCorteDisplay,   // ← en lugar de fechaCorte
-                        mensajeError     = uiState.mensajeError,
-                        onRegaChange     = { viewModelGestionarGuias.actualizarRega(it) },
-                        onFechaClick     = { viewModelGestionarGuias.mostrarDatePicker() }, // ← nuevo
-                        onConsultar      = { viewModelGestionarGuias.consultarLista(nif, pass, codiMo) }
+                        rega         = uiState.rega,
+                        fechaDisplay = uiState.fechaCorteDisplay,
+                        mensajeError = uiState.mensajeError,
+                        onRegaChange = { viewModelGestionarGuias.actualizarRega(it) },
+                        onFechaClick = { viewModelGestionarGuias.mostrarDatePicker() },
+                        onConsultar  = { viewModelGestionarGuias.consultarLista() }
                     )
                 }
-
                 uiState.isLoading -> {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
+                    Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                         CircularProgressIndicator(color = MainOrange, strokeWidth = 4.dp)
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            stringResource(R.string.gest_porcinos_cargando_mov),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontSize = 14.sp
-                        )
+                        Text(stringResource(R.string.gest_porcinos_cargando_mov), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                     }
                 }
-
                 else -> {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
+                    LazyColumn(modifier = Modifier.fillMaxSize().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         if (uiState.listaGuiasPorcinos.isEmpty()) {
                             item {
-                                Box(
-                                    modifier = Modifier.fillParentMaxSize(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        stringResource(R.string.gest_porcinos_no_guias),
-                                        fontSize = 16.sp,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
+                                Box(modifier = Modifier.fillParentMaxSize(), contentAlignment = Alignment.Center) {
+                                    Text(stringResource(R.string.gest_porcinos_no_guias), fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                             }
                         } else {
                             items(uiState.listaGuiasPorcinos) { guia ->
-                                GuiaCard(
-                                    navController = navController,
-                                    guia = guia,
-                                    viewModelGestionarGuias = viewModelGestionarGuias,
-                                    viewModelEditarGuias = viewModelEditarGuias
-                                )
+                                GuiaCard(navController = navController, guia = guia, viewModelGestionarGuias = viewModelGestionarGuias, viewModelEditarGuias = viewModelEditarGuias)
                             }
                         }
                     }
@@ -251,100 +183,47 @@ fun ListaGuiasPorcinas(
 @Composable
 fun FormularioConsulta(
     rega: String,
-    fechaDisplay: String,           // ← antes era fechaCorte: String
+    fechaDisplay: String,
     mensajeError: String?,
     onRegaChange: (String) -> Unit,
-    onFechaClick: () -> Unit,       // ← antes era onFechaCorteChange
+    onFechaClick: () -> Unit,
     onConsultar: () -> Unit
 ) {
-    Column(
-        modifier = Modifier.fillMaxSize().padding(20.dp),
-        verticalArrangement = Arrangement.Center
-    ) {
-        Card(
-            modifier  = Modifier.fillMaxWidth(),
-            colors    = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-            shape     = MaterialTheme.shapes.large
-        ) {
-            Column(
-                modifier = Modifier.fillMaxWidth().padding(24.dp),
-                verticalArrangement = Arrangement.spacedBy(20.dp)
-            ) {
-                Text(
-                    text       = stringResource(R.string.gest_porcinos_edit_confirm),
-                    fontSize   = 18.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color      = MaterialTheme.colorScheme.onSurface
-                )
+    Column(modifier = Modifier.fillMaxSize().padding(20.dp), verticalArrangement = Arrangement.Center) {
+        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), elevation = CardDefaults.cardElevation(defaultElevation = 4.dp), shape = MaterialTheme.shapes.large) {
+            Column(modifier = Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
+                Text(text = stringResource(R.string.gest_porcinos_edit_confirm), fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
 
-                // Campo REGA — sin cambios
-                CampoTexto(
-                    label         = "Código REGA",
-                    valor         = rega,
-                    placeholder   = "Ej: ES080470001881",
-                    onValueChange = onRegaChange,
-                    defectColor   = false
-                )
+                CampoTexto(label = "Código REGA", valor = rega, placeholder = "Ej: ES080470001881", onValueChange = onRegaChange, defectColor = false)
 
-                // Fecha de corte — ahora abre el picker
                 Column {
-                    Text(
-                        text          = "Fecha de corte",
-                        fontSize      = 15.sp,
-                        fontWeight    = FontWeight.SemiBold,
-                        color         = MaterialTheme.colorScheme.onSurface,
-                        letterSpacing = 0.15.sp
-                    )
+                    Text(text = "Fecha de corte", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
                     Spacer(modifier = Modifier.height(10.dp))
                     Box(modifier = Modifier.fillMaxWidth().clickable { onFechaClick() }) {
                         OutlinedTextField(
-                            value         = fechaDisplay,
-                            onValueChange = {},
-                            modifier      = Modifier.fillMaxWidth(),
-                            placeholder   = {
-                                Text(
-                                    "Selecciona fecha y hora",
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            },
-                            leadingIcon   = {
-                                Icon(Icons.Default.DateRange, contentDescription = null, tint = MainOrange)
-                            },
-                            readOnly      = true,
-                            enabled       = false,
-                            shape         = MaterialTheme.shapes.medium,
-                            colors        = OutlinedTextFieldDefaults.colors(
-                                disabledTextColor        = MaterialTheme.colorScheme.onSurface,
-                                disabledBorderColor      = MaterialTheme.colorScheme.outline,
+                            value = fechaDisplay, onValueChange = {},
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = { Text("Selecciona fecha y hora", color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                            leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = MainOrange) },
+                            readOnly = true, enabled = false, shape = MaterialTheme.shapes.medium,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                disabledBorderColor = MaterialTheme.colorScheme.outline,
                                 disabledLeadingIconColor = MainOrange,
                                 disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                disabledContainerColor   = MaterialTheme.colorScheme.surface
+                                disabledContainerColor = MaterialTheme.colorScheme.surface
                             ),
-                            singleLine    = true
+                            singleLine = true
                         )
                     }
                 }
 
                 if (!mensajeError.isNullOrBlank()) {
-                    Text(
-                        text     = mensajeError,
-                        color    = MaterialTheme.colorScheme.error,
-                        fontSize = 13.sp
-                    )
+                    Text(text = mensajeError, color = MaterialTheme.colorScheme.error, fontSize = 13.sp)
                 }
 
-                Button(
-                    onClick  = onConsultar,
-                    modifier = Modifier.fillMaxWidth().height(52.dp),
-                    colors   = ButtonDefaults.buttonColors(containerColor = MainOrange),
-                    shape    = MaterialTheme.shapes.medium
-                ) {
-                    Text(
-                        text       = "Consultar lista",
-                        fontSize   = 16.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
+                Button(onClick = onConsultar, modifier = Modifier.fillMaxWidth().height(52.dp), colors = ButtonDefaults.buttonColors(containerColor = MainOrange), shape = MaterialTheme.shapes.medium) {
+                    Text(text = "Consultar lista", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
         }
@@ -356,49 +235,17 @@ fun FormularioConsulta(
 fun GuiaCard(
     navController: NavController,
     guia: GuiaGTRLista,
-    viewModelGestionarGuias: GestionarGuiasViewModel = viewModel(),
-    viewModelEditarGuias: EditarGuiaPorcinosViewModel = viewModel(),
+    viewModelGestionarGuias: GestionarGuiasViewModel,
+    viewModelEditarGuias: EditarGuiaPorcinosViewModel
 ) {
-    ElevatedCard(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = guia.moOrigen,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Icon(
-                        imageVector = Icons.Default.ArrowForward,
-                        contentDescription = null,
-                        tint = MainOrange,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Text(
-                        text = guia.moDesti,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+    ElevatedCard(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)) {
+        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(text = guia.moOrigen, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurface)
+                    Icon(imageVector = Icons.Default.ArrowForward, contentDescription = null, tint = MainOrange, modifier = Modifier.size(18.dp))
+                    Text(text = guia.moDesti, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurface)
                 }
-
                 FilledIconButton(
                     onClick = {
                         viewModelEditarGuias.cargarDatosGuia(guia)
@@ -408,87 +255,33 @@ fun GuiaCard(
                     colors = IconButtonDefaults.iconButtonColors(containerColor = MainOrange),
                     modifier = Modifier.size(36.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = stringResource(R.string.content_description_edit),
-                        tint = Color.White,
-                        modifier = Modifier.size(18.dp)
-                    )
+                    Icon(imageVector = Icons.Default.Edit, contentDescription = stringResource(R.string.content_description_edit), tint = Color.White, modifier = Modifier.size(18.dp))
                 }
             }
 
-            Text(
-                text = guia.remo,
-                fontSize = 17.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                letterSpacing = 0.5.sp,
-                fontFamily = FontFamily.Monospace
-            )
-
+            Text(text = guia.remo, fontSize = 17.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, letterSpacing = 0.5.sp, fontFamily = FontFamily.Monospace)
             HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier.weight(1f)
-                ) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.weight(1f)) {
                     Column {
-                        Text(
-                            text = stringResource(R.string.form_porcino_entradas_fecha_salida),
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = formatearFecha(guia.dataSortida),
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
+                        Text(text = stringResource(R.string.form_porcino_entradas_fecha_salida), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(text = formatearFecha(guia.dataSortida), fontSize = 16.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
                     }
                 }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier.weight(1f)
-                ) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.weight(1f)) {
                     Column {
-                        Text(
-                            text = stringResource(R.string.form_porcinos_entradas_fecha_llegada),
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = formatearFecha(guia.dataArribada),
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
+                        Text(text = stringResource(R.string.form_porcinos_entradas_fecha_llegada), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(text = formatearFecha(guia.dataArribada), fontSize = 16.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
                     }
                 }
             }
 
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                InfoChip(
-                    icon = Icons.Default.Pets,
-                    label = "${guia.nombreAnimals}"
-                )
-                InfoChip(
-                    icon = Icons.Default.Category,
-                    label = "Cat. ${ElementosConCodigosPorcinos().categorias()[guia.categoria]}"
-                )
-                Log.d("Guia info", "Informacion: ${guia} - ${guia.categoria}  ")
-                guia.vehicle?.let {
-                    InfoChip(
-                        icon = Icons.Default.LocalShipping,
-                        label = it
-                    )
-                }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                InfoChip(icon = Icons.Default.Pets, label = "${guia.nombreAnimals}")
+                InfoChip(icon = Icons.Default.Category, label = "Cat. ${ElementosConCodigosPorcinos().categorias()[guia.categoria]}")
+                Log.d("Guia info", "Informacion: $guia - ${guia.categoria}")
+                guia.vehicle?.let { InfoChip(icon = Icons.Default.LocalShipping, label = it) }
             }
         }
     }
@@ -496,27 +289,10 @@ fun GuiaCard(
 
 @Composable
 fun InfoChip(icon: ImageVector, label: String) {
-    Surface(
-        shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = MainOrange,
-                modifier = Modifier.size(12.dp)
-            )
-            Text(
-                text = label,
-                fontSize = 11.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontWeight = FontWeight.Medium
-            )
+    Surface(shape = RoundedCornerShape(20.dp), color = MaterialTheme.colorScheme.surfaceVariant) {
+        Row(modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            Icon(imageVector = icon, contentDescription = null, tint = MainOrange, modifier = Modifier.size(12.dp))
+            Text(text = label, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Medium)
         }
     }
 }
@@ -528,7 +304,5 @@ fun formatearFecha(dateLong: Long): String {
         val inputFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmm")
         val dateTime = LocalDateTime.parse(dateLong.toString(), inputFormatter)
         dateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
-    } catch (e: Exception) {
-        "--/--/----"
-    }
+    } catch (e: Exception) { "--/--/----" }
 }

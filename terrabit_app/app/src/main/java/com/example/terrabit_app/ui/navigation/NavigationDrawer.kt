@@ -342,12 +342,12 @@ fun NavigationDrawer(
 
         // Pantallas Porcinos
         composable(Routes.GestionGuiasPorcinos.route) {
-            val viewModelGestionarGuias = viewModel<GestionarGuiasViewModel>(it)
-            val viewModelEditarGuias = hiltViewModel<EditarGuiaPorcinosViewModel>(it)
+            val viewModelGestionarGuias = hiltViewModel<GestionarGuiasViewModel>(it)
+            val viewModelEditarGuias    = hiltViewModel<EditarGuiaPorcinosViewModel>(it)
             ListaGuiasPorcinas(
-                navController = navController,
+                navController           = navController,
                 viewModelGestionarGuias = viewModelGestionarGuias,
-                viewModelEditarGuias = viewModelEditarGuias
+                viewModelEditarGuias    = viewModelEditarGuias
             )
         }
 
@@ -412,12 +412,12 @@ fun NavigationDrawer(
             val parentEntry = remember(currentEntry) {
                 navController.getBackStackEntry(Routes.GestionGuiasPorcinos.route)
             }
-            val viewModelGestionarGuias = viewModel<GestionarGuiasViewModel>(parentEntry)
-            val viewModelEditarGuias = hiltViewModel<EditarGuiaPorcinosViewModel>(parentEntry)
+            val viewModelGestionarGuias = hiltViewModel<GestionarGuiasViewModel>(parentEntry)
+            val viewModelEditarGuias    = hiltViewModel<EditarGuiaPorcinosViewModel>(parentEntry)
             ConfirmarEditarGuiasPorci(
-                navController = navController,
+                navController           = navController,
                 viewModelGestionarGuias = viewModelGestionarGuias,
-                viewModelEditarGuias = viewModelEditarGuias
+                viewModelEditarGuias    = viewModelEditarGuias
             )
         }
     }
