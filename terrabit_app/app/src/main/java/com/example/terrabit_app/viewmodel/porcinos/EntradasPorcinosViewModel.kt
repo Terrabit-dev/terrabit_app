@@ -1,18 +1,16 @@
 package com.example.terrabit_app.viewmodel.porcinos
 
 import android.annotation.SuppressLint
-import android.app.Application
-import android.content.Context
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.network.DataClassPorcinos.ConfirmarMovimientosRequest
 import com.example.terrabit_app.data.network.DataClassPorcinos.MovimentPteDetail
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.ui.screen.porcinos.EntradasPorcinosUiState
 import com.example.terrabit_app.utils.UserPreferences
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,17 +19,18 @@ import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
+import javax.inject.Inject
 
 @RequiresApi(Build.VERSION_CODES.O)
-class EntradasPorcinosViewModel(application: Application) : AndroidViewModel(application) {
+@HiltViewModel
+class EntradasPorcinosViewModel @Inject constructor(
+    private val repositorio: Repositorio,
+    private val userPreferences: UserPreferences
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(EntradasPorcinosUiState())
     val uiState: StateFlow<EntradasPorcinosUiState> = _uiState.asStateFlow()
 
-    private val repositorio = Repositorio(application)
-    private lateinit var userPreferences: UserPreferences
-
-    // ── Fecha ────────────────────────────────────────────────────────────────
     private val _fechaDisplay = MutableStateFlow("")
     val fechaDisplay: StateFlow<String> = _fechaDisplay
 
@@ -49,7 +48,6 @@ class EntradasPorcinosViewModel(application: Application) : AndroidViewModel(app
 
     private var fechaMillisSeleccionada: Long = 0L
 
-    // ── Pickers ──────────────────────────────────────────────────────────────
     fun mostrarDatePicker() { _mostrarDatePicker.value = true }
     fun ocultarDatePicker() { _mostrarDatePicker.value = false }
     fun ocultarTimePicker() { _mostrarTimePicker.value = false }
@@ -74,12 +72,6 @@ class EntradasPorcinosViewModel(application: Application) : AndroidViewModel(app
         _mostrarTimePicker.value = false
     }
 
-    // ── Inicialización ───────────────────────────────────────────────────────
-    fun inicializarUserPreferences(context: Context) {
-        userPreferences = UserPreferences(context)
-    }
-
-    // ── Validar y lanzar consulta ────────────────────────────────────────────
     fun validarYConsultar() {
         if (_fechaDisplay.value.isBlank()) {
             _error.value = "La fecha de sortida és obligatòria."
@@ -97,7 +89,6 @@ class EntradasPorcinosViewModel(application: Application) : AndroidViewModel(app
         _error.value = null
     }
 
-    // ── GET ──────────────────────────────────────────────────────────────────
     private fun cargarGuiasPendientes() {
         val fechaFin = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"))
         val fechaInicio = displayToApiFormat(_fechaDisplay.value)
@@ -106,11 +97,11 @@ class EntradasPorcinosViewModel(application: Application) : AndroidViewModel(app
             _uiState.update { it.copy(isLoading = true) }
             try {
                 val response = repositorio.getPendientesConfirmarEntradaPorcina(
-                    nif          = userPreferences.getNif()      ?: "",
-                    password     = userPreferences.getPassword() ?: "",
-                    moDesti      = userPreferences.getCodiMO()   ?: "",
-                    desde        = fechaInicio,
-                    fins         = fechaFin
+                    nif      = userPreferences.getNif()      ?: "",
+                    password = userPreferences.getPassword() ?: "",
+                    moDesti  = userPreferences.getCodiMO()   ?: "",
+                    desde    = fechaInicio,
+                    fins     = fechaFin
                 )
                 if (response.isSuccessful) {
                     _uiState.update { it.copy(
@@ -130,19 +121,18 @@ class EntradasPorcinosViewModel(application: Application) : AndroidViewModel(app
         }
     }
 
-    // ── Confirmar entrada ────────────────────────────────────────────────────
     fun confirmarEntrada(guia: MovimentPteDetail) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             val request = ConfirmarMovimientosRequest(
-                nif          = userPreferences.getNif()      ?: "",
-                password     = userPreferences.getPassword() ?: "",
-                moDesti      = guia.moDesti,
-                remo         = guia.codiRemo,
-                codiAtes     = guia.codiAtes,
-                nifConductor = guia.nifConductor ?: "",
-                matricula    = guia.matricula    ?: "",
-                nombreAnimals = guia.numAnimals  ?: "0"
+                nif           = userPreferences.getNif()      ?: "",
+                password      = userPreferences.getPassword() ?: "",
+                moDesti       = guia.moDesti,
+                remo          = guia.codiRemo,
+                codiAtes      = guia.codiAtes,
+                nifConductor  = guia.nifConductor ?: "",
+                matricula     = guia.matricula    ?: "",
+                nombreAnimals = guia.numAnimals   ?: "0"
             )
             try {
                 val response = repositorio.confirmarEntradaPorcina(request)
@@ -162,7 +152,6 @@ class EntradasPorcinosViewModel(application: Application) : AndroidViewModel(app
         }
     }
 
-    // ── Utils ────────────────────────────────────────────────────────────────
     private fun displayToApiFormat(display: String): String {
         return try {
             val partes = display.trim().split(" ")

@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -25,7 +24,6 @@ import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.LocalShipping
 import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material3.AlertDialog
@@ -48,7 +46,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -58,53 +55,42 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
-import com.example.terrabit_app.data.network.DataClassPorcinos.GuiaGTRLista
 import com.example.terrabit_app.data.network.DataClassPorcinos.MovimentPteDetail
-import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.screen.bovinos.formatearFecha
 import com.example.terrabit_app.ui.theme.BlueGrey
 import com.example.terrabit_app.ui.theme.DarkBlueGrey
 import com.example.terrabit_app.ui.theme.DarkWhiteBackground
-import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
 import com.example.terrabit_app.utils.porcinos.ElementosConCodigosPorcinos
-import com.example.terrabit_app.viewmodel.porcinos.EditarGuiaPorcinosViewModel
 import com.example.terrabit_app.viewmodel.porcinos.EntradasPorcinosViewModel
-import com.example.terrabit_app.viewmodel.porcinos.GestionarGuiasViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EntradasPorcinos(navController: NavController) {
 
-    val viewModel = viewModel<EntradasPorcinosViewModel>()
-    val uiState         by viewModel.uiState.collectAsState()
+    val viewModel = hiltViewModel<EntradasPorcinosViewModel>()
+    val uiState          by viewModel.uiState.collectAsState()
     val consultaIniciada by viewModel.consultaIniciada.collectAsState()
-    val fechaDisplay    by viewModel.fechaDisplay.collectAsState()
+    val fechaDisplay     by viewModel.fechaDisplay.collectAsState()
     val mostrarDatePicker by viewModel.mostrarDatePicker.collectAsState()
     val mostrarTimePicker by viewModel.mostrarTimePicker.collectAsState()
-    val error           by viewModel.error.collectAsState()
-    val context = LocalContext.current
+    val error            by viewModel.error.collectAsState()
 
-    LaunchedEffect(Unit) { viewModel.inicializarUserPreferences(context) }
-
-    // ── DatePicker ────────────────────────────────────────────────────────────
     if (mostrarDatePicker) {
         val dpState = rememberDatePickerState()
         DatePickerDialog(
@@ -126,7 +112,6 @@ fun EntradasPorcinos(navController: NavController) {
         }
     }
 
-    // ── TimePicker ────────────────────────────────────────────────────────────
     if (mostrarTimePicker) {
         val tpState = rememberTimePickerState()
         AlertDialog(
@@ -172,7 +157,6 @@ fun EntradasPorcinos(navController: NavController) {
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
             when {
-                // ── 1. Formulario de fecha ────────────────────────────────────
                 !consultaIniciada -> {
                     MiniFormularioPorcinos(
                         fechaDisplay = fechaDisplay,
@@ -181,7 +165,6 @@ fun EntradasPorcinos(navController: NavController) {
                         onConsultar  = viewModel::validarYConsultar
                     )
                 }
-                // ── 2. Cargando ───────────────────────────────────────────────
                 uiState.isLoading -> {
                     Column(
                         modifier = Modifier.fillMaxSize(),
@@ -194,7 +177,6 @@ fun EntradasPorcinos(navController: NavController) {
                             color = Color.Gray, fontSize = 14.sp)
                     }
                 }
-                // ── 3. Lista ──────────────────────────────────────────────────
                 else -> {
                     if (uiState.listaEntradasPorcinos.isEmpty()) {
                         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -230,7 +212,6 @@ fun EntradasPorcinos(navController: NavController) {
     }
 }
 
-// ── Mini-formulario ───────────────────────────────────────────────────────────
 @Composable
 private fun MiniFormularioPorcinos(
     fechaDisplay: String,
@@ -256,7 +237,6 @@ private fun MiniFormularioPorcinos(
                     fontSize = 18.sp, fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface)
 
-                // Campo fecha (solo lectura, abre picker al pulsar)
                 Text("Data de sortida", fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface)
@@ -300,13 +280,11 @@ private fun MiniFormularioPorcinos(
     }
 }
 
-
-
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 private fun EntradaCard(
     movimiento: MovimentPteDetail,
-    viewModelGestionarMovs: EntradasPorcinosViewModel = viewModel()
+    viewModelGestionarMovs: EntradasPorcinosViewModel
 ) {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
@@ -314,12 +292,9 @@ private fun EntradaCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // ── Cabecera: Origen → Destino + botón editar ──
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -329,125 +304,45 @@ private fun EntradaCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // Origen
-                    Text(
-                        text = movimiento.moOrigen,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
-                        color = DarkBlueGrey
-                    )
-                    Icon(
-                        imageVector = Icons.Default.ArrowForward,
-                        contentDescription = null,
-                        tint = MainOrange,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    // Destino
-                    Text(
-                        text = movimiento.moDesti,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
-                        color = DarkBlueGrey
-                    )
+                    Text(text = movimiento.moOrigen, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = DarkBlueGrey)
+                    Icon(imageVector = Icons.Default.ArrowForward, contentDescription = null, tint = MainOrange, modifier = Modifier.size(18.dp))
+                    Text(text = movimiento.moDesti, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = DarkBlueGrey)
                 }
-
                 FilledIconButton(
-                    onClick = {
-                        viewModelGestionarMovs.confirmarEntrada(movimiento)
-                    },
+                    onClick = { viewModelGestionarMovs.confirmarEntrada(movimiento) },
                     shape = RoundedCornerShape(8.dp),
                     colors = IconButtonDefaults.iconButtonColors(containerColor = MainOrange),
                     modifier = Modifier.size(36.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Check,
-                        contentDescription = stringResource(R.string.content_description_edit),
-                        tint = Color.White,
-                        modifier = Modifier.size(18.dp)
-                    )
+                    Icon(imageVector = Icons.Default.Check, contentDescription = stringResource(R.string.content_description_edit), tint = Color.White, modifier = Modifier.size(18.dp))
                 }
             }
 
-            // ── Código REMO (secundario) ──
-            Text(
-                text = movimiento.codiRemo,
-                fontSize = 17.sp,
-                color = BlueGrey,
-                letterSpacing = 0.5.sp,
-                fontFamily = FontFamily.Monospace
-            )
+            Text(text = movimiento.codiRemo, fontSize = 17.sp, color = BlueGrey, letterSpacing = 0.5.sp, fontFamily = FontFamily.Monospace)
 
             HorizontalDivider(color = DarkWhiteBackground)
 
-            // ── Fechas ──
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // Salida
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier.weight(1f)
-                ) {
-
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.weight(1f)) {
                     Column {
-                        Text(
-                            text = stringResource(R.string.form_porcino_entradas_fecha_salida),
-                            fontSize = 14.sp,
-                            color = BlueGrey
-                        )
-                        Text(
-                            text = formatearFecha(movimiento.dataSortida),
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = DarkBlueGrey
-                        )
+                        Text(text = stringResource(R.string.form_porcino_entradas_fecha_salida), fontSize = 14.sp, color = BlueGrey)
+                        Text(text = formatearFecha(movimiento.dataSortida), fontSize = 16.sp, fontWeight = FontWeight.Medium, color = DarkBlueGrey)
                     }
                 }
-                // Llegada
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier.weight(1f)
-                ) {
-
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.weight(1f)) {
                     Column {
-                        Text(
-                            text = stringResource(R.string.form_porcinos_entradas_fecha_llegada),
-                            fontSize = 14.sp,
-                            color = BlueGrey
-                        )
-                        Text(
-                            text = formatearFecha(movimiento.dataArribada),
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = DarkBlueGrey
-                        )
+                        Text(text = stringResource(R.string.form_porcinos_entradas_fecha_llegada), fontSize = 14.sp, color = BlueGrey)
+                        Text(text = formatearFecha(movimiento.dataArribada), fontSize = 16.sp, fontWeight = FontWeight.Medium, color = DarkBlueGrey)
                     }
                 }
             }
 
-            // ── Chips: animales + categoría + matrícula ──
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                InfoChip(
-                    icon = Icons.Default.Pets,
-                    label = movimiento.numAnimals
-                )
-
-                InfoChip(
-                    icon = Icons.Default.Category,
-                    label = "Cat. ${ElementosConCodigosPorcinos().categorias()[movimiento.categoria]}"
-
-                )
-                Log.d("Guia info", "Informacion: ${movimiento} - ${movimiento.categoria}  ")
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                InfoChip(icon = Icons.Default.Pets, label = movimiento.numAnimals ?: "")
+                InfoChip(icon = Icons.Default.Category, label = "Cat. ${ElementosConCodigosPorcinos().categorias()[movimiento.categoria]}")
+                Log.d("Guia info", "Informacion: $movimiento - ${movimiento.categoria}")
                 movimiento.matricula?.let {
-                    InfoChip(
-                        icon = Icons.Default.LocalShipping,
-                        label = it
-                    )
+                    InfoChip(icon = Icons.Default.LocalShipping, label = it)
                 }
             }
         }
