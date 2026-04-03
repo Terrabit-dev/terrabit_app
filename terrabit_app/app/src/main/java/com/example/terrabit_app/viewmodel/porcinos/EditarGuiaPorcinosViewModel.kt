@@ -1,43 +1,43 @@
 package com.example.terrabit_app.viewmodel.porcinos
 
-import android.app.Application
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.terrabit_app.data.local.HistorialCamposManager
 import com.example.terrabit_app.data.network.DataClassPorcinos.GtrStandardResponse
 import com.example.terrabit_app.data.network.DataClassPorcinos.GuiaGTRLista
 import com.example.terrabit_app.data.network.DataClassPorcinos.ModificarMovimentsAGias
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.ui.screen.porcinos.EditarGuiasPorcionsUiState
+import com.example.terrabit_app.utils.UserPreferences
 import com.example.terrabit_app.utils.porcinos.ElementosConCodigosPorcinos
 import com.google.gson.Gson
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.format.DateTimeFormatter
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import javax.inject.Inject
 
+@HiltViewModel
+class EditarGuiaPorcinosViewModel @Inject constructor(
+    private val repositorio: Repositorio,
+    private val userPreferences: UserPreferences,
+    val historialCamposManager: HistorialCamposManager
+) : ViewModel() {
 
-
-class EditarGuiaPorcinosViewModel(application: Application): AndroidViewModel(application){
     private val _uiState = MutableStateFlow(EditarGuiasPorcionsUiState())
     val uiState: StateFlow<EditarGuiasPorcionsUiState> = _uiState.asStateFlow()
 
-    private val repositorio = Repositorio(application)
-
-    // --- CATEGORÍA ---
     fun seleccionarCategoria(nombre: String, codigo: String) {
-        _uiState.update { it.copy(
-            categoriaSeleccionada = nombre,
-            categoriaCodigo = codigo,
-            categoriaExpandido = false
-        )}
+        _uiState.update { it.copy(categoriaSeleccionada = nombre, categoriaCodigo = codigo, categoriaExpandido = false) }
     }
 
     fun toggleCategoriaExpandido() {
@@ -48,89 +48,66 @@ class EditarGuiaPorcinosViewModel(application: Application): AndroidViewModel(ap
         _uiState.update { it.copy(categoriaExpandido = false) }
     }
 
-    // --- CAMPOS DE TEXTO ---
-    fun actualizarNumAnimales(valor: String) {
-        _uiState.update { it.copy(numAnimales = valor) }
-    }
+    fun actualizarNumAnimales(valor: String)   { _uiState.update { it.copy(numAnimales = valor) } }
+    fun actualizarCodigoSIR(valor: String)     { _uiState.update { it.copy(codigoSIR = valor) } }
+    fun actualizarMatricula(valor: String)     { _uiState.update { it.copy(matricula = valor) } }
+    fun actualizarNifConductor(valor: String)  { _uiState.update { it.copy(nifConductor = valor) } }
 
-    fun actualizarCodigoSIR(valor: String) {
-        _uiState.update { it.copy(codigoSIR = valor) }
-    }
-
-    fun actualizarMatricula(valor: String) {
-        _uiState.update { it.copy(matricula = valor) }
-    }
-
-    fun actualizarNifConductor(valor: String) {
-        _uiState.update { it.copy(nifConductor = valor) }
-    }
-
-    // --- FECHA Y HORA DE SALIDA ---
-    fun mostrarDatePickerSalida() { _uiState.update { it.copy(mostrarDatePickerSalida = true) } }
-    fun ocultarDatePickerSalida() { _uiState.update { it.copy(mostrarDatePickerSalida = false) } }
+    fun mostrarDatePickerSalida()  { _uiState.update { it.copy(mostrarDatePickerSalida = true) } }
+    fun ocultarDatePickerSalida()  { _uiState.update { it.copy(mostrarDatePickerSalida = false) } }
+    fun mostrarTimePickerSalida()  { _uiState.update { it.copy(mostrarTimePickerSalida = true) } }
+    fun ocultarTimePickerSalida()  { _uiState.update { it.copy(mostrarTimePickerSalida = false) } }
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun seleccionarFechaSalida(millis: Long) {
-        val fechaFormat = formatLongToDate(millis)
-        _uiState.update { it.copy(
-            fechaSalida = fechaFormat,
-            mostrarDatePickerSalida = false,
-            mostrarTimePickerSalida = true
-        )}
+        _uiState.update { it.copy(fechaSalida = formatLongToDate(millis), mostrarDatePickerSalida = false, mostrarTimePickerSalida = true) }
     }
-
-    fun mostrarTimePickerSalida() { _uiState.update { it.copy(mostrarTimePickerSalida = true) } }
-    fun ocultarTimePickerSalida() { _uiState.update { it.copy(mostrarTimePickerSalida = false) } }
 
     fun actualizarHoraSalida(h: String, m: String) {
-        val horaFormat = "${h.padStart(2, '0')}:${m.padStart(2, '0')}"
-        _uiState.update { it.copy(horaSalida = horaFormat) }
+        _uiState.update { it.copy(horaSalida = "${h.padStart(2, '0')}:${m.padStart(2, '0')}") }
     }
 
-    // --- FECHA Y HORA DE LLEGADA ---
-    fun mostrarDatePickerLlegada() { _uiState.update { it.copy(mostrarDatePickerLlegada = true) } }
-    fun ocultarDatePickerLlegada() { _uiState.update { it.copy(mostrarDatePickerLlegada = false) } }
+    fun mostrarDatePickerLlegada()  { _uiState.update { it.copy(mostrarDatePickerLlegada = true) } }
+    fun ocultarDatePickerLlegada()  { _uiState.update { it.copy(mostrarDatePickerLlegada = false) } }
+    fun mostrarTimePickerLlegada()  { _uiState.update { it.copy(mostrarTimePickerLlegada = true) } }
+    fun ocultarTimePickerLlegada()  { _uiState.update { it.copy(mostrarTimePickerLlegada = false) } }
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun seleccionarFechaLlegada(millis: Long) {
-        val fechaFormat = formatLongToDate(millis)
-        _uiState.update { it.copy(
-            fechaLlegada = fechaFormat,
-            mostrarDatePickerLlegada = false,
-            mostrarTimePickerLlegada = true
-        )}
+        _uiState.update { it.copy(fechaLlegada = formatLongToDate(millis), mostrarDatePickerLlegada = false, mostrarTimePickerLlegada = true) }
     }
-
-    fun mostrarTimePickerLlegada() { _uiState.update { it.copy(mostrarTimePickerLlegada = true) } }
-    fun ocultarTimePickerLlegada() { _uiState.update { it.copy(mostrarTimePickerLlegada = false) } }
 
     fun actualizarHoraLlegada(h: String, m: String) {
-        val horaFormat = "${h.padStart(2, '0')}:${m.padStart(2, '0')}"
-        _uiState.update { it.copy(horaLlegada = horaFormat) }
+        _uiState.update { it.copy(horaLlegada = "${h.padStart(2, '0')}:${m.padStart(2, '0')}") }
     }
 
-    // --- CARGA Y ENVÍO ---
     @RequiresApi(Build.VERSION_CODES.O)
     fun cargarDatosGuia(guia: GuiaGTRLista) {
-
         val utils = ElementosConCodigosPorcinos()
-
-        val nombreCategoria = utils.categoriasB().filterValues { it == guia.categoria }.keys.firstOrNull()
-            ?: "Desconocida" // Valor por defecto si el código no existe
+        val nombreCategoria = utils.categoriasB().filterValues { it == guia.categoria }.keys.firstOrNull() ?: "Desconocida"
         _uiState.update { currentState ->
             currentState.copy(
-                remoActual = guia.remo, // Guardamos el REMO para la edición
+                remoActual            = guia.remo,
                 categoriaSeleccionada = nombreCategoria,
-                categoriaCodigo = guia.categoria,
-                numAnimales = guia.nombreAnimals.toString(),
-                fechaSalida = formatLongToDate(guia.dataSortida),
-                horaSalida = formatLongToTime(guia.dataSortida),
-                fechaLlegada = formatLongToDate(guia.dataArribada),
-                horaLlegada = formatLongToTime(guia.dataArribada),
-                codigoSIR = guia.transportista ?: "",
-                matricula = guia.vehicle ?: "",
-                nifConductor = guia.responsable ?: ""
+                categoriaCodigo       = guia.categoria,
+                numAnimales           = guia.nombreAnimals.toString(),
+                fechaSalida           = formatLongToDate(guia.dataSortida),
+                horaSalida            = formatLongToTime(guia.dataSortida),
+                fechaLlegada          = formatLongToDate(guia.dataArribada),
+                horaLlegada           = formatLongToTime(guia.dataArribada),
+                codigoSIR             = guia.transportista ?: "",
+                matricula             = guia.vehicle ?: "",
+                nifConductor          = guia.responsable ?: ""
             )
+        }
+    }
+
+    private fun guardarHistorialCampos() {
+        viewModelScope.launch {
+            val s = _uiState.value
+            if (s.codigoSIR.isNotBlank())    historialCamposManager.guardarValor("porcinos_sir", s.codigoSIR)
+            if (s.matricula.isNotBlank())     historialCamposManager.guardarValor("porcinos_matricula", s.matricula)
+            if (s.nifConductor.isNotBlank()) historialCamposManager.guardarValor("porcinos_nif_conductor", s.nifConductor)
         }
     }
 
@@ -158,17 +135,20 @@ class EditarGuiaPorcinosViewModel(application: Application): AndroidViewModel(ap
             val fechaS = combinarFechaHora(state.fechaSalida, state.horaSalida)
             val fechaA = combinarFechaHora(state.fechaLlegada, state.horaLlegada)
 
+            val nif      = userPreferences.getNif()      ?: ""
+            val password = userPreferences.getPassword() ?: ""
+
             val request = ModificarMovimentsAGias(
-                nif = "37370803N",
-                password = "5Q62h4rP",
-                remo = state.remoActual,
-                categoria = state.categoriaCodigo,
+                nif           = nif,
+                password      = password,
+                remo          = state.remoActual,
+                categoria     = state.categoriaCodigo,
                 nombreAnimals = state.numAnimales,
                 transportista = state.codigoSIR,
-                responsable = state.nifConductor,
-                vehicle = state.matricula,
-                dataSortida = fechaS,
-                dataArribada = fechaA
+                responsable   = state.nifConductor,
+                vehicle       = state.matricula,
+                dataSortida   = fechaS,
+                dataArribada  = fechaA
             )
 
             Log.d("EDITAR_GUIA", "Request enviada: $request")
@@ -180,39 +160,36 @@ class EditarGuiaPorcinosViewModel(application: Application): AndroidViewModel(ap
                     val rawJson = response.body()?.string() ?: ""
                     Log.d("EDITAR_GUIA", "Raw JSON: $rawJson")
 
-                    // Parseamos manualmente según si empieza por [ o {
                     val gson = Gson()
                     if (rawJson.trimStart().startsWith("[")) {
-                        // Array de errores → tomamos el primero
                         val errores = gson.fromJson(rawJson, Array<GtrStandardResponse>::class.java)
                         val primerError = errores.firstOrNull()
-                        Log.w("EDITAR_GUIA", "❌ API devolvió errores: ${primerError?.descripcio}")
+                        Log.w("EDITAR_GUIA", "API devolvió errores: ${primerError?.descripcio}")
                         _uiState.update { it.copy(isLoading = false, error = primerError?.descripcio) }
                     } else {
-                        // Objeto único → respuesta de éxito
                         val resultado = gson.fromJson(rawJson, GtrStandardResponse::class.java)
                         if (resultado.codi == "OK") {
-                            Log.i("EDITAR_GUIA", "✅ Trámite completado correctamente")
+                            Log.i("EDITAR_GUIA", "Trámite completado correctamente")
+                            guardarHistorialCampos()
                             _uiState.update { it.copy(isLoading = false) }
                             onSuccess()
                         } else {
-                            Log.w("EDITAR_GUIA", "❌ API rechazó: ${resultado.descripcio}")
+                            Log.w("EDITAR_GUIA", "API rechazó: ${resultado.descripcio}")
                             _uiState.update { it.copy(isLoading = false, error = resultado.descripcio) }
                         }
                     }
                 } else {
                     val errorBody = response.errorBody()?.string()
-                    Log.e("EDITAR_GUIA", "🔥 Error HTTP ${response.code()}: $errorBody")
+                    Log.e("EDITAR_GUIA", "Error HTTP ${response.code()}: $errorBody")
                     _uiState.update { it.copy(isLoading = false, error = "Error servidor (${response.code()})") }
                 }
             } catch (e: Exception) {
-                Log.e("EDITAR_GUIA", "💥 EXCEPCIÓN: ${e.localizedMessage}", e)
+                Log.e("EDITAR_GUIA", "EXCEPCIÓN: ${e.localizedMessage}", e)
                 _uiState.update { it.copy(isLoading = false, error = e.localizedMessage) }
             }
         }
     }
 
-    // --- UTILIDADES DE FORMATO ---
     @RequiresApi(Build.VERSION_CODES.O)
     private fun formatLongToDate(millis: Long): String {
         val dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault())
@@ -227,7 +204,7 @@ class EditarGuiaPorcinosViewModel(application: Application): AndroidViewModel(ap
 
     private fun combinarFechaHora(fecha: String, hora: String): String {
         val partesFecha = fecha.split("/")
-        val partesHora = hora.split(":")
+        val partesHora  = hora.split(":")
         if (partesFecha.size < 3 || partesHora.size < 2) return ""
         return "${partesFecha[2]}${partesFecha[1]}${partesFecha[0]}${partesHora[0]}${partesHora[1]}"
     }
