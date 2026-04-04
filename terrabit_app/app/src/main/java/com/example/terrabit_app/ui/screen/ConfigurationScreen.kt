@@ -82,13 +82,13 @@ fun ConfigurationScreen(
                             )
                             Spacer(modifier = Modifier.height(20.dp))
                             Text(
-                                text = "Validando código",
+                                text = stringResource(R.string.dialog_validating_title),
                                 fontSize = 17.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                text = "Por favor, espera un momento",
+                                text = stringResource(R.string.dialog_validating_subtitle),
                                 fontSize = 13.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -112,14 +112,14 @@ fun ConfigurationScreen(
                             }
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = "Código válido",
+                                text = stringResource(R.string.dialog_valid_code_title),
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "La explotación ha sido añadida correctamente",
+                                text = stringResource(R.string.dialog_valid_code_subtitle),
                                 fontSize = 13.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 textAlign = TextAlign.Center
@@ -131,7 +131,7 @@ fun ConfigurationScreen(
                                 colors = ButtonDefaults.buttonColors(containerColor = MainGreen),
                                 shape = RoundedCornerShape(12.dp)
                             ) {
-                                Text("Aceptar", fontWeight = FontWeight.SemiBold)
+                                Text(stringResource(R.string.accept_buttom), fontWeight = FontWeight.SemiBold)
                             }
                         }
 
@@ -152,14 +152,14 @@ fun ConfigurationScreen(
                             }
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = "Explotación ya añadida",
+                                text = stringResource(R.string.dialog_already_added_title),
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "Este código ya está registrado en la aplicación",
+                                text = stringResource(R.string.dialog_already_added_subtitle),
                                 fontSize = 13.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 textAlign = TextAlign.Center
@@ -171,7 +171,7 @@ fun ConfigurationScreen(
                                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
                                 shape = RoundedCornerShape(12.dp)
                             ) {
-                                Text("Entendido", fontWeight = FontWeight.SemiBold)
+                                Text(stringResource(R.string.error_buttom), fontWeight = FontWeight.SemiBold)
                             }
                         }
 
@@ -192,14 +192,14 @@ fun ConfigurationScreen(
                             }
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = "Código inválido",
+                                text = stringResource(R.string.dialog_invalid_code_title),
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "No se ha encontrado ninguna explotación con este código",
+                                text = stringResource(R.string.dialog_invalid_code_subtitle),
                                 fontSize = 13.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 textAlign = TextAlign.Center
@@ -223,28 +223,28 @@ fun ConfigurationScreen(
                                     colors = ButtonDefaults.buttonColors(containerColor = MainGreen),
                                     shape = RoundedCornerShape(12.dp)
                                 ) {
-                                    Text("Reintentar")
+                                    Text(stringResource(R.string.retry_loading_list_bovinos))
                                 }
                             }
                         }
 
                         else -> {
                             Text(
-                                text = "Añadir explotación",
+                                text = stringResource(R.string.dialog_add_farm_title),
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "Introduce el código de la explotación para validarlo",
+                                text = stringResource(R.string.dialog_add_farm_subtitle),
                                 fontSize = 13.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 textAlign = TextAlign.Center
                             )
                             Spacer(modifier = Modifier.height(20.dp))
                             CampoTexto(
-                                label = "Código de explotación",
+                                label = stringResource(R.string.dialog_farm_code_label),
                                 valor = codiMo,
                                 placeholder = "",
                                 onValueChange = { viewModel.actualizarCodiMo(it) },
@@ -269,7 +269,7 @@ fun ConfigurationScreen(
                                     colors = ButtonDefaults.buttonColors(containerColor = MainGreen),
                                     shape = RoundedCornerShape(12.dp)
                                 ) {
-                                    Text("Validar")
+                                    Text(stringResource(R.string.btn_validate))
                                 }
                             }
                         }
@@ -307,7 +307,7 @@ fun ConfigurationScreen(
                                 .size(40.dp)
                                 .background(color = Color.White.copy(alpha = 0.2f), shape = CircleShape)
                         ) {
-                            Icon(Icons.Default.Menu, contentDescription = "Menú", tint = Color.White)
+                            Icon(Icons.Default.Menu, contentDescription = stringResource(R.string.content_description_menu), tint = Color.White)
                         }
 
                         Box(contentAlignment = Alignment.Center) {
@@ -317,7 +317,7 @@ fun ConfigurationScreen(
                                     .size(40.dp)
                                     .background(color = Color.White.copy(alpha = 0.2f), shape = CircleShape)
                             ) {
-                                Icon(Icons.Default.Language, contentDescription = "Language", tint = Color.White)
+                                Icon(Icons.Default.Language, contentDescription = null, tint = Color.White)
                             }
                             DropdownMenu(
                                 expanded = expandedIdioma,
@@ -419,7 +419,7 @@ fun ConfigurationScreen(
                 HorizontalDivider(color = MaterialTheme.colorScheme.outline)
 
                 Text(
-                    text = "Añadir explotación",
+                    text = stringResource(R.string.section_add_farm),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -454,13 +454,13 @@ fun ConfigurationScreen(
                         }
                         Column {
                             Text(
-                                text = "Añadir nueva explotación",
+                                text = stringResource(R.string.card_add_farm_title),
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                text = "Valida un código de explotación GTR",
+                                text = stringResource(R.string.card_add_farm_subtitle),
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

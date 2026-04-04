@@ -427,6 +427,23 @@
     <string name="activated_theme_subtitle">Activat</string>
     <string name="desactivated_theme_subtitle">Desactivat</string>
 
+    <string name="dialog_validating_title">Validant codi</string>
+    <string name="dialog_validating_subtitle">Si us plau, espera un moment</string>
+    <string name="dialog_valid_code_title">Codi vàlid</string>
+    <string name="dialog_valid_code_subtitle">L\'explotació ha estat afegida correctament</string>
+    <string name="dialog_already_added_title">Explotació ja afegida</string>
+    <string name="dialog_already_added_subtitle">Aquest codi ja està registrat a l\'aplicació</string>
+    <string name="dialog_invalid_code_title">Codi invàlid</string>
+    <string name="dialog_invalid_code_subtitle">No s\'ha trobat cap explotació amb aquest codi</string>
+    <string name="dialog_add_farm_title">Afegir explotació</string>
+    <string name="dialog_add_farm_subtitle">Introdueix el codi de l\'explotació per validar-lo</string>
+    <string name="dialog_farm_code_label">Codi d\'explotació</string>
+    <string name="btn_validate">Validar</string>
+    <string name="section_add_farm">Afegir explotació</string>
+    <string name="card_add_farm_title">Afegir nova explotació</string>
+    <string name="card_add_farm_subtitle">Valida un codi d\'explotació GTR</string>
+
+
     <string name="close_session_title">Tancar Sessió</string>
     <string name="version_title">Versió</string>
     <string name="connect_new_devices">connectar nou dispositiu</string>

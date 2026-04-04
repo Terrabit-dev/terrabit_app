@@ -422,13 +422,28 @@
     <string name="bluetooth_activate_button">Activar</string>
 
 
-
     <string name="configuration_title">Configuración</string>
     <string name="actual_user_title">USUARIO</string>
     <string name="appearance_title">APARIENCIA</string>
     <string name="dark_theme_title">Tema oscuro</string>
     <string name="activated_theme_subtitle">Activado</string>
     <string name="desactivated_theme_subtitle">Desactivado</string>
+
+    <string name="dialog_validating_title">Validando código</string>
+    <string name="dialog_validating_subtitle">Por favor, espera un momento</string>
+    <string name="dialog_valid_code_title">Código válido</string>
+    <string name="dialog_valid_code_subtitle">La explotación ha sido añadida correctamente</string>
+    <string name="dialog_already_added_title">Explotación ya añadida</string>
+    <string name="dialog_already_added_subtitle">Este código ya está registrado en la aplicación</string>
+    <string name="dialog_invalid_code_title">Código inválido</string>
+    <string name="dialog_invalid_code_subtitle">No se ha encontrado ninguna explotación con este código</string>
+    <string name="dialog_add_farm_title">Añadir explotación</string>
+    <string name="dialog_add_farm_subtitle">Introduce el código de la explotación para validarlo</string>
+    <string name="dialog_farm_code_label">Código de explotación</string>
+    <string name="btn_validate">Validar</string>
+    <string name="section_add_farm">Añadir explotación</string>
+    <string name="card_add_farm_title">Añadir nueva explotación</string>
+    <string name="card_add_farm_subtitle">Valida un código de explotación GTR</string>
 
     <string name="close_session_title">Cerrar Sesión</string>
     <string name="version_title">Versión</string>
