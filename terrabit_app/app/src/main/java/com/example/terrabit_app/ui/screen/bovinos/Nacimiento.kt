@@ -29,6 +29,7 @@ import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.utils.components.CampoIdentificadorAutoComplete
 import com.example.terrabit_app.utils.components.useDebounce
 import com.example.terrabit_app.ui.theme.MainGreen
+import com.example.terrabit_app.ui.theme.MainOrange
 import com.example.terrabit_app.utils.DropdownField
 import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.LargeDropdownField
@@ -420,7 +421,7 @@ fun Nacimiento(
                             onExpandedChange = { if (!modoLectura) viewModel.toggleSexoExpandido() },
                             onDismissRequest = { viewModel.cerrarSexoMenu() },
                             onSeleccionar = { codigo, nombre -> if (!modoLectura) viewModel.seleccionarSexo(nombre, codigo) },
-                            defectColor = true
+                            accentColor = MainGreen
                         )
 
                         LargeDropdownField(
@@ -446,7 +447,7 @@ fun Nacimiento(
                             onExpandedChange = { if (!modoLectura) viewModel.toggleAptitudExpandida() },
                             onDismissRequest = { viewModel.cerrarAptitudMenu() },
                             onSeleccionar = { codigo, nombre -> if (!modoLectura) viewModel.seleccionarAptitud(nombre, codigo) },
-                            defectColor = true
+                            accentColor = MainGreen
                         )
                     }
                 }

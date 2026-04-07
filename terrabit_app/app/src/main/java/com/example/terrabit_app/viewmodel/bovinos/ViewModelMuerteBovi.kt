@@ -1,5 +1,6 @@
 package com.example.terrabit_app.viewmodel.bovinos
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -49,7 +50,7 @@ class ViewModelMuerteBovi @Inject constructor(
     private val _bovinosCargados = MutableLiveData(false)
     val bovinosCargados = _bovinosCargados
 
-    private val _tipoMuerte = MutableLiveData("")
+    private val _tipoMuerte = MutableLiveData(0)
     val tipoMuerte = _tipoMuerte
 
     override val _identificadorAnimal = MutableLiveData("")
@@ -140,7 +141,8 @@ class ViewModelMuerteBovi @Inject constructor(
     }
 
     fun tieneContenido(): Boolean {
-        return !_tipoMuerte.value.isNullOrEmpty() ||
+
+        return  (tipoMuerte.value ?: 0) != 0||
                 !_identificadorAnimal.value.isNullOrEmpty() ||
                 !_fechaMuerte.value.isNullOrEmpty() ||
                 !_mesesGestacion.value.isNullOrEmpty() ||
@@ -189,7 +191,8 @@ class ViewModelMuerteBovi @Inject constructor(
                     borrador.datos,
                     object : TypeToken<Map<String, Any?>>() {}.type
                 )
-                _tipoMuerte.value = datos["tipo"] as? String ?: ""
+                val muerteGuardada = datos["tipo"] as? Int ?: 0
+                _tipoMuerte.value = (muerteGuardada.toDouble()).toInt() ?: 0
                 _codigoTipoMuerte.value = datos["codigoTipo"] as? String ?: ""
                 _identificadorAnimal.value = datos["identificador"] as? String ?: ""
                 _fechaMuerte.value = datos["fecha"] as? String ?: ""
@@ -216,11 +219,11 @@ class ViewModelMuerteBovi @Inject constructor(
         }
     }
 
-    fun seleccionarTipoMuerte(tipo: String, codigo: String) {
+    fun seleccionarTipoMuerte(tipo: Int, codigo: String) {
         _tipoMuerte.value = tipo
         _codigoTipoMuerte.value = codigo
         _tipoMuerteExpandido.value = false
-        if (tipo.contains("Mort")) _mesesGestacion.value = ""
+        if (_codigoTipoMuerte.value == "01") _mesesGestacion.value = ""
     }
 
     fun actualizarIdentificadorMuerte(nuevoId: String) { _identificadorAnimal.value = nuevoId }
@@ -242,6 +245,7 @@ class ViewModelMuerteBovi @Inject constructor(
     fun mostrarDatePickerMuerte() { _mostrarDatePickerMuerte.value = true }
     fun ocultarDatePickerMuerte() { _mostrarDatePickerMuerte.value = false }
 
+    @SuppressLint("DefaultLocale")
     fun seleccionarFechaMuerte(fechaMillis: Long) {
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = fechaMillis
@@ -260,10 +264,10 @@ class ViewModelMuerteBovi @Inject constructor(
     }
 
     fun esFormularioMuerteValido(): Boolean {
-        val tipoValido = !_tipoMuerte.value.isNullOrEmpty()
+        val tipoValido =  (tipoMuerte.value ?: 0) != 0
         val identificadorValido = !_identificadorAnimal.value.isNullOrEmpty()
         val fechaValida = !_fechaMuerte.value.isNullOrEmpty()
-        val mesesValidos = if (_tipoMuerte.value?.contains("Avortament") == true) {
+        val mesesValidos = if (_codigoTipoMuerte.value == "02") {
             !_mesesGestacion.value.isNullOrEmpty() && _mesesGestacion.value?.toIntOrNull() in 1..9
         } else true
         val coordenadasValidas = if (_cadaverInaccesible.value == true) {
@@ -273,7 +277,7 @@ class ViewModelMuerteBovi @Inject constructor(
     }
 
     fun limpiarFormularioMuerte() {
-        _tipoMuerte.value = ""; _codigoTipoMuerte.value = ""; _identificadorAnimal.value = ""
+        _tipoMuerte.value = null; _codigoTipoMuerte.value = ""; _identificadorAnimal.value = ""
         _fechaMuerte.value = ""; _mesesGestacion.value = ""; _cadaverInaccesible.value = false
         _coordenadaX.value = ""; _coordenadaY.value = ""; borradorSesionId = ""
     }
@@ -288,10 +292,10 @@ class ViewModelMuerteBovi @Inject constructor(
         resetearCodiError()
         if (!esFormularioMuerteValido()) {
             _codiError.value = when {
-                _tipoMuerte.value.isNullOrEmpty() -> 7
+                (tipoMuerte.value ?: 0) != 0 -> 7
                 _identificadorAnimal.value.isNullOrEmpty() -> 0
                 _fechaMuerte.value.isNullOrEmpty() -> 8
-                _tipoMuerte.value?.contains("Avortament") == true && _mesesGestacion.value.isNullOrEmpty() -> 9
+                _codigoTipoMuerte.value == "02" && _mesesGestacion.value.isNullOrEmpty() -> 9
                 _cadaverInaccesible.value == true && _coordenadaX.value.isNullOrEmpty() -> 10
                 _cadaverInaccesible.value == true && _coordenadaY.value.isNullOrEmpty() -> 11
                 else -> 0
@@ -306,7 +310,8 @@ class ViewModelMuerteBovi @Inject constructor(
                 val fechaAPI = DateUtils.convertirFechaAFormatoAPI(_fechaMuerte.value ?: "")
                 val coordX = if (_cadaverInaccesible.value == true) _coordenadaX.value else null
                 val coordY = if (_cadaverInaccesible.value == true) _coordenadaY.value else null
-                val mesesGest = if (_tipoMuerte.value?.contains("Avortament") == true) _mesesGestacion.value else null
+                // condicional si el tipo de muerte es un aborto (02)
+                val mesesGest = if (_codigoTipoMuerte.value == "02" ) _mesesGestacion.value else null
 
                 val request = RegistroMuerteBovi(
                     cadaverInaccesible = if (_cadaverInaccesible.value == true) "SI" else "NO",
@@ -416,7 +421,8 @@ class ViewModelMuerteBovi @Inject constructor(
                     registro.datos,
                     object : TypeToken<Map<String, Any?>>() {}.type
                 )
-                _tipoMuerte.value = datos["tipo"] as? String ?: ""
+                val muerteGuardada = datos["tipo"] as? Int ?: 0
+                _tipoMuerte.value = (muerteGuardada.toDouble()).toInt() ?: 0
                 _codigoTipoMuerte.value = datos["codigoTipo"] as? String ?: ""
                 _identificadorAnimal.value = datos["identificador"] as? String ?: ""
                 _fechaMuerte.value = datos["fecha"] as? String ?: ""

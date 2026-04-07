@@ -426,7 +426,7 @@ fun EditarGuiaBovi(
                             onExpandedChange = { viewModel.toggleMitjaTransportExpandido() },
                             onDismissRequest = { viewModel.cerrarMitjaTransportMenu() },
                             onSeleccionar    = { codigo, nombre -> viewModel.seleccionarMitjaTransport(nombre, codigo) },
-                            defectColor      = true
+                            accentColor      = MainOrange
                         )
 
                         CampoTexto(

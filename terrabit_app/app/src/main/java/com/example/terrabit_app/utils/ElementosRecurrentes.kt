@@ -51,10 +51,9 @@ fun <T> DropdownField(
     onExpandedChange: () -> Unit,
     onDismissRequest: () -> Unit,
     onSeleccionar: (String, T) -> Unit,
-    defectColor: Boolean,
+    accentColor: Color = MainGreen,
     enabled: Boolean = true
 ) {
-    val accentColor = if (defectColor) MainGreen else MainOrange
 
     // Resolvemos el texto que se mostrará en el campo principal dependiendo del tipo T
     val textoMostrar = when (selectedValue) {

@@ -374,7 +374,7 @@ fun GestionGuias(
                             onExpandedChange = { if (!modoLectura) viewModel.toggleTemporalExpandido() },
                             onDismissRequest = { viewModel.cerrarTemporalMenu() },
                             onSeleccionar = { codigo, nombre -> if (!modoLectura) viewModel.seleccionarTemporal(nombre, codigo) },
-                            defectColor = true
+                            accentColor = MainOrange
                         )
 
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -394,7 +394,7 @@ fun GestionGuias(
                             onExpandedChange = { if (!modoLectura) viewModel.toggleMobilitatExpandido() },
                             onDismissRequest = { viewModel.cerrarMobilitatMenu() },
                             onSeleccionar = { codigo, nombre -> if (!modoLectura) viewModel.seleccionarMobilitat(nombre, codigo) },
-                            defectColor = true
+                            accentColor = MainOrange
                         )
 
                         ParametrosCentroInspeccion(viewModel, modoLectura)
@@ -439,7 +439,7 @@ fun GestionGuias(
                             onExpandedChange = { if (!modoLectura) viewModel.toggleMitjaTransportExpandido() },
                             onDismissRequest = { viewModel.cerrarMitjaTransportMenu() },
                             onSeleccionar = { codigo, nombre -> if (!modoLectura) viewModel.seleccionarMitjaTransport(nombre, codigo) },
-                            defectColor = true
+                            accentColor = MainOrange
                         )
 
                         HistorialAutoCompleteField(

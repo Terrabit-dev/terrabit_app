@@ -182,7 +182,7 @@ fun Material(
                             onExpandedChange = { viewModel.toggleEmpresaExpandida() },
                             onDismissRequest = { viewModel.cerrarEmpresaMenu() },
                             onSeleccionar = { codigo, nombre -> viewModel.seleccionarEmpresa(nombre, codigo) },
-                            defectColor = true
+                            accentColor = MainGreen
                         )
                         DropdownField(
                             label = stringResource(R.string.form_send_type) + " *",
@@ -194,7 +194,7 @@ fun Material(
                             onExpandedChange = { viewModel.toggleTipoEnviamientoExpandido() },
                             onDismissRequest = { viewModel.cerrarTipoEnviamientoMenu() },
                             onSeleccionar = { codigo, nombre -> viewModel.seleccionarTipoEnviamiento(nombre, codigo) },
-                            defectColor = true
+                            accentColor = MainGreen
                         )
                         DropdownField(
                             label = stringResource(R.string.form_send_address) + " *",
@@ -206,7 +206,7 @@ fun Material(
                             onExpandedChange = { viewModel.toggleDestinoExpandido() },
                             onDismissRequest = { viewModel.cerrarDestinoMenu() },
                             onSeleccionar = { codigo, nombre -> viewModel.seleccionarDestino(nombre, codigo) },
-                            defectColor = true
+                            accentColor = MainGreen
                         )
 
                         if (codigoDestino == "01") {
@@ -220,7 +220,7 @@ fun Material(
                                 onExpandedChange = { viewModel.toggleOficinaComarcalExpandida() },
                                 onDismissRequest = { viewModel.cerrarOficinaComarcalMenu() },
                                 onSeleccionar = { codigo, nombre -> viewModel.seleccionarOficinaComarcal(codigo, nombre) },
-                                defectColor = true
+                                accentColor = MainGreen
                             )
                         }
 
@@ -246,7 +246,7 @@ fun Material(
                             onExpandedChange = { viewModel.toggleTipoMaterialExpandido() },
                             onDismissRequest = { viewModel.cerrarTipoMaterialMenu() },
                             onSeleccionar = { codigo, nombre -> viewModel.seleccionarTipoMaterial(nombre, codigo) },
-                            defectColor = true
+                            accentColor = MainGreen
                         )
                     }
                 }

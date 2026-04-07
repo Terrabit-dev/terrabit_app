@@ -207,7 +207,7 @@ fun ConfirmarEditarGuiasPorci(
                         onExpandedChange = { viewModelEditarGuias.toggleCategoriaExpandido() },
                         onDismissRequest = { viewModelEditarGuias.cerrarCategoriaMenu() },
                         onSeleccionar = { codigo, nombre -> viewModelEditarGuias.seleccionarCategoria(nombre, codigo) },
-                        defectColor = false
+                        accentColor = MainOrange
                     )
 
                     CampoTexto(

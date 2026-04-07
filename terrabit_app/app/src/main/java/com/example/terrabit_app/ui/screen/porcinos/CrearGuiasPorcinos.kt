@@ -242,7 +242,7 @@ fun CrearGuiasPorcinos(
                         onExpandedChange = { if (!modoLectura) viewModel.toggleCategoriaExpandido() },
                         onDismissRequest = { viewModel.cerrarCategoriaMenu() },
                         onSeleccionar = { codigo, nombre -> if (!modoLectura) viewModel.seleccionarCategoria(nombre, codigo) },
-                        defectColor = false
+                        accentColor = MainOrange
                     )
 
                     CampoTexto(
@@ -361,7 +361,7 @@ fun CrearGuiasPorcinos(
                         onExpandedChange = { if (!modoLectura) viewModel.toggleMedioTransporteExpandido() },
                         onDismissRequest = { viewModel.cerrarMedioTransporteMenu() },
                         onSeleccionar = { codigo, nombre -> if (!modoLectura) viewModel.seleccionarMedioTransporte(nombre, codigo) },
-                        defectColor = false
+                        accentColor = MainOrange
                     )
 
                     HistorialAutoCompleteField(

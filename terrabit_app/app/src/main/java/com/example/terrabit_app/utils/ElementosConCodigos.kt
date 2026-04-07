@@ -155,15 +155,18 @@ class ElementosConCodigos {
     fun getRazaBovinasId(codigo: String): Int {
         return mapaRazas[codigo] ?: R.string.raza_0099 // Devuelve "Desconocida" por defecto
     }
-    @Composable
+
     fun getSexos(): Map<String, Int>{
         return mapaSexos
     }
-    @Composable
+
     fun getAptitudes(): Map<String, Int>{
         return mapaAptitudes
     }
 
+    fun getMuertes() : Map<String, Int>{
+        return mapaMuertes
+    }
     @Composable
     fun muertes(): Map<String, String>{
         val listaTiposMuerte = mapOf<String, String>(

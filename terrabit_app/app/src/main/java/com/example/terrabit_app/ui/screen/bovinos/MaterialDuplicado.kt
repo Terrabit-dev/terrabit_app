@@ -254,7 +254,7 @@ fun MaterialDuplicadosScreen(
                             onExpandedChange = { viewModel.toggleEmpresaExpandida() },
                             onDismissRequest = { viewModel.cerrarEmpresaMenu() },
                             onSeleccionar = { codigo, nombre -> viewModel.seleccionarEmpresa(codigo, nombre) },
-                            defectColor = true
+                            accentColor = MainGreen
                         )
                         DropdownField(
                             label = stringResource(R.string.form_send_type) + " *",
@@ -266,7 +266,7 @@ fun MaterialDuplicadosScreen(
                             onExpandedChange = { viewModel.toggleTipoEnviamientoExpandido() },
                             onDismissRequest = { viewModel.cerrarTipoEnviamientoMenu() },
                             onSeleccionar = { codigo, nombre -> viewModel.seleccionarTipoEnviamiento(codigo, nombre) },
-                            defectColor = true
+                            accentColor = MainGreen
                         )
                         DropdownField(
                             label = stringResource(R.string.form_send_address) + " *",
@@ -278,7 +278,7 @@ fun MaterialDuplicadosScreen(
                             onExpandedChange = { viewModel.toggleDireccionEnvioExpandido() },
                             onDismissRequest = { viewModel.cerrarDireccionEnvioMenu() },
                             onSeleccionar = { codigo, nombre -> viewModel.seleccionarDireccionEnvio(codigo, nombre) },
-                            defectColor = true
+                            accentColor = MainGreen
                         )
 
                         if (viewModel.getCodigoDirecioEnvio() == direccionOficinaComarcal) {
@@ -292,7 +292,7 @@ fun MaterialDuplicadosScreen(
                                 onExpandedChange = { viewModel.toggleOficinaComarcalExpandido() },
                                 onDismissRequest = { viewModel.cerrarOficinaComarcalMenu() },
                                 onSeleccionar = { codigo, nombre -> viewModel.seleccionarOficinaComarcal(codigo, nombre) },
-                                defectColor = true
+                                accentColor = MainGreen
                             )
                         }
 
@@ -394,7 +394,7 @@ fun MaterialDuplicadosScreen(
                                     onExpandedChange = { viewModel.toggleTipoMaterialExpandido(indice) },
                                     onDismissRequest = { viewModel.cerrarTipoMaterialMenu(indice) },
                                     onSeleccionar = { codigo, _ -> viewModel.seleccionarTipoMaterialIdentificador(indice, codigo) },
-                                    defectColor = true
+                                    accentColor = MainGreen
                                 )
                                 if (indice < animales.size - 1) Spacer(modifier = Modifier.height(8.dp))
                             }

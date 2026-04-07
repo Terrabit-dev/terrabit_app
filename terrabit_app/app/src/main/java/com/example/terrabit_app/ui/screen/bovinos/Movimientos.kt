@@ -443,7 +443,7 @@ fun Movimientos(
                             onExpandedChange = { if (!modoLectura) viewModel.toggleMitjaTransportExpandido() },
                             onDismissRequest = { viewModel.cerrarMitjaTransportMenu() },
                             onSeleccionar = { codigo, nombre -> if (!modoLectura) viewModel.seleccionarMitjaTransport(nombre, codigo) },
-                            defectColor = false
+                            accentColor = MainOrange
                         )
 
                         HistorialAutoCompleteField(
@@ -595,7 +595,7 @@ fun Movimientos(
                                         onExpandedChange = { viewModel.toggleEstatArribadaExpandido(index) },
                                         onDismissRequest = { viewModel.cerrarEstatArribadaMenu(index) },
                                         onSeleccionar = { codigo, nombre -> viewModel.seleccionarEstatArribadaAnimal(index, nombre, codigo) },
-                                        defectColor = true
+                                        accentColor = MainOrange
                                     )
 
                                     if (animal.estatArribada == "80") {
@@ -646,7 +646,7 @@ fun Movimientos(
                                             onExpandedChange = { viewModel.toggleTipusPresentacioExpandido(index) },
                                             onDismissRequest = { viewModel.cerrarTipusPresentacioMenu(index) },
                                             onSeleccionar = { codigo, _ -> viewModel.seleccionarTipusPresentacio(index, codigo) },
-                                            defectColor = false
+                                            accentColor = MainOrange
                                         )
                                     }
                                 }

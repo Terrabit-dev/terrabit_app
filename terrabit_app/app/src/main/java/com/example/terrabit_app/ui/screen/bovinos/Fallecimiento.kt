@@ -51,6 +51,7 @@ import android.annotation.SuppressLint
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import com.example.terrabit_app.utils.AnimalSeleccionadoHolder
+import com.example.terrabit_app.utils.DropdownField
 import com.example.terrabit_app.utils.LocationUtils
 import com.google.android.gms.location.LocationServices
 
@@ -68,7 +69,7 @@ fun Fallecimiento(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    val tipoSeleccionado by viewModel.tipoMuerte.observeAsState("")
+    val tipoSeleccionado by viewModel.tipoMuerte.observeAsState(null)
     val identificadorAnimal by viewModel.identificadorMuerte.observeAsState("")
     val fechaMuerte by viewModel.fechaMuerte.observeAsState("")
     val mesesGestacion by viewModel.mesesGestacion.observeAsState("")
@@ -287,58 +288,18 @@ fun Fallecimiento(
                         }
 
                         Column(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                stringResource(R.string.form_type_dead),
-                                fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-
-                            ExposedDropdownMenuBox(
+                            DropdownField(
+                                label = stringResource(R.string.form_type_dead),
+                                selectedValue = tipoSeleccionado,
                                 expanded = if (modoLectura) false else tipoExpandido,
-                                onExpandedChange = { if (!modoLectura) viewModel.toggleTipoMuerteExpandido() }
-                            ) {
-                                OutlinedTextField(
-                                    value = tipoSeleccionado,
-                                    onValueChange = {},
-                                    modifier = Modifier.fillMaxWidth().menuAnchor(),
-                                    enabled = !modoLectura,
-                                    readOnly = true,
-                                    placeholder = { Text(stringResource(R.string.form_type_dead_description), color = MaterialTheme.colorScheme.onSurfaceVariant) },
-                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = if (modoLectura) false else tipoExpandido) },
-                                    singleLine = true,
-                                    shape = MaterialTheme.shapes.medium,
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = ErrorRed,
-                                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                        focusedContainerColor = MaterialTheme.colorScheme.surface,
-                                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                                        disabledBorderColor = MaterialTheme.colorScheme.outline,
-                                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        disabledContainerColor = MaterialTheme.colorScheme.surface,
-                                    )
-                                )
-                                if (!modoLectura) {
-                                    ExposedDropdownMenu(
-                                        expanded = tipoExpandido,
-                                        onDismissRequest = { viewModel.cerrarTipoMuerteMenu() },
-                                        modifier = Modifier.background(MaterialTheme.colorScheme.surface)
-                                    ) {
-                                        elementosConCodigos.muertes().forEach { (tipo, codigo) ->
-                                            DropdownMenuItem(
-                                                text = { Text(tipo, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Normal) },
-                                                onClick = { viewModel.seleccionarTipoMuerte(tipo, codigo) },
-                                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
-                                            )
-                                        }
-                                    }
-                                }
-                            }
+                                placeholder = stringResource(R.string.form_type_dead_description),
+                                opciones = elementosConCodigos.getMuertes(),
+                                enabled = !modoLectura,
+                                onExpandedChange = { if (!modoLectura) viewModel.toggleTipoMuerteExpandido() },
+                                onDismissRequest = { viewModel.cerrarTipoMuerteMenu() },
+                                onSeleccionar = { codigo, nombre -> if (!modoLectura) viewModel.seleccionarTipoMuerte(nombre, codigo) },
+                                accentColor = ErrorRed
+                            )
                         }
 
                         if (!modoLectura) {

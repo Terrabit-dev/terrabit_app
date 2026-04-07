@@ -207,7 +207,6 @@ fun CorregirSexoBovi(
                             onExpandedChange = { viewModel.toggleSexoCorreccionExpandido() },
                             onDismissRequest = { viewModel.cerrarSexoCorreccionMenu() },
                             onSeleccionar = { codigo, nombre -> viewModel.seleccionarSexoCorreccion(nombre, codigo) },
-                            defectColor = true
                         )
                     }
                 }
