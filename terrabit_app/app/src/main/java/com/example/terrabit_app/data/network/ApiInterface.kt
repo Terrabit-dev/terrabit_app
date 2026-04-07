@@ -213,6 +213,7 @@ interface ApiInterface {
                 .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(client)
+
                 .build()
 
             return retrofit.create(ApiInterface::class.java)
