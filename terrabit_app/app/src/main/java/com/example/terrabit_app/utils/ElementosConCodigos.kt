@@ -181,6 +181,10 @@ class ElementosConCodigos {
         return mapaOpcionesSiNo
     }
 
+    fun getEstadosLLegada():Map<String, Int>{
+        return  mapaEstadosLlegada
+    }
+
 
 
     @Composable

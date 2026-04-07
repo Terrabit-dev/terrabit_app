@@ -82,7 +82,7 @@ class MovimientosViewModel @Inject constructor(
     private val _matricula = MutableLiveData("")
     val matricula = _matricula
 
-    private val _mitjaTransport = MutableLiveData("")
+    private val _mitjaTransport = MutableLiveData(0)
     val mitjaTransport = _mitjaTransport
 
     private val _codiTransport = MutableLiveData("")
@@ -160,7 +160,7 @@ class MovimientosViewModel @Inject constructor(
         cargarBovinosEnCache()
     }
 
-    fun cargarDatosMovimiento(movimiento: Moviment, transportNombre: String = "") {
+    fun cargarDatosMovimiento(movimiento: Moviment, transportNombre: Int? ) {
         _codiRemo.value = movimiento.codiRemo
         _codiAtes.value = movimiento.codiAtes
         val (fecha, hora) = parsearFechaAPI(movimiento.dataArribada)
@@ -169,7 +169,9 @@ class MovimientosViewModel @Inject constructor(
         _explotacioDestinacio.value = movimiento.moDestinacio
         if (!movimiento.mitjaTransport.isNullOrEmpty()) {
             _codiTransport.value = movimiento.mitjaTransport
-            _mitjaTransport.value = transportNombre
+            if (transportNombre != null){
+                _mitjaTransport.value = transportNombre
+            }
         }
         if (movimiento.nomConductor != null) _nomConductor.value = movimiento.nomConductor
         if (movimiento.nomTransportista != null) _nomTransportista.value = movimiento.nomTransportista
@@ -262,7 +264,7 @@ class MovimientosViewModel @Inject constructor(
         return !_codiRemo.value.isNullOrEmpty() || !_dataArribada.value.isNullOrEmpty() ||
                 !_horaArribada.value.isNullOrEmpty() || !_codiAtes.value.isNullOrEmpty() ||
                 !_nomTransportista.value.isNullOrEmpty() || !_matricula.value.isNullOrEmpty() ||
-                !_mitjaTransport.value.isNullOrEmpty() || !_nifConductor.value.isNullOrEmpty() ||
+                (_mitjaTransport.value?: 0) !=0 || !_nifConductor.value.isNullOrEmpty() ||
                 !_nomConductor.value.isNullOrEmpty() || !_explotacioDestinacio.value.isNullOrEmpty() ||
                 (_listaAnimales.value?.any { it.identificador.isNotEmpty() } == true)
     }
@@ -308,7 +310,8 @@ class MovimientosViewModel @Inject constructor(
                 _codiAtes.value = datos["codiAtes"] as? String ?: ""
                 _nomTransportista.value = datos["nomTransportista"] as? String ?: ""
                 _matricula.value = datos["matricula"] as? String ?: ""
-                _mitjaTransport.value = datos["mitjaTransport"] as? String ?: ""
+                val transporteGuardado = datos["mitjaTransport"]
+                _mitjaTransport.value = (transporteGuardado as? Double)?.toInt() ?: 0
                 _nifConductor.value = datos["nifConductor"] as? String ?: ""
                 _nomConductor.value = datos["nomConductor"] as? String ?: ""
                 _explotacioDestinacio.value = datos["explotacioDestinacio"] as? String ?: ""
@@ -377,7 +380,7 @@ class MovimientosViewModel @Inject constructor(
     fun seleccionarCodiAtes(codigo: String) { _codiAtes.value = codigo; _codiAtesExpandido.value = false }
     fun actualizarNomTransportista(nombre: String) { _nomTransportista.value = nombre }
     fun actualizarMatricula(matricula: String) { _matricula.value = matricula }
-    fun seleccionarMitjaTransport(medio: String, codigo: String) { _mitjaTransport.value = medio; _codiTransport.value = codigo; _mitjaTransportExpandido.value = false }
+    fun seleccionarMitjaTransport(medio : Int, codigo: String) { _mitjaTransport.value = medio; _codiTransport.value = codigo; _mitjaTransportExpandido.value = false }
     fun actualizarNifConductor(nif: String) { _nifConductor.value = nif }
     fun actualizarNomConductor(nombre: String) { _nomConductor.value = nombre }
     fun actualizarExplotacioDestinacio(explotacion: String) { _explotacioDestinacio.value = explotacion }
@@ -432,7 +435,7 @@ class MovimientosViewModel @Inject constructor(
         }
     }
 
-    fun seleccionarEstatArribadaAnimal(indice: Int, estatTexto: String, estatCodigo: String) {
+    fun seleccionarEstatArribadaAnimal(indice: Int, estatTexto: Int, estatCodigo: String) {
         _listaAnimales.value = (_listaAnimales.value ?: emptyList()).mapIndexed { index, animal ->
             if (index == indice) {
                 if (estatCodigo != "80") animal.copy(estatArribada = estatCodigo, classCanal = null, dataSacrMort = null, pesCanal = null, tipusPresentacio = null)
@@ -610,7 +613,7 @@ class MovimientosViewModel @Inject constructor(
     fun limpiarFormulario() {
         _codiRemo.value = ""; _dataArribada.value = ""; _horaArribada.value = ""
         _codiAtes.value = ""; _nomTransportista.value = ""; _matricula.value = ""
-        _mitjaTransport.value = ""; _nifConductor.value = ""; _nomConductor.value = ""
+        _mitjaTransport.value = null; _nifConductor.value = ""; _nomConductor.value = ""
         _explotacioDestinacio.value = ""; _codiTransport.value = ""
         _listaAnimales.value = listOf(IdenMovimiento(identificador = "", estatArribada = null, classCanal = null, dataSacrMort = null, pesCanal = null, tipusPresentacio = null))
         _estatArribadaExpandidoPorIndice.value = emptyMap()
@@ -689,7 +692,8 @@ class MovimientosViewModel @Inject constructor(
                 _codiAtes.value = datos["codiAtes"] as? String ?: ""
                 _nomTransportista.value = datos["nomTransportista"] as? String ?: ""
                 _matricula.value = datos["matricula"] as? String ?: ""
-                _mitjaTransport.value = datos["mitjaTransport"] as? String ?: ""
+                val transporteGuardado = datos["mitjaTransport"]
+                _mitjaTransport.value = (transporteGuardado as? Double)?.toInt() ?: 0
                 _nifConductor.value = datos["nifConductor"] as? String ?: ""
                 _nomConductor.value = datos["nomConductor"] as? String ?: ""
                 _explotacioDestinacio.value = datos["explotacioDestinacio"] as? String ?: ""

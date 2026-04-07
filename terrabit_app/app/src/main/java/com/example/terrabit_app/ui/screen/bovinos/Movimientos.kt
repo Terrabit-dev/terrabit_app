@@ -61,10 +61,10 @@ fun Movimientos(
 ) {
     val viewModel = hiltViewModel<MovimientosViewModel>()
     val elementosConCodigos = ElementosConCodigos()
-    val transportMap = elementosConCodigos.transporte()
+    val transportMap = elementosConCodigos.getTransportes()
     LaunchedEffect(movimientoSeleccionado.codiRemo) {
         if (movimientoSeleccionado.codiRemo.isNotEmpty()) {
-            val transportNombre = transportMap[movimientoSeleccionado.mitjaTransport] ?: ""
+            val transportNombre = transportMap[movimientoSeleccionado.mitjaTransport]
             viewModel.cargarDatosMovimiento(movimientoSeleccionado, transportNombre)
         }
     }
@@ -80,7 +80,7 @@ fun Movimientos(
     val codiAtes by viewModel.codiAtes.observeAsState("")
     val nomTransportista by viewModel.nomTransportista.observeAsState("")
     val matricula by viewModel.matricula.observeAsState("")
-    val mitjaTransport by viewModel.mitjaTransport.observeAsState("")
+    val mitjaTransport by viewModel.mitjaTransport.observeAsState(null)
     val nifConductor by viewModel.nifConductor.observeAsState("")
     val nomConductor by viewModel.nomConductor.observeAsState("")
     val explotacioDestinacio by viewModel.explotacioDestinacio.observeAsState("")
@@ -438,7 +438,7 @@ fun Movimientos(
                             selectedValue = mitjaTransport,
                             expanded = if (modoLectura) false else mitjaTransportExpandido,
                             placeholder = stringResource(R.string.form_ways_transports_description),
-                            opciones = elementosConCodigos.transporte(),
+                            opciones = transportMap,
                             enabled = !modoLectura,
                             onExpandedChange = { if (!modoLectura) viewModel.toggleMitjaTransportExpandido() },
                             onDismissRequest = { viewModel.cerrarMitjaTransportMenu() },
@@ -587,10 +587,10 @@ fun Movimientos(
 
                                     DropdownField(
                                         label = stringResource(R.string.form_state_arrival),
-                                        selectedValue = elementosConCodigos.estadosLlegada()[animal.estatArribada] ?: "",
+                                        selectedValue = elementosConCodigos.getEstadosLLegada()[animal.estatArribada],
                                         expanded = estatExpandidoPorIndice[index] ?: false,
                                         placeholder = stringResource(R.string.form_state_arrival_description),
-                                        opciones = elementosConCodigos.estadosLlegada(),
+                                        opciones = elementosConCodigos.getEstadosLLegada(),
                                         enabled = !modoLectura,
                                         onExpandedChange = { viewModel.toggleEstatArribadaExpandido(index) },
                                         onDismissRequest = { viewModel.cerrarEstatArribadaMenu(index) },
