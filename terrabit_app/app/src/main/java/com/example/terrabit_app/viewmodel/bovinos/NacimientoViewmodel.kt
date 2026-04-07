@@ -75,7 +75,7 @@ class NacimientoViewmodel @Inject constructor(
     private val _fechaNacimiento = MutableLiveData("")
     val fechaNacimiento = _fechaNacimiento
 
-    private val _sexoSeleccionado = MutableLiveData("")
+    private val _sexoSeleccionado = MutableLiveData(0)
     val sexoSeleccionado = _sexoSeleccionado
 
     private var sexoApiSeleccionado = "0"
@@ -178,7 +178,7 @@ class NacimientoViewmodel @Inject constructor(
                 !_idCria.value.isNullOrEmpty() ||
                 !_fechaNacimiento.value.isNullOrEmpty() ||
                 !_fechaIdentificacion.value.isNullOrEmpty() ||
-                !_sexoSeleccionado.value.isNullOrEmpty() ||
+                (_sexoSeleccionado.value ?: 0) != 0 ||
                 !_razaSeleccionada.value.isNullOrEmpty() ||
                 !_aptitudSeleccionada.value.isNullOrEmpty()
     }
@@ -230,7 +230,8 @@ class NacimientoViewmodel @Inject constructor(
                 _idCria.value = datos["idCria"] as? String ?: ""
                 _fechaNacimiento.value = datos["fechaNacimiento"] as? String ?: ""
                 _fechaIdentificacion.value = datos["fechaIdentificacion"] as? String ?: ""
-                _sexoSeleccionado.value = datos["sexoSeleccionado"] as? String ?: ""
+                val sexoGuardado = datos["sexoSeleccionado"]
+                _sexoSeleccionado.value = (sexoGuardado as? Double)?.toInt() ?: 0
                 _razaSeleccionada.value = datos["razaSeleccionada"] as? String ?: ""
                 _aptitudSeleccionada.value = datos["aptitudSeleccionada"] as? String ?: ""
                 _codigoRaza.value = datos["codigoRaza"] as? String ?: ""
@@ -272,7 +273,7 @@ class NacimientoViewmodel @Inject constructor(
     fun actualizarIdCria(nuevoId: String) { _idCria.value = nuevoId }
     fun actualizarFechaNacimiento(nuevaFecha: String) { _fechaNacimiento.value = nuevaFecha }
 
-    fun seleccionarSexo(sexo: String, codigo: String) {
+    fun seleccionarSexo(sexo: Int, codigo: String) {
         _sexoSeleccionado.value = sexo
         sexoApiSeleccionado = codigo
         _sexoExpandido.value = false
@@ -329,7 +330,7 @@ class NacimientoViewmodel @Inject constructor(
         return !_idMadre.value.isNullOrEmpty() &&
                 !_idCria.value.isNullOrEmpty() &&
                 !_fechaNacimiento.value.isNullOrEmpty() &&
-                !_sexoSeleccionado.value.isNullOrEmpty() &&
+                (_sexoSeleccionado.value ?: 0) != 0 &&
                 !_razaSeleccionada.value.isNullOrEmpty() &&
                 !_aptitudSeleccionada.value.isNullOrEmpty()
     }
@@ -341,7 +342,7 @@ class NacimientoViewmodel @Inject constructor(
                 _idMadre.value.isNullOrEmpty() -> 1
                 _idCria.value.isNullOrEmpty() -> 2
                 _fechaNacimiento.value.isNullOrEmpty() -> 3
-                _sexoSeleccionado.value.isNullOrEmpty() -> 4
+                (_sexoSeleccionado.value ?: 0) != 0 -> 4
                 _razaSeleccionada.value.isNullOrEmpty() -> 5
                 _aptitudSeleccionada.value.isNullOrEmpty() -> 6
                 else -> 0
@@ -422,7 +423,7 @@ class NacimientoViewmodel @Inject constructor(
         _idCria.value = ""
         _fechaNacimiento.value = ""
         _fechaIdentificacion.value = ""
-        _sexoSeleccionado.value = ""
+        _sexoSeleccionado.value = null
         _razaSeleccionada.value = ""
         _codigoRaza.value = ""
         _aptitudSeleccionada.value = ""
@@ -482,7 +483,8 @@ class NacimientoViewmodel @Inject constructor(
                 _idCria.value = datos["idCria"] as? String ?: ""
                 _fechaNacimiento.value = datos["fechaNacimiento"] as? String ?: ""
                 _fechaIdentificacion.value = datos["fechaIdentificacion"] as? String ?: ""
-                _sexoSeleccionado.value = datos["sexoSeleccionado"] as? String ?: ""
+                val sexoGuardado = datos["sexoSeleccionado"]
+                _sexoSeleccionado.value = (sexoGuardado as? Double)?.toInt() ?: 0
                 _razaSeleccionada.value = datos["razaSeleccionada"] as? String ?: ""
                 _aptitudSeleccionada.value = datos["aptitudSeleccionada"] as? String ?: ""
                 _codigoRaza.value = datos["codigoRaza"] as? String ?: ""

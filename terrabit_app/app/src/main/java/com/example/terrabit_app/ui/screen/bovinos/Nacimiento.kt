@@ -51,7 +51,7 @@ fun Nacimiento(
     val idMadre by viewModel.idMadre.observeAsState("")
     val idCria by viewModel.idCria.observeAsState("")
     val fechaNacimiento by viewModel.fechaNacimiento.observeAsState("")
-    val sexoSeleccionado by viewModel.sexoSeleccionado.observeAsState("")
+    val sexoSeleccionado by viewModel.sexoSeleccionado.observeAsState(null)
     val razaSeleccionada by viewModel.razaSeleccionada.observeAsState("")
     val aptitudSeleccionada by viewModel.aptitudSeleccionada.observeAsState("")
     val sexoExpandido by viewModel.sexoExpandido.observeAsState(false)
@@ -414,7 +414,7 @@ fun Nacimiento(
                             selectedValue = sexoSeleccionado,
                             expanded = if (modoLectura) false else sexoExpandido,
                             placeholder = stringResource(R.string.form_sex_description),
-                            opciones = elementosConCodigos.sexos(),
+                            opciones = elementosConCodigos.getSexos(),
                             enabled = !modoLectura,
                             onExpandedChange = { if (!modoLectura) viewModel.toggleSexoExpandido() },
                             onDismissRequest = { viewModel.cerrarSexoMenu() },
