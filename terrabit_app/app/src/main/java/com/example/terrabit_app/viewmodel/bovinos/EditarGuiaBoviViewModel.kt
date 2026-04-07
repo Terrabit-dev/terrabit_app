@@ -55,8 +55,8 @@ class EditarGuiaBoviViewModel @Inject constructor(
     private val _nomTransportista      = MutableLiveData("")
     val nomTransportista: LiveData<String> = _nomTransportista
 
-    private val _mitjaTransport        = MutableLiveData("")
-    val mitjaTransport: LiveData<String> = _mitjaTransport
+    private val _mitjaTransport        = MutableLiveData(0)
+    val mitjaTransport = _mitjaTransport
 
     // Código interno del medio de transporte (para la petición)
     private var codiTransport = ""
@@ -143,7 +143,7 @@ class EditarGuiaBoviViewModel @Inject constructor(
     fun actualizarNifConductor(valor: String)      { if (valor.length <= 9) _nifConductor.value = valor }
     fun actualizarNomConductor(valor: String)      { _nomConductor.value = valor }
 
-    fun seleccionarMitjaTransport(nombre: String, codigo: String) {
+    fun seleccionarMitjaTransport(nombre: Int, codigo: String) {
         _mitjaTransport.value = nombre
         codiTransport = codigo
         _mitjaTransportExpandido.value = false

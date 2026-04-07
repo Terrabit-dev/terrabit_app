@@ -167,14 +167,15 @@ class ElementosConCodigos {
     fun getMuertes() : Map<String, Int>{
         return mapaMuertes
     }
-    @Composable
-    fun muertes(): Map<String, String>{
-        val listaTiposMuerte = mapOf<String, String>(
-            stringResource(R.string.form_type_dead_dead) to "01",
-            stringResource(R.string.form_type_dead_abort) to "02"
-        )
-        return listaTiposMuerte
+
+    fun getTransportes(): Map<String, Int>{
+        return mapaTransporte
     }
+    fun getOpcionesSiNo(): Map<String, Int>{
+        return mapaOpcionesSiNo
+    }
+
+
 
     @Composable
     fun transporte(): Map<String, String> {

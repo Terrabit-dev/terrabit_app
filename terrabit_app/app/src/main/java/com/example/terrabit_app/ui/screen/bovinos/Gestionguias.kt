@@ -65,15 +65,15 @@ fun GestionGuias(
 
     val explotacioOrigen by viewModel.explotacioOrigen.observeAsState("")
     val explotacioDestinacio by viewModel.explotacioDestinacio.observeAsState("")
-    val temporal by viewModel.temporal.observeAsState("")
+    val temporal by viewModel.temporal.observeAsState(null)
     val dataSortida by viewModel.dataSortida.observeAsState("")
     val horaSortida by viewModel.horaSortida.observeAsState("")
     val dataArribada by viewModel.dataArribada.observeAsState("")
     val horaArribada by viewModel.horaArribada.observeAsState("")
-    val mobilitat by viewModel.mobilitat.observeAsState("")
+    val mobilitat by viewModel.mobilitat.observeAsState(null)
     val codiAtes by viewModel.codiAtes.observeAsState("")
     val nomTransportista by viewModel.nomTransportista.observeAsState("")
-    val mitjaTransport by viewModel.mitjaTransport.observeAsState("")
+    val mitjaTransport by viewModel.mitjaTransport.observeAsState(null)
     val matricula by viewModel.matricula.observeAsState("")
     val nifConductor by viewModel.nifConductor.observeAsState("")
     val nomConductor by viewModel.nomConductor.observeAsState("")
@@ -367,10 +367,11 @@ fun GestionGuias(
 
 
                         DropdownField(
-                            label = stringResource(R.string.form_temporal), selectedValue = temporal,
+                            label = stringResource(R.string.form_temporal),
+                            selectedValue = temporal,
                             expanded = if (modoLectura) false else temporalExpandido,
                             placeholder = stringResource(R.string.form_yes_no),
-                            opciones = elementosConCodigos.opcionesSiNo(),
+                            opciones = elementosConCodigos.getOpcionesSiNo(),
                             onExpandedChange = { if (!modoLectura) viewModel.toggleTemporalExpandido() },
                             onDismissRequest = { viewModel.cerrarTemporalMenu() },
                             onSeleccionar = { codigo, nombre -> if (!modoLectura) viewModel.seleccionarTemporal(nombre, codigo) },
@@ -388,9 +389,11 @@ fun GestionGuias(
                         }
 
                         DropdownField(
-                            label = stringResource(R.string.form_mobility_guide), selectedValue = mobilitat,
+                            label = stringResource(R.string.form_mobility_guide),
+                            selectedValue = mobilitat,
                             expanded = if (modoLectura) false else mobilitatExpandido,
-                            placeholder = stringResource(R.string.form_yes_no), opciones = elementosConCodigos.opcionesSiNo(),
+                            placeholder = stringResource(R.string.form_yes_no),
+                            opciones = elementosConCodigos.getOpcionesSiNo(),
                             onExpandedChange = { if (!modoLectura) viewModel.toggleMobilitatExpandido() },
                             onDismissRequest = { viewModel.cerrarMobilitatMenu() },
                             onSeleccionar = { codigo, nombre -> if (!modoLectura) viewModel.seleccionarMobilitat(nombre, codigo) },
@@ -433,9 +436,11 @@ fun GestionGuias(
                         )
 
                         DropdownField(
-                            label = stringResource(R.string.form_ways_transports), selectedValue = mitjaTransport,
+                            label = stringResource(R.string.form_ways_transports),
+                            selectedValue = mitjaTransport,
                             expanded = if (modoLectura) false else mitjaTransportExpandido,
-                            placeholder = stringResource(R.string.form_ways_transports_description), opciones = elementosConCodigos.transporte(),
+                            placeholder = stringResource(R.string.form_ways_transports_description),
+                            opciones = elementosConCodigos.getTransportes(),
                             onExpandedChange = { if (!modoLectura) viewModel.toggleMitjaTransportExpandido() },
                             onDismissRequest = { viewModel.cerrarMitjaTransportMenu() },
                             onSeleccionar = { codigo, nombre -> if (!modoLectura) viewModel.seleccionarMitjaTransport(nombre, codigo) },

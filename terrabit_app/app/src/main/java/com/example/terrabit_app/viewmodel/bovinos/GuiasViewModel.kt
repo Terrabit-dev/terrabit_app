@@ -62,7 +62,7 @@ class GuiasViewModel @Inject constructor(
     private val _explotacioDestinacio = MutableLiveData("")
     val explotacioDestinacio = _explotacioDestinacio
 
-    private val _temporal = MutableLiveData("")
+    private val _temporal = MutableLiveData(0)
     val temporal = _temporal
 
     private val _dataSortida = MutableLiveData("")
@@ -77,7 +77,7 @@ class GuiasViewModel @Inject constructor(
     private val _horaArribada = MutableLiveData("")
     val horaArribada = _horaArribada
 
-    private val _mobilitat = MutableLiveData("")
+    private val _mobilitat = MutableLiveData(0)
     val mobilitat = _mobilitat
 
     private val _pais = MutableLiveData("")
@@ -96,7 +96,7 @@ class GuiasViewModel @Inject constructor(
     private val _nomTransportista = MutableLiveData("")
     val nomTransportista = _nomTransportista
 
-    private val _mitjaTransport = MutableLiveData("")
+    private val _mitjaTransport = MutableLiveData(0)
     val mitjaTransport = _mitjaTransport
 
     private val _matricula = MutableLiveData("")
@@ -205,12 +205,12 @@ class GuiasViewModel @Inject constructor(
 
     fun tieneContenido(): Boolean {
         return !_explotacioOrigen.value.isNullOrEmpty() || !_explotacioDestinacio.value.isNullOrEmpty() ||
-                !_temporal.value.isNullOrEmpty() || !_dataSortida.value.isNullOrEmpty() ||
+                (_temporal.value ?: 0) != 0 || !_dataSortida.value.isNullOrEmpty() ||
                 !_horaSortida.value.isNullOrEmpty() || !_dataArribada.value.isNullOrEmpty() ||
-                !_horaArribada.value.isNullOrEmpty() || !_mobilitat.value.isNullOrEmpty() ||
+                !_horaArribada.value.isNullOrEmpty() || (_mobilitat.value ?:0)!=0 ||
                 !_pais.value.isNullOrEmpty() || !_codiExplotacio.value.isNullOrEmpty() ||
                 !_codiAtes.value.isNullOrEmpty() || !_nomTransportista.value.isNullOrEmpty() ||
-                !_mitjaTransport.value.isNullOrEmpty() || !_matricula.value.isNullOrEmpty() ||
+                (_mitjaTransport.value?: 0) !=0 || !_matricula.value.isNullOrEmpty() ||
                 !_nifConductor.value.isNullOrEmpty() || !_nomConductor.value.isNullOrEmpty() ||
                 (_identificadors.value?.any { it.isNotEmpty() } == true)
     }
@@ -266,17 +266,20 @@ class GuiasViewModel @Inject constructor(
                 val datos: Map<String, Any?> = Gson().fromJson(borrador.datos, object : TypeToken<Map<String, Any?>>() {}.type)
                 _explotacioOrigen.value = datos["explotacioOrigen"] as? String ?: ""
                 _explotacioDestinacio.value = datos["explotacioDestinacio"] as? String ?: ""
-                _temporal.value = datos["temporal"] as? String ?: ""
+                val temporalGuardado = datos["temporal"]
+                _temporal.value = (temporalGuardado as? Double)?.toInt() ?: 0
                 _dataSortida.value = datos["dataSortida"] as? String ?: ""
                 _horaSortida.value = datos["horaSortida"] as? String ?: ""
                 _dataArribada.value = datos["dataArribada"] as? String ?: ""
                 _horaArribada.value = datos["horaArribada"] as? String ?: ""
-                _mobilitat.value = datos["mobilitat"] as? String ?: ""
+                val mobilitatGuardado = datos["mobilitat"]
+                _mobilitat.value = (mobilitatGuardado as? Double)?.toInt() ?: 0
                 _pais.value = datos["pais"] as? String ?: ""
                 _codiExplotacio.value = datos["codiExplotacio"] as? String ?: ""
                 _codiAtes.value = datos["codiAtes"] as? String ?: ""
                 _nomTransportista.value = datos["nomTransportista"] as? String ?: ""
-                _mitjaTransport.value = datos["mitjaTransport"] as? String ?: ""
+                val transporteGuardado = datos["mitjaTransport"]
+                _mitjaTransport.value = (transporteGuardado as? Double)?.toInt() ?: 0
                 _matricula.value = datos["matricula"] as? String ?: ""
                 _nifConductor.value = datos["nifConductor"] as? String ?: ""
                 _nomConductor.value = datos["nomConductor"] as? String ?: ""
@@ -306,17 +309,17 @@ class GuiasViewModel @Inject constructor(
 
     fun actualizarExplotacioOrigen(valor: String) { _explotacioOrigen.value = valor }
     fun actualizarExplotacioDestinacio(valor: String) { _explotacioDestinacio.value = valor }
-    fun seleccionarTemporal(valor: String, codigo: String) { _temporal.value = valor; codiTemporal = codigo; _temporalExpandido.value = false }
+    fun seleccionarTemporal(valor: Int, codigo: String) { _temporal.value = valor; codiTemporal = codigo; _temporalExpandido.value = false }
     fun actualizarDataSortida(fecha: String) { _dataSortida.value = fecha }
     fun actualizarHoraSortida(hora: String, minutos: String) { _horaSortida.value = String.format("%02d:%02d", hora.toInt(), minutos.toInt()) }
     fun actualizarDataArribada(fecha: String) { _dataArribada.value = fecha }
     fun actualizarHoraArribada(hora: String, minutos: String) { _horaArribada.value = String.format("%02d:%02d", hora.toInt(), minutos.toInt()) }
-    fun seleccionarMobilitat(valor: String, codigo: String) { _mobilitat.value = valor; codiGuiaMobilidad = codigo; _mobilitatExpandido.value = false }
+    fun seleccionarMobilitat(valor: Int, codigo: String) { _mobilitat.value = valor; codiGuiaMobilidad = codigo; _mobilitatExpandido.value = false }
     fun actualizarPais(valor: String) { _pais.value = valor }
     fun actualizarCodiExplotacio(valor: String) { _codiExplotacio.value = valor }
     fun campoCodiAtes(codigo: String) { if (codigo.length <= 15) _codiAtes.value = codigo }
     fun actualizarNomTransportista(nombre: String) { _nomTransportista.value = nombre }
-    fun seleccionarMitjaTransport(medio: String, codigo: String) { _mitjaTransport.value = medio; codiTransport = codigo; _mitjaTransportExpandido.value = false }
+    fun seleccionarMitjaTransport(medio: Int, codigo: String) { _mitjaTransport.value = medio; codiTransport = codigo; _mitjaTransportExpandido.value = false }
     fun actualizarMatricula(matricula: String) { _matricula.value = matricula }
     fun actualizarNifConductor(nif: String) { if (nif.length <= 9) _nifConductor.value = nif }
     fun actualizarNomConductor(nombre: String) { _nomConductor.value = nombre }
@@ -367,9 +370,9 @@ class GuiasViewModel @Inject constructor(
 
     fun esFormularioValido(): Boolean {
         return !_explotacioOrigen.value.isNullOrEmpty() && !_explotacioDestinacio.value.isNullOrEmpty() &&
-                !_temporal.value.isNullOrEmpty() && !_dataSortida.value.isNullOrEmpty() &&
+                (_temporal.value ?: 0) != 0 && !_dataSortida.value.isNullOrEmpty() &&
                 !_horaSortida.value.isNullOrEmpty() && !_dataArribada.value.isNullOrEmpty() &&
-                !_horaArribada.value.isNullOrEmpty() && !_mobilitat.value.isNullOrEmpty()
+                !_horaArribada.value.isNullOrEmpty() && (_mobilitat.value ?:0)!=0
     }
 
     fun confirmarAltaGuia() {
@@ -378,12 +381,12 @@ class GuiasViewModel @Inject constructor(
             _codiError.value = when {
                 _explotacioOrigen.value.isNullOrEmpty() -> 20
                 _explotacioDestinacio.value.isNullOrEmpty() -> 18
-                _temporal.value.isNullOrEmpty() -> 21
+                (_temporal.value ?: 0) != 0 -> 21
                 _dataSortida.value.isNullOrEmpty() -> 22
                 _horaSortida.value.isNullOrEmpty() -> 23
                 _dataArribada.value.isNullOrEmpty() -> 15
                 _horaArribada.value.isNullOrEmpty() -> 16
-                _mobilitat.value.isNullOrEmpty() -> 24
+                (_mobilitat.value ?:0)!=0  -> 24
                 else -> 0
             }
             Log.e("Validación Guía", "${_codiError.value}")
@@ -396,10 +399,10 @@ class GuiasViewModel @Inject constructor(
                     nif = nif, passwordMobilitat = password, especie = "01",
                     explotacioOrigen = _explotacioOrigen.value ?: "",
                     explotacioDestinacio = _explotacioDestinacio.value ?: "",
-                    temporal = _temporal.value ?: "",
+                    temporal = codiTemporal ,
                     dataSortida = convertirFechaHoraAFormatoAPI(_dataSortida.value ?: "", _horaSortida.value ?: ""),
                     dataArribada = convertirFechaHoraAFormatoAPI(_dataArribada.value ?: "", _horaArribada.value ?: ""),
-                    mobilitat = _mobilitat.value ?: "",
+                    mobilitat = codiGuiaMobilidad,
                     pais = _pais.value?.ifEmpty { null },
                     codiExplotacio = _codiExplotacio.value?.ifEmpty { null },
                     codiAtes = _codiAtes.value?.ifEmpty { null },
@@ -476,11 +479,11 @@ class GuiasViewModel @Inject constructor(
     }
 
     fun limpiarFormulario() {
-        _explotacioOrigen.value = ""; _explotacioDestinacio.value = ""; _temporal.value = ""
+        _explotacioOrigen.value = ""; _explotacioDestinacio.value = ""; _temporal.value = null
         _dataSortida.value = ""; _horaSortida.value = ""; _dataArribada.value = ""
-        _horaArribada.value = ""; _mobilitat.value = ""; _pais.value = ""
+        _horaArribada.value = ""; _mobilitat.value = null; _pais.value = ""
         _codiExplotacio.value = ""; _codiAtes.value = ""; _nomTransportista.value = ""
-        _mitjaTransport.value = ""; _matricula.value = ""; _nifConductor.value = ""
+        _mitjaTransport.value = null; _matricula.value = ""; _nifConductor.value = ""
         _nomConductor.value = ""; _identificadors.value = listOf("")
         codiTemporal = ""; codiGuiaMobilidad = ""; codiTransport = ""; borradorSesionId = ""
     }
@@ -558,17 +561,20 @@ class GuiasViewModel @Inject constructor(
                 )
                 _explotacioOrigen.value = datos["explotacioOrigen"] as? String ?: ""
                 _explotacioDestinacio.value = datos["explotacioDestinacio"] as? String ?: ""
-                _temporal.value = datos["temporal"] as? String ?: ""
+                val temporalGuardado = datos["temporal"]
+                _temporal.value = (temporalGuardado as? Double)?.toInt() ?: 0
                 _dataSortida.value = datos["dataSortida"] as? String ?: ""
                 _horaSortida.value = datos["horaSortida"] as? String ?: ""
                 _dataArribada.value = datos["dataArribada"] as? String ?: ""
                 _horaArribada.value = datos["horaArribada"] as? String ?: ""
-                _mobilitat.value = datos["mobilitat"] as? String ?: ""
+                val mobilitatGuardado = datos["mobilitat"]
+                _mobilitat.value = (mobilitatGuardado as? Double)?.toInt() ?: 0
                 _pais.value = datos["pais"] as? String ?: ""
                 _codiExplotacio.value = datos["codiExplotacio"] as? String ?: ""
                 _codiAtes.value = datos["codiAtes"] as? String ?: ""
                 _nomTransportista.value = datos["nomTransportista"] as? String ?: ""
-                _mitjaTransport.value = datos["mitjaTransport"] as? String ?: ""
+                val transporteGuardado = datos["transporteGuardado"]
+                _mitjaTransport.value = (transporteGuardado as? Double)?.toInt() ?: 0
                 _matricula.value = datos["matricula"] as? String ?: ""
                 _nifConductor.value = datos["nifConductor"] as? String ?: ""
                 _nomConductor.value = datos["nomConductor"] as? String ?: ""

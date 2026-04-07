@@ -57,7 +57,7 @@ fun EditarGuiaBovi(
     val horaArribada          by viewModel.horaArribada.observeAsState("")
     val codiAtes              by viewModel.codiAtes.observeAsState("")
     val nomTransportista      by viewModel.nomTransportista.observeAsState("")
-    val mitjaTransport        by viewModel.mitjaTransport.observeAsState("")
+    val mitjaTransport        by viewModel.mitjaTransport.observeAsState(null)
     val mitjaTransportExp     by viewModel.mitjaTransportExpandido.observeAsState(false)
     val matricula             by viewModel.matricula.observeAsState("")
     val nifConductor          by viewModel.nifConductor.observeAsState("")
@@ -422,7 +422,7 @@ fun EditarGuiaBovi(
                             selectedValue   = mitjaTransport,
                             expanded        = mitjaTransportExp,
                             placeholder     = stringResource(R.string.form_ways_transports_description),
-                            opciones        = elementosConCodigos.transporte(),
+                            opciones        = elementosConCodigos.getTransportes(),
                             onExpandedChange = { viewModel.toggleMitjaTransportExpandido() },
                             onDismissRequest = { viewModel.cerrarMitjaTransportMenu() },
                             onSeleccionar    = { codigo, nombre -> viewModel.seleccionarMitjaTransport(nombre, codigo) },
