@@ -32,19 +32,26 @@ import com.example.terrabit_app.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DropdownField(
+fun <T> DropdownField(
     label: String,
-    selectedValue: String,
+    selectedValue: T?, // <-- Ahora es genérico. Puede recibir un Int, un String, o null/0
     expanded: Boolean,
     placeholder: String,
-    opciones: Map<String, String>,
+    opciones: Map<String, T>,
     onExpandedChange: () -> Unit,
     onDismissRequest: () -> Unit,
-    onSeleccionar: (String, String) -> Unit,
+    onSeleccionar: (String, T) -> Unit, // <-- Ahora devuelve (Código, Valor Genérico)
     defectColor: Boolean,
     enabled: Boolean = true
 ) {
     val accentColor = if (defectColor) MainGreen else MainOrange
+
+    // Resolvemos el texto que se mostrará en el campo principal dependiendo del tipo T
+    val textoMostrar = when (selectedValue) {
+        is Int -> if (selectedValue != 0) stringResource(id = selectedValue) else "" // Evita error si mandas 0 por defecto
+        is String -> selectedValue
+        else -> selectedValue?.toString() ?: ""
+    }
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
@@ -60,7 +67,7 @@ fun DropdownField(
             onExpandedChange = { if (enabled) onExpandedChange() }
         ) {
             OutlinedTextField(
-                value = selectedValue,
+                value = textoMostrar, // Usamos el valor ya resuelto
                 onValueChange = {},
                 modifier = Modifier
                     .fillMaxWidth()
@@ -94,16 +101,27 @@ fun DropdownField(
                     onDismissRequest = { onDismissRequest() },
                     modifier = Modifier.background(MaterialTheme.colorScheme.surface)
                 ) {
-                    opciones.forEach { (codigo, nombre) ->
+                    opciones.forEach { (codigo, valorRaw) ->
+
+                        // Resolvemos el texto para cada elemento de la lista desplegable
+                        val nombreItem = when (valorRaw) {
+                            is Int -> stringResource(id = valorRaw)
+                            is String -> valorRaw
+                            else -> valorRaw.toString()
+                        }
+
                         DropdownMenuItem(
                             text = {
                                 Text(
-                                    nombre,
+                                    nombreItem,
                                     fontSize = 15.sp,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                             },
-                            onClick = { onSeleccionar(codigo, nombre) },
+                            onClick = {
+                                // Devolvemos el código (String) y el valor original en su tipo correspondiente (T)
+                                onSeleccionar(codigo, valorRaw)
+                            },
                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
                         )
                     }

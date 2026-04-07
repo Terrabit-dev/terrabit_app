@@ -50,7 +50,7 @@ fun CorregirSexoBovi(
     val modoLectura = historialId.isNotEmpty()
 
     val identificadorCorreccionSexo by viewModel.identificadorCorreccionSexo.observeAsState("")
-    val sexoCorreccionSeleccionado by viewModel.sexoCorreccionSeleccionado.observeAsState("")
+    val sexoCorreccionSeleccionado by viewModel.sexoCorreccionSeleccionado.observeAsState(-1)
     val sexoCorreccionExpandido by viewModel.sexoCorreccionExpandido.observeAsState(false)
     val correccionSexoExitosa by viewModel.correccionSexoExitosa.observeAsState(false)
     val mensajeError by viewModel.mensajeErrorCorreccionSexo.observeAsState("")
@@ -202,7 +202,7 @@ fun CorregirSexoBovi(
                             selectedValue = sexoCorreccionSeleccionado,
                             expanded = sexoCorreccionExpandido,
                             placeholder = stringResource(R.string.form_send_address_description),
-                            opciones = elementosConCodigos.sexos(),
+                            opciones = elementosConCodigos.getSexos(),
                             enabled = !modoLectura,
                             onExpandedChange = { viewModel.toggleSexoCorreccionExpandido() },
                             onDismissRequest = { viewModel.cerrarSexoCorreccionMenu() },

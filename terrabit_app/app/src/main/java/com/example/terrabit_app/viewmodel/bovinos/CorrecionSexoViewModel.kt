@@ -53,8 +53,9 @@ class CorrecionSexoViewModel @Inject constructor(
     override val _identificadorAnimal = MutableLiveData("")
     val identificadorCorreccionSexo: LiveData<String> = _identificadorAnimal
 
-    private val _sexoCorreccionSeleccionado = MutableLiveData("")
-    val sexoCorreccionSeleccionado = _sexoCorreccionSeleccionado
+    // Cambiado a Int (0 representa "no seleccionado")
+    private val _sexoCorreccionSeleccionado = MutableLiveData(0)
+    val sexoCorreccionSeleccionado: LiveData<Int> = _sexoCorreccionSeleccionado
 
     private val _sexoCorreccionExpandido = MutableLiveData(false)
     val sexoCorreccionExpandido = _sexoCorreccionExpandido
@@ -68,7 +69,6 @@ class CorrecionSexoViewModel @Inject constructor(
     private val _estadoCarga = MutableLiveData(false)
     val estadoCarga = _estadoCarga
 
-    val listaSexos = listOf("Macho", "Hembra")
     private var codigoSexo = ""
 
     init {
@@ -123,16 +123,18 @@ class CorrecionSexoViewModel @Inject constructor(
     }
 
     fun tieneContenido(): Boolean {
+        // Comprobamos que no sea 0 o null
         return !_identificadorAnimal.value.isNullOrEmpty() ||
-                !_sexoCorreccionSeleccionado.value.isNullOrEmpty()
+                (_sexoCorreccionSeleccionado.value ?: 0) != 0
     }
 
     fun actualizarIdentificadorCorreccionSexo(nuevoId: String) {
         _identificadorAnimal.value = nuevoId
     }
 
-    fun seleccionarSexoCorreccion(sexo: String, codigo: String) {
-        _sexoCorreccionSeleccionado.value = sexo
+    // Adaptado para recibir Int
+    fun seleccionarSexoCorreccion(sexoId: Int, codigo: String) {
+        _sexoCorreccionSeleccionado.value = sexoId
         codigoSexo = codigo
         _sexoCorreccionExpandido.value = false
     }
@@ -141,8 +143,9 @@ class CorrecionSexoViewModel @Inject constructor(
     fun cerrarSexoCorreccionMenu() { _sexoCorreccionExpandido.value = false }
 
     fun esFormularioCorreccionSexoValido(): Boolean {
+        // Comprobamos que no sea 0
         return !_identificadorAnimal.value.isNullOrEmpty() &&
-                !_sexoCorreccionSeleccionado.value.isNullOrEmpty()
+                (_sexoCorreccionSeleccionado.value ?: 0) != 0
     }
 
     fun guardarBorradorAutomatico() {
@@ -151,7 +154,7 @@ class CorrecionSexoViewModel @Inject constructor(
             try {
                 val datos = mapOf(
                     "identificador" to _identificadorAnimal.value,
-                    "sexoSeleccionado" to _sexoCorreccionSeleccionado.value,
+                    "sexoSeleccionado" to _sexoCorreccionSeleccionado.value, // Ahora guarda un Int o null
                     "codigoSexo" to codigoSexo
                 )
                 val existente = borradorDao.getAll().find { it.id == borradorSesionId }
@@ -181,7 +184,11 @@ class CorrecionSexoViewModel @Inject constructor(
                     object : TypeToken<Map<String, Any?>>() {}.type
                 )
                 _identificadorAnimal.value = datos["identificador"] as? String ?: ""
-                _sexoCorreccionSeleccionado.value = datos["sexoSeleccionado"] as? String ?: ""
+
+                // Gson recupera los números como Double. Debemos castearlo de forma segura.
+                val sexoGuardado = datos["sexoSeleccionado"]
+                _sexoCorreccionSeleccionado.value = (sexoGuardado as? Double)?.toInt() ?: 0
+
                 codigoSexo = datos["codigoSexo"] as? String ?: ""
             } catch (e: Exception) {
                 Log.e("CorrecionSexoVM", "Error al cargar borrador por ID: ${e.message}", e)
@@ -215,7 +222,11 @@ class CorrecionSexoViewModel @Inject constructor(
                     object : TypeToken<Map<String, Any?>>() {}.type
                 )
                 _identificadorAnimal.value = datos["identificador"] as? String ?: ""
-                _sexoCorreccionSeleccionado.value = datos["sexoSeleccionado"] as? String ?: ""
+
+                // Conversión segura de Double a Int para el valor guardado
+                val sexoGuardado = datos["sexoSeleccionado"]
+                _sexoCorreccionSeleccionado.value = (sexoGuardado as? Double)?.toInt() ?: 0
+
                 codigoSexo = datos["codigoSexo"] as? String ?: ""
             } catch (e: Exception) {
                 Log.e("Error Cargar Borrador", "Error al cargar: ${e.message}", e)
@@ -228,7 +239,7 @@ class CorrecionSexoViewModel @Inject constructor(
         if (!esFormularioCorreccionSexoValido()) {
             _codiError.value = when {
                 _identificadorAnimal.value.isNullOrEmpty() -> 12
-                _sexoCorreccionSeleccionado.value.isNullOrEmpty() -> 4
+                (_sexoCorreccionSeleccionado.value ?: 0) == 0 -> 4 // Verificamos contra 0
                 else -> 0
             }
             Log.e("Validación Corrección Sexo", "Formulario no válido: ${_codiError.value}")
@@ -308,7 +319,7 @@ class CorrecionSexoViewModel @Inject constructor(
 
     fun limpiarFormularioCorreccionSexo() {
         _identificadorAnimal.value = ""
-        _sexoCorreccionSeleccionado.value = ""
+        _sexoCorreccionSeleccionado.value = 0 // Reiniciamos a 0
         codigoSexo = ""
         borradorSesionId = ""
     }
@@ -324,7 +335,7 @@ class CorrecionSexoViewModel @Inject constructor(
             try {
                 val datos = mapOf(
                     "identificador" to _identificadorAnimal.value,
-                    "sexoSeleccionado" to _sexoCorreccionSeleccionado.value,
+                    "sexoSeleccionado" to _sexoCorreccionSeleccionado.value, // Guarda un Int
                     "codigoSexo" to codigoSexo
                 )
                 historialDao.insert(HistorialEntity(
@@ -350,7 +361,11 @@ class CorrecionSexoViewModel @Inject constructor(
                     object : TypeToken<Map<String, Any?>>() {}.type
                 )
                 _identificadorAnimal.value = datos["identificador"] as? String ?: ""
-                _sexoCorreccionSeleccionado.value = datos["sexoSeleccionado"] as? String ?: ""
+
+                // Conversión segura
+                val sexoGuardado = datos["sexoSeleccionado"]
+                _sexoCorreccionSeleccionado.value = (sexoGuardado as? Double)?.toInt() ?: 0
+
                 codigoSexo = datos["codigoSexo"] as? String ?: ""
             } catch (e: Exception) {
                 Log.e("CorrecionSexoVM", "Error al cargar desde historial: ${e.message}", e)
