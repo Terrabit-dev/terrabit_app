@@ -171,6 +171,12 @@ class ElementosConCodigos {
     fun getTransportes(): Map<String, Int>{
         return mapaTransporte
     }
+    fun getTransporteId(codigo: String?): Int? {
+        if (codigo != null && mapaTransporte.containsKey(codigo)) {
+            return mapaTransporte[codigo]
+        }
+        return null
+    }
     fun getOpcionesSiNo(): Map<String, Int>{
         return mapaOpcionesSiNo
     }
@@ -201,14 +207,6 @@ class ElementosConCodigos {
         return listaEstadosLlegada
     }
 
-    @Composable
-    fun opcionesSiNo(): Map<String, String>{
-        val listaOpciones= mapOf<String, String>(
-             "SI" to stringResource(R.string.option_yes) ,
-             "NO" to stringResource(R.string.option_no)
-        )
-        return listaOpciones
-    }
 
     @Composable
     fun tiposPresentacion(): Map<String, String>{
