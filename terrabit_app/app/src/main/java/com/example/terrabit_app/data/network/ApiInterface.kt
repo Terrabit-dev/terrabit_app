@@ -189,15 +189,24 @@ interface ApiInterface {
     ): Response<GtrConfirmacioResponse>
 
 
+
     companion object {
         val BASE_URL = "https://preproduccio.aplicacions.agricultura.gencat.cat/gtr/"
 
+        private const val GTR_PIN = "sha256/iQtsyFXPKCKfjjgrS/Cp0qbEYNmueGHXwDXwxancVHQ="
+        private const val GTR_PIN_BACKUP = "sha256/KqkYYX5LYAYP7XGemqzbtPPIA8x7BS/BbOIcAXf3j2k="
+
         fun create(): ApiInterface {
-            // Configurar timeouts más largos
+            val certificatePinner = okhttp3.CertificatePinner.Builder()
+                .add("preproduccio.aplicacions.agricultura.gencat.cat", GTR_PIN)
+                .add("preproduccio.aplicacions.agricultura.gencat.cat", GTR_PIN_BACKUP)
+                .build()
+
             val client = OkHttpClient.Builder()
-                .connectTimeout(60, TimeUnit.SECONDS)  // Timeout de conexión: 60 segundos
-                .readTimeout(60, TimeUnit.SECONDS)     // Timeout de lectura: 60 segundos
-                .writeTimeout(60, TimeUnit.SECONDS)    // Timeout de escritura: 60 segundos
+                .certificatePinner(certificatePinner)
+                .connectTimeout(60, TimeUnit.SECONDS)
+                .readTimeout(60, TimeUnit.SECONDS)
+                .writeTimeout(60, TimeUnit.SECONDS)
                 .build()
 
             val retrofit = Retrofit.Builder()
