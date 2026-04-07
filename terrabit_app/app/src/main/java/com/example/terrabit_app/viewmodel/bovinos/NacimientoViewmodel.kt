@@ -81,10 +81,10 @@ class NacimientoViewmodel @Inject constructor(
     private var sexoApiSeleccionado = "0"
     private var codigoAptitud = "0"
 
-    private val _razaSeleccionada = MutableLiveData("")
+    private val _razaSeleccionada = MutableLiveData(0)
     val razaSeleccionada = _razaSeleccionada
 
-    private val _aptitudSeleccionada = MutableLiveData("")
+    private val _aptitudSeleccionada = MutableLiveData(0)
     val aptitudSeleccionada = _aptitudSeleccionada
 
     private val _sexoExpandido = MutableLiveData(false)
@@ -179,8 +179,8 @@ class NacimientoViewmodel @Inject constructor(
                 !_fechaNacimiento.value.isNullOrEmpty() ||
                 !_fechaIdentificacion.value.isNullOrEmpty() ||
                 (_sexoSeleccionado.value ?: 0) != 0 ||
-                !_razaSeleccionada.value.isNullOrEmpty() ||
-                !_aptitudSeleccionada.value.isNullOrEmpty()
+                (_razaSeleccionada.value ?: 0) != 0||
+                (_aptitudSeleccionada.value ?: 0) != 0
     }
 
     fun guardarBorradorAutomatico() {
@@ -232,8 +232,10 @@ class NacimientoViewmodel @Inject constructor(
                 _fechaIdentificacion.value = datos["fechaIdentificacion"] as? String ?: ""
                 val sexoGuardado = datos["sexoSeleccionado"]
                 _sexoSeleccionado.value = (sexoGuardado as? Double)?.toInt() ?: 0
-                _razaSeleccionada.value = datos["razaSeleccionada"] as? String ?: ""
-                _aptitudSeleccionada.value = datos["aptitudSeleccionada"] as? String ?: ""
+                val razaGuardada = datos["razaSeleccionada"]
+                _razaSeleccionada.value = (razaGuardada as? Double)?.toInt() ?: 0
+                val aptitudGuardada = datos["aptitudSeleccionada"]
+                _aptitudSeleccionada.value = (aptitudGuardada as? Double)?.toInt() ?: 0
                 _codigoRaza.value = datos["codigoRaza"] as? String ?: ""
                 sexoApiSeleccionado = datos["sexoApiSeleccionado"] as? String ?: "0"
                 codigoAptitud = datos["codigoAptitud"] as? String ?: "0"
@@ -279,13 +281,13 @@ class NacimientoViewmodel @Inject constructor(
         _sexoExpandido.value = false
     }
 
-    fun seleccionarRaza(raza: String, codigo: String) {
+    fun seleccionarRaza(raza: Int, codigo: String) {
         _razaSeleccionada.value = raza
         _codigoRaza.value = codigo
         _razaExpandida.value = false
     }
 
-    fun seleccionarAptitud(aptitud: String, codigo: String) {
+    fun seleccionarAptitud(aptitud: Int, codigo: String) {
         _aptitudSeleccionada.value = aptitud
         codigoAptitud = codigo
         _aptitudExpandida.value = false
@@ -331,8 +333,8 @@ class NacimientoViewmodel @Inject constructor(
                 !_idCria.value.isNullOrEmpty() &&
                 !_fechaNacimiento.value.isNullOrEmpty() &&
                 (_sexoSeleccionado.value ?: 0) != 0 &&
-                !_razaSeleccionada.value.isNullOrEmpty() &&
-                !_aptitudSeleccionada.value.isNullOrEmpty()
+                (_razaSeleccionada.value ?: 0) != 0 &&
+                (_aptitudSeleccionada.value ?: 0) != 0
     }
 
     fun registrarNacimiento() {
@@ -343,8 +345,8 @@ class NacimientoViewmodel @Inject constructor(
                 _idCria.value.isNullOrEmpty() -> 2
                 _fechaNacimiento.value.isNullOrEmpty() -> 3
                 (_sexoSeleccionado.value ?: 0) != 0 -> 4
-                _razaSeleccionada.value.isNullOrEmpty() -> 5
-                _aptitudSeleccionada.value.isNullOrEmpty() -> 6
+                (_razaSeleccionada.value ?: 0) != 0-> 5
+                (_aptitudSeleccionada.value ?: 0) != 0 -> 6
                 else -> 0
             }
             return
@@ -424,9 +426,9 @@ class NacimientoViewmodel @Inject constructor(
         _fechaNacimiento.value = ""
         _fechaIdentificacion.value = ""
         _sexoSeleccionado.value = null
-        _razaSeleccionada.value = ""
+        _razaSeleccionada.value = null
         _codigoRaza.value = ""
-        _aptitudSeleccionada.value = ""
+        _aptitudSeleccionada.value = null
         sexoApiSeleccionado = "0"
         codigoAptitud = "0"
         borradorSesionId = ""
@@ -485,8 +487,10 @@ class NacimientoViewmodel @Inject constructor(
                 _fechaIdentificacion.value = datos["fechaIdentificacion"] as? String ?: ""
                 val sexoGuardado = datos["sexoSeleccionado"]
                 _sexoSeleccionado.value = (sexoGuardado as? Double)?.toInt() ?: 0
-                _razaSeleccionada.value = datos["razaSeleccionada"] as? String ?: ""
-                _aptitudSeleccionada.value = datos["aptitudSeleccionada"] as? String ?: ""
+                val razaGuardada = datos["razaSeleccionada"]
+                _razaSeleccionada.value = (razaGuardada as? Double)?.toInt() ?: 0
+                val aptitudGuardada = datos["aptitudSeleccionada"]
+                _aptitudSeleccionada.value = (aptitudGuardada as? Double)?.toInt() ?: 0
                 _codigoRaza.value = datos["codigoRaza"] as? String ?: ""
                 sexoApiSeleccionado = datos["sexoApiSeleccionado"] as? String ?: "0"
                 codigoAptitud = datos["codigoAptitud"] as? String ?: "0"

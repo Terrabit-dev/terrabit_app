@@ -34,13 +34,13 @@ import com.example.terrabit_app.R
 @Composable
 fun <T> DropdownField(
     label: String,
-    selectedValue: T?, // <-- Ahora es genérico. Puede recibir un Int, un String, o null/0
+    selectedValue: T?,
     expanded: Boolean,
     placeholder: String,
     opciones: Map<String, T>,
     onExpandedChange: () -> Unit,
     onDismissRequest: () -> Unit,
-    onSeleccionar: (String, T) -> Unit, // <-- Ahora devuelve (Código, Valor Genérico)
+    onSeleccionar: (String, T) -> Unit,
     defectColor: Boolean,
     enabled: Boolean = true
 ) {

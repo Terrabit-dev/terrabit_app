@@ -103,30 +103,67 @@ class ElementosConCodigos {
         "B02164317" to "DATAMARS IBERICA SLU",
         "A78100609" to "AZASA"
     )
+    private val mapaRazas: Map<String, Int> = mapOf(
+        "9999" to R.string.raza_9999, "0000" to R.string.raza_0000, "0099" to R.string.raza_0099,
+        "0201" to R.string.raza_0201, "1101" to R.string.raza_1101, "1164" to R.string.raza_1164,
+        "1102" to R.string.raza_1102, "0801" to R.string.raza_0801, "1116" to R.string.raza_1116,
+        "1166" to R.string.raza_1166, "0202" to R.string.raza_0202, "1103" to R.string.raza_1103,
+        "1125" to R.string.raza_1125, "1151" to R.string.raza_1151, "0203" to R.string.raza_0203,
+        "1121" to R.string.raza_1121, "0802" to R.string.raza_0802, "1160" to R.string.raza_1160,
+        "0204" to R.string.raza_0204, "0205" to R.string.raza_0205, "1104" to R.string.raza_1104,
+        "1137" to R.string.raza_1137, "1132" to R.string.raza_1132, "9901" to R.string.raza_9901,
+        "1141" to R.string.raza_1141, "1124" to R.string.raza_1124, "0206" to R.string.raza_0206,
+        "0207" to R.string.raza_0207, "9902" to R.string.raza_9902, "0208" to R.string.raza_0208,
+        "1105" to R.string.raza_1105, "1152" to R.string.raza_1152, "1131" to R.string.raza_1131,
+        "1144" to R.string.raza_1144, "1145" to R.string.raza_1145, "1134" to R.string.raza_1134,
+        "0225" to R.string.raza_0225, "0209" to R.string.raza_0209, "9903" to R.string.raza_9903,
+        "1153" to R.string.raza_1153, "1113" to R.string.raza_1113, "0210" to R.string.raza_0210,
+        "0211" to R.string.raza_0211, "0212" to R.string.raza_0212, "0803" to R.string.raza_0803,
+        "0213" to R.string.raza_0213, "1130" to R.string.raza_1130, "0214" to R.string.raza_0214,
+        "1111" to R.string.raza_1111, "1146" to R.string.raza_1146, "0804" to R.string.raza_0804,
+        "1156" to R.string.raza_1156, "0215" to R.string.raza_0215, "1154" to R.string.raza_1154,
+        "0805" to R.string.raza_0805, "0216" to R.string.raza_0216, "1114" to R.string.raza_1114,
+        "0217" to R.string.raza_0217, "0806" to R.string.raza_0806, "1115" to R.string.raza_1115,
+        "0807" to R.string.raza_0807, "0233" to R.string.raza_0233, "1140" to R.string.raza_1140,
+        "1147" to R.string.raza_1147, "1117" to R.string.raza_1117, "0218" to R.string.raza_0218,
+        "1107" to R.string.raza_1107, "0220" to R.string.raza_0220, "0219" to R.string.raza_0219,
+        "1109" to R.string.raza_1109, "0808" to R.string.raza_0808, "1136" to R.string.raza_1136,
+        "1159" to R.string.raza_1159, "0221" to R.string.raza_0221, "1108" to R.string.raza_1108,
+        "1155" to R.string.raza_1155, "1123" to R.string.raza_1123, "1162" to R.string.raza_1162,
+        "1126" to R.string.raza_1126, "1157" to R.string.raza_1157, "0809" to R.string.raza_0809,
+        "0222" to R.string.raza_0222, "1138" to R.string.raza_1138, "0223" to R.string.raza_0223,
+        "1127" to R.string.raza_1127, "1167" to R.string.raza_1167, "1139" to R.string.raza_1139,
+        "1168" to R.string.raza_1168, "1158" to R.string.raza_1158, "1112" to R.string.raza_1112,
+        "0810" to R.string.raza_0810, "0224" to R.string.raza_0224, "1143" to R.string.raza_1143,
+        "1129" to R.string.raza_1129, "1135" to R.string.raza_1135, "9908" to R.string.raza_9908,
+        "1169" to R.string.raza_1169, "1171" to R.string.raza_1171, "1120" to R.string.raza_1120,
+        "1122" to R.string.raza_1122, "1142" to R.string.raza_1142, "0226" to R.string.raza_0226,
+        "0811" to R.string.raza_0811, "0812" to R.string.raza_0812, "1161" to R.string.raza_1161,
+        "1118" to R.string.raza_1118, "0813" to R.string.raza_0813, "1149" to R.string.raza_1149,
+        "0227" to R.string.raza_0227, "1163" to R.string.raza_1163, "1110" to R.string.raza_1110,
+        "9906" to R.string.raza_9906, "9907" to R.string.raza_9907, "0814" to R.string.raza_0814,
+        "1165" to R.string.raza_1165, "1119" to R.string.raza_1119, "0228" to R.string.raza_0228,
+        "1150" to R.string.raza_1150, "1128" to R.string.raza_1128, "1170" to R.string.raza_1170,
+        "1148" to R.string.raza_1148, "0229" to R.string.raza_0229, "0230" to R.string.raza_0230,
+        "0231" to R.string.raza_0231, "0232" to R.string.raza_0232
+    )
 
+    fun getRazas(): Map<String, Int> {
+        return mapaRazas
+    }
+
+    fun getRazaBovinasId(codigo: String): Int {
+        return mapaRazas[codigo] ?: R.string.raza_0099 // Devuelve "Desconocida" por defecto
+    }
     @Composable
     fun getSexos(): Map<String, Int>{
         return mapaSexos
     }
-
     @Composable
-    fun sexos(): Map<String, String>{
-        val tipos = mapOf<String, String>(
-            "02" to stringResource(R.string.male),
-            "01" to stringResource(R.string.female)
-        )
-        return tipos
+    fun getAptitudes(): Map<String, Int>{
+        return mapaAptitudes
     }
 
-    @Composable
-    fun aptitudes(): Map<String, String> {
-        val aptitudes = mapOf<String, String>(
-            "02" to stringResource(R.string.option_aptitude_meat),
-            "01" to stringResource(R.string.option_aptitude_milk),
-            "03" to stringResource(R.string.option_aptitude_double)
-        )
-        return aptitudes
-    }
     @Composable
     fun muertes(): Map<String, String>{
         val listaTiposMuerte = mapOf<String, String>(
@@ -412,54 +449,9 @@ class ElementosConCodigos {
         )
         return listaRazas
     }
-    private val mapaRazas: Map<String, Int> = mapOf(
-        "9999" to R.string.raza_9999, "0000" to R.string.raza_0000, "0099" to R.string.raza_0099,
-        "0201" to R.string.raza_0201, "1101" to R.string.raza_1101, "1164" to R.string.raza_1164,
-        "1102" to R.string.raza_1102, "0801" to R.string.raza_0801, "1116" to R.string.raza_1116,
-        "1166" to R.string.raza_1166, "0202" to R.string.raza_0202, "1103" to R.string.raza_1103,
-        "1125" to R.string.raza_1125, "1151" to R.string.raza_1151, "0203" to R.string.raza_0203,
-        "1121" to R.string.raza_1121, "0802" to R.string.raza_0802, "1160" to R.string.raza_1160,
-        "0204" to R.string.raza_0204, "0205" to R.string.raza_0205, "1104" to R.string.raza_1104,
-        "1137" to R.string.raza_1137, "1132" to R.string.raza_1132, "9901" to R.string.raza_9901,
-        "1141" to R.string.raza_1141, "1124" to R.string.raza_1124, "0206" to R.string.raza_0206,
-        "0207" to R.string.raza_0207, "9902" to R.string.raza_9902, "0208" to R.string.raza_0208,
-        "1105" to R.string.raza_1105, "1152" to R.string.raza_1152, "1131" to R.string.raza_1131,
-        "1144" to R.string.raza_1144, "1145" to R.string.raza_1145, "1134" to R.string.raza_1134,
-        "0225" to R.string.raza_0225, "0209" to R.string.raza_0209, "9903" to R.string.raza_9903,
-        "1153" to R.string.raza_1153, "1113" to R.string.raza_1113, "0210" to R.string.raza_0210,
-        "0211" to R.string.raza_0211, "0212" to R.string.raza_0212, "0803" to R.string.raza_0803,
-        "0213" to R.string.raza_0213, "1130" to R.string.raza_1130, "0214" to R.string.raza_0214,
-        "1111" to R.string.raza_1111, "1146" to R.string.raza_1146, "0804" to R.string.raza_0804,
-        "1156" to R.string.raza_1156, "0215" to R.string.raza_0215, "1154" to R.string.raza_1154,
-        "0805" to R.string.raza_0805, "0216" to R.string.raza_0216, "1114" to R.string.raza_1114,
-        "0217" to R.string.raza_0217, "0806" to R.string.raza_0806, "1115" to R.string.raza_1115,
-        "0807" to R.string.raza_0807, "0233" to R.string.raza_0233, "1140" to R.string.raza_1140,
-        "1147" to R.string.raza_1147, "1117" to R.string.raza_1117, "0218" to R.string.raza_0218,
-        "1107" to R.string.raza_1107, "0220" to R.string.raza_0220, "0219" to R.string.raza_0219,
-        "1109" to R.string.raza_1109, "0808" to R.string.raza_0808, "1136" to R.string.raza_1136,
-        "1159" to R.string.raza_1159, "0221" to R.string.raza_0221, "1108" to R.string.raza_1108,
-        "1155" to R.string.raza_1155, "1123" to R.string.raza_1123, "1162" to R.string.raza_1162,
-        "1126" to R.string.raza_1126, "1157" to R.string.raza_1157, "0809" to R.string.raza_0809,
-        "0222" to R.string.raza_0222, "1138" to R.string.raza_1138, "0223" to R.string.raza_0223,
-        "1127" to R.string.raza_1127, "1167" to R.string.raza_1167, "1139" to R.string.raza_1139,
-        "1168" to R.string.raza_1168, "1158" to R.string.raza_1158, "1112" to R.string.raza_1112,
-        "0810" to R.string.raza_0810, "0224" to R.string.raza_0224, "1143" to R.string.raza_1143,
-        "1129" to R.string.raza_1129, "1135" to R.string.raza_1135, "9908" to R.string.raza_9908,
-        "1169" to R.string.raza_1169, "1171" to R.string.raza_1171, "1120" to R.string.raza_1120,
-        "1122" to R.string.raza_1122, "1142" to R.string.raza_1142, "0226" to R.string.raza_0226,
-        "0811" to R.string.raza_0811, "0812" to R.string.raza_0812, "1161" to R.string.raza_1161,
-        "1118" to R.string.raza_1118, "0813" to R.string.raza_0813, "1149" to R.string.raza_1149,
-        "0227" to R.string.raza_0227, "1163" to R.string.raza_1163, "1110" to R.string.raza_1110,
-        "9906" to R.string.raza_9906, "9907" to R.string.raza_9907, "0814" to R.string.raza_0814,
-        "1165" to R.string.raza_1165, "1119" to R.string.raza_1119, "0228" to R.string.raza_0228,
-        "1150" to R.string.raza_1150, "1128" to R.string.raza_1128, "1170" to R.string.raza_1170,
-        "1148" to R.string.raza_1148, "0229" to R.string.raza_0229, "0230" to R.string.raza_0230,
-        "0231" to R.string.raza_0231, "0232" to R.string.raza_0232
-    )
 
-    fun getRazaBovinasId(codigo: String): Int {
-        return mapaRazas[codigo] ?: R.string.raza_0099 // Devuelve "Desconocida" por defecto
-    }
+
+
 
     private val mapaPaises: Map<String, Int> = mapOf(
         "000" to R.string.pais_000, "101" to R.string.pais_101, "102" to R.string.pais_102,

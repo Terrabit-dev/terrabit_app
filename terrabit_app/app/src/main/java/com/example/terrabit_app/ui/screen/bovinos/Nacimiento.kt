@@ -52,8 +52,8 @@ fun Nacimiento(
     val idCria by viewModel.idCria.observeAsState("")
     val fechaNacimiento by viewModel.fechaNacimiento.observeAsState("")
     val sexoSeleccionado by viewModel.sexoSeleccionado.observeAsState(null)
-    val razaSeleccionada by viewModel.razaSeleccionada.observeAsState("")
-    val aptitudSeleccionada by viewModel.aptitudSeleccionada.observeAsState("")
+    val razaSeleccionada by viewModel.razaSeleccionada.observeAsState(null)
+    val aptitudSeleccionada by viewModel.aptitudSeleccionada.observeAsState(null)
     val sexoExpandido by viewModel.sexoExpandido.observeAsState(false)
     val razaExpandida by viewModel.razaExpandida.observeAsState(false)
     val aptitudExpandida by viewModel.aptitudExpandida.observeAsState(false)
@@ -87,7 +87,7 @@ fun Nacimiento(
     var madreUsb by remember { mutableStateOf(false) }
     var criaUsb by remember { mutableStateOf(false) }
 
-    val razas = elementosConCodigos.razasBovinas()
+    val razas = elementosConCodigos.getRazas()
 
     LaunchedEffect(Unit) {
         usbViewModel.mensajes.collect { mensaje ->
@@ -440,7 +440,7 @@ fun Nacimiento(
                             selectedValue = aptitudSeleccionada,
                             expanded = if (modoLectura) false else aptitudExpandida,
                             placeholder = stringResource(R.string.form_aptitude_description),
-                            opciones = elementosConCodigos.aptitudes(),
+                            opciones = elementosConCodigos.getAptitudes(),
                             enabled = !modoLectura,
                             onExpandedChange = { if (!modoLectura) viewModel.toggleAptitudExpandida() },
                             onDismissRequest = { viewModel.cerrarAptitudMenu() },
