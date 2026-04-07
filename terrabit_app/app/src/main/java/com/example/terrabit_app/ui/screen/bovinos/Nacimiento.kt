@@ -31,6 +31,7 @@ import com.example.terrabit_app.utils.components.useDebounce
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.utils.DropdownField
 import com.example.terrabit_app.utils.ElementosConCodigos
+import com.example.terrabit_app.utils.LargeDropdownField
 import com.example.terrabit_app.utils.alertsErrosScreens
 import com.example.terrabit_app.utils.bluetooth.BluetoothScanDialog
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
@@ -422,7 +423,7 @@ fun Nacimiento(
                             defectColor = true
                         )
 
-                        DropdownField(
+                        LargeDropdownField(
                             label = stringResource(R.string.form_raze),
                             selectedValue = razaSeleccionada,
                             expanded = if (modoLectura) false else razaExpandida,
