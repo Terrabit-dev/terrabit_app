@@ -71,6 +71,19 @@
     <string name="card_info_date_born">Fecha Nac.</string>
     <string name="card_info_mom">Madre</string>
 
+    <string name="detail_bovino_title">Detalles del animal</string>
+    <string name="detail_bovino_card_identifier">Identificador del animal</string>
+    <string name="detail_bovino_label_identifier">Identificador</string>
+    <string name="detail_bovino_label_electronic_id">Identificador electrónico</string>
+    <string name="detail_bovino_label_electronic_id_type">Tipo de identificador electrónico</string>
+    <string name="detail_bovino_card_basic_info">Información básica</string>
+    <string name="detail_bovino_label_birth_date">Fecha de nacimiento</string>
+    <string name="detail_bovino_label_breed">Raza</string>
+    <string name="detail_bovino_card_origins">Orígenes del animal</string>
+    <string name="detail_bovino_label_birth_farm">Explotación de nacimiento</string>
+    <string name="detail_bovino_label_birth_country">País de nacimiento</string>
+    <string name="detail_bovino_label_mother_id">Id de la madre</string>
+
     <string name="title_list_action_popup">Elige una acción</string>
     <string name="description_option_death_popup">Reportar fallecimiento de este animal</string>
     <string name="description_option_sex_correction_popup">Corregir el sexo de este animal</string>

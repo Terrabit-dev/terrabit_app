@@ -13,7 +13,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -22,7 +21,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButtonDefaults.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -37,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.data.network.lista_bovinos.Animal
@@ -47,15 +46,15 @@ import com.example.terrabit_app.utils.ElementosConCodigos
 @Composable
 fun DetailBovino(navController: NavController, animal: Animal) {
 
-    //Elementos con codigos
     val elements = ElementosConCodigos()
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Column {
                         Text(
-                            text = "Detalles del animal",
+                            text = stringResource(R.string.detail_bovino_title),
                             fontSize = 20.sp,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -69,7 +68,7 @@ fun DetailBovino(navController: NavController, animal: Animal) {
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
-                            Icons.Default.ArrowBack,
+                            Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.content_description_back),
                             tint = Color.White
                         )
@@ -93,47 +92,49 @@ fun DetailBovino(navController: NavController, animal: Animal) {
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             DetailCard(
-                title = "Indentificador del animal",
+                title = stringResource(R.string.detail_bovino_card_identifier),
                 accentColor = MainGreen
             ) {
                 DetailRow(
-                    label = "Identificador",
+                    label = stringResource(R.string.detail_bovino_label_identifier),
                     value = animal.identificador,
-                    mono = true
+                    mono = true,
+                    selectable = true
                 )
                 if (!animal.identificadorElectronic.isNullOrEmpty()) {
                     DetailDivider()
                     DetailRow(
-                        label = "Identificador electronico",
+                        label = stringResource(R.string.detail_bovino_label_electronic_id),
                         value = animal.identificadorElectronic,
-                        mono = true
+                        mono = true,
+                        selectable = true
                     )
                 }
                 if (!animal.tipusIdentificadorElectronic.isNullOrEmpty()) {
                     DetailDivider()
                     DetailRow(
-                        label = "Tipo de indentificador electronico",
+                        label = stringResource(R.string.detail_bovino_label_electronic_id_type),
                         value = animal.tipusIdentificadorElectronic
                     )
                 }
             }
 
             DetailCard(
-                title ="Información basica",
+                title = stringResource(R.string.detail_bovino_card_basic_info),
                 accentColor = MainGreen
             ) {
                 DetailRow(
-                    label ="Fecha de nacimiento",
+                    label = stringResource(R.string.detail_bovino_label_birth_date),
                     value = formatearFecha(animal.dataNaixement)
                 )
                 DetailDivider()
                 DetailRowSexe(
-                    label = "Sexo",
+                    label = stringResource(R.string.card_info_sex),
                     sexe = animal.sexe
                 )
                 DetailDivider()
                 DetailRow(
-                    label = "Raza",
+                    label = stringResource(R.string.detail_bovino_label_breed),
                     value = stringResource(elements.getRazaBovinasId(animal.raca))
                 )
             }
@@ -143,12 +144,12 @@ fun DetailBovino(navController: NavController, animal: Animal) {
                 !animal.identificadorMare.isNullOrEmpty()
             ) {
                 DetailCard(
-                    title = "Origenes del animal",
+                    title = stringResource(R.string.detail_bovino_card_origins),
                     accentColor = MainGreen
                 ) {
                     if (!animal.explotacioNaixement.isNullOrEmpty()) {
                         DetailRow(
-                            label = "Explotación de nacimientos",
+                            label = stringResource(R.string.detail_bovino_label_birth_farm),
                             value = animal.explotacioNaixement,
                             mono = true
                         )
@@ -156,7 +157,7 @@ fun DetailBovino(navController: NavController, animal: Animal) {
                     if (!animal.paisNaixement.isNullOrEmpty()) {
                         if (!animal.explotacioNaixement.isNullOrEmpty()) DetailDivider()
                         DetailRow(
-                            label = "Pais de nacimientos",
+                            label = stringResource(R.string.detail_bovino_label_birth_country),
                             value = stringResource(elements.getNombrePaisId(animal.paisNaixement))
                         )
                     }
@@ -165,9 +166,10 @@ fun DetailBovino(navController: NavController, animal: Animal) {
                             !animal.paisNaixement.isNullOrEmpty()
                         ) DetailDivider()
                         DetailRow(
-                            label = "Id de la madre",
+                            label = stringResource(R.string.detail_bovino_label_mother_id),
                             value = animal.identificadorMare,
-                            mono = true
+                            mono = true,
+                            selectable = true
                         )
                     }
                 }
@@ -214,7 +216,12 @@ private fun DetailCard(
 }
 
 @Composable
-private fun DetailRow(label: String, value: String, mono: Boolean = false) {
+private fun DetailRow(
+    label: String,
+    value: String,
+    mono: Boolean = false,
+    selectable: Boolean = false
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -228,15 +235,28 @@ private fun DetailRow(label: String, value: String, mono: Boolean = false) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1f)
         )
-        Text(
-            text = value,
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onSurface,
-            fontFamily = if (mono) FontFamily.Monospace else FontFamily.Default,
-            textAlign = TextAlign.End,
-            modifier = Modifier.weight(1f)
-        )
+        if (selectable) {
+            SelectionContainer(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = value,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontFamily = if (mono) FontFamily.Monospace else FontFamily.Default,
+                    textAlign = TextAlign.End
+                )
+            }
+        } else {
+            Text(
+                text = value,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface,
+                fontFamily = if (mono) FontFamily.Monospace else FontFamily.Default,
+                textAlign = TextAlign.End,
+                modifier = Modifier.weight(1f)
+            )
+        }
     }
 }
 
@@ -292,5 +312,4 @@ private fun DetailDivider() {
         color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
         thickness = 0.5.dp
     )
-
 }
