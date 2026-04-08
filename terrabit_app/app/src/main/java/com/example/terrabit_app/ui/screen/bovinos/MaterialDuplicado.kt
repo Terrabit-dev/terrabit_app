@@ -53,8 +53,8 @@ fun MaterialDuplicadosScreen(
     val elementosConCodigos = ElementosConCodigos()
 
     val empresaSubministradora by viewModel.empresaSubministradora.observeAsState("")
-    val tipoEnviamiento by viewModel.tipoEnviamiento.observeAsState("")
-    val tipoDireccionEnvio by viewModel.direccionEnvio.observeAsState("")
+    val tipoEnviamiento by viewModel.tipoEnviamiento.observeAsState(null)
+    val tipoDireccionEnvio by viewModel.direccionEnvio.observeAsState(null)
     val oficinaComarcal by viewModel.oficinaComarcal.observeAsState("")
     val direccionEnvio by viewModel.dirrecionEnvio.observeAsState("")
     val poblacion by viewModel.poblacion.observeAsState("")
@@ -249,7 +249,7 @@ fun MaterialDuplicadosScreen(
                             selectedValue = empresaSubministradora,
                             expanded = empresaExpandida,
                             placeholder = stringResource(R.string.form_suply_company_description),
-                            opciones = elementosConCodigos.tipoEmpresaSubministradora(),
+                            opciones = elementosConCodigos.getEmpresaSubministradora(),
                             enabled = !modoLectura,
                             onExpandedChange = { viewModel.toggleEmpresaExpandida() },
                             onDismissRequest = { viewModel.cerrarEmpresaMenu() },
@@ -261,7 +261,7 @@ fun MaterialDuplicadosScreen(
                             selectedValue = tipoEnviamiento,
                             expanded = tipoEnviamientoExpandido,
                             placeholder = stringResource(R.string.form_send_type_description),
-                            opciones = elementosConCodigos.tiposEnvios(),
+                            opciones = elementosConCodigos.getTiposEnvios(),
                             enabled = !modoLectura,
                             onExpandedChange = { viewModel.toggleTipoEnviamientoExpandido() },
                             onDismissRequest = { viewModel.cerrarTipoEnviamientoMenu() },
@@ -273,7 +273,7 @@ fun MaterialDuplicadosScreen(
                             selectedValue = tipoDireccionEnvio,
                             expanded = direccionEnvioExpandido,
                             placeholder = stringResource(R.string.form_send_address_description),
-                            opciones = elementosConCodigos.tiposDireccionEnvio(),
+                            opciones = elementosConCodigos.getTiposDireccionEnvio(),
                             enabled = !modoLectura,
                             onExpandedChange = { viewModel.toggleDireccionEnvioExpandido() },
                             onDismissRequest = { viewModel.cerrarDireccionEnvioMenu() },
@@ -287,7 +287,7 @@ fun MaterialDuplicadosScreen(
                                 selectedValue = oficinaComarcal,
                                 expanded = oficinaComarcalExpandido,
                                 placeholder = stringResource(R.string.form_comarcal_office_description),
-                                opciones = elementosConCodigos.tiposOficinasComarcales(),
+                                opciones = elementosConCodigos.getOficinasComarcales(),
                                 enabled = !modoLectura,
                                 onExpandedChange = { viewModel.toggleOficinaComarcalExpandido() },
                                 onDismissRequest = { viewModel.cerrarOficinaComarcalMenu() },
@@ -386,10 +386,10 @@ fun MaterialDuplicadosScreen(
                                 )
                                 DropdownField(
                                     label = stringResource(R.string.form_material_type) + " *",
-                                    selectedValue = elementosConCodigos.tiposMaterialDuplicados()[animal.tipusMaterial] ?: "",
+                                    selectedValue = elementosConCodigos.getTiposMaterialDuplicadosId(animal.tipusMaterial) ,
                                     expanded = materialesExpandidoPorIndice[indice] ?: false,
                                     placeholder = stringResource(R.string.form_state_arrival_description),
-                                    opciones = elementosConCodigos.tiposMaterialDuplicados(),
+                                    opciones = elementosConCodigos.getTiposMaterialDuplicados(),
                                     enabled = !modoLectura,
                                     onExpandedChange = { viewModel.toggleTipoMaterialExpandido(indice) },
                                     onDismissRequest = { viewModel.cerrarTipoMaterialMenu(indice) },

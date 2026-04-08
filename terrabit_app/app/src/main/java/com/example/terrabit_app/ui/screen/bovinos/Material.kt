@@ -46,15 +46,15 @@ fun Material(
     val modoLectura = historialId.isNotEmpty()
 
     val empresaSubministradora by viewModel.empresaSubministradora.observeAsState("")
-    val tipoEnviamiento by viewModel.tipoEnviamiento.observeAsState("")
-    val destinoLliurament by viewModel.destinoLliurament.observeAsState("")
+    val tipoEnviamiento by viewModel.tipoEnviamiento.observeAsState(null)
+    val destinoLliurament by viewModel.destinoLliurament.observeAsState(null)
     val oficinaComarcal by viewModel.oficinaComarcal.observeAsState("")
     val direccion by viewModel.direccion.observeAsState("")
     val poblacion by viewModel.poblacion.observeAsState("")
     val codigoPostal by viewModel.codigoPostal.observeAsState("")
     val municipio by viewModel.municipio.observeAsState("")
     val telefonoContacto by viewModel.telefonoContacto.observeAsState("")
-    val tipoMaterial by viewModel.tipoMaterial.observeAsState("")
+    val tipoMaterial by viewModel.tipoMaterial.observeAsState(null)
     val empresaExpandida by viewModel.empresaExpandida.observeAsState(false)
     val tipoEnviamientoExpandido by viewModel.tipoEnviamientoExpandido.observeAsState(false)
     val destinoExpandido by viewModel.destinoExpandido.observeAsState(false)
@@ -177,7 +177,7 @@ fun Material(
                             selectedValue = empresaSubministradora,
                             expanded = empresaExpandida,
                             placeholder = stringResource(R.string.form_suply_company_description),
-                            opciones = elementosConCodigos.tipoEmpresaSubministradora(),
+                            opciones = elementosConCodigos.getEmpresaSubministradora(),
                             enabled = !modoLectura,
                             onExpandedChange = { viewModel.toggleEmpresaExpandida() },
                             onDismissRequest = { viewModel.cerrarEmpresaMenu() },
@@ -189,7 +189,7 @@ fun Material(
                             selectedValue = tipoEnviamiento,
                             expanded = tipoEnviamientoExpandido,
                             placeholder = stringResource(R.string.form_send_type_description),
-                            opciones = elementosConCodigos.tiposEnvios(),
+                            opciones = elementosConCodigos.getTiposEnvios(),
                             enabled = !modoLectura,
                             onExpandedChange = { viewModel.toggleTipoEnviamientoExpandido() },
                             onDismissRequest = { viewModel.cerrarTipoEnviamientoMenu() },
@@ -201,7 +201,7 @@ fun Material(
                             selectedValue = destinoLliurament,
                             expanded = destinoExpandido,
                             placeholder = stringResource(R.string.form_send_address_description),
-                            opciones = elementosConCodigos.tiposDireccionEnvio(),
+                            opciones = elementosConCodigos.getTiposDireccionEnvio(),
                             enabled = !modoLectura,
                             onExpandedChange = { viewModel.toggleDestinoExpandido() },
                             onDismissRequest = { viewModel.cerrarDestinoMenu() },
@@ -215,7 +215,7 @@ fun Material(
                                 selectedValue = oficinaComarcal,
                                 expanded = oficinaComarcalExpandida,
                                 placeholder = stringResource(R.string.form_comarcal_office_description),
-                                opciones = elementosConCodigos.tiposOficinasComarcales(),
+                                opciones = elementosConCodigos.getOficinasComarcales(),
                                 enabled = !modoLectura,
                                 onExpandedChange = { viewModel.toggleOficinaComarcalExpandida() },
                                 onDismissRequest = { viewModel.cerrarOficinaComarcalMenu() },
@@ -241,7 +241,7 @@ fun Material(
                             selectedValue = tipoMaterial,
                             expanded = tipoMaterialExpandido,
                             placeholder = stringResource(R.string.form_material_type_description),
-                            opciones = elementosConCodigos.tiposMaterial(),
+                            opciones = elementosConCodigos.getTiposMaterial(),
                             enabled = !modoLectura,
                             onExpandedChange = { viewModel.toggleTipoMaterialExpandido() },
                             onDismissRequest = { viewModel.cerrarTipoMaterialMenu() },

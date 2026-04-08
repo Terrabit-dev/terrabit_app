@@ -65,7 +65,11 @@ fun CorregirSexoBovi(
 
     val mensajeCorreccionSexoExitosa = stringResource(R.string.successful_message_correct_sex)
     val mensajeErrorCorreccionSexo = stringResource(R.string.error_message_correct_sex)
-    val elementosConCodigos = remember { ElementosConCodigos() }
+
+    //Elementos con codigos
+    val elementosConCodigos =  ElementosConCodigos()
+    val tiposSexo = elementosConCodigos.getSexos()
+
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -202,7 +206,7 @@ fun CorregirSexoBovi(
                             selectedValue = sexoCorreccionSeleccionado,
                             expanded = sexoCorreccionExpandido,
                             placeholder = stringResource(R.string.form_send_address_description),
-                            opciones = elementosConCodigos.getSexos(),
+                            opciones = tiposSexo,
                             enabled = !modoLectura,
                             onExpandedChange = { viewModel.toggleSexoCorreccionExpandido() },
                             onDismissRequest = { viewModel.cerrarSexoCorreccionMenu() },

@@ -78,7 +78,11 @@ fun Nacimiento(
 
     val mensajeRegistroExitoso = stringResource(R.string.successful_message_born)
     val mensajeRegistroError = stringResource(R.string.error_message_born)
+
+    //Elementos con codigos
     val elementosConCodigos = ElementosConCodigos()
+    val razas = elementosConCodigos.getRazas()
+
     val context = LocalContext.current
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
 
@@ -88,8 +92,6 @@ fun Nacimiento(
 
     var madreUsb by remember { mutableStateOf(false) }
     var criaUsb by remember { mutableStateOf(false) }
-
-    val razas = elementosConCodigos.getRazas()
 
     LaunchedEffect(Unit) {
         usbViewModel.mensajes.collect { mensaje ->

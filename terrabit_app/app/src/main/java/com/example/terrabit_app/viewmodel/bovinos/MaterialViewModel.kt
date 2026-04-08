@@ -45,11 +45,11 @@ class MaterialViewModel @Inject constructor(
     val empresaSubministradora = _empresaSubministradora
     private val _codigoEmpresa = MutableLiveData("")
 
-    private val _tipoEnviamiento = MutableLiveData("")
+    private val _tipoEnviamiento = MutableLiveData(0)
     val tipoEnviamiento = _tipoEnviamiento
     private var codigoTipoEnvio = ""
 
-    private val _destinoLliurament = MutableLiveData("")
+    private val _destinoLliurament = MutableLiveData(0)
     val destinoLliurament = _destinoLliurament
     private var codiDestinoEnvio = ""
 
@@ -75,7 +75,7 @@ class MaterialViewModel @Inject constructor(
     private val _identificadorMaterial = MutableLiveData("")
     val identificadorMaterial = _identificadorMaterial
 
-    private val _tipoMaterial = MutableLiveData("")
+    private val _tipoMaterial = MutableLiveData(0)
     val tipoMaterial = _tipoMaterial
     private val _codigoTipoMaterial = MutableLiveData("")
 
@@ -115,9 +115,9 @@ class MaterialViewModel @Inject constructor(
 
     fun tieneContenido(): Boolean {
         return !_empresaSubministradora.value.isNullOrEmpty() ||
-                !_tipoEnviamiento.value.isNullOrEmpty() ||
-                !_destinoLliurament.value.isNullOrEmpty() ||
-                !_tipoMaterial.value.isNullOrEmpty() ||
+                (_tipoEnviamiento.value?: 0) !=0 ||
+                (_destinoLliurament.value?:0)!=0 ||
+                (_tipoMaterial.value?:0)!=0 ||
                 (_listaUnidades.value?.any { !it.nombreUnitats.isNullOrEmpty() } == true)
     }
 
@@ -170,11 +170,12 @@ class MaterialViewModel @Inject constructor(
                     borrador.datos,
                     object : TypeToken<Map<String, Any?>>() {}.type
                 )
+                val tipoEnviamientoGuardado = datos["tipoEnviamiento"]
                 _empresaSubministradora.value = datos["empresaSubministradora"] as? String ?: ""
                 _codigoEmpresa.value = datos["codigoEmpresa"] as? String ?: ""
-                _tipoEnviamiento.value = datos["tipoEnviamiento"] as? String ?: ""
+                _tipoEnviamiento.value = (tipoEnviamientoGuardado as? Double)?.toInt()
                 codigoTipoEnvio = datos["codigoTipoEnvio"] as? String ?: ""
-                _destinoLliurament.value = datos["destinoLliurament"] as? String ?: ""
+                _destinoLliurament.value = (datos["destinoLliurament"] as? Double)?.toInt()
                 codiDestinoEnvio = datos["codiDestinoEnvio"] as? String ?: ""
                 _oficinaComarcal.value = datos["oficinaComarcal"] as? String ?: ""
                 codigoOC = datos["codigoOC"] as? String ?: ""
@@ -183,7 +184,7 @@ class MaterialViewModel @Inject constructor(
                 _codigoPostal.value = datos["codigoPostal"] as? String ?: ""
                 _municipio.value = datos["municipio"] as? String ?: ""
                 _telefonoContacto.value = datos["telefonoContacto"] as? String ?: ""
-                _tipoMaterial.value = datos["tipoMaterial"] as? String ?: ""
+                _tipoMaterial.value = (datos["tipoMaterial"] as? Double)?.toInt()
                 _codigoTipoMaterial.value = datos["codigoTipoMaterial"] as? String ?: ""
                 val listaJson = datos["listaUnidades"] as? List<*>
                 if (listaJson != null) {
@@ -237,9 +238,9 @@ class MaterialViewModel @Inject constructor(
     }
 
     fun seleccionarEmpresa(nombre: String, nif: String) { _empresaSubministradora.value = nombre; _codigoEmpresa.value = nif; _empresaExpandida.value = false }
-    fun seleccionarTipoEnviamiento(tipo: String, codigo: String) { _tipoEnviamiento.value = tipo; codigoTipoEnvio = codigo; _tipoEnviamientoExpandido.value = false }
+    fun seleccionarTipoEnviamiento(tipo: Int, codigo: String) { _tipoEnviamiento.value = tipo; codigoTipoEnvio = codigo; _tipoEnviamientoExpandido.value = false }
 
-    fun seleccionarDestino(destino: String, codigo: String) {
+    fun seleccionarDestino(destino: Int, codigo: String) {
         _destinoLliurament.value = destino
         codiDestinoEnvio = codigo
         when (codigo) {
@@ -250,7 +251,7 @@ class MaterialViewModel @Inject constructor(
     }
 
     fun seleccionarOficinaComarcal(nombre: String, codigo: String) { _oficinaComarcal.value = nombre; codigoOC = codigo; _oficinaComarcalExpandida.value = false }
-    fun seleccionarTipoMaterial(nombre: String, codigo: String) { _tipoMaterial.value = nombre; _codigoTipoMaterial.value = codigo; _tipoMaterialExpandido.value = false }
+    fun seleccionarTipoMaterial(nombre: Int, codigo: String) { _tipoMaterial.value = nombre; _codigoTipoMaterial.value = codigo; _tipoMaterialExpandido.value = false }
 
     fun actualizarDireccion(valor: String) { _direccion.value = valor }
     fun actualizarPoblacion(valor: String) { _poblacion.value = valor }
@@ -280,9 +281,9 @@ class MaterialViewModel @Inject constructor(
 
     fun esFormularioMaterialValido(): Boolean {
         if (_empresaSubministradora.value.isNullOrEmpty()) return false
-        if (_tipoEnviamiento.value.isNullOrEmpty()) return false
-        if (_destinoLliurament.value.isNullOrEmpty()) return false
-        if (_tipoMaterial.value.isNullOrEmpty()) return false
+        if ((_tipoEnviamiento.value?: 0) !=0) return false
+        if ((_destinoLliurament.value?:0)!=0) return false
+        if ((_tipoMaterial.value?:0)!=0) return false
         when (codiDestinoEnvio) {
             "01" -> if (codigoOC.isEmpty()) return false
             "03" -> {
@@ -304,15 +305,15 @@ class MaterialViewModel @Inject constructor(
         if (!esFormularioMaterialValido()) {
             _mensajeErrorMaterial.value = when {
                 _empresaSubministradora.value.isNullOrEmpty() -> "Por favor, seleccione la empresa subministradora"
-                _tipoEnviamiento.value.isNullOrEmpty() -> "Por favor, seleccione el tipo de envío"
-                _destinoLliurament.value.isNullOrEmpty() -> "Por favor, seleccione el destino de entrega"
+                (_tipoEnviamiento.value?: 0) !=0 -> "Por favor, seleccione el tipo de envío"
+                (_destinoLliurament.value?:0)!=0 -> "Por favor, seleccione el destino de entrega"
                 codiDestinoEnvio == "01" && codigoOC.isEmpty() -> "Por favor, seleccione la oficina comarcal"
                 codiDestinoEnvio == "03" && _direccion.value.isNullOrEmpty() -> "Por favor, introduzca la dirección"
                 codiDestinoEnvio == "03" && _poblacion.value.isNullOrEmpty() -> "Por favor, introduzca la población"
                 codiDestinoEnvio == "03" && _codigoPostal.value.isNullOrEmpty() -> "Por favor, introduzca el código postal"
                 codiDestinoEnvio == "03" && _municipio.value.isNullOrEmpty() -> "Por favor, introduzca el municipio"
                 codiDestinoEnvio == "03" && _telefonoContacto.value.isNullOrEmpty() -> "Por favor, introduzca el teléfono de contacto"
-                _tipoMaterial.value.isNullOrEmpty() -> "Por favor, seleccione el tipo de material"
+                (_tipoMaterial.value?:0) !=0 -> "Por favor, seleccione el tipo de material"
                 _listaUnidades.value?.any { it.nombreUnitats.isNullOrEmpty() } == true -> "Por favor, introduzca el número de unidades en cada fila"
                 codiMoEsObligatorio() && _listaUnidades.value?.any { it.codiExplotacio.isNullOrEmpty() } == true -> "El Codi MO es obligatorio para el tipo de material seleccionado"
                 else -> "Por favor, complete todos los campos obligatorios"
@@ -384,12 +385,12 @@ class MaterialViewModel @Inject constructor(
 
     fun limpiarFormularioMaterial() {
         _empresaSubministradora.value = ""; _codigoEmpresa.value = ""
-        _tipoEnviamiento.value = ""; codigoTipoEnvio = ""
-        _destinoLliurament.value = ""; codiDestinoEnvio = ""
+        _tipoEnviamiento.value = null; codigoTipoEnvio = ""
+        _destinoLliurament.value = null; codiDestinoEnvio = ""
         _oficinaComarcal.value = ""; codigoOC = ""
         _direccion.value = ""; _poblacion.value = ""; _codigoPostal.value = ""
         _municipio.value = ""; _telefonoContacto.value = ""
-        _tipoMaterial.value = ""; _codigoTipoMaterial.value = ""
+        _tipoMaterial.value = null; _codigoTipoMaterial.value = ""
         _listaUnidades.value = listOf(Unitat(codiExplotacio = "", nombreUnitats = ""))
         borradorSesionId = ""
     }
@@ -449,11 +450,12 @@ class MaterialViewModel @Inject constructor(
                     registro.datos,
                     object : TypeToken<Map<String, Any?>>() {}.type
                 )
+                val tipoEnviamientoGuardado = datos["tipoEnviamiento"]
                 _empresaSubministradora.value = datos["empresaSubministradora"] as? String ?: ""
                 _codigoEmpresa.value = datos["codigoEmpresa"] as? String ?: ""
-                _tipoEnviamiento.value = datos["tipoEnviamiento"] as? String ?: ""
+                _tipoEnviamiento.value =(tipoEnviamientoGuardado as? Double)?.toInt()
                 codigoTipoEnvio = datos["codigoTipoEnvio"] as? String ?: ""
-                _destinoLliurament.value = datos["destinoLliurament"] as? String ?: ""
+                _destinoLliurament.value = (datos["destinoLliurament"] as? Double)?.toInt()
                 codiDestinoEnvio = datos["codiDestinoEnvio"] as? String ?: ""
                 _oficinaComarcal.value = datos["oficinaComarcal"] as? String ?: ""
                 codigoOC = datos["codigoOC"] as? String ?: ""
@@ -462,7 +464,7 @@ class MaterialViewModel @Inject constructor(
                 _codigoPostal.value = datos["codigoPostal"] as? String ?: ""
                 _municipio.value = datos["municipio"] as? String ?: ""
                 _telefonoContacto.value = datos["telefonoContacto"] as? String ?: ""
-                _tipoMaterial.value = datos["tipoMaterial"] as? String ?: ""
+                _tipoMaterial.value =(datos["tipoMaterial"] as? Double)?.toInt()
                 _codigoTipoMaterial.value = datos["codigoTipoMaterial"] as? String ?: ""
                 val listaJson = datos["listaUnidades"] as? List<*>
                 if (listaJson != null) {

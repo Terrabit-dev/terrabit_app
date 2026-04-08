@@ -103,7 +103,10 @@ fun GestionGuias(
     val successMessage = stringResource(R.string.success_create_guide)
     val datePlaceholder = stringResource(R.string.form_date_description)
     val hourPlaceholder = stringResource(R.string.form_hour_arrival_description)
+
+    // Elementos con codigos
     val elementosConCodigos = ElementosConCodigos()
+    val opcionesApi = elementosConCodigos.getOpcionesSiNo()
 
     val usbViewModel = hiltViewModel<UsbSerialViewModel>()
     val usbState by usbViewModel.state.collectAsState()
@@ -371,7 +374,7 @@ fun GestionGuias(
                             selectedValue = temporal,
                             expanded = if (modoLectura) false else temporalExpandido,
                             placeholder = stringResource(R.string.form_yes_no),
-                            opciones = elementosConCodigos.getOpcionesSiNo(),
+                            opciones = opcionesApi,
                             onExpandedChange = { if (!modoLectura) viewModel.toggleTemporalExpandido() },
                             onDismissRequest = { viewModel.cerrarTemporalMenu() },
                             onSeleccionar = { codigo, nombre -> if (!modoLectura) viewModel.seleccionarTemporal(nombre, codigo) },
@@ -393,7 +396,7 @@ fun GestionGuias(
                             selectedValue = mobilitat,
                             expanded = if (modoLectura) false else mobilitatExpandido,
                             placeholder = stringResource(R.string.form_yes_no),
-                            opciones = elementosConCodigos.getOpcionesSiNo(),
+                            opciones = opcionesApi,
                             onExpandedChange = { if (!modoLectura) viewModel.toggleMobilitatExpandido() },
                             onDismissRequest = { viewModel.cerrarMobilitatMenu() },
                             onSeleccionar = { codigo, nombre -> if (!modoLectura) viewModel.seleccionarMobilitat(nombre, codigo) },

@@ -60,11 +60,16 @@ fun Movimientos(
     movimientoSeleccionado: Moviment
 ) {
     val viewModel = hiltViewModel<MovimientosViewModel>()
+    // Elementos con codigos
     val elementosConCodigos = ElementosConCodigos()
     val transportMap = elementosConCodigos.getTransportes()
+    val estadosLLegada = elementosConCodigos.getEstadosLLegada()
+    val tiposPresentacion = elementosConCodigos.getTiposPresentacion()
+
+
     LaunchedEffect(movimientoSeleccionado.codiRemo) {
         if (movimientoSeleccionado.codiRemo.isNotEmpty()) {
-            val transportNombre = transportMap[movimientoSeleccionado.mitjaTransport]
+            val transportNombre = elementosConCodigos.getTransportesId(movimientoSeleccionado.mitjaTransport)
             viewModel.cargarDatosMovimiento(movimientoSeleccionado, transportNombre)
         }
     }
@@ -587,10 +592,10 @@ fun Movimientos(
 
                                     DropdownField(
                                         label = stringResource(R.string.form_state_arrival),
-                                        selectedValue = elementosConCodigos.getEstadosLLegada()[animal.estatArribada],
+                                        selectedValue = estadosLLegada[animal.estatArribada],
                                         expanded = estatExpandidoPorIndice[index] ?: false,
                                         placeholder = stringResource(R.string.form_state_arrival_description),
-                                        opciones = elementosConCodigos.getEstadosLLegada(),
+                                        opciones = estadosLLegada,
                                         enabled = !modoLectura,
                                         onExpandedChange = { viewModel.toggleEstatArribadaExpandido(index) },
                                         onDismissRequest = { viewModel.cerrarEstatArribadaMenu(index) },
@@ -638,10 +643,10 @@ fun Movimientos(
 
                                         DropdownField(
                                             label = stringResource(R.string.form_type_presentation),
-                                            selectedValue = elementosConCodigos.tiposPresentacion()[animal.tipusPresentacio] ?: "",
+                                            selectedValue = tiposPresentacion[animal.tipusPresentacio] ?: "",
                                             expanded = tipusExpandidoPorIndice[index] ?: false,
                                             placeholder = stringResource(R.string.form_type_presentation_description),
-                                            opciones = elementosConCodigos.tiposPresentacion(),
+                                            opciones = tiposPresentacion,
                                             enabled = !modoLectura,
                                             onExpandedChange = { viewModel.toggleTipusPresentacioExpandido(index) },
                                             onDismissRequest = { viewModel.cerrarTipusPresentacioMenu(index) },

@@ -191,8 +191,7 @@ class ViewModelMuerteBovi @Inject constructor(
                     borrador.datos,
                     object : TypeToken<Map<String, Any?>>() {}.type
                 )
-                val muerteGuardada = datos["tipo"]
-                _tipoMuerte.value = (muerteGuardada as? Double)?.toInt() ?: 0
+                _tipoMuerte.value = (datos["tipo"] as? Double)?.toInt() ?: 0
                 _codigoTipoMuerte.value = datos["codigoTipo"] as? String ?: ""
                 _identificadorAnimal.value = datos["identificador"] as? String ?: ""
                 _fechaMuerte.value = datos["fecha"] as? String ?: ""
@@ -421,8 +420,7 @@ class ViewModelMuerteBovi @Inject constructor(
                     registro.datos,
                     object : TypeToken<Map<String, Any?>>() {}.type
                 )
-                val muerteGuardada = datos["tipo"]
-                _tipoMuerte.value = (muerteGuardada as? Double)?.toInt() ?: 0
+                _tipoMuerte.value = (datos["tipo"] as? Double)?.toInt() ?: 0
                 _codigoTipoMuerte.value = datos["codigoTipo"] as? String ?: ""
                 _identificadorAnimal.value = datos["identificador"] as? String ?: ""
                 _fechaMuerte.value = datos["fecha"] as? String ?: ""

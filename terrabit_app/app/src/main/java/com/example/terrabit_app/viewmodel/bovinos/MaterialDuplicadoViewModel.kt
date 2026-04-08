@@ -63,11 +63,11 @@ class MaterialDuplicadoViewModel @Inject constructor(
     val empresaSubministradora = _empresaSubministradora
     private var codigoEmpresaSubministradora = ""
 
-    private val _tipoEnviamiento = MutableLiveData("")
+    private val _tipoEnviamiento = MutableLiveData(0)
     val tipoEnviamiento = _tipoEnviamiento
     private var codigoTipoEnviamiento = ""
 
-    private val _direccionEnvio = MutableLiveData("")
+    private val _direccionEnvio = MutableLiveData(0)
     val direccionEnvio = _direccionEnvio
     private var codigoDireccionEnvio = ""
 
@@ -154,8 +154,8 @@ class MaterialDuplicadoViewModel @Inject constructor(
 
     fun tieneContenido(): Boolean {
         return !_empresaSubministradora.value.isNullOrEmpty() ||
-                !_tipoEnviamiento.value.isNullOrEmpty() ||
-                !_direccionEnvio.value.isNullOrEmpty() ||
+                (_tipoEnviamiento.value?: 0)!=0 ||
+                (_direccionEnvio.value?:0)!=0 ||
                 (_listaAnimales.value?.any { it.identificador.isNotEmpty() } == true)
     }
 
@@ -208,9 +208,9 @@ class MaterialDuplicadoViewModel @Inject constructor(
                 )
                 _empresaSubministradora.value = datos["empresaSubministradora"] as? String ?: ""
                 codigoEmpresaSubministradora = datos["codigoEmpresaSubministradora"] as? String ?: ""
-                _tipoEnviamiento.value = datos["tipoEnviamiento"] as? String ?: ""
+                _tipoEnviamiento.value = (datos["tipoEnviamiento"] as? Double)?.toInt()
                 codigoTipoEnviamiento = datos["codigoTipoEnviamiento"] as? String ?: ""
-                _direccionEnvio.value = datos["direccionEnvio"] as? String ?: ""
+                _direccionEnvio.value = (datos["direccionEnvio"] as? Double)?.toInt()
                 codigoDireccionEnvio = datos["codigoDireccionEnvio"] as? String ?: ""
                 _oficinaComarcal.value = datos["oficinaComarcal"] as? String ?: ""
                 codigoOficinaComarcal = datos["codigoOficinaComarcal"] as? String ?: ""
@@ -314,9 +314,9 @@ class MaterialDuplicadoViewModel @Inject constructor(
     fun cerrarOficinaComarcalMenu() { _oficinaComarcalExpandido.value = false }
 
     fun seleccionarEmpresa(codigo: String, nombre: String) { _empresaSubministradora.value = nombre; codigoEmpresaSubministradora = codigo; cerrarEmpresaMenu() }
-    fun seleccionarTipoEnviamiento(codigo: String, nombre: String) { _tipoEnviamiento.value = nombre; codigoTipoEnviamiento = codigo; cerrarTipoEnviamientoMenu() }
+    fun seleccionarTipoEnviamiento(codigo: String, nombre: Int) { _tipoEnviamiento.value = nombre; codigoTipoEnviamiento = codigo; cerrarTipoEnviamientoMenu() }
 
-    fun seleccionarDireccionEnvio(codigo: String, nombre: String) {
+    fun seleccionarDireccionEnvio(codigo: String, nombre: Int) {
         _direccionEnvio.value = nombre; codigoDireccionEnvio = codigo; cerrarDireccionEnvioMenu()
         when (codigo) {
             "01" -> { _dirrecionEnvio.value = ""; _poblacion.value = ""; _codigoPostal.value = ""; _municipio.value = ""; _telefonoContacto.value = "" }
@@ -431,8 +431,8 @@ class MaterialDuplicadoViewModel @Inject constructor(
 
     fun limpiarFormulario() {
         _empresaSubministradora.value = ""; codigoEmpresaSubministradora = ""
-        _tipoEnviamiento.value = ""; codigoTipoEnviamiento = ""
-        _direccionEnvio.value = ""; codigoDireccionEnvio = ""
+        _tipoEnviamiento.value = null; codigoTipoEnviamiento = ""
+        _direccionEnvio.value = null; codigoDireccionEnvio = ""
         _oficinaComarcal.value = ""; codigoOficinaComarcal = ""
         _dirrecionEnvio.value = ""; _poblacion.value = ""; _codigoPostal.value = ""
         _municipio.value = ""; _telefonoContacto.value = ""
@@ -486,9 +486,9 @@ class MaterialDuplicadoViewModel @Inject constructor(
                 )
                 _empresaSubministradora.value = datos["empresaSubministradora"] as? String ?: ""
                 codigoEmpresaSubministradora = datos["codigoEmpresaSubministradora"] as? String ?: ""
-                _tipoEnviamiento.value = datos["tipoEnviamiento"] as? String ?: ""
+                _tipoEnviamiento.value = (datos["tipoEnviamiento"]  as? Double)?.toInt()
                 codigoTipoEnviamiento = datos["codigoTipoEnviamiento"] as? String ?: ""
-                _direccionEnvio.value = datos["direccionEnvio"] as? String ?: ""
+                _direccionEnvio.value = (datos["direccionEnvio"] as? Double)?.toInt()
                 codigoDireccionEnvio = datos["codigoDireccionEnvio"] as? String ?: ""
                 _oficinaComarcal.value = datos["oficinaComarcal"] as? String ?: ""
                 codigoOficinaComarcal = datos["codigoOficinaComarcal"] as? String ?: ""

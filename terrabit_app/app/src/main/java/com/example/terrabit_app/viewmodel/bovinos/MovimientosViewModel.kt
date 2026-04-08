@@ -310,8 +310,7 @@ class MovimientosViewModel @Inject constructor(
                 _codiAtes.value = datos["codiAtes"] as? String ?: ""
                 _nomTransportista.value = datos["nomTransportista"] as? String ?: ""
                 _matricula.value = datos["matricula"] as? String ?: ""
-                val transporteGuardado = datos["mitjaTransport"]
-                _mitjaTransport.value = (transporteGuardado as? Double)?.toInt() ?: 0
+                _mitjaTransport.value = ( datos["mitjaTransport"] as? Double)?.toInt() ?: 0
                 _nifConductor.value = datos["nifConductor"] as? String ?: ""
                 _nomConductor.value = datos["nomConductor"] as? String ?: ""
                 _explotacioDestinacio.value = datos["explotacioDestinacio"] as? String ?: ""
@@ -692,8 +691,7 @@ class MovimientosViewModel @Inject constructor(
                 _codiAtes.value = datos["codiAtes"] as? String ?: ""
                 _nomTransportista.value = datos["nomTransportista"] as? String ?: ""
                 _matricula.value = datos["matricula"] as? String ?: ""
-                val transporteGuardado = datos["mitjaTransport"]
-                _mitjaTransport.value = (transporteGuardado as? Double)?.toInt() ?: 0
+                _mitjaTransport.value = (datos["mitjaTransport"] as? Double)?.toInt() ?: 0
                 _nifConductor.value = datos["nifConductor"] as? String ?: ""
                 _nomConductor.value = datos["nomConductor"] as? String ?: ""
                 _explotacioDestinacio.value = datos["explotacioDestinacio"] as? String ?: ""

@@ -46,6 +46,8 @@ import com.example.terrabit_app.utils.ElementosConCodigos
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailBovino(navController: NavController, animal: Animal) {
+
+    //Elementos con codigos
     val elements = ElementosConCodigos()
     Scaffold(
         topBar = {
