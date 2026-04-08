@@ -304,7 +304,7 @@ fun Nacimiento(
                     ) {
 
                         if (!modoLectura) {
-                            useDebounce(idMadre, delayMillis = 300L) { viewModel.searchBovinos( it) }
+                            useDebounce(idMadre, delayMillis = 300L) { viewModel.searchBovinosConCampo( 0,it) }
                         }
                         CampoIdentificadorAutoComplete(
                             label = stringResource(R.string.form_id_mother),
@@ -330,7 +330,7 @@ fun Nacimiento(
                         )
 
                         if (!modoLectura) {
-                            useDebounce(idCria, delayMillis = 300L) { viewModel.searchBovinos( it) }
+                            useDebounce(idCria, delayMillis = 300L) { viewModel.searchBovinosConCampo( 1,it) }
                         }
                         CampoIdentificadorAutoComplete(
                             label = stringResource(R.string.form_id_breeding),
