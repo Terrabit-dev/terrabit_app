@@ -4,8 +4,6 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
-
-
 }
 
 android {
@@ -26,13 +24,20 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
+
+            //ofuscacion de codigo
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
         }
+        debug {
+            isMinifyEnabled = false
+        }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -52,7 +57,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
     implementation(libs.androidx.appcompat)
 
-    // Compose BOM (Solo se declara una vez)
+    // Compose BOM
     implementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(platform(libs.androidx.compose.bom))
 
@@ -64,11 +69,11 @@ dependencies {
     implementation(libs.androidx.compose.ui.text)
     implementation("androidx.compose.ui:ui-text-google-fonts:1.7.0")
 
-    // Foundation (Aquí vive LazyColumn. Eliminamos las 3 duplicaciones que tenías)
+    // Foundation
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.compose.foundation.layout)
 
-    // Material 3 & Icons (Eliminamos las duplicaciones)
+    // Material 3 & Icons
     implementation(libs.androidx.compose.material3)
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
 
