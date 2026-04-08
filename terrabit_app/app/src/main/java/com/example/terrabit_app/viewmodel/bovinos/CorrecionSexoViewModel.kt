@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.example.terrabit_app.R
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.animales.PetModicarAnimal
 import com.example.terrabit_app.data.network.lista_bovinos.Animal
@@ -99,6 +100,13 @@ class CorrecionSexoViewModel @Inject constructor(
         }
     }
 
+    // Función auxiliar para mapear el código de sexo al resource ID correcto
+    private fun sexoCodigoAResourceId(codigo: String): Int = when (codigo) {
+        "01" -> R.string.card_info_sex_male
+        "02" -> R.string.card_info_sex_female
+        else -> 0
+    }
+
     fun searchBovinos(query: String) {
         if (query.isBlank()) {
             _suggestionsBovinos.value = emptyList()
@@ -184,12 +192,9 @@ class CorrecionSexoViewModel @Inject constructor(
                     object : TypeToken<Map<String, Any?>>() {}.type
                 )
                 _identificadorAnimal.value = datos["identificador"] as? String ?: ""
-
-                // Gson recupera los números como Double. Debemos castearlo de forma segura.
-                val sexoGuardado = datos["sexoSeleccionado"]
-                _sexoCorreccionSeleccionado.value = (sexoGuardado as? Double)?.toInt() ?: 0
-
                 codigoSexo = datos["codigoSexo"] as? String ?: ""
+                // Reconstruir el resource ID desde el código guardado
+                _sexoCorreccionSeleccionado.value = sexoCodigoAResourceId(codigoSexo)
             } catch (e: Exception) {
                 Log.e("CorrecionSexoVM", "Error al cargar borrador por ID: ${e.message}", e)
             }
@@ -222,12 +227,9 @@ class CorrecionSexoViewModel @Inject constructor(
                     object : TypeToken<Map<String, Any?>>() {}.type
                 )
                 _identificadorAnimal.value = datos["identificador"] as? String ?: ""
-
-                // Conversión segura de Double a Int para el valor guardado
-                val sexoGuardado = datos["sexoSeleccionado"]
-                _sexoCorreccionSeleccionado.value = (sexoGuardado as? Double)?.toInt() ?: 0
-
                 codigoSexo = datos["codigoSexo"] as? String ?: ""
+                // Reconstruir el resource ID desde el código guardado
+                _sexoCorreccionSeleccionado.value = sexoCodigoAResourceId(codigoSexo)
             } catch (e: Exception) {
                 Log.e("Error Cargar Borrador", "Error al cargar: ${e.message}", e)
             }
@@ -361,12 +363,9 @@ class CorrecionSexoViewModel @Inject constructor(
                     object : TypeToken<Map<String, Any?>>() {}.type
                 )
                 _identificadorAnimal.value = datos["identificador"] as? String ?: ""
-
-                // Conversión segura
-                val sexoGuardado = datos["sexoSeleccionado"]
-                _sexoCorreccionSeleccionado.value = (sexoGuardado as? Double)?.toInt() ?: 0
-
                 codigoSexo = datos["codigoSexo"] as? String ?: ""
+                // Reconstruir el resource ID desde el código guardado
+                _sexoCorreccionSeleccionado.value = sexoCodigoAResourceId(codigoSexo)
             } catch (e: Exception) {
                 Log.e("CorrecionSexoVM", "Error al cargar desde historial: ${e.message}", e)
             }

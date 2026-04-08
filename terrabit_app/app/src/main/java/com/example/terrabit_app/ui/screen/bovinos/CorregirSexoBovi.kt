@@ -205,7 +205,7 @@ fun CorregirSexoBovi(
                             label = stringResource(R.string.form_sex),
                             selectedValue = sexoCorreccionSeleccionado,
                             expanded = sexoCorreccionExpandido,
-                            placeholder = stringResource(R.string.form_send_address_description),
+                            placeholder = stringResource(R.string.form_sex_description),
                             opciones = tiposSexo,
                             enabled = !modoLectura,
                             onExpandedChange = { viewModel.toggleSexoCorreccionExpandido() },
