@@ -73,6 +73,10 @@ fun Material(
     val codigoDestino = viewModel.getCodiDestinoEnvio()
     val codiMoObligatorio = viewModel.codiMoEsObligatorio()
 
+    val direccionAlternativa = "03"
+    val direccionExplotacion = "02"
+    val direccionOficinaComarcal = "01"
+
     val mensajeExito = stringResource(R.string.successful_message_material)
 
     LaunchedEffect(registroExitoso) {
@@ -209,7 +213,7 @@ fun Material(
                             accentColor = MainGreen
                         )
 
-                        if (codigoDestino == "01") {
+                        if (viewModel.getCodiDestinoEnvio() == direccionOficinaComarcal) {
                             DropdownField(
                                 label = stringResource(R.string.form_comarcal_office) + " *",
                                 selectedValue = oficinaComarcal,
@@ -219,13 +223,13 @@ fun Material(
                                 enabled = !modoLectura,
                                 onExpandedChange = { viewModel.toggleOficinaComarcalExpandida() },
                                 onDismissRequest = { viewModel.cerrarOficinaComarcalMenu() },
-                                onSeleccionar = { codigo, nombre -> viewModel.seleccionarOficinaComarcal(codigo, nombre) },
+                                onSeleccionar = { codigo, nombre -> viewModel.seleccionarOficinaComarcal(nombre, codigo) },
                                 accentColor = MainGreen
                             )
                         }
 
-                        if (codigoDestino == "02" || codigoDestino == "03") {
-                            if (codigoDestino == "02") {
+                        if (viewModel.getCodiDestinoEnvio() == direccionExplotacion || viewModel.getCodiDestinoEnvio() == direccionAlternativa) {
+                            if (viewModel.getCodiDestinoEnvio() == direccionExplotacion) {
                                 Text(stringResource(R.string.mesagge_send_dades), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant, letterSpacing = 0.15.sp)
                             }
                             val sufijo = if (codigoDestino == "03") " *" else ""

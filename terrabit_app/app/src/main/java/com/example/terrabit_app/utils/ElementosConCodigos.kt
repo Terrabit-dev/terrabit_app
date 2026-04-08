@@ -59,7 +59,7 @@ class ElementosConCodigos {
 
 
     private val mapaTiposDireccionEnvio: Map<String, Int> = mapOf(
-        "01" to R.string.option_oc, // Asegúrate de crear este recurso en tu strings.xml
+        "01" to R.string.option_oc,
         "02" to R.string.option_rancher,
         "03" to R.string.option_alternative_address
     )
