@@ -1,7 +1,5 @@
 package com.example.terrabit_app.utils
 
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.stringResource
 import com.example.terrabit_app.R
 import kotlin.String
 
@@ -147,78 +145,6 @@ class ElementosConCodigos {
         "1148" to R.string.raza_1148, "0229" to R.string.raza_0229, "0230" to R.string.raza_0230,
         "0231" to R.string.raza_0231, "0232" to R.string.raza_0232
     )
-
-    fun getRazas(): Map<String, Int> {
-        return mapaRazas
-    }
-
-    fun getRazaBovinasId(codigo: String): Int {
-        return mapaRazas[codigo] ?: R.string.raza_0099 // Devuelve "Desconocida" por defecto
-    }
-
-    fun getSexos(): Map<String, Int>{
-        return mapaSexos
-    }
-
-    fun getAptitudes(): Map<String, Int>{
-        return mapaAptitudes
-    }
-
-    fun getMuertes() : Map<String, Int>{
-        return mapaMuertes
-    }
-
-    fun getTransportes(): Map<String, Int>{
-        return mapaTransporte
-    }
-
-    fun getTransportesId(id: String?): Int{
-        if (id != null) {
-            return mapaTransporte[id] ?: R.string.option_other
-        }
-        return R.string.option_other
-    }
-    fun getOpcionesSiNo(): Map<String, Int>{
-        return mapaOpcionesSiNo
-    }
-
-    fun getEstadosLLegada():Map<String, Int>{
-        return  mapaEstadosLlegada
-    }
-
-    fun getTiposPresentacion(): Map<String, String>{
-        return mapaTiposPresentacion
-    }
-
-    fun getTiposEnvios(): Map<String, Int>{
-        return mapaTiposEnvios
-    }
-
-    fun getTiposDireccionEnvio(): Map<String, Int>{
-        return mapaTiposDireccionEnvio
-    }
-
-    fun getTiposMaterialDuplicados(): Map<String, Int>{
-        return mapaTiposMaterialDuplicados
-    }
-    fun getTiposMaterialDuplicadosId(id: String?): Int?{
-        if (id != null) {
-            return mapaTiposMaterialDuplicados[id]
-        }
-        return R.string.option_other
-    }
-
-    fun getTiposMaterial(): Map<String, Int>{
-        return mapaTiposMaterial
-    }
-    fun getOficinasComarcales(): Map<String, String>{
-        return mapaOficinasComarcales
-    }
-    fun getEmpresaSubministradora(): Map<String, String>{
-        return mapaEmpresaSubministradora
-    }
-
-
     private val mapaPaises: Map<String, Int> = mapOf(
         "000" to R.string.pais_000, "101" to R.string.pais_101, "102" to R.string.pais_102,
         "103" to R.string.pais_103, "104" to R.string.pais_104, "105" to R.string.pais_105,
@@ -299,6 +225,75 @@ class ElementosConCodigos {
         "415" to R.string.pais_415, "999" to R.string.pais_999
     )
 
+    fun getRazas(): Map<String, Int> {
+        return mapaRazas
+    }
+
+    fun getRazaBovinasId(codigo: String): Int {
+        return mapaRazas[codigo] ?: R.string.raza_0099 // Devuelve "Desconocida" por defecto
+    }
+
+    fun getSexos(): Map<String, Int>{
+        return mapaSexos
+    }
+
+    fun getAptitudes(): Map<String, Int>{
+        return mapaAptitudes
+    }
+
+    fun getMuertes() : Map<String, Int>{
+        return mapaMuertes
+    }
+
+    fun getTransportes(): Map<String, Int>{
+        return mapaTransporte
+    }
+
+    fun getTransportesId(id: String?): Int?{
+        if (id != null) {
+            return mapaTransporte[id]
+        }
+        return R.string.option_other
+    }
+    fun getOpcionesSiNo(): Map<String, Int>{
+        return mapaOpcionesSiNo
+    }
+
+    fun getEstadosLLegada():Map<String, Int>{
+        return  mapaEstadosLlegada
+    }
+
+    fun getTiposPresentacion(): Map<String, String>{
+        return mapaTiposPresentacion
+    }
+
+    fun getTiposEnvios(): Map<String, Int>{
+        return mapaTiposEnvios
+    }
+
+    fun getTiposDireccionEnvio(): Map<String, Int>{
+        return mapaTiposDireccionEnvio
+    }
+
+    fun getTiposMaterialDuplicados(): Map<String, Int>{
+        return mapaTiposMaterialDuplicados
+    }
+    fun getTiposMaterialDuplicadosId(id: String?): Int?{
+        if (id != null) {
+            return mapaTiposMaterialDuplicados[id]
+        }
+        return R.string.option_other
+    }
+
+    fun getTiposMaterial(): Map<String, Int>{
+        return mapaTiposMaterial
+    }
+    fun getOficinasComarcales(): Map<String, String>{
+        return mapaOficinasComarcales
+    }
+    fun getEmpresaSubministradora(): Map<String, String>{
+        return mapaEmpresaSubministradora
+    }
     fun getNombrePaisId(codigo: String): Int {
         return mapaPaises[codigo] ?: R.string.pais_000 // Devuelve "Desconocido" por defecto
     }
