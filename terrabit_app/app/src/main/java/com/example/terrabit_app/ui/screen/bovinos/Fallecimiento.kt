@@ -79,10 +79,10 @@ fun Fallecimiento(
     val tipoExpandido by viewModel.tipoMuerteExpandido.observeAsState(false)
     val mostrarDatePickerMuerte by viewModel.mostrarDatePickerMuerte.observeAsState(false)
     val tipoMuerte by viewModel.codigoTipoMuerte.observeAsState("")
-    val registroExitoso by viewModel.registroMuerteExitoso.observeAsState(false)
-    val mensajeError by viewModel.mensajeErrorMuerte.observeAsState("")
+    val registroExitoso by viewModel.operacionExitosa.observeAsState(false)
+    val mensajeError by viewModel.mensajeError.observeAsState("")
     val codiError by viewModel.codiError.observeAsState()
-    val estadoCarga by viewModel.cargandoMuerte.observeAsState(false)
+    val estadoCarga by viewModel.estadoCarga.observeAsState(false)
     val suggestionsBovinos by viewModel.suggestionsBovinos.observeAsState(emptyList())
     val isLoadingBovinos by viewModel.isLoadingBovinos.observeAsState(false)
 
@@ -119,7 +119,7 @@ fun Fallecimiento(
 
     LaunchedEffect(Unit) {
         usbViewModel.mensajes.collect { mensaje ->
-            viewModel.actualizarIdentificadorMuerte(mensaje)
+            viewModel.actualizarIdentificador(mensaje)
         }
     }
 
@@ -133,7 +133,7 @@ fun Fallecimiento(
         BluetoothScanDialog(
             bluetoothViewModel = bluetoothViewModel,
             onMensajeRecibido = { mensaje ->
-                viewModel.actualizarIdentificadorMuerte(mensaje)
+                viewModel.actualizarIdentificador(mensaje)
                 mostrarBluetooth = false
             },
             onDismiss = { mostrarBluetooth = false }
@@ -166,7 +166,7 @@ fun Fallecimiento(
     LaunchedEffect(registroExitoso) {
         if (registroExitoso) {
             snackbarHostState.showSnackbar(mensajeRegistroExitoso, duration = SnackbarDuration.Short)
-            viewModel.resetearEstadoRegistroMuerte()
+            viewModel.resetearEstado()
         }
     }
 
@@ -176,7 +176,7 @@ fun Fallecimiento(
 
     if (mostrarDialogoError) {
         AlertDialog(
-            onDismissRequest = { mostrarDialogoError = false; viewModel.resetearEstadoRegistroMuerte() },
+            onDismissRequest = { mostrarDialogoError = false; viewModel.resetearEstado() },
             icon = { Icon(Icons.Default.ArrowBack, contentDescription = null, tint = ErrorRed, modifier = Modifier.size(48.dp)) },
             title = { Text(mensajeRegistroError, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface) },
             text = {
@@ -187,7 +187,7 @@ fun Fallecimiento(
             },
             confirmButton = {
                 Button(
-                    onClick = { mostrarDialogoError = false; viewModel.resetearEstadoRegistroMuerte() },
+                    onClick = { mostrarDialogoError = false; viewModel.resetearEstado() },
                     colors = ButtonDefaults.buttonColors(containerColor = ErrorRed),
                     shape = RoundedCornerShape(8.dp)
                 ) { Text(stringResource(R.string.error_buttom), fontWeight = FontWeight.SemiBold) }
@@ -310,7 +310,7 @@ fun Fallecimiento(
                             valor = identificadorAnimal,
                             placeholder = if (tipoMuerte.contains("01")) stringResource(R.string.form_id_animal_description) else stringResource(R.string.form_mother_description),
                             enabled = !modoLectura,
-                            onValueChange = { viewModel.actualizarIdentificadorMuerte(it) },
+                            onValueChange = { viewModel.actualizarIdentificador(it) },
                             suggestions = suggestionsBovinos,
                             onAnimalSelected = { viewModel.onBovinoSelected(it) },
                             isLoadingSuggestions = isLoadingBovinos,

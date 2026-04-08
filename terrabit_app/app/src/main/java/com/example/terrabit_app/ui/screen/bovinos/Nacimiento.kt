@@ -59,13 +59,13 @@ fun Nacimiento(
     val sexoExpandido by viewModel.sexoExpandido.observeAsState(false)
     val razaExpandida by viewModel.razaExpandida.observeAsState(false)
     val aptitudExpandida by viewModel.aptitudExpandida.observeAsState(false)
-    val mostrarDatePicker by viewModel.mostrarDatePicker.observeAsState(false)
+    val mostrarDatePicker by viewModel.mostrarDatePickerNacimiento.observeAsState(false)
     val fechaIdentificacion by viewModel.fechaIdentificacion.observeAsState("")
     val mostrarDatePickerIdentificadores by viewModel.mostrarDatePickerIdentificacion.observeAsState(false)
-    val registroExitoso by viewModel.registroExitoso.observeAsState(false)
+    val registroExitoso by viewModel.operacionExitosa.observeAsState(false)
     val mensajeError by viewModel.mensajeError.observeAsState("")
     val codiError by viewModel.codiError.observeAsState()
-    val estadoCarga by viewModel.cargandoNacimiento.observeAsState(false)
+    val estadoCarga by viewModel.estadoCarga.observeAsState(false)
     val suggestionsBovinos by viewModel.suggestionsBovinos.observeAsState(emptyList())
     val isLoadingBovinos by viewModel.isLoadingBovinos.observeAsState(false)
     val activeFieldIndex by viewModel.activeFieldIndex.observeAsState(-1)
@@ -151,7 +151,7 @@ fun Nacimiento(
     LaunchedEffect(registroExitoso) {
         if (registroExitoso) {
             snackbarHostState.showSnackbar(mensajeRegistroExitoso, duration = SnackbarDuration.Short)
-            viewModel.resetearEstadoRegistro()
+            viewModel.resetearEstado()
         }
     }
 
@@ -161,7 +161,7 @@ fun Nacimiento(
 
     if (mostrarDialogoError) {
         AlertDialog(
-            onDismissRequest = { mostrarDialogoError = false; viewModel.resetearEstadoRegistro() },
+            onDismissRequest = { mostrarDialogoError = false; viewModel.resetearEstado() },
             icon = { Icon(Icons.Default.ArrowBack, contentDescription = null, tint = MainGreen, modifier = Modifier.size(48.dp)) },
             title = { Text(mensajeRegistroError, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface) },
             text = {
@@ -172,7 +172,7 @@ fun Nacimiento(
             },
             confirmButton = {
                 Button(
-                    onClick = { mostrarDialogoError = false; viewModel.resetearEstadoRegistro() },
+                    onClick = { mostrarDialogoError = false; viewModel.resetearEstado() },
                     colors = ButtonDefaults.buttonColors(containerColor = MainGreen),
                     shape = RoundedCornerShape(8.dp)
                 ) { Text(stringResource(R.string.error_buttom), fontWeight = FontWeight.SemiBold) }
@@ -185,14 +185,14 @@ fun Nacimiento(
     if (mostrarDatePicker && !modoLectura) {
         val datePickerState = rememberDatePickerState()
         DatePickerDialog(
-            onDismissRequest = { viewModel.ocultarDatePicker() },
+            onDismissRequest = { viewModel.ocultarDatePickerNacimiento() },
             confirmButton = {
-                TextButton(onClick = { datePickerState.selectedDateMillis?.let { viewModel.seleccionarFecha(it) } }) {
+                TextButton(onClick = { datePickerState.selectedDateMillis?.let { viewModel.seleccionarFechaNacimiento(it) } }) {
                     Text(stringResource(R.string.accept_buttom), color = MainGreen)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { viewModel.ocultarDatePicker() }) {
+                TextButton(onClick = { viewModel.ocultarDatePickerNacimiento() }) {
                     Text(stringResource(R.string.cancel_buttom), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
@@ -304,7 +304,7 @@ fun Nacimiento(
                     ) {
 
                         if (!modoLectura) {
-                            useDebounce(idMadre, delayMillis = 300L) { viewModel.searchBovinos(0, it) }
+                            useDebounce(idMadre, delayMillis = 300L) { viewModel.searchBovinos( it) }
                         }
                         CampoIdentificadorAutoComplete(
                             label = stringResource(R.string.form_id_mother),
@@ -313,7 +313,7 @@ fun Nacimiento(
                             enabled = !modoLectura,
                             onValueChange = { if (!modoLectura) viewModel.actualizarIdMadre(it) },
                             suggestions = if (modoLectura) emptyList() else if (activeFieldIndex == 0) suggestionsBovinos else emptyList(),
-                            onAnimalSelected = { if (!modoLectura) viewModel.onMotherselected(it) },
+                            onAnimalSelected = { if (!modoLectura) viewModel.onMotherSelected(it) },
                             isLoadingSuggestions = if (modoLectura) false else (isLoadingBovinos && activeFieldIndex == 0),
                             onClickBluetooth = {
                                 if (!modoLectura) {
@@ -330,7 +330,7 @@ fun Nacimiento(
                         )
 
                         if (!modoLectura) {
-                            useDebounce(idCria, delayMillis = 300L) { viewModel.searchBovinos(1, it) }
+                            useDebounce(idCria, delayMillis = 300L) { viewModel.searchBovinos( it) }
                         }
                         CampoIdentificadorAutoComplete(
                             label = stringResource(R.string.form_id_breeding),
@@ -360,7 +360,7 @@ fun Nacimiento(
                             Spacer(modifier = Modifier.height(10.dp))
                             Box(
                                 modifier = if (!modoLectura)
-                                    Modifier.fillMaxWidth().clickable { viewModel.mostrarDatePicker() }
+                                    Modifier.fillMaxWidth().clickable { viewModel.mostrarDatePickerNacimiento() }
                                 else
                                     Modifier.fillMaxWidth()
                             ) {
