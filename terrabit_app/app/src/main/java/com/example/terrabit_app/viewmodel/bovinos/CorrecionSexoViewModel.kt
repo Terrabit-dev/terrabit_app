@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.example.terrabit_app.R
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.animales.PetModicarAnimal
 import com.example.terrabit_app.data.network.lista_bovinos.Animal
@@ -61,6 +62,28 @@ class CorrecionSexoViewModel @Inject constructor(
         _sexoSeleccionado.value    = 0
         codigoSexo                 = ""
         borradorSesionId           = ""
+    // Función auxiliar para mapear el código de sexo al resource ID correcto
+    private fun sexoCodigoAResourceId(codigo: String): Int = when (codigo) {
+        "01" -> R.string.card_info_sex_male
+        "02" -> R.string.card_info_sex_female
+        else -> 0
+    }
+
+    fun searchBovinos(query: String) {
+        if (query.isBlank()) {
+            _suggestionsBovinos.value = emptyList()
+            return
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val resultados = repositorio.searchBovinosLocal(query)
+                _suggestionsBovinos.postValue(resultados)
+                Log.d("CorrecionSexoVM", "Búsqueda: '$query' - ${resultados.size} resultados")
+            } catch (e: Exception) {
+                _suggestionsBovinos.postValue(emptyList())
+                Log.e("CorrecionSexoVM", "Error en búsqueda: ${e.message}", e)
+            }
+        }
     }
 
     override fun tieneContenido() =

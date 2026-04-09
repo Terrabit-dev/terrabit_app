@@ -40,17 +40,30 @@
 
     <string name="list_bovinos_title">Listado de Bovinos</string>
     <string name="search_bar_list_bovinos">Buscar por identificador...</string>
-
     <string name="error_loading_list_bovinos">Error Desconocido</string>
     <string name="retry_loading_list_bovinos">Reintentar</string>
     <string name="empty_list_bovinos">No hay Bovinos</string>
     <string name="no_results_list_bovinos">No se encontraron resultados</string>
-
     <string name="card_info_sex">Sexo</string>
     <string name="card_info_sex_male">Macho</string>
     <string name="card_info_sex_female">Hembra</string>
     <string name="card_info_date_born">Fecha Nac.</string>
     <string name="card_info_mom">Madre</string>
+
+    <string name="detail_bovino_title">Detalles del animal</string>
+    <string name="detail_bovino_card_identifier">Identificador del animal</string>
+    <string name="detail_bovino_label_identifier">Identificador</string>
+    <string name="detail_bovino_label_electronic_id">Identificador electrónico</string>
+    <string name="detail_bovino_label_electronic_id_type">Tipo de identificador electrónico</string>
+    <string name="detail_bovino_card_basic_info">Información básica</string>
+    <string name="detail_bovino_label_birth_date">Fecha de nacimiento</string>
+    <string name="detail_bovino_label_breed">Raza</string>
+    <string name="detail_bovino_card_origins">Orígenes del animal</string>
+    <string name="detail_bovino_label_birth_farm">Explotación de nacimiento</string>
+    <string name="detail_bovino_label_birth_country">País de nacimiento</string>
+    <string name="detail_bovino_label_mother_id">Id de la madre</string>
+
+
 
     <string name="title_list_action_popup">Elige una accion</string>
     <string name="description_option_death_popup">Reportar fallecimiento de este animal</string>
