@@ -6,7 +6,6 @@ import com.example.terrabit_app.data.local.SecureStorage
 import com.example.terrabit_app.data.local.dao.BorradorDao
 import com.example.terrabit_app.data.local.dao.HistorialDao
 import com.example.terrabit_app.data.local.database.AppDatabase
-import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.utils.UserPreferences
 import dagger.Module
 import dagger.Provides
@@ -21,42 +20,29 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideSecureStorage(@ApplicationContext context: Context): SecureStorage {
-        return SecureStorage(context)
-    }
+    fun provideSecureStorage(@ApplicationContext context: Context): SecureStorage =
+        SecureStorage(context)
 
     @Provides
     @Singleton
     fun provideUserPreferences(
         @ApplicationContext context: Context,
         secureStorage: SecureStorage
-    ): UserPreferences {
-        return UserPreferences(context, secureStorage)
-    }
+    ): UserPreferences = UserPreferences(context, secureStorage)
 
     @Provides
     @Singleton
-    fun provideRepositorio(@ApplicationContext context: Context): Repositorio {
-        return Repositorio(context)
-    }
+    fun provideSharedPreferencesManager(@ApplicationContext context: Context): SharedPreferencesManager =
+        SharedPreferencesManager(context)
 
     @Provides
     @Singleton
-    fun provideSharedPreferencesManager(@ApplicationContext context: Context): SharedPreferencesManager {
-        return SharedPreferencesManager(context)
-    }
+    fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase =
+        AppDatabase.getDatabase(context)
 
     @Provides
     @Singleton
-    fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
-        return AppDatabase.getDatabase(context)
-    }
-
-    @Provides
-    @Singleton
-    fun provideBorradorDao(database: AppDatabase): BorradorDao {
-        return database.borradorDao()
-    }
+    fun provideBorradorDao(database: AppDatabase): BorradorDao = database.borradorDao()
 
     @Provides
     @Singleton

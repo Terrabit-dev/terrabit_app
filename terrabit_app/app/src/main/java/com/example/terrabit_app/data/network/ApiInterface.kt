@@ -25,20 +25,13 @@ import com.example.terrabit_app.data.network.DataClassPorcinos.AltaMovimientoGTR
 import com.example.terrabit_app.data.network.DataClassPorcinos.ConfirmarMovimientosRequest
 import com.example.terrabit_app.data.network.DataClassPorcinos.ConsultaMovimientosPorConfirmar
 import com.example.terrabit_app.data.network.DataClassPorcinos.GtrConfirmacioResponse
-import com.example.terrabit_app.data.network.DataClassPorcinos.GtrStandardResponse
-import com.example.terrabit_app.data.network.DataClassPorcinos.GuiaGTRLista
 import com.example.terrabit_app.data.network.DataClassPorcinos.ModificarMovimentsAGias
-
-import okhttp3.OkHttpClient
 import okhttp3.ResponseBody
 import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.PUT
 import retrofit2.http.Query
-import java.util.concurrent.TimeUnit
 
 interface ApiInterface {
 
@@ -49,6 +42,7 @@ interface ApiInterface {
         @Query("tipusVinculacio") tipusVinculacio: String,
         @Query("explotacio") explotacio: String
     ): Response<ListaBovinos>
+
     @GET("WSBovi/AppJava/Bovi/WSIdentificadorsDisponibles/")
     suspend fun getIdentificadoresDisponibles(
         @Query("nif") nif: String,
@@ -74,102 +68,55 @@ interface ApiInterface {
     ): Response<Movimientos>
 
     @PUT("WSBovi/AppJava/Bovi/WSEnregistramentMort/")
-    suspend fun putRegistrarMuerte(
-        @Body request: RegistroMuerteBovi
-    ): Response<RespuestaUnificada>
+    suspend fun putRegistrarMuerte(@Body request: RegistroMuerteBovi): Response<RespuestaUnificada>
 
     @PUT("WSBovi/AppJava/Bovi/WSEnregistramentNaixement/")
-    suspend fun putRegistrarNacimiento(
-        @Body request: RegistroNacimientoBovi
-    ): Response<RespuestaUnificada>
+    suspend fun putRegistrarNacimiento(@Body request: RegistroNacimientoBovi): Response<RespuestaUnificada>
 
     @PUT("WSBoviGuies/AppJava/guies/WSAltaGuia/")
-    suspend fun putAltaGuia(
-        @Body request: PeticionAltaGuia
-    ): Response<ResAltaGuia>
+    suspend fun putAltaGuia(@Body request: PeticionAltaGuia): Response<ResAltaGuia>
 
     @PUT("WSBoviGuies/AppJava/guies/WSModificarGuiaMobilitat")
-    suspend fun putModificarGuia(
-        @Body request: PeticionModificarGuia
-    ): Response<ResModificarGuia>
+    suspend fun putModificarGuia(@Body request: PeticionModificarGuia): Response<ResModificarGuia>
 
     @PUT("WSBoviGuies/AppJava/movs/WSConfirmacioMoviment/")
-    suspend fun putConfirmarMovi(
-        @Body request: PetConfirmacionMovi
-    ): Response<ResConfirmacionMovi>
+    suspend fun putConfirmarMovi(@Body request: PetConfirmacionMovi): Response<ResConfirmacionMovi>
 
     @PUT("WSBoviGuies/AppJava/movs/WSAltaIntercanviEntradaImportacio/")
-    suspend fun putRegistroIntercanvio(
-        @Body request: PetRegistroIntercanvi
-    ): Response<ResConfirmacionMovi>
+    suspend fun putRegistroIntercanvio(@Body request: PetRegistroIntercanvi): Response<ResConfirmacionMovi>
 
     @PUT("WSBoviGuies/AppJava/movs/WSModificacioIntercanviEntradaImportacio/")
-    suspend fun putMoficarMovi(
-        @Body request: PetModificacioMovi
-    ): Response<ResConfirmacionMovi>
+    suspend fun putMoficarMovi(@Body request: PetModificacioMovi): Response<ResConfirmacionMovi>
 
     @PUT("WSBovi/AppJava/Bovi/WSModificacioAnimal/")
-    suspend fun putMoficarAnimal(
-        @Body request: PetModicarAnimal
-    ): Response<RespuestaUnificada>
+    suspend fun putMoficarAnimal(@Body request: PetModicarAnimal): Response<RespuestaUnificada>
 
     @PUT("WSBovi/AppJava/Bovi/WSModificacioDataIdentificacioAnimal/")
-    suspend fun putIdentificacionPendiente(
-        @Body request: PetIdentificacion
-    ): Response<RespuestaUnificada>
+    suspend fun putIdentificacionPendiente(@Body request: PetIdentificacion): Response<RespuestaUnificada>
 
     @PUT("WSBovi/AppJava/Bovi/WSSolicitudDuplicat/")
-    suspend fun putSolicitudDuplicado(
-        @Body request: PetSolicitudDuplicado
-    ): Response<ResBasica>
+    suspend fun putSolicitudDuplicado(@Body request: PetSolicitudDuplicado): Response<ResBasica>
 
     @PUT("WSEnviamentDuplicatES/AppJava/WSSolicitudMaterial/")
-    suspend fun putSolicitudMaterial(
-        @Body request: PetSolicitudMaterial
-    ): Response<ResBasica>
+    suspend fun putSolicitudMaterial(@Body request: PetSolicitudMaterial): Response<ResBasica>
 
-    //---------------------- PORCINOS ----------------------
+    // ---------------------- PORCINOS ----------------------
 
-    // --- SECCIÓN 1: GESTIÓN DE SALIDAS (ALTA Y CARGA) ---
-
-    /**
-     * 5.1 SW Alta de guies
-     * Crea un nuevo movimiento en el sistema GTR.
-     */
     @PUT("WSAltaguies/AppJava/WSAltaGuia")
-    suspend fun altaMovimientoPorcino(
-        @Body request: AltaMovimientoGTR
-    ): Response<AltaGuiaExitoResponse>
+    suspend fun altaMovimientoPorcino(@Body request: AltaMovimientoGTR): Response<AltaGuiaExitoResponse>
 
-    /**
-     * 5.2 SW càrrega de guies DST per mobilitat
-     * Descarga las guías marcadas para movilidad desde el origen.
-     */
     @GET("WSMobilitat/AppJava/WSCarregaGuiesMobilitat")
-    suspend fun     listarMovimientosOrigenPorcino(
+    suspend fun listarMovimientosOrigenPorcino(
         @Query("nif") nif: String?,
         @Query("password") password: String?,
         @Query("codiMo") codiMo: String?,
         @Query("codiRega") codiRega: String,
-        @Query("dataSortida") dataSortida: String // Format: yyyymmddHHMM
+        @Query("dataSortida") dataSortida: String
     ): Response<ResponseBody>
 
-    /**
-     * 5.3 SW DST’s tramitats en App Mòbil
-     * Modifica y cierra (pasa a "Emesa") una guía descargada previamente.
-     */
     @PUT("WSMobilitat/AppJava/WSModificarGuiasMovilitat")
-    suspend fun tramitarMovimientoMovilidadPorcina(
-        @Body request: ModificarMovimentsAGias
-    ): Response<ResponseBody>
+    suspend fun tramitarMovimientoMovilidadPorcina(@Body request: ModificarMovimentsAGias): Response<ResponseBody>
 
-
-    // --- SECCIÓN 2: CONFIRMACIÓN DE ENTRADAS (DESTINO) ---
-
-    /**
-     * 5.2 Consulta de moviments confirmació d’entrada
-     * Lista las guías que están esperando a que el destino confirme la llegada.
-     */
     @GET("WSConfirmacioMoviments/AppJava/WSObtenirMovimentPteConfirmar")
     suspend fun listarMovimientosPendientesEntradaPorcina(
         @Query("nif") nif: String?,
@@ -179,44 +126,6 @@ interface ApiInterface {
         @Query("dataSortidaFins") fins: String
     ): Response<ConsultaMovimientosPorConfirmar>
 
-    /**
-     * 5.1 Confirmació de moviments d’entrada
-     * El destino confirma oficialmente que los animales han llegado.
-     */
     @PUT("WSConfirmacioMoviments/AppJava/WSConfirmarMoviment")
-    suspend fun confirmarEntradaMovimientoPorcina(
-        @Body request: ConfirmarMovimientosRequest
-    ): Response<GtrConfirmacioResponse>
-
-
-
-    companion object {
-        val BASE_URL = "https://preproduccio.aplicacions.agricultura.gencat.cat/gtr/"
-
-        private const val GTR_PIN = "sha256/iQtsyFXPKCKfjjgrS/Cp0qbEYNmueGHXwDXwxancVHQ="
-        private const val GTR_PIN_BACKUP = "sha256/KqkYYX5LYAYP7XGemqzbtPPIA8x7BS/BbOIcAXf3j2k="
-
-        fun create(): ApiInterface {
-            val certificatePinner = okhttp3.CertificatePinner.Builder()
-                .add("preproduccio.aplicacions.agricultura.gencat.cat", GTR_PIN)
-                .add("preproduccio.aplicacions.agricultura.gencat.cat", GTR_PIN_BACKUP)
-                .build()
-
-            val client = OkHttpClient.Builder()
-                .certificatePinner(certificatePinner)
-                .connectTimeout(60, TimeUnit.SECONDS)
-                .readTimeout(60, TimeUnit.SECONDS)
-                .writeTimeout(60, TimeUnit.SECONDS)
-                .build()
-
-            val retrofit = Retrofit.Builder()
-                .baseUrl(BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .client(client)
-
-                .build()
-
-            return retrofit.create(ApiInterface::class.java)
-        }
-    }
+    suspend fun confirmarEntradaMovimientoPorcina(@Body request: ConfirmarMovimientosRequest): Response<GtrConfirmacioResponse>
 }
