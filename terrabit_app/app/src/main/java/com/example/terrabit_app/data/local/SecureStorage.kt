@@ -24,20 +24,18 @@ class SecureStorage @Inject constructor(@ApplicationContext context: Context) {
 
     fun saveNif(nif: String) = encryptedPrefs.edit().putString(KEY_NIF, nif).apply()
     fun savePassword(password: String) = encryptedPrefs.edit().putString(KEY_PASSWORD, password).apply()
-
-    fun saveCodiMO(CodiMO: String) = encryptedPrefs.edit().putString(KEY_CodiMO, CodiMO).apply()
-
-
+    fun saveCodiMO(codiMO: String) = encryptedPrefs.edit().putString(KEY_CODI_MO, codiMO).apply()
 
     fun getNif(): String? = encryptedPrefs.getString(KEY_NIF, null)
     fun getPassword(): String? = encryptedPrefs.getString(KEY_PASSWORD, null)
-    fun getCodiMO(): String? = encryptedPrefs.getString(KEY_CodiMO, null)
-
-    fun saveDbKey(key: String) = encryptedPrefs.edit().putString(KEY_DB, key).apply()
-    fun getDbKey(): String? = encryptedPrefs.getString(KEY_DB, null)
+    fun getCodiMO(): String? = encryptedPrefs.getString(KEY_CODI_MO, null)
 
     fun clearCredentials() {
-        encryptedPrefs.edit().remove(KEY_NIF).remove(KEY_PASSWORD).remove(KEY_CodiMO).apply()
+        encryptedPrefs.edit()
+            .remove(KEY_NIF)
+            .remove(KEY_PASSWORD)
+            .remove(KEY_CODI_MO)
+            .apply()
     }
 
     fun clearAll() = encryptedPrefs.edit().clear().apply()
@@ -45,7 +43,6 @@ class SecureStorage @Inject constructor(@ApplicationContext context: Context) {
     companion object {
         private const val KEY_NIF = "nif"
         private const val KEY_PASSWORD = "password"
-        private const val KEY_CodiMO = "CodiMO"
-        private const val KEY_DB = "db_encryption_key"
+        private const val KEY_CODI_MO = "codi_mo"
     }
 }
