@@ -818,4 +818,9 @@
     <string name="raza_0232">Watusi</string>
     <string name="option_oc">OC</string>
     <string name="no_found_result">No se encontraron resultados</string>
+    <string name="edit_guie">Editar guía</string>
+    <string name="animals">animales</string>
+    <string name="motion_dades">Datos del movimiento</string>
+    <string name="transport_dades">Datos de transporte</string>
+    <string name="confirm_modification">Confirmar modificación</string>
 </resources>

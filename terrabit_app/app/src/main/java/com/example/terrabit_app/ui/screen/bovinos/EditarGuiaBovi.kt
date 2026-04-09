@@ -237,7 +237,7 @@ fun EditarGuiaBovi(
                     title = {
                         Column {
                             Text(
-                                text       = "Editar guía",
+                                text       = stringResource(R.string.edit_guie),
                                 fontSize   = 20.sp,
                                 fontWeight = FontWeight.SemiBold
                             )
@@ -314,7 +314,7 @@ fun EditarGuiaBovi(
                                 color      = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                text     = "${guiaSeleccionada.numeroAnimals} animales · ${guiaSeleccionada.remo}",
+                                text     = "${guiaSeleccionada.numeroAnimals} ${stringResource(R.string.animals)} · ${guiaSeleccionada.remo}",
                                 fontSize = 12.sp,
                                 color    = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -340,7 +340,7 @@ fun EditarGuiaBovi(
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
                         Text(
-                            text       = "Datos del movimiento",
+                            text       = stringResource(R.string.motion_dades),
                             fontSize   = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color      = MaterialTheme.colorScheme.onSurface
@@ -395,7 +395,7 @@ fun EditarGuiaBovi(
                         HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
 
                         Text(
-                            text       = "Datos de transporte",
+                            text       = stringResource(R.string.transport_dades),
                             fontSize   = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color      = MaterialTheme.colorScheme.onSurface
@@ -480,15 +480,15 @@ fun EditarGuiaBovi(
                         ) {
                             Text(
                                 text       = stringResource(R.string.form_animal_identifiers),
-                                fontSize   = 18.sp,
+                                fontSize   = 17.sp,
                                 fontWeight = FontWeight.Bold,
                                 color      = MaterialTheme.colorScheme.onSurface
                             )
                             IconButton(
                                 onClick  = { viewModel.agregarIdentificador() },
                                 modifier = Modifier
-                                    .size(36.dp)
-                                    .background(color = MainOrange, shape = RoundedCornerShape(8.dp))
+                                    .size(25.dp)
+                                    .background(color = MainOrange, shape = RoundedCornerShape(15.dp))
                             ) {
                                 Icon(
                                     imageVector    = Icons.Default.Add,
@@ -527,7 +527,7 @@ fun EditarGuiaBovi(
                                             verticalAlignment     = Alignment.CenterVertically
                                         ) {
                                             Text(
-                                                text       = "Animal ${index + 1}",
+                                                text       = "${index + 1}",
                                                 fontSize   = 15.sp,
                                                 fontWeight = FontWeight.Bold,
                                                 color      = MainOrange
