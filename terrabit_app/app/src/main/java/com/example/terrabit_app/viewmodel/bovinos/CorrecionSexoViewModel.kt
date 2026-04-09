@@ -8,67 +8,32 @@ import com.example.terrabit_app.R
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.animales.PetModicarAnimal
 import com.example.terrabit_app.data.network.lista_bovinos.Animal
-import com.example.terrabit_app.data.network.respuestas.RespuestaUnificada
 import com.example.terrabit_app.utils.UserPreferences
-import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import javax.inject.Inject
 import com.example.terrabit_app.data.local.dao.BorradorDao
 import com.example.terrabit_app.data.local.dao.HistorialDao
-import com.example.terrabit_app.data.local.database.BorradorEntity
-import com.example.terrabit_app.data.local.database.HistorialEntity
-import com.google.gson.reflect.TypeToken
-import java.io.IOException
-import java.net.SocketTimeoutException
-import java.util.UUID
 
 @HiltViewModel
 class CorrecionSexoViewModel @Inject constructor(
-    private val repositorio: Repositorio,
-    private val userPreferences: UserPreferences,
-    private val borradorDao: BorradorDao,
-    private val historialDao: HistorialDao
+    override val repositorio: Repositorio,
+    override val userPreferences: UserPreferences,
+    override val borradorDao: BorradorDao,
+    override val historialDao: HistorialDao
 ) : BaseBovinoViewModel() {
 
-    private var borradorSesionId: String = ""
-
-    val nif = userPreferences.getNif() ?: ""
-    val password = userPreferences.getPassword() ?: ""
-    var codiMo = userPreferences.getCodiMO() ?: ""
-
-    private val _suggestionsBovinos = MutableLiveData<List<Animal>>(emptyList())
-    val suggestionsBovinos = _suggestionsBovinos
-
-    private val _isLoadingBovinos = MutableLiveData(false)
-    val isLoadingBovinos = _isLoadingBovinos
-
-    private val _bovinosCargados = MutableLiveData(false)
-    val bovinosCargados = _bovinosCargados
-
-    override val _identificadorAnimal = MutableLiveData("")
+    // ─── Estado específico ────────────────────────────────────────────────────
+    private val _identificadorAnimal = MutableLiveData("")
     val identificadorCorreccionSexo: LiveData<String> = _identificadorAnimal
 
-    // Cambiado a Int (0 representa "no seleccionado")
-    private val _sexoCorreccionSeleccionado = MutableLiveData(0)
-    val sexoCorreccionSeleccionado: LiveData<Int> = _sexoCorreccionSeleccionado
+    private val _sexoSeleccionado = MutableLiveData(0)
+    val sexoCorreccionSeleccionado: LiveData<Int> = _sexoSeleccionado
 
-    private val _sexoCorreccionExpandido = MutableLiveData(false)
-    val sexoCorreccionExpandido = _sexoCorreccionExpandido
-
-    private val _correccionSexoExitosa = MutableLiveData<Boolean>()
-    val correccionSexoExitosa = _correccionSexoExitosa
-
-    private val _mensajeErrorCorreccionSexo = MutableLiveData<String>()
-    val mensajeErrorCorreccionSexo = _mensajeErrorCorreccionSexo
-
-    private val _estadoCarga = MutableLiveData(false)
-    val estadoCarga = _estadoCarga
+    private val _sexoExpandido = MutableLiveData(false)
+    val sexoCorreccionExpandido: LiveData<Boolean> = _sexoExpandido
 
     private var codigoSexo = ""
 
@@ -77,29 +42,26 @@ class CorrecionSexoViewModel @Inject constructor(
         cargarBovinosEnCache()
     }
 
-    private fun cargarBovinosEnCache() {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                _isLoadingBovinos.postValue(true)
-                codiMo = userPreferences.getCodiMO() ?: ""
-                repositorio.getBovinosWithCache(
-                    nif = nif,
-                    password = password,
-                    tipusVinculacio = "1",
-                    explotacio = codiMo,
-                    forceRefresh = true
-                )
-                _bovinosCargados.postValue(true)
-                _isLoadingBovinos.postValue(false)
-                Log.d("CorrecionSexoVM", "Bovinos cargados en caché")
-            } catch (e: Exception) {
-                _isLoadingBovinos.postValue(false)
-                _bovinosCargados.postValue(false)
-                Log.e("CorrecionSexoVM", "Error al cargar bovinos: ${e.message}", e)
-            }
-        }
+    // ─── Contrato con la base ─────────────────────────────────────────────────
+    override fun getTipoRegistro() = "CORRECCION_SEXO"
+
+    override fun getDatosFormulario() = mapOf(
+        "identificador"  to _identificadorAnimal.value,
+        "sexoSeleccionado" to _sexoSeleccionado.value,
+        "codigoSexo"     to codigoSexo
+    )
+
+    override fun restaurarDatos(datos: Map<String, Any?>) {
+        _identificadorAnimal.value = datos["identificador"] as? String ?: ""
+        _sexoSeleccionado.value    = (datos["sexoSeleccionado"] as? Double)?.toInt() ?: 0
+        codigoSexo                 = datos["codigoSexo"] as? String ?: ""
     }
 
+    override fun limpiarFormulario() {
+        _identificadorAnimal.value = ""
+        _sexoSeleccionado.value    = 0
+        codigoSexo                 = ""
+        borradorSesionId           = ""
     // Función auxiliar para mapear el código de sexo al resource ID correcto
     private fun sexoCodigoAResourceId(codigo: String): Int = when (codigo) {
         "01" -> R.string.card_info_sex_male
@@ -124,251 +86,92 @@ class CorrecionSexoViewModel @Inject constructor(
         }
     }
 
+    override fun tieneContenido() =
+        !_identificadorAnimal.value.isNullOrEmpty() ||
+                (_sexoSeleccionado.value ?: 0) != 0
+
+    // ─── Selección de bovino ──────────────────────────────────────────────────
     fun onBovinoSelected(animal: Animal) {
         _identificadorAnimal.value = animal.identificador
-        _suggestionsBovinos.value = emptyList()
-        Log.d("CorrecionSexoVM", "Bovino seleccionado: ${animal.identificador}")
+        limpiarSugerencias()
     }
 
-    fun tieneContenido(): Boolean {
-        // Comprobamos que no sea 0 o null
-        return !_identificadorAnimal.value.isNullOrEmpty() ||
-                (_sexoCorreccionSeleccionado.value ?: 0) != 0
-    }
+    // ─── Actualizadores de campos ─────────────────────────────────────────────
+    fun actualizarIdentificador(nuevoId: String) { _identificadorAnimal.value = nuevoId }
 
-    fun actualizarIdentificadorCorreccionSexo(nuevoId: String) {
-        _identificadorAnimal.value = nuevoId
-    }
-
-    // Adaptado para recibir Int
+    // ─── Dropdown sexo ────────────────────────────────────────────────────────
     fun seleccionarSexoCorreccion(sexoId: Int, codigo: String) {
-        _sexoCorreccionSeleccionado.value = sexoId
+        _sexoSeleccionado.value = sexoId
         codigoSexo = codigo
-        _sexoCorreccionExpandido.value = false
+        _sexoExpandido.value = false
     }
 
-    fun toggleSexoCorreccionExpandido() { _sexoCorreccionExpandido.value = !(_sexoCorreccionExpandido.value ?: false) }
-    fun cerrarSexoCorreccionMenu() { _sexoCorreccionExpandido.value = false }
+    fun toggleSexoExpandido() { _sexoExpandido.value = !(_sexoExpandido.value ?: false) }
+    fun cerrarSexoMenu() { _sexoExpandido.value = false }
 
-    fun esFormularioCorreccionSexoValido(): Boolean {
-        // Comprobamos que no sea 0
-        return !_identificadorAnimal.value.isNullOrEmpty() &&
-                (_sexoCorreccionSeleccionado.value ?: 0) != 0
-    }
-
-    fun guardarBorradorAutomatico() {
-        if (!tieneContenido()) return
-        viewModelScope.launch {
-            try {
-                val datos = mapOf(
-                    "identificador" to _identificadorAnimal.value,
-                    "sexoSeleccionado" to _sexoCorreccionSeleccionado.value, // Ahora guarda un Int o null
-                    "codigoSexo" to codigoSexo
-                )
-                val existente = borradorDao.getAll().find { it.id == borradorSesionId }
-                val entity = existente?.copy(
-                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
-                    datos = Gson().toJson(datos)
-                ) ?: BorradorEntity(
-                    id = borradorSesionId, tipo = "CORRECCION_SEXO",
-                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
-                    hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
-                    datos = Gson().toJson(datos), estado = "BORRADOR_AUTO"
-                )
-                borradorDao.upsert(entity)
-            } catch (e: Exception) {
-                Log.e("Error Autoguardado Correcion Sexo", "Error al guardar: ${e.message}", e)
-            }
-        }
-    }
-
-    fun cargarBorradorPorId(id: String) {
-        viewModelScope.launch {
-            try {
-                val borrador = borradorDao.getAll().find { it.id == id } ?: return@launch
-                borradorSesionId = borrador.id
-                val datos: Map<String, Any?> = Gson().fromJson(
-                    borrador.datos,
-                    object : TypeToken<Map<String, Any?>>() {}.type
-                )
-                _identificadorAnimal.value = datos["identificador"] as? String ?: ""
-                codigoSexo = datos["codigoSexo"] as? String ?: ""
-                // Reconstruir el resource ID desde el código guardado
-                _sexoCorreccionSeleccionado.value = sexoCodigoAResourceId(codigoSexo)
-            } catch (e: Exception) {
-                Log.e("CorrecionSexoVM", "Error al cargar borrador por ID: ${e.message}", e)
-            }
-        }
-    }
-
-    fun eliminarBorradorAutomatico() {
-        viewModelScope.launch {
-            try {
-                if (borradorSesionId.isNotEmpty()) {
-                    borradorDao.deleteById(borradorSesionId)
-                    borradorSesionId = ""
-                }
-            } catch (e: Exception) {
-                Log.e("Error Eliminar Borrador", "Error: ${e.message}", e)
-            }
-        }
-    }
-
+    // ─── Carga borrador más reciente (específico de este VM) ──────────────────
     fun cargarBorradorExistente() {
         viewModelScope.launch {
             try {
                 val borrador = borradorDao.getAll()
-                    .filter { it.tipo == "CORRECCION_SEXO" && it.estado == "BORRADOR_AUTO" }
+                    .filter { it.tipo == getTipoRegistro() && it.estado == "BORRADOR_AUTO" }
                     .maxByOrNull { it.id.substringAfter("correccion_sexo_auto_").toLongOrNull() ?: 0L }
                     ?: return@launch
-                borradorSesionId = borrador.id
-                val datos: Map<String, Any?> = Gson().fromJson(
-                    borrador.datos,
-                    object : TypeToken<Map<String, Any?>>() {}.type
-                )
-                _identificadorAnimal.value = datos["identificador"] as? String ?: ""
-                codigoSexo = datos["codigoSexo"] as? String ?: ""
-                // Reconstruir el resource ID desde el código guardado
-                _sexoCorreccionSeleccionado.value = sexoCodigoAResourceId(codigoSexo)
+                cargarBorradorPorId(borrador.id)
             } catch (e: Exception) {
-                Log.e("Error Cargar Borrador", "Error al cargar: ${e.message}", e)
+                Log.e(getTipoRegistro(), "Error al cargar borrador existente: ${e.message}", e)
             }
         }
     }
 
+    // ─── Validación ───────────────────────────────────────────────────────────
+    fun esFormularioValido() =
+        !_identificadorAnimal.value.isNullOrEmpty() &&
+                (_sexoSeleccionado.value ?: 0) != 0
+
+    // ─── Registro principal ───────────────────────────────────────────────────
     fun corregirSexoAnimal() {
         _codiError.value = null
-        if (!esFormularioCorreccionSexoValido()) {
+        if (!esFormularioValido()) {
             _codiError.value = when {
-                _identificadorAnimal.value.isNullOrEmpty() -> 12
-                (_sexoCorreccionSeleccionado.value ?: 0) == 0 -> 4 // Verificamos contra 0
-                else -> 0
+                _identificadorAnimal.value.isNullOrEmpty()  -> 12
+                (_sexoSeleccionado.value ?: 0) == 0         -> 4
+                else                                        -> 0
             }
-            Log.e("Validación Corrección Sexo", "Formulario no válido: ${_codiError.value}")
             return
         }
-        viewModelScope.launch {
-            _estadoCarga.value = true
-            try {
-                val request = PetModicarAnimal(
-                    identificador = _identificadorAnimal.value ?: "",
-                    nif = nif,
-                    passwordMobilitat = password,
-                    sexe = codigoSexo
-                )
-                Log.d("Corrección Sexo", "Request: $request")
-                val response = repositorio.putMoficarAnimal(request)
-                withContext(Dispatchers.Main) {
-                    _estadoCarga.value = false
-                    when {
-                        response.isSuccessful && response.body() != null -> {
-                            val body = response.body()!!
-                            if (body.codi == "0" || body.descripcio == "OK") {
-                                _correccionSexoExitosa.value = true
-                                _mensajeErrorCorreccionSexo.value = ""
-                                Log.d("Corrección Sexo", "Sexo corregido exitosamente")
-                                guardarEnHistorial("Corrección de sexo registrada")
-                                eliminarBorradorAutomatico()
-                                limpiarFormularioCorreccionSexo()
-                            } else {
-                                _correccionSexoExitosa.value = false
-                                _mensajeErrorCorreccionSexo.value = "Respuesta inesperada del servidor: [${body.codi}] ${body.descripcio}"
-                                Log.w("Corrección Sexo", "Respuesta inesperada: [${body.codi}] ${body.descripcio}")
-                            }
-                        }
-                        !response.isSuccessful -> {
-                            val errorBody = response.errorBody()?.string()
-                            if (errorBody != null) {
-                                try {
-                                    val errorObj = Gson().fromJson(errorBody, RespuestaUnificada::class.java)
-                                    _mensajeErrorCorreccionSexo.value = errorObj.errors?.firstOrNull()?.descripcio ?: "Error desconocido del servidor"
-                                } catch (e: Exception) {
-                                    _mensajeErrorCorreccionSexo.value = "Error al procesar respuesta"
-                                }
-                                Log.e("Error Corrección Sexo", "Body: $errorBody")
-                            }
-                            _correccionSexoExitosa.value = false
-                        }
-                        else -> {
-                            _correccionSexoExitosa.value = false
-                            _mensajeErrorCorreccionSexo.value = "Error: Respuesta vacía del servidor"
-                            Log.e("Error Corrección Sexo", "Respuesta vacía del servidor")
-                        }
+        launchApiCall {
+            val request = PetModicarAnimal(
+                identificador     = _identificadorAnimal.value ?: "",
+                nif               = nif,
+                passwordMobilitat = password,
+                sexe              = codigoSexo
+            )
+            val response = repositorio.putMoficarAnimal(request)
+            withContext(Dispatchers.Main) {
+                _estadoCarga.value = false
+                when {
+                    response.isSuccessful && response.body()
+                        ?.let { it.codi == "0" || it.descripcio == "OK" } == true -> {
+                        _operacionExitosa.value = true
+                        _mensajeError.value = ""
+                        guardarEnHistorial("Corrección de sexo registrada")
+                        eliminarBorradorAutomatico()
+                        limpiarFormulario()
+                    }
+                    !response.isSuccessful -> {
+                        _mensajeError.value = parsearMensajeError(response)
+                        _operacionExitosa.value = false
+                    }
+                    else -> {
+                        _operacionExitosa.value = false
+                        _mensajeError.value = "Error: Respuesta vacía del servidor"
                     }
                 }
-            } catch (e: SocketTimeoutException) {
-                withContext(Dispatchers.Main) {
-                    _estadoCarga.value = false; _correccionSexoExitosa.value = false
-                    _mensajeErrorCorreccionSexo.value = "Tiempo de espera agotado. La operación puede haberse completado, por favor verifique."
-                    Log.e("Error Corrección Sexo", "Timeout: ${e.message}", e)
-                }
-            } catch (e: IOException) {
-                withContext(Dispatchers.Main) {
-                    _estadoCarga.value = false; _correccionSexoExitosa.value = false
-                    _mensajeErrorCorreccionSexo.value = "Error de conexión. Verifique su conexión a internet."
-                    Log.e("Error Corrección Sexo", "Error de red: ${e.message}", e)
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    _estadoCarga.value = false; _correccionSexoExitosa.value = false
-                    _mensajeErrorCorreccionSexo.value = "Error inesperado: ${e.message ?: "Error desconocido"}"
-                    Log.e("Error Corrección Sexo", "Error general: ${e.message}", e)
-                    e.printStackTrace()
-                }
             }
         }
     }
-
-    fun limpiarFormularioCorreccionSexo() {
-        _identificadorAnimal.value = ""
-        _sexoCorreccionSeleccionado.value = 0 // Reiniciamos a 0
-        codigoSexo = ""
-        borradorSesionId = ""
-    }
-
-    fun resetearEstadoCorreccionSexo() {
-        _correccionSexoExitosa.value = false
-        _mensajeErrorCorreccionSexo.value = ""
-        _codiError.value = null
-    }
-
-    private fun guardarEnHistorial(resumen: String = "") {
-        viewModelScope.launch {
-            try {
-                val datos = mapOf(
-                    "identificador" to _identificadorAnimal.value,
-                    "sexoSeleccionado" to _sexoCorreccionSeleccionado.value, // Guarda un Int
-                    "codigoSexo" to codigoSexo
-                )
-                historialDao.insert(HistorialEntity(
-                    id = UUID.randomUUID().toString(),
-                    tipo = "CORRECCION_SEXO",
-                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
-                    hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
-                    datos = Gson().toJson(datos),
-                    resumen = resumen
-                ))
-            } catch (e: Exception) {
-                Log.e("Historial", "Error: ${e.message}", e)
-            }
-        }
-    }
-
-    fun cargarDesdeHistorial(id: String) {
-        viewModelScope.launch {
-            try {
-                val registro = historialDao.getAll().find { it.id == id } ?: return@launch
-                val datos: Map<String, Any?> = Gson().fromJson(
-                    registro.datos,
-                    object : TypeToken<Map<String, Any?>>() {}.type
-                )
-                _identificadorAnimal.value = datos["identificador"] as? String ?: ""
-                codigoSexo = datos["codigoSexo"] as? String ?: ""
-                // Reconstruir el resource ID desde el código guardado
-                _sexoCorreccionSeleccionado.value = sexoCodigoAResourceId(codigoSexo)
-            } catch (e: Exception) {
-                Log.e("CorrecionSexoVM", "Error al cargar desde historial: ${e.message}", e)
-            }
-        }
+    fun precargarAnimal(id: String) {
+        _identificadorAnimal.value = id
     }
 }

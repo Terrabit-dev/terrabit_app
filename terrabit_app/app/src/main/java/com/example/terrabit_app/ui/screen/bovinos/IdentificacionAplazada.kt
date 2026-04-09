@@ -50,12 +50,12 @@ fun IdentificacionApalzada(
     val lifecycleOwner = LocalLifecycleOwner.current
 
     val identificadorAnimal by viewModel.identificadorAnimal.observeAsState("")
-    val identifiacionExitosa by viewModel.identificacionExitosa.observeAsState(false)
-    val mensajeError by viewModel.mensajeErrorIdentificacion.observeAsState("")
+    val identifiacionExitosa by viewModel.operacionExitosa.observeAsState(false)
+    val mensajeError by viewModel.mensajeError.observeAsState("")
     val codiError by viewModel.codiError.observeAsState()
     val estadoCarga by viewModel.estadoCarga.observeAsState(false)
     val fechaIdentificacion by viewModel.fechaIdentificacion.observeAsState("")
-    val mostrarDatePickerIdentificadores by viewModel.mostrarDatePickerIdentificacion.observeAsState(false)
+    val mostrarDatePickerIdentificadores by viewModel.mostrarDatePicker.observeAsState(false)
     val suggestionsBovinos by viewModel.suggestionsBovinos.observeAsState(emptyList())
     val isLoadingBovinos by viewModel.isLoadingBovinos.observeAsState(false)
 
@@ -70,7 +70,7 @@ fun IdentificacionApalzada(
         BluetoothScanDialog(
             bluetoothViewModel = bluetoothViewModel,
             onMensajeRecibido = { mensaje ->
-                viewModel.actualizarIdentificadorAnimal(mensaje)
+                viewModel.actualizarIdentificador(mensaje)
                 mostrarBluetooth = false
             },
             onDismiss = { mostrarBluetooth = false }
@@ -97,7 +97,7 @@ fun IdentificacionApalzada(
     LaunchedEffect(identifiacionExitosa) {
         if (identifiacionExitosa) {
             snackbarHostState.showSnackbar(tituloExito, duration = SnackbarDuration.Short)
-            viewModel.resetearEstadoIdentificacion()
+            viewModel.resetearEstado()
         }
     }
 
@@ -107,7 +107,7 @@ fun IdentificacionApalzada(
 
     if (mostrarDialogoError) {
         AlertDialog(
-            onDismissRequest = { mostrarDialogoError = false; viewModel.resetearEstadoIdentificacion() },
+            onDismissRequest = { mostrarDialogoError = false; viewModel.resetearEstado() },
             icon = { Icon(Icons.Default.ArrowBack, contentDescription = null, tint = MainGreen, modifier = Modifier.size(48.dp)) },
             title = { Text(titulloError, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface) },
             text = {
@@ -118,7 +118,7 @@ fun IdentificacionApalzada(
             },
             confirmButton = {
                 Button(
-                    onClick = { mostrarDialogoError = false; viewModel.resetearEstadoIdentificacion() },
+                    onClick = { mostrarDialogoError = false; viewModel.resetearEstado() },
                     colors = ButtonDefaults.buttonColors(containerColor = MainGreen),
                     shape = RoundedCornerShape(8.dp)
                 ) { Text(stringResource(R.string.error_buttom), fontWeight = FontWeight.SemiBold) }
@@ -131,14 +131,14 @@ fun IdentificacionApalzada(
     if (mostrarDatePickerIdentificadores && !modoLectura) {
         val datePickerState = rememberDatePickerState()
         DatePickerDialog(
-            onDismissRequest = { viewModel.ocultarDatePickerIdentificacion() },
+            onDismissRequest = { viewModel.ocultarDatePicker() },
             confirmButton = {
-                TextButton(onClick = { datePickerState.selectedDateMillis?.let { viewModel.seleccionarFechaIdentificacion(it) } }) {
+                TextButton(onClick = { datePickerState.selectedDateMillis?.let { viewModel.seleccionarFecha(it) } }) {
                     Text(stringResource(R.string.accept_buttom), color = MainGreen)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { viewModel.ocultarDatePickerIdentificacion() }) {
+                TextButton(onClick = { viewModel.ocultarDatePicker() }) {
                     Text(stringResource(R.string.cancel_buttom), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
@@ -237,7 +237,7 @@ fun IdentificacionApalzada(
                             valor = identificadorAnimal,
                             placeholder = stringResource(R.string.form_id_animal_description),
                             enabled = !modoLectura,
-                            onValueChange = { viewModel.actualizarIdentificadorAnimal(it) },
+                            onValueChange = { viewModel.actualizarIdentificador(it) },
                             suggestions = suggestionsBovinos,
                             onAnimalSelected = { viewModel.onBovinoSelected(it) },
                             isLoadingSuggestions = isLoadingBovinos,
@@ -253,7 +253,7 @@ fun IdentificacionApalzada(
                             Spacer(modifier = Modifier.height(10.dp))
                             Box(
                                 modifier = if (!modoLectura)
-                                    Modifier.fillMaxWidth().clickable { viewModel.mostrarDatePickerIdentificacion() }
+                                    Modifier.fillMaxWidth().clickable { viewModel.mostrarDatePicker() }
                                 else
                                     Modifier.fillMaxWidth()
                             ) {
@@ -282,7 +282,7 @@ fun IdentificacionApalzada(
 
                 if (!modoLectura) {
                     Button(
-                        onClick = { viewModel.corregirIdentificacion() },
+                        onClick = { viewModel.registrar() },
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 24.dp).height(56.dp),
                         enabled = !estadoCarga,
                         colors = ButtonDefaults.buttonColors(

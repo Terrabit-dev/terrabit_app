@@ -1,277 +1,166 @@
 package com.example.terrabit_app.viewmodel.bovinos
 
 import android.util.Log
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.Identificadores.Identificadores
 import com.example.terrabit_app.data.network.animales.RegistroNacimientoBovi
 import com.example.terrabit_app.data.network.lista_bovinos.Animal
-import com.example.terrabit_app.data.network.respuestas.RespuestaUnificada
 import com.example.terrabit_app.utils.DateUtils
 import com.example.terrabit_app.utils.UserPreferences
-import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
 import javax.inject.Inject
 import com.example.terrabit_app.data.local.dao.BorradorDao
 import com.example.terrabit_app.data.local.dao.HistorialDao
-import com.example.terrabit_app.data.local.database.BorradorEntity
-import com.example.terrabit_app.data.local.database.HistorialEntity
-import com.google.gson.reflect.TypeToken
-import java.io.IOException
-import java.net.SocketTimeoutException
-import java.util.UUID
-
 @HiltViewModel
 class NacimientoViewmodel @Inject constructor(
-    private val repositorio: Repositorio,
-    private val userPreferences: UserPreferences,
-    private val borradorDao: BorradorDao,
-    private val historialDao: HistorialDao
-) : ViewModel() {
-    private var borradorSesionId: String = ""
-    private var editandoBorrador: Boolean = false
+    override val repositorio: Repositorio,
+    override val userPreferences: UserPreferences,
+    override val borradorDao: BorradorDao,
+    override val historialDao: HistorialDao
+) : BaseBovinoViewModel() {
 
-    val nif = userPreferences.getNif() ?: ""
-    val password = userPreferences.getPassword() ?: ""
-    var codiMo = userPreferences.getCodiMO() ?: ""
-
-    private val _suggestionsBovinos = MutableLiveData<List<Animal>>(emptyList())
-    val suggestionsBovinos = _suggestionsBovinos
-
-    private val _isLoadingBovinos = MutableLiveData(false)
-    val isLoadingBovinos = _isLoadingBovinos
+    // ─── Estado específico ────────────────────────────────────────────────────
+    private val _identificadores = MutableLiveData<Identificadores>()
+    val identificadores: LiveData<Identificadores> = _identificadores
 
     private val _activeFieldIndex = MutableLiveData(-1)
-    val activeFieldIndex = _activeFieldIndex
-
-    private val _bovinosCargados = MutableLiveData(false)
-
-    val listaAptitudes = listOf("Carne", "Leche", "Doble propósito")
-
-    private val _identificadores = MutableLiveData<Identificadores>()
-    val identificadores = _identificadores
+    val activeFieldIndex: LiveData<Int> = _activeFieldIndex
 
     private val _idMadre = MutableLiveData("")
-    val idMadre = _idMadre
+    val idMadre: LiveData<String> = _idMadre
+
+    private val _idCria = MutableLiveData("")
+    val idCria: LiveData<String> = _idCria
+
+    private val _fechaNacimiento = MutableLiveData("")
+    val fechaNacimiento: LiveData<String> = _fechaNacimiento
+
+    private val _fechaIdentificacion = MutableLiveData("")
+    val fechaIdentificacion: LiveData<String> = _fechaIdentificacion
+
+    private val _sexoSeleccionado = MutableLiveData(0)
+    val sexoSeleccionado: LiveData<Int> = _sexoSeleccionado
+
+    private val _razaSeleccionada = MutableLiveData(0)
+    val razaSeleccionada: LiveData<Int> = _razaSeleccionada
+
+    private val _aptitudSeleccionada = MutableLiveData(0)
+    val aptitudSeleccionada: LiveData<Int> = _aptitudSeleccionada
 
     private val _codigoRaza = MutableLiveData("")
 
-    private val _fechaIdentificacion = MutableLiveData("")
-    val fechaIdentificacion = _fechaIdentificacion
+    // Estados de expansión de dropdowns
+    private val _sexoExpandido = MutableLiveData(false)
+    val sexoExpandido: LiveData<Boolean> = _sexoExpandido
 
-    private val _idCria = MutableLiveData("")
-    val idCria = _idCria
+    private val _razaExpandida = MutableLiveData(false)
+    val razaExpandida: LiveData<Boolean> = _razaExpandida
 
-    private val _fechaNacimiento = MutableLiveData("")
-    val fechaNacimiento = _fechaNacimiento
+    private val _aptitudExpandida = MutableLiveData(false)
+    val aptitudExpandida: LiveData<Boolean> = _aptitudExpandida
 
-    private val _sexoSeleccionado = MutableLiveData(0)
-    val sexoSeleccionado = _sexoSeleccionado
+    // DatePickers
+    private val _mostrarDatePickerNacimiento = MutableLiveData(false)
+    val mostrarDatePickerNacimiento: LiveData<Boolean> = _mostrarDatePickerNacimiento
 
+    private val _mostrarDatePickerIdentificacion = MutableLiveData(false)
+    val mostrarDatePickerIdentificacion: LiveData<Boolean> = _mostrarDatePickerIdentificacion
+
+    // Códigos internos para la API
     private var sexoApiSeleccionado = "0"
     private var codigoAptitud = "0"
 
-    private val _razaSeleccionada = MutableLiveData(0)
-    val razaSeleccionada = _razaSeleccionada
-
-    private val _aptitudSeleccionada = MutableLiveData(0)
-    val aptitudSeleccionada = _aptitudSeleccionada
-
-    private val _sexoExpandido = MutableLiveData(false)
-    val sexoExpandido = _sexoExpandido
-
-    private val _razaExpandida = MutableLiveData(false)
-    val razaExpandida = _razaExpandida
-
-    private val _aptitudExpandida = MutableLiveData(false)
-    val aptitudExpandida = _aptitudExpandida
-
-    private val _mostrarDatePicker = MutableLiveData(false)
-    val mostrarDatePicker = _mostrarDatePicker
-
-    private val _mostrarDatePickerIdentificacion = MutableLiveData(false)
-    val mostrarDatePickerIdentificacion = _mostrarDatePickerIdentificacion
-
-    private val _registroExitoso = MutableLiveData<Boolean>()
-    val registroExitoso = _registroExitoso
-
-    private val _mensajeError = MutableLiveData<String>()
-    val mensajeError = _mensajeError
-
-    private val _codiError = MutableLiveData<Int?>()
-    val codiError = _codiError
-
-    private val _cargandoNacimiento = MutableLiveData(false)
-    val cargandoNacimiento = _cargandoNacimiento
+    val listaAptitudes = listOf("Carne", "Leche", "Doble propósito")
 
     init {
         borradorSesionId = "nacimiento_auto_${System.currentTimeMillis()}"
         cargarBovinosEnCache()
     }
 
-    private fun cargarBovinosEnCache() {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                _isLoadingBovinos.postValue(true)
-                codiMo = userPreferences.getCodiMO() ?: ""
-                repositorio.getBovinosWithCache(
-                    nif = nif,
-                    password = password,
-                    tipusVinculacio = "1",
-                    explotacio = codiMo,
-                    forceRefresh = true
-                )
-                _bovinosCargados.postValue(true)
-                _isLoadingBovinos.postValue(false)
-                Log.d("NacimientoVM", "Bovinos cargados en caché")
-            } catch (e: Exception) {
-                _isLoadingBovinos.postValue(false)
-                _bovinosCargados.postValue(false)
-                Log.e("NacimientoVM", "Error al cargar bovinos: ${e.message}", e)
-            }
-        }
+    // ─── Contrato con la base ─────────────────────────────────────────────────
+    override fun getTipoRegistro() = "NACIMIENTO"
+
+    override fun getDatosFormulario() = mapOf(
+        "idMadre"            to _idMadre.value,
+        "idCria"             to _idCria.value,
+        "fechaNacimiento"    to _fechaNacimiento.value,
+        "fechaIdentificacion" to _fechaIdentificacion.value,
+        "sexoSeleccionado"   to _sexoSeleccionado.value,
+        "razaSeleccionada"   to _razaSeleccionada.value,
+        "aptitudSeleccionada" to _aptitudSeleccionada.value,
+        "codigoRaza"         to _codigoRaza.value,
+        "sexoApiSeleccionado" to sexoApiSeleccionado,
+        "codigoAptitud"      to codigoAptitud
+    )
+
+    override fun restaurarDatos(datos: Map<String, Any?>) {
+        _idMadre.value             = datos["idMadre"] as? String ?: ""
+        _idCria.value              = datos["idCria"] as? String ?: ""
+        _fechaNacimiento.value     = datos["fechaNacimiento"] as? String ?: ""
+        _fechaIdentificacion.value = datos["fechaIdentificacion"] as? String ?: ""
+        _sexoSeleccionado.value    = (datos["sexoSeleccionado"] as? Double)?.toInt() ?: 0
+        _razaSeleccionada.value    = (datos["razaSeleccionada"] as? Double)?.toInt() ?: 0
+        _aptitudSeleccionada.value = (datos["aptitudSeleccionada"] as? Double)?.toInt() ?: 0
+        _codigoRaza.value          = datos["codigoRaza"] as? String ?: ""
+        sexoApiSeleccionado        = datos["sexoApiSeleccionado"] as? String ?: "0"
+        codigoAptitud              = datos["codigoAptitud"] as? String ?: "0"
     }
 
-    fun searchBovinos(fieldIndex: Int, query: String) {
-        _activeFieldIndex.value = fieldIndex
-        if (query.isBlank()) {
-            _suggestionsBovinos.value = emptyList()
-            return
-        }
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val resultados = repositorio.searchBovinosLocal(query)
-                _suggestionsBovinos.postValue(resultados)
-                Log.d("NacimientoVM", "Búsqueda: '$query' - ${resultados.size} resultados")
-            } catch (e: Exception) {
-                _suggestionsBovinos.postValue(emptyList())
-                Log.e("NacimientoVM", "Error en búsqueda: ${e.message}", e)
-            }
-        }
+    override fun limpiarFormulario() {
+        _idMadre.value             = ""
+        _idCria.value              = ""
+        _fechaNacimiento.value     = ""
+        _fechaIdentificacion.value = ""
+        _sexoSeleccionado.value    = 0
+        _razaSeleccionada.value    = 0
+        _aptitudSeleccionada.value = 0
+        _codigoRaza.value          = ""
+        sexoApiSeleccionado        = "0"
+        codigoAptitud              = "0"
+        borradorSesionId           = ""
+        _activeFieldIndex.value    = -1
     }
 
-    fun onMotherselected(animal: Animal) {
-        _idMadre.value = animal.identificador
-        _suggestionsBovinos.value = emptyList()
-        _activeFieldIndex.value = -1
-        Log.d("NacimientoVM", "Bovino seleccionado: ${animal.identificador}")
-    }
-
-    fun onBreedingSelected(animal: Animal) {
-        _idCria.value = animal.identificador
-        _suggestionsBovinos.value = emptyList()
-        _activeFieldIndex.value = -1
-    }
-
-    fun tieneContenido(): Boolean {
-        return !_idMadre.value.isNullOrEmpty() ||
+    override fun tieneContenido() =
+        !_idMadre.value.isNullOrEmpty() ||
                 !_idCria.value.isNullOrEmpty() ||
                 !_fechaNacimiento.value.isNullOrEmpty() ||
                 !_fechaIdentificacion.value.isNullOrEmpty() ||
                 (_sexoSeleccionado.value ?: 0) != 0 ||
-                (_razaSeleccionada.value ?: 0) != 0||
+                (_razaSeleccionada.value ?: 0) != 0 ||
                 (_aptitudSeleccionada.value ?: 0) != 0
+
+    // ─── Selección de bovinos ─────────────────────────────────────────────────
+    fun onMotherSelected(animal: Animal) {
+        _idMadre.value = animal.identificador
+        limpiarSugerencias()
+        _activeFieldIndex.value = -1
     }
 
-    fun guardarBorradorAutomatico() {
-        if (!tieneContenido()) return
-        viewModelScope.launch {
-            try {
-                val datos = mapOf(
-                    "idMadre" to _idMadre.value,
-                    "idCria" to _idCria.value,
-                    "fechaNacimiento" to _fechaNacimiento.value,
-                    "fechaIdentificacion" to _fechaIdentificacion.value,
-                    "sexoSeleccionado" to _sexoSeleccionado.value,
-                    "razaSeleccionada" to _razaSeleccionada.value,
-                    "aptitudSeleccionada" to _aptitudSeleccionada.value,
-                    "codigoRaza" to _codigoRaza.value,
-                    "sexoApiSeleccionado" to sexoApiSeleccionado,
-                    "codigoAptitud" to codigoAptitud
-                )
-                val existente = borradorDao.getAll().find { it.id == borradorSesionId }
-                val entity = existente?.copy(
-                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
-                    datos = Gson().toJson(datos)
-                ) ?: BorradorEntity(
-                    id = borradorSesionId, tipo = "NACIMIENTO",
-                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
-                    hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
-                    datos = Gson().toJson(datos), estado = "BORRADOR_AUTO"
-                )
-                borradorDao.upsert(entity)
-            } catch (e: Exception) {
-                Log.e("Error Autoguardado Nacimiento", "Error al guardar: ${e.message}", e)
-            }
-        }
+    fun onBreedingSelected(animal: Animal) {
+        _idCria.value = animal.identificador
+        limpiarSugerencias()
+        _activeFieldIndex.value = -1
     }
 
-    fun cargarBorradorPorId(id: String) {
-        viewModelScope.launch {
-            try {
-                val borrador = borradorDao.getAll().find { it.id == id } ?: return@launch
-                editandoBorrador = true
-                borradorSesionId = borrador.id
-                val datos: Map<String, Any?> = Gson().fromJson(
-                    borrador.datos,
-                    object : TypeToken<Map<String, Any?>>() {}.type
-                )
-                _idMadre.value = datos["idMadre"] as? String ?: ""
-                _idCria.value = datos["idCria"] as? String ?: ""
-                _fechaNacimiento.value = datos["fechaNacimiento"] as? String ?: ""
-                _fechaIdentificacion.value = datos["fechaIdentificacion"] as? String ?: ""
-                _sexoSeleccionado.value = (datos["sexoSeleccionado"] as? Double)?.toInt() ?: 0
-                _razaSeleccionada.value = (datos["razaSeleccionada"] as? Double)?.toInt() ?: 0
-                _aptitudSeleccionada.value = (datos["aptitudSeleccionada"] as? Double)?.toInt() ?: 0
-                _codigoRaza.value = datos["codigoRaza"] as? String ?: ""
-                sexoApiSeleccionado = datos["sexoApiSeleccionado"] as? String ?: "0"
-                codigoAptitud = datos["codigoAptitud"] as? String ?: "0"
-            } catch (e: Exception) {
-                Log.e("NacimientoVM", "Error al cargar borrador por ID: ${e.message}", e)
-            }
-        }
+    // Nacimiento necesita saber qué campo está activo (madre vs cría)
+    fun searchBovinosConCampo(fieldIndex: Int, query: String) {
+        _activeFieldIndex.value = fieldIndex
+        searchBovinos(query)
     }
 
-    fun eliminarBorradorAutomatico() {
-        viewModelScope.launch {
-            try {
-                if (borradorSesionId.isNotEmpty()) {
-                    borradorDao.deleteById(borradorSesionId)
-                    borradorSesionId = ""
-                }
-            } catch (e: Exception) {
-                Log.e("Error Eliminar Borrador", "Error: ${e.message}", e)
-            }
-        }
-    }
-
-    fun getIdentificadores(nif: String, password: String, codiMO: String) {
-        CoroutineScope(Dispatchers.IO).launch {
-            val response = repositorio.getIdentificadoresDisponibles(nif, password, codiMO)
-            withContext(Dispatchers.Main) {
-                if (response.isSuccessful) {
-                    _identificadores.value = response.body()
-                } else {
-                    Log.e("Error identificadores:", response.message())
-                }
-            }
-        }
-    }
-
+    // ─── Actualizadores de campos ─────────────────────────────────────────────
     fun actualizarIdMadre(nuevoId: String) { _idMadre.value = nuevoId }
     fun actualizarIdCria(nuevoId: String) { _idCria.value = nuevoId }
     fun actualizarFechaNacimiento(nuevaFecha: String) { _fechaNacimiento.value = nuevaFecha }
 
+    // ─── Dropdowns ────────────────────────────────────────────────────────────
     fun seleccionarSexo(sexo: Int, codigo: String) {
         _sexoSeleccionado.value = sexo
         sexoApiSeleccionado = codigo
@@ -296,200 +185,93 @@ class NacimientoViewmodel @Inject constructor(
     fun cerrarSexoMenu() { _sexoExpandido.value = false }
     fun cerrarRazaMenu() { _razaExpandida.value = false }
     fun cerrarAptitudMenu() { _aptitudExpandida.value = false }
-    fun mostrarDatePicker() { _mostrarDatePicker.value = true }
-    fun ocultarDatePicker() { _mostrarDatePicker.value = false }
+
+    // ─── DatePickers ──────────────────────────────────────────────────────────
+    fun mostrarDatePickerNacimiento() { _mostrarDatePickerNacimiento.value = true }
+    fun ocultarDatePickerNacimiento() { _mostrarDatePickerNacimiento.value = false }
     fun mostrarDatePickerIdentificacion() { _mostrarDatePickerIdentificacion.value = true }
     fun ocultarDatePickerIdentificacion() { _mostrarDatePickerIdentificacion.value = false }
 
-    fun seleccionarFecha(fechaMillis: Long) {
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = fechaMillis
-        _fechaNacimiento.value = String.format(
-            "%02d/%02d/%04d",
-            calendar.get(Calendar.DAY_OF_MONTH),
-            calendar.get(Calendar.MONTH) + 1,
-            calendar.get(Calendar.YEAR)
-        )
-        _mostrarDatePicker.value = false
+    fun seleccionarFechaNacimiento(fechaMillis: Long) {
+        _fechaNacimiento.value = fechaMillisAString(fechaMillis)
+        _mostrarDatePickerNacimiento.value = false
     }
 
     fun seleccionarFechaIdentificacion(fechaMillis: Long) {
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = fechaMillis
-        _fechaIdentificacion.value = String.format(
-            "%02d/%02d/%04d",
-            calendar.get(Calendar.DAY_OF_MONTH),
-            calendar.get(Calendar.MONTH) + 1,
-            calendar.get(Calendar.YEAR)
-        )
+        _fechaIdentificacion.value = fechaMillisAString(fechaMillis)
         _mostrarDatePickerIdentificacion.value = false
     }
 
-    fun esFormularioNacimientoValido(): Boolean {
-        return !_idMadre.value.isNullOrEmpty() &&
+    // ─── Identificadores disponibles ─────────────────────────────────────────
+    fun getIdentificadores(nif: String, password: String, codiMO: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val response = repositorio.getIdentificadoresDisponibles(nif, password, codiMO)
+            withContext(Dispatchers.Main) {
+                if (response.isSuccessful) _identificadores.value = response.body()
+                else Log.e("NacimientoVM", "Error identificadores: ${response.message()}")
+            }
+        }
+    }
+
+    // ─── Validación ───────────────────────────────────────────────────────────
+    fun esFormularioValido() =
+        !_idMadre.value.isNullOrEmpty() &&
                 !_idCria.value.isNullOrEmpty() &&
                 !_fechaNacimiento.value.isNullOrEmpty() &&
                 (_sexoSeleccionado.value ?: 0) != 0 &&
                 (_razaSeleccionada.value ?: 0) != 0 &&
                 (_aptitudSeleccionada.value ?: 0) != 0
-    }
 
+    fun validarIdentificador(id: String) = id.length >= 5
+
+    // ─── Registro principal ───────────────────────────────────────────────────
     fun registrarNacimiento() {
         _codiError.value = null
-        if (!esFormularioNacimientoValido()) {
+        if (!esFormularioValido()) {
             _codiError.value = when {
-                _idMadre.value.isNullOrEmpty() -> 1
-                _idCria.value.isNullOrEmpty() -> 2
-                _fechaNacimiento.value.isNullOrEmpty() -> 3
-                (_sexoSeleccionado.value ?: 0) != 0 -> 4
-                (_razaSeleccionada.value ?: 0) != 0-> 5
-                (_aptitudSeleccionada.value ?: 0) != 0 -> 6
-                else -> 0
+                _idMadre.value.isNullOrEmpty()           -> 1
+                _idCria.value.isNullOrEmpty()            -> 2
+                _fechaNacimiento.value.isNullOrEmpty()   -> 3
+                (_sexoSeleccionado.value ?: 0) == 0      -> 4
+                (_razaSeleccionada.value ?: 0) == 0      -> 5
+                (_aptitudSeleccionada.value ?: 0) == 0   -> 6
+                else                                     -> 0
             }
             return
         }
-        viewModelScope.launch {
-            _cargandoNacimiento.postValue(true)
-            try {
-                val request = RegistroNacimientoBovi(
-                    nif = nif,
-                    passwordMobilitat = password,
-                    identificador = _idCria.value ?: "",
-                    identificadorMare = _idMadre.value ?: "",
-                    dataNaixement = DateUtils.convertirFechaAFormatoAPI(_fechaNacimiento.value ?: ""),
-                    dataIdentificacio = DateUtils.convertirFechaAFormatoAPI(_fechaIdentificacion.value ?: ""),
-                    sexe = sexoApiSeleccionado,
-                    raca = _codigoRaza.value ?: "",
-                    aptitud = codigoAptitud
-                )
-                val response = repositorio.putRegistrarNacimiento(request)
-                withContext(Dispatchers.Main) {
-                    _cargandoNacimiento.value = false
-                    when {
-                        response.isSuccessful && response.body() != null -> {
-                            val body = response.body()!!
-                            if (body.codi == "0" || body.descripcio == "OK") {
-                                _registroExitoso.value = true
-                                _mensajeError.value = ""
-                                guardarEnHistorial("Nacimiento Registrado")
-                                eliminarBorradorAutomatico()
-                                limpiarFormularioNacimiento()
-                            }
-                        }
-                        !response.isSuccessful -> {
-                            val errorBody = response.errorBody()?.string()
-                            if (errorBody != null) {
-                                try {
-                                    val errorObj = Gson().fromJson(errorBody, RespuestaUnificada::class.java)
-                                    _mensajeError.value = errorObj.errors?.firstOrNull()?.descripcio ?: "Error desconocido del servidor"
-                                } catch (e: Exception) {
-                                    _mensajeError.value = "Error al procesar respuesta"
-                                }
-                            }
-                            _registroExitoso.value = false
-                        }
-                        else -> {
-                            _registroExitoso.value = false
-                            _mensajeError.value = "Error: Respuesta vacía del servidor"
-                        }
+        launchApiCall {
+            val request = RegistroNacimientoBovi(
+                nif                 = nif,
+                passwordMobilitat   = password,
+                identificador       = _idCria.value ?: "",
+                identificadorMare   = _idMadre.value ?: "",
+                dataNaixement       = DateUtils.convertirFechaAFormatoAPI(_fechaNacimiento.value ?: ""),
+                dataIdentificacio   = DateUtils.convertirFechaAFormatoAPI(_fechaIdentificacion.value ?: ""),
+                sexe                = sexoApiSeleccionado,
+                raca                = _codigoRaza.value ?: "",
+                aptitud             = codigoAptitud
+            )
+            val response = repositorio.putRegistrarNacimiento(request)
+            withContext(Dispatchers.Main) {
+                _estadoCarga.value = false
+                when {
+                    response.isSuccessful && response.body()
+                        ?.let { it.codi == "0" || it.descripcio == "OK" } == true -> {
+                        _operacionExitosa.value = true
+                        _mensajeError.value = ""
+                        guardarEnHistorial("Nacimiento Registrado")
+                        eliminarBorradorAutomatico()
+                        limpiarFormulario()
+                    }
+                    !response.isSuccessful -> {
+                        _mensajeError.value = parsearMensajeError(response)
+                        _operacionExitosa.value = false
+                    }
+                    else -> {
+                        _operacionExitosa.value = false
+                        _mensajeError.value = "Error: Respuesta vacía del servidor"
                     }
                 }
-            } catch (e: SocketTimeoutException) {
-                withContext(Dispatchers.Main) {
-                    _cargandoNacimiento.value = false
-                    _registroExitoso.value = false
-                    _mensajeError.value = "Tiempo de espera agotado. La operación puede haberse completado, por favor verifique."
-                }
-            } catch (e: IOException) {
-                withContext(Dispatchers.Main) {
-                    _cargandoNacimiento.value = false
-                    _registroExitoso.value = false
-                    _mensajeError.value = "Error de conexión. Verifique su conexión a internet."
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    _cargandoNacimiento.value = false
-                    _registroExitoso.value = false
-                    _mensajeError.value = "Error inesperado: ${e.message ?: "Error desconocido"}"
-                    e.printStackTrace()
-                }
-            }
-        }
-    }
-
-    fun limpiarFormularioNacimiento() {
-        _idMadre.value = ""
-        _idCria.value = ""
-        _fechaNacimiento.value = ""
-        _fechaIdentificacion.value = ""
-        _sexoSeleccionado.value = null
-        _razaSeleccionada.value = null
-        _codigoRaza.value = ""
-        _aptitudSeleccionada.value = null
-        sexoApiSeleccionado = "0"
-        codigoAptitud = "0"
-        borradorSesionId = ""
-        editandoBorrador = false
-        _activeFieldIndex.value = -1
-    }
-
-    fun resetearEstadoRegistro() {
-        _registroExitoso.value = false
-        _mensajeError.value = ""
-        _codiError.value = null
-    }
-
-    fun validarIdentificador(id: String): Boolean = id.length >= 5
-
-    private fun guardarEnHistorial(resumen: String = "") {
-        viewModelScope.launch {
-            try {
-                val datos = mapOf(
-                    "idMadre" to _idMadre.value,
-                    "idCria" to _idCria.value,
-                    "fechaNacimiento" to _fechaNacimiento.value,
-                    "fechaIdentificacion" to _fechaIdentificacion.value,
-                    "sexoSeleccionado" to _sexoSeleccionado.value,
-                    "razaSeleccionada" to _razaSeleccionada.value,
-                    "aptitudSeleccionada" to _aptitudSeleccionada.value,
-                    "codigoRaza" to _codigoRaza.value,
-                    "sexoApiSeleccionado" to sexoApiSeleccionado,
-                    "codigoAptitud" to codigoAptitud
-                )
-                historialDao.insert(HistorialEntity(
-                    id = UUID.randomUUID().toString(),
-                    tipo = "NACIMIENTO",
-                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
-                    hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
-                    datos = Gson().toJson(datos),
-                    resumen = resumen
-                ))
-            } catch (e: Exception) {
-                Log.e("Historial", "Error: ${e.message}", e)
-            }
-        }
-    }
-
-    fun cargarDesdeHistorial(id: String) {
-        viewModelScope.launch {
-            try {
-                val registro = historialDao.getAll().find { it.id == id } ?: return@launch
-                val datos: Map<String, Any?> = Gson().fromJson(
-                    registro.datos,
-                    object : TypeToken<Map<String, Any?>>() {}.type
-                )
-                _idMadre.value = datos["idMadre"] as? String ?: ""
-                _idCria.value = datos["idCria"] as? String ?: ""
-                _fechaNacimiento.value = datos["fechaNacimiento"] as? String ?: ""
-                _fechaIdentificacion.value = datos["fechaIdentificacion"] as? String ?: ""
-                _sexoSeleccionado.value = (datos["sexoSeleccionado"] as? Double)?.toInt() ?: 0
-                _razaSeleccionada.value = (datos["razaSeleccionada"] as? Double)?.toInt() ?: 0
-                _aptitudSeleccionada.value = ( datos["aptitudSeleccionada"] as? Double)?.toInt() ?: 0
-                _codigoRaza.value = datos["codigoRaza"] as? String ?: ""
-                sexoApiSeleccionado = datos["sexoApiSeleccionado"] as? String ?: "0"
-                codigoAptitud = datos["codigoAptitud"] as? String ?: "0"
-            } catch (e: Exception) {
-                Log.e("NacimientoVM", "Error al cargar desde historial: ${e.message}", e)
             }
         }
     }

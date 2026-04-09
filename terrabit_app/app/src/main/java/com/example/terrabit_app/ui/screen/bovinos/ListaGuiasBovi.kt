@@ -57,7 +57,7 @@ fun ListaGuiasBovi(
             consultaIniciada &&
             !cargando
         ) {
-            viewModel.cargarGuias()
+            viewModel.cargarDatos()
         }
     }
 
