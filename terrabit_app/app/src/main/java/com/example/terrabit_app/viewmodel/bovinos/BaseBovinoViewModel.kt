@@ -254,6 +254,18 @@ abstract class BaseBovinoViewModel : ViewModel() {
         )
     }
 
+    protected fun convertirFechaHoraAFormatoAPI(fecha: String, hora: String): String {
+        return try {
+            if (fecha.length == 10 && hora.length == 5) {
+                val (dia, mes, anio) = fecha.split("/")
+                val (horas, minutos) = hora.split(":")
+                "$anio$mes$dia$horas$minutos"
+            } else ""
+        } catch (e: Exception) {
+            Log.e("BaseBovinoVM", "Error conversión fecha/hora: ${e.message}"); ""
+        }
+    }
+
     fun fechaHoy(): String = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
     fun horaActual(): String = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
 

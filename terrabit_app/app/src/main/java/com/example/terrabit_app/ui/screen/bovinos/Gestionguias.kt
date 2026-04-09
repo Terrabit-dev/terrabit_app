@@ -85,9 +85,9 @@ fun GestionGuias(
     val mostrarTimePickerSortida by viewModel.mostrarTimePickerSortida.observeAsState(false)
     val mostrarDatePickerArribada by viewModel.mostrarDatePickerArribada.observeAsState(false)
     val mostrarTimePickerArribada by viewModel.mostrarTimePickerArribada.observeAsState(false)
-    val registroExitoso by viewModel.registroExitoso.observeAsState(false)
+    val registroExitoso by viewModel.operacionExitosa.observeAsState(false)
     val mensajeError by viewModel.mensajeError.observeAsState("")
-    val estadoCarga by viewModel.cargandoGuia.observeAsState(false)
+    val estadoCarga by viewModel.estadoCarga.observeAsState(false)
     val codiError by viewModel.codiError.observeAsState()
     val suggestionsBovinos by viewModel.suggestionsBovinos.observeAsState(emptyList())
     val isLoadingBovinos by viewModel.isLoadingBovinos.observeAsState(false)
@@ -175,7 +175,7 @@ fun GestionGuias(
     LaunchedEffect(registroExitoso) {
         if (registroExitoso) {
             snackbarHostState.showSnackbar(successMessage, duration = SnackbarDuration.Short)
-            viewModel.resetearEstadoRegistro()
+            viewModel.resetearEstado()
         }
     }
 
@@ -208,7 +208,7 @@ fun GestionGuias(
 
     if (mostrarDialogoError) {
         AlertDialog(
-            onDismissRequest = { mostrarDialogoError = false; viewModel.resetearEstadoRegistro() },
+            onDismissRequest = { mostrarDialogoError = false; viewModel.resetearEstado() },
             icon = { Icon(Icons.Default.ArrowBack, contentDescription = null, tint = MainOrange, modifier = Modifier.size(48.dp)) },
             title = { Text(stringResource(R.string.error_create_guide), fontWeight = FontWeight.Bold, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface) },
             text = {
@@ -219,7 +219,7 @@ fun GestionGuias(
             },
             confirmButton = {
                 Button(
-                    onClick = { mostrarDialogoError = false; viewModel.resetearEstadoRegistro() },
+                    onClick = { mostrarDialogoError = false; viewModel.resetearEstado() },
                     colors = ButtonDefaults.buttonColors(containerColor = MainOrange),
                     shape = RoundedCornerShape(8.dp)
                 ) { Text(stringResource(R.string.error_buttom), fontWeight = FontWeight.SemiBold) }
@@ -512,7 +512,7 @@ fun GestionGuias(
                                             }
                                         }
                                         if (!modoLectura) {
-                                            useDebounce(identificador, delayMillis = 300L) { viewModel.searchBovinos(index, it) }
+                                            useDebounce(identificador, delayMillis = 300L) { viewModel.searchBovinosConCampo(index, it) }
                                         }
                                         CampoIdentificadorAutoComplete(
                                             label = stringResource(R.string.form_id_animal),

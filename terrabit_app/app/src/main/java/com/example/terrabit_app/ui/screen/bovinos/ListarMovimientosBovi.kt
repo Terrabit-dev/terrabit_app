@@ -93,7 +93,7 @@ fun ListarMovimientosBovi(
             consultaIniciada &&
             !cargando
         ) {
-            viewModel.cargarMovimientos()
+            viewModel.cargarDatos()
         }
     }
 
