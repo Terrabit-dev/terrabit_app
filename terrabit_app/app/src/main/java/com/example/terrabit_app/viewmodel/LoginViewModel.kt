@@ -1,4 +1,4 @@
-package com.example.terrabit_app.viewmodel.bovinos
+package com.example.terrabit_app.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -53,11 +53,13 @@ class LoginViewModel @Inject constructor(
     }
 
     private fun loadSavedCredentials() {
-        if (userPreferences.getRememberMe()) {
-            _savedNif.value = userPreferences.getNif()
-            _savedPassword.value = userPreferences.getPassword()
-            _savedCodiMO.value = userPreferences.getCodiMO()
-            _savedRememberMe.value = true
+        viewModelScope.launch {
+            if (userPreferences.getRememberMe()) {
+                _savedNif.value = userPreferences.getNif()
+                _savedPassword.value = userPreferences.getPassword()
+                _savedCodiMO.value = userPreferences.getCodiMO()
+                _savedRememberMe.value = true
+            }
         }
     }
 
@@ -71,30 +73,21 @@ class LoginViewModel @Inject constructor(
 
     private fun validateFields(nif: String, password: String, codiMO: String): Boolean {
         var isValid = true
-
         if (nif.isBlank()) { _nifError.value = "El NIF es obligatorio"; isValid = false }
         else _nifError.value = null
-
         if (password.isBlank()) { _passwordError.value = "La contraseña es obligatoria"; isValid = false }
         else _passwordError.value = null
-
         if (codiMO.isBlank()) { _codiMOError.value = "El código MO es obligatorio"; isValid = false }
         else _codiMOError.value = null
-
         return isValid
     }
 
     fun login(nif: String, password: String, codiMO: String, rememberMe: Boolean) {
         if (!validateFields(nif, password, codiMO)) return
-
         viewModelScope.launch {
             _loginState.value = LoginState.Loading
             try {
-                val response = repository.getIdentificadoresDisponibles(
-                    nif = nif,
-                    passwordMobilitat = password,
-                    codiMO = codiMO
-                )
+                val response = repository.getIdentificadoresDisponibles(nif, password, codiMO)
                 if (response.isSuccessful && response.body() != null) {
                     val body = response.body()!!
                     if (body.errors == null) {
@@ -114,8 +107,10 @@ class LoginViewModel @Inject constructor(
 
     fun guardarYContinuar(nif: String, password: String, codiMO: String, rememberMe: Boolean) {
         if (!validateFields(nif, password, codiMO)) return
-        userPreferences.saveCredentials(nif, password, codiMO, rememberMe)
-        _loginState.value = LoginState.Success(nif, password, codiMO)
+        viewModelScope.launch {
+            userPreferences.saveCredentials(nif, password, codiMO, rememberMe)
+            _loginState.value = LoginState.Success(nif, password, codiMO)
+        }
     }
 
     fun resetState() {

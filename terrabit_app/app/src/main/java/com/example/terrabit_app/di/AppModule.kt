@@ -2,6 +2,7 @@ package com.example.terrabit_app.di
 
 import android.content.Context
 import com.example.terrabit_app.data.SharedPreferencesManager
+import com.example.terrabit_app.data.local.SecureStorage
 import com.example.terrabit_app.data.local.dao.BorradorDao
 import com.example.terrabit_app.data.local.dao.HistorialDao
 import com.example.terrabit_app.data.local.database.AppDatabase
@@ -20,8 +21,17 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideUserPreferences(@ApplicationContext context: Context): UserPreferences {
-        return UserPreferences(context)
+    fun provideSecureStorage(@ApplicationContext context: Context): SecureStorage {
+        return SecureStorage(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideUserPreferences(
+        @ApplicationContext context: Context,
+        secureStorage: SecureStorage
+    ): UserPreferences {
+        return UserPreferences(context, secureStorage)
     }
 
     @Provides
@@ -35,7 +45,6 @@ object AppModule {
     fun provideSharedPreferencesManager(@ApplicationContext context: Context): SharedPreferencesManager {
         return SharedPreferencesManager(context)
     }
-
 
     @Provides
     @Singleton
@@ -52,6 +61,4 @@ object AppModule {
     @Provides
     @Singleton
     fun provideHistorialDao(database: AppDatabase): HistorialDao = database.historialDao()
-
-
 }

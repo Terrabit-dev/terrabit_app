@@ -18,12 +18,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.terrabit_app.ui.navigation.Navigation
 import com.example.terrabit_app.ui.theme.Terrabit_appTheme
-import com.example.terrabit_app.viewmodel.bovinos.ConfigurationViewModel
-import com.example.terrabit_app.viewmodel.bovinos.DrawerViewModel
+import com.example.terrabit_app.viewmodel.ConfigurationViewModel
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
-import com.felhr.usbserial.BuildConfig
+import com.example.terrabit_app.viewmodel.bovinos.DrawerViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.net.URL
 import java.security.MessageDigest

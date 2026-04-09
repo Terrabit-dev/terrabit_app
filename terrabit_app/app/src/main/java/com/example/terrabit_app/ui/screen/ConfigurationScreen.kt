@@ -37,7 +37,7 @@ import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.utils.CampoTexto
 import com.example.terrabit_app.utils.PantallaCargaIdioma
-import com.example.terrabit_app.viewmodel.bovinos.ConfigurationViewModel
+import com.example.terrabit_app.viewmodel.ConfigurationViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 

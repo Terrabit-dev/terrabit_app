@@ -16,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -28,7 +27,6 @@ import com.example.terrabit_app.ui.navigation.NavigationDrawer
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
-import com.example.terrabit_app.utils.UserPreferences
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 import com.example.terrabit_app.viewmodel.bovinos.DrawerViewModel
 import kotlinx.coroutines.launch
@@ -46,9 +44,6 @@ fun DrawerScreen(
     val tipoAnimalSeleccionado by drawerViewModel.tipoAnimalSeleccionado.observeAsState("Bovinos")
     val currentRoute by drawerNavController.currentBackStackEntryAsState()
     val currentDestination = currentRoute?.destination?.route
-
-    val context = LocalContext.current
-    val userPreferences = remember { UserPreferences(context) }
 
     ModalNavigationDrawer(
         gesturesEnabled = true,
@@ -69,7 +64,6 @@ fun DrawerScreen(
                     }
                     scope.launch { drawerState.close() }
                 },
-
                 onBorradoresClick = {
                     drawerNavController.navigate("borradores") {
                         popUpTo(drawerNavController.graph.startDestinationId)
@@ -77,7 +71,6 @@ fun DrawerScreen(
                     }
                     scope.launch { drawerState.close() }
                 },
-
                 onHistorialClick = {
                     drawerNavController.navigate("historial") {
                         popUpTo(drawerNavController.graph.startDestinationId)
@@ -85,7 +78,6 @@ fun DrawerScreen(
                     }
                     scope.launch { drawerState.close() }
                 },
-
                 onConfigClick = {
                     drawerNavController.navigate(Routes.Configuration.route) {
                         popUpTo(drawerNavController.graph.startDestinationId)
@@ -94,9 +86,10 @@ fun DrawerScreen(
                     scope.launch { drawerState.close() }
                 },
                 onLogout = {
-                    userPreferences.logout()
-                    mainNavController.navigate(Routes.Login.route) {
-                        popUpTo(0) { inclusive = true }
+                    drawerViewModel.logout {
+                        mainNavController.navigate(Routes.Login.route) {
+                            popUpTo(0) { inclusive = true }
+                        }
                     }
                 }
             )

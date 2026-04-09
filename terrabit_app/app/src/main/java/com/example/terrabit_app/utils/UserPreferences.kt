@@ -1,135 +1,125 @@
 package com.example.terrabit_app.utils
 
 import android.content.Context
-import android.content.SharedPreferences
-import androidx.core.content.edit
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
+import com.example.terrabit_app.data.local.SecureStorage
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import kotlin.collections.ArrayList
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class UserPreferences(context: Context) {
-    private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "terrabit_prefs")
+
+@Singleton
+class UserPreferences @Inject constructor(
+    @ApplicationContext private val context: Context,
+    private val secureStorage: SecureStorage
+) {
     private val gson = Gson()
+
     companion object {
-        private const val PREFS_NAME = "terrabit_prefs"
-        private const val KEY_NIF = "nif"
-        private const val KEY_PASSWORD = "password"
-        private const val KEY_CODI_MO = "codi_mo"
-
+        private val KEY_CODI_MO = stringPreferencesKey("codi_mo")
+        private val KEY_REMEMBER_ME = booleanPreferencesKey("remember_me")
+        private val KEY_DARK_THEME = booleanPreferencesKey("dark_theme")
+        private val KEY_ARDUINO_MAC = stringPreferencesKey("arduino_mac")
         private const val PREFIX_USER_MO_LIST = "mo_list_"
-        private const val KEY_REMEMBER_ME = "remember_me"
-
-        private const val KEY_SESSION_NIF = "session_nif"
-        private const val KEY_SESSION_PASSWORD = "session_password"
-        private const val KEY_SESSION_CODI_MO = "session_codi_mo"
-        private const val KEY_SESSION_ACTIVE = "session_active"
-        private const val ARDUINO_MAC_KEY = "arduino_mac"
     }
 
-    fun saveCredentials(nif: String, password: String, codiMO: String,rememberMe: Boolean) {
-        prefs.edit().apply {
-            putString(KEY_SESSION_NIF, nif)
-            putString(KEY_SESSION_PASSWORD, password)
-            putString(KEY_SESSION_CODI_MO, codiMO)
-            putBoolean(KEY_SESSION_ACTIVE, true)
-            if (rememberMe) {
-                // Guardar también persistente para el próximo arranque
-                putString(KEY_NIF, nif)
-                putString(KEY_PASSWORD, password)
-                putString(KEY_CODI_MO, codiMO)
-                putBoolean(KEY_REMEMBER_ME, true)
-            } else {
-                // Borrar persistente si desmarcó "Recordarme"
-                remove(KEY_NIF)
-                remove(KEY_PASSWORD)
-                remove(KEY_CODI_MO)
-                putBoolean(KEY_REMEMBER_ME, false)
+    // ── Credenciales (delegadas a SecureStorage) ──────────────────────────
+
+    suspend fun saveCredentials(nif: String, password: String, codiMO: String, rememberMe: Boolean) {
+        secureStorage.saveNif(nif)
+        secureStorage.savePassword(password)
+        secureStorage.saveCodiMO(codiMO)
+        context.dataStore.edit { prefs ->
+            prefs[KEY_CODI_MO] = codiMO
+            prefs[KEY_REMEMBER_ME] = rememberMe
+            if (!rememberMe) {
+                prefs.remove(KEY_CODI_MO)
+                secureStorage.clearCredentials()
             }
-            apply()
         }
         addMOToUserList(codiMO)
     }
 
-    fun saveArduinoMac(mac: String?) {
-        prefs.edit().apply {
-            if (mac != null) putString(ARDUINO_MAC_KEY, mac)
-            else remove(ARDUINO_MAC_KEY)
-            apply()
+    fun getNif(): String? = secureStorage.getNif()
+    fun getPassword(): String? = secureStorage.getPassword()
+
+    fun getCodiMO(): String? = secureStorage.getCodiMO()
+
+
+    suspend fun getRememberMe(): Boolean =
+        context.dataStore.data.map { it[KEY_REMEMBER_ME] ?: false }.first()
+
+    suspend fun haySesionPersistente(): Boolean {
+        val rememberMe = getRememberMe()
+        return rememberMe && !getNif().isNullOrEmpty() && !getPassword().isNullOrEmpty()
+    }
+
+    // ── Dark theme ────────────────────────────────────────────────────────
+
+    val darkThemeFlow: Flow<Boolean> = context.dataStore.data.map { it[KEY_DARK_THEME] ?: false }
+
+    suspend fun getDarkTheme(): Boolean = darkThemeFlow.first()
+
+    suspend fun saveDarkTheme(isDark: Boolean) {
+        context.dataStore.edit { it[KEY_DARK_THEME] = isDark }
+    }
+
+    // ── Arduino MAC ───────────────────────────────────────────────────────
+
+    suspend fun saveArduinoMac(mac: String?) {
+        context.dataStore.edit { prefs ->
+            if (mac != null) prefs[KEY_ARDUINO_MAC] = mac
+            else prefs.remove(KEY_ARDUINO_MAC)
         }
     }
 
-    fun deleteArduinoMac() {
-        prefs.edit { remove(ARDUINO_MAC_KEY) }
+    suspend fun deleteArduinoMac() {
+        context.dataStore.edit { it.remove(KEY_ARDUINO_MAC) }
     }
 
+    suspend fun getArduinoMac(): String? =
+        context.dataStore.data.map { it[KEY_ARDUINO_MAC] }.first()
 
-    fun getArduinoMac(): String? {
-        return prefs.getString(ARDUINO_MAC_KEY, null)
-    }
+    // ── Lista de MOs por usuario ──────────────────────────────────────────
 
-
-    fun getNif(): String? = prefs.getString(KEY_SESSION_NIF, null)
-        ?: prefs.getString(KEY_NIF, null)
-
-    fun getPassword(): String? =  prefs.getString(KEY_SESSION_PASSWORD, null)
-        ?: prefs.getString(KEY_PASSWORD, null)
-
-    fun getCodiMO(): String? = prefs.getString(KEY_SESSION_CODI_MO, null)
-        ?: prefs.getString(KEY_CODI_MO, null)
-
-    fun getRememberMe(): Boolean = prefs.getBoolean(KEY_REMEMBER_ME, false)
-
-    fun haySesionPersistente(): Boolean =
-        prefs.getBoolean(KEY_REMEMBER_ME, false) &&
-                !prefs.getString(KEY_NIF, null).isNullOrEmpty() &&
-                !prefs.getString(KEY_PASSWORD, null).isNullOrEmpty()
-    fun logout() {
-        prefs.edit { clear() }
-    }
-
-    // =======================================================
-    // GESTIÓN DE MÚLTIPLES MOs (Seguro y aislado por NIF)
-    // =======================================================
-
-    // Devuelve la lista de MOs vinculada EXCLUSIVAMENTE al usuario actual.
-
-    fun getUserMOList(): ArrayList<String> {
-        val currentNif = getNif() ?: return ArrayList() // Si no hay NIF, devolvemos lista vacía
-
-        // Buscamos la clave específica de este usuario (ej. "mo_list_12345678A")
-        val userSpecificKey = "$PREFIX_USER_MO_LIST$currentNif"
-        val json = prefs.getString(userSpecificKey, null)
-
+    suspend fun getUserMOList(): ArrayList<String> {
+        val currentNif = getNif() ?: return ArrayList()
+        val key = stringPreferencesKey("$PREFIX_USER_MO_LIST$currentNif")
+        val json = context.dataStore.data.map { it[key] }.first() ?: return ArrayList()
         val type = object : TypeToken<ArrayList<String>>() {}.type
         return gson.fromJson(json, type) ?: ArrayList()
     }
 
-    // Guarda la lista completa sobreescribiendo la anterior.
-
-    fun saveUserMOList(list: ArrayList<String>) {
+    suspend fun saveUserMOList(list: ArrayList<String>) {
         val currentNif = getNif() ?: return
-        val userSpecificKey = "$PREFIX_USER_MO_LIST$currentNif"
-
+        val key = stringPreferencesKey("$PREFIX_USER_MO_LIST$currentNif")
         val json = gson.toJson(list)
-        prefs.edit { putString(userSpecificKey, json) }
+        context.dataStore.edit { it[key] = json }
     }
 
-    // Función Helper: Agrega una sola MO a la lista del usuario si no existe ya.
-
-    fun addMOToUserList(newMO: String) {
-        val currentList = getUserMOList()
-        if (!currentList.contains(newMO)) {
-            currentList.add(newMO)
-            saveUserMOList(currentList)
+    suspend fun addMOToUserList(newMO: String) {
+        val list = getUserMOList()
+        if (!list.contains(newMO)) {
+            list.add(newMO)
+            saveUserMOList(list)
         }
     }
 
+    // ── Logout ────────────────────────────────────────────────────────────
 
-    fun getDarkTheme(): Boolean = prefs.getBoolean("dark_theme", false)
-    fun saveDarkTheme(isDark: Boolean) = prefs.edit().putBoolean("dark_theme", isDark).apply()
-
-
-
-
-
+    suspend fun logout() {
+        secureStorage.clearAll()
+        context.dataStore.edit { it.clear() }
+    }
 }

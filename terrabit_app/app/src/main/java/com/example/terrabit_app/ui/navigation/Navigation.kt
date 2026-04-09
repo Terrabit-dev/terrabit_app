@@ -4,16 +4,20 @@ import com.example.terrabit_app.SplashScreen
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.terrabit_app.ui.screen.DrawerScreen
 import com.example.terrabit_app.ui.screen.Login
-import com.example.terrabit_app.utils.UserPreferences
-import com.example.terrabit_app.viewmodel.bovinos.DrawerViewModel
-import androidx.compose.ui.platform.LocalContext
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.terrabit_app.viewmodel.bovinos.DrawerViewModel
+import com.example.terrabit_app.viewmodel.bovinos.NavigationViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -22,19 +26,21 @@ fun Navigation(
     drawerViewModel: DrawerViewModel
 ) {
     val mainNavController = rememberNavController()
-    val context = LocalContext.current
-    val userPreferences = remember { UserPreferences(context) }
-    val haySesionActiva = remember {
-        userPreferences.getRememberMe() &&
-                !userPreferences.getNif().isNullOrEmpty() &&
-                !userPreferences.getPassword().isNullOrEmpty()
+    val navigationViewModel: NavigationViewModel = hiltViewModel()
+    var haySesionActiva by remember { mutableStateOf<Boolean?>(null) }
+
+    LaunchedEffect(Unit) {
+        haySesionActiva = navigationViewModel.haySesionActiva()
     }
+
+    // Esperamos hasta saber si hay sesión activa
+    if (haySesionActiva == null) return
 
     NavHost(navController = mainNavController, startDestination = Routes.Splash.route) {
         composable(Routes.Splash.route) {
             SplashScreen(
                 onSplashFinished = {
-                    val destino = if (haySesionActiva) Routes.Drawer.route else Routes.Login.route
+                    val destino = if (haySesionActiva == true) Routes.Drawer.route else Routes.Login.route
                     mainNavController.navigate(destino) {
                         popUpTo(Routes.Splash.route) { inclusive = true }
                     }

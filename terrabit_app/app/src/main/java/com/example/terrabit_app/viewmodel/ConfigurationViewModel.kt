@@ -1,4 +1,4 @@
-package com.example.terrabit_app.viewmodel.bovinos
+package com.example.terrabit_app.viewmodel
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -35,14 +35,22 @@ class ConfigurationViewModel @Inject constructor(
     private val _errorMessage = MutableLiveData("")
     val errorMessage = _errorMessage
 
-    private val _isDarkTheme = MutableStateFlow(userPreferences.getDarkTheme())
+    private val _isDarkTheme = MutableStateFlow(false)
     val isDarkTheme: StateFlow<Boolean> = _isDarkTheme
 
     val nif: String = userPreferences.getNif() ?: "No disponible"
 
+    init {
+        viewModelScope.launch {
+            _isDarkTheme.value = userPreferences.getDarkTheme()
+        }
+    }
+
     fun toggleTheme(isDark: Boolean) {
         _isDarkTheme.value = isDark
-        userPreferences.saveDarkTheme(isDark)
+        viewModelScope.launch {
+            userPreferences.saveDarkTheme(isDark)
+        }
     }
 
     fun actualizarCodiMo(nuevoCodiMo: String) {
@@ -52,12 +60,12 @@ class ConfigurationViewModel @Inject constructor(
     fun verificarCodiMo() {
         val codigo = _codiMo.value ?: return
 
-        if (userPreferences.getUserMOList().contains(codigo)) {
-            _isAlreadyAdded.value = true
-            return
-        }
-
         viewModelScope.launch {
+            if (userPreferences.getUserMOList().contains(codigo)) {
+                _isAlreadyAdded.value = true
+                return@launch
+            }
+
             _isLoading.value = true
             try {
                 val response = repository.getIdentificadoresDisponibles(
@@ -70,20 +78,18 @@ class ConfigurationViewModel @Inject constructor(
                     if (body.errors == null) {
                         userPreferences.addMOToUserList(codigo)
                         _isSuccess.value = true
-                        _isLoading.value = false
                     } else {
                         _isError.value = true
                         _errorMessage.value = "Codigo invalido"
-                        _isLoading.value = false
                     }
                 } else {
                     _isError.value = true
                     _errorMessage.value = "Error: ${response.code()}"
-                    _isLoading.value = false
                 }
             } catch (e: Exception) {
                 _isError.value = true
                 _errorMessage.value = "Error de conexión: ${e.message}"
+            } finally {
                 _isLoading.value = false
             }
         }
