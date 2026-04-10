@@ -39,6 +39,7 @@ class CorrecionSexoViewModel @Inject constructor(
     private var codigoSexo = ""
 
     init {
+        cargarCodisMos()
         borradorSesionId = "correccion_sexo_auto_${System.currentTimeMillis()}"
         cargarBovinosEnCache()
     }

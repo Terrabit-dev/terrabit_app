@@ -36,6 +36,7 @@ class IdentificacionAplazaViewModel @Inject constructor(
     val mostrarDatePicker: LiveData<Boolean> = _mostrarDatePicker
 
     init {
+        cargarCodisMos()
         borradorSesionId = "identificacion_aplazada_auto_${System.currentTimeMillis()}"
         cargarBovinosEnCache()
     }

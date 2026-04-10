@@ -81,6 +81,7 @@ class NacimientoViewmodel @Inject constructor(
     val listaAptitudes = listOf("Carne", "Leche", "Doble propósito")
 
     init {
+        cargarCodisMos()
         borradorSesionId = "nacimiento_auto_${System.currentTimeMillis()}"
         cargarBovinosEnCache()
     }

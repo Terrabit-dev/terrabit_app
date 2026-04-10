@@ -111,6 +111,7 @@ class GuiasViewModel @Inject constructor(
     val mostrarTimePickerArribada: LiveData<Boolean> = _mostrarTimePickerArribada
 
     init {
+        cargarCodisMos()
         borradorSesionId = "guia_auto_${System.currentTimeMillis()}"
         cargarBovinosEnCache()
     }

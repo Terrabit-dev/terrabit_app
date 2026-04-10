@@ -26,10 +26,12 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
+import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.utils.components.CampoIdentificadorAutoComplete
 import com.example.terrabit_app.utils.components.useDebounce
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.utils.AnimalSeleccionadoHolder
+import com.example.terrabit_app.utils.CodiMoSelector
 import com.example.terrabit_app.utils.DropdownField
 import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
@@ -76,6 +78,9 @@ fun CorregirSexoBovi(
     val usbViewModel = hiltViewModel<UsbSerialViewModel>()
     val usbState     by usbViewModel.state.collectAsState()
     val usbErrorText = usbState.error?.let { stringResource(it) }
+
+    val codisMoExpandido by viewModel.codisMoExpandido.observeAsState(false)
+    val codiMoActivo by viewModel.codiMoActivo.observeAsState(null)
 
     var procedeDeLista by remember { mutableStateOf(false) }
 
@@ -232,6 +237,17 @@ fun CorregirSexoBovi(
                         modifier = Modifier.fillMaxWidth().padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            CodiMoSelector(
+                                codisMos = viewModel.getCodisMos(),
+                                seleccionado = codiMoActivo,
+                                expanded = codisMoExpandido,
+                                onToggle = { viewModel.toggleCodisMoExpandido() },
+                                onDismiss = { viewModel.cerrarCodisMo() },
+                                onSeleccionar = { codi -> viewModel.seleccionarCodiMo(codi) },
+                                accentColor = ErrorRed
+                            )
+                        }
                         if (!modoLectura) {
                             useDebounce(identificadorCorreccionSexo, delayMillis = 300L) {
                                 viewModel.searchBovinos(it)

@@ -42,6 +42,7 @@ import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
 import com.example.terrabit_app.utils.CampoTexto
+import com.example.terrabit_app.utils.CodiMoSelector
 import com.example.terrabit_app.utils.DropdownField
 import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
@@ -91,9 +92,9 @@ fun Movimientos(
     val mitjaTransportExpandido  by viewModel.mitjaTransportExpandido.observeAsState(false)
     val mostrarDatePickerArribada by viewModel.mostrarDatePickerArribada.observeAsState(false)
     val mostrarTimePickerArribada by viewModel.mostrarTimePickerArribada.observeAsState(false)
-    val registroExitoso          by viewModel.registroExitoso.observeAsState(false)
+    val registroExitoso          by viewModel.operacionExitosa.observeAsState(false)
     val mensajeError             by viewModel.mensajeError.observeAsState("")
-    val estadoCarga              by viewModel.cargandoMovimiento.observeAsState(false)
+    val estadoCarga              by viewModel.estadoCarga.observeAsState(false)
     val codiError                by viewModel.codiError.observeAsState()
     val suggestionsBovinos       by viewModel.suggestionsBovinos.observeAsState(emptyList())
     val isLoadingBovinos         by viewModel.isLoadingBovinos.observeAsState(false)
@@ -112,6 +113,9 @@ fun Movimientos(
     val usbViewModel = hiltViewModel<UsbSerialViewModel>()
     val usbState     by usbViewModel.state.collectAsState()
     val usbErrorText = usbState.error?.let { stringResource(it) }
+
+    val codisMoExpandido by viewModel.codisMoExpandido.observeAsState(false)
+    val codiMoActivo by viewModel.codiMoActivo.observeAsState(null)
 
     // ── USB: traducción automática de prefijo de país ──────────────────────
     LaunchedEffect(Unit) {
@@ -167,7 +171,7 @@ fun Movimientos(
     LaunchedEffect(registroExitoso) {
         if (registroExitoso) {
             snackbarHostState.showSnackbar(successMessage, duration = SnackbarDuration.Short)
-            viewModel.resetearEstadoRegistro()
+            viewModel.resetearEstado()
         }
     }
 
@@ -208,7 +212,7 @@ fun Movimientos(
 
     if (mostrarDialogoError) {
         AlertDialog(
-            onDismissRequest = { mostrarDialogoError = false; viewModel.resetearEstadoRegistro() },
+            onDismissRequest = { mostrarDialogoError = false; viewModel.resetearEstado() },
             icon = {
                 Icon(Icons.Default.ArrowBack, contentDescription = null,
                     tint = MainOrange, modifier = Modifier.size(48.dp))
@@ -226,7 +230,7 @@ fun Movimientos(
             },
             confirmButton = {
                 Button(
-                    onClick = { mostrarDialogoError = false; viewModel.resetearEstadoRegistro() },
+                    onClick = { mostrarDialogoError = false; viewModel.resetearEstado() },
                     colors = ButtonDefaults.buttonColors(containerColor = MainOrange),
                     shape = RoundedCornerShape(8.dp)
                 ) { Text(stringResource(R.string.error_buttom), fontWeight = FontWeight.SemiBold) }
@@ -369,6 +373,17 @@ fun Movimientos(
                         modifier = Modifier.fillMaxWidth().padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            CodiMoSelector(
+                                codisMos = viewModel.getCodisMos(),
+                                seleccionado = codiMoActivo,
+                                expanded = codisMoExpandido,
+                                onToggle = { viewModel.toggleCodisMoExpandido() },
+                                onDismiss = { viewModel.cerrarCodisMo() },
+                                onSeleccionar = { codi -> viewModel.seleccionarCodiMo(codi) },
+                                accentColor = ErrorRed
+                            )
+                        }
                         Text(stringResource(R.string.form_movs_title_necessary),
                             fontSize = 18.sp, fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface)
@@ -649,7 +664,7 @@ fun Movimientos(
 
                                     if (!modoLectura) {
                                         useDebounce(animal.identificador, delayMillis = 300L) {
-                                            viewModel.searchBovinos(index, it)
+                                            viewModel.searchBovinosConCampo(index, it)
                                         }
                                     }
 

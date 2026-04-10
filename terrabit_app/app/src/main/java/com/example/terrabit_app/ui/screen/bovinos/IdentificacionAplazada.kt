@@ -27,9 +27,11 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
+import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.utils.components.CampoIdentificadorAutoComplete
 import com.example.terrabit_app.utils.components.useDebounce
 import com.example.terrabit_app.ui.theme.MainGreen
+import com.example.terrabit_app.utils.CodiMoSelector
 import com.example.terrabit_app.utils.alertsErrosScreens
 import com.example.terrabit_app.utils.bluetooth.BluetoothScanDialog
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
@@ -62,6 +64,9 @@ fun IdentificacionApalzada(
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
     var mostrarBluetooth    by remember { mutableStateOf(false) }
+
+    val codisMoExpandido by viewModel.codisMoExpandido.observeAsState(false)
+    val codiMoActivo by viewModel.codiMoActivo.observeAsState(null)
 
     val tituloExito  = stringResource(R.string.successful_message_identification_postpone)
     val titulloError = stringResource(R.string.error_message_identification_postpone)
@@ -259,6 +264,17 @@ fun IdentificacionApalzada(
                             .padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            CodiMoSelector(
+                                codisMos = viewModel.getCodisMos(),
+                                seleccionado = codiMoActivo,
+                                expanded = codisMoExpandido,
+                                onToggle = { viewModel.toggleCodisMoExpandido() },
+                                onDismiss = { viewModel.cerrarCodisMo() },
+                                onSeleccionar = { codi -> viewModel.seleccionarCodiMo(codi) },
+                                accentColor = ErrorRed
+                            )
+                        }
                         if (!modoLectura) {
                             useDebounce(identificadorAnimal, delayMillis = 300L) {
                                 viewModel.searchBovinos(it)
