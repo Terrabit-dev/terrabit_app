@@ -49,28 +49,29 @@ fun IdentificacionApalzada(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    val identificadorAnimal by viewModel.identificadorAnimal.observeAsState("")
-    val identifiacionExitosa by viewModel.operacionExitosa.observeAsState(false)
-    val mensajeError by viewModel.mensajeError.observeAsState("")
-    val codiError by viewModel.codiError.observeAsState()
-    val estadoCarga by viewModel.estadoCarga.observeAsState(false)
-    val fechaIdentificacion by viewModel.fechaIdentificacion.observeAsState("")
+    val identificadorAnimal              by viewModel.identificadorAnimal.observeAsState("")
+    val identifiacionExitosa             by viewModel.operacionExitosa.observeAsState(false)
+    val mensajeError                     by viewModel.mensajeError.observeAsState("")
+    val codiError                        by viewModel.codiError.observeAsState()
+    val estadoCarga                      by viewModel.estadoCarga.observeAsState(false)
+    val fechaIdentificacion              by viewModel.fechaIdentificacion.observeAsState("")
     val mostrarDatePickerIdentificadores by viewModel.mostrarDatePicker.observeAsState(false)
-    val suggestionsBovinos by viewModel.suggestionsBovinos.observeAsState(emptyList())
-    val isLoadingBovinos by viewModel.isLoadingBovinos.observeAsState(false)
+    val suggestionsBovinos               by viewModel.suggestionsBovinos.observeAsState(emptyList())
+    val isLoadingBovinos                 by viewModel.isLoadingBovinos.observeAsState(false)
 
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
-    var mostrarBluetooth by remember { mutableStateOf(false) }
+    var mostrarBluetooth    by remember { mutableStateOf(false) }
 
-    val tituloExito = stringResource(R.string.successful_message_identification_postpone)
+    val tituloExito  = stringResource(R.string.successful_message_identification_postpone)
     val titulloError = stringResource(R.string.error_message_identification_postpone)
 
+    // ── Bluetooth──────────────────────────────────────────
     if (mostrarBluetooth) {
         BluetoothScanDialog(
             bluetoothViewModel = bluetoothViewModel,
             onMensajeRecibido = { mensaje ->
-                viewModel.actualizarIdentificador(mensaje)
+                viewModel.actualizarIdentificadorDesdeHardware(mensaje)
                 mostrarBluetooth = false
             },
             onDismiss = { mostrarBluetooth = false }
@@ -80,7 +81,7 @@ fun IdentificacionApalzada(
     LaunchedEffect(Unit) {
         when {
             historialId.isNotEmpty() -> viewModel.cargarDesdeHistorial(historialId)
-            borradorId.isNotEmpty() -> viewModel.cargarBorradorPorId(borradorId)
+            borradorId.isNotEmpty()  -> viewModel.cargarBorradorPorId(borradorId)
         }
     }
 
@@ -108,12 +109,19 @@ fun IdentificacionApalzada(
     if (mostrarDialogoError) {
         AlertDialog(
             onDismissRequest = { mostrarDialogoError = false; viewModel.resetearEstado() },
-            icon = { Icon(Icons.Default.ArrowBack, contentDescription = null, tint = MainGreen, modifier = Modifier.size(48.dp)) },
-            title = { Text(titulloError, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface) },
+            icon = {
+                Icon(Icons.Default.ArrowBack, contentDescription = null,
+                    tint = MainGreen, modifier = Modifier.size(48.dp))
+            },
+            title = {
+                Text(titulloError, fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface)
+            },
             text = {
                 Text(
                     if (codiError != null) alertsErrosScreens(codiError!!) else mensajeError,
-                    fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 24.sp
+                    fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    lineHeight = 24.sp
                 )
             },
             confirmButton = {
@@ -133,19 +141,25 @@ fun IdentificacionApalzada(
         DatePickerDialog(
             onDismissRequest = { viewModel.ocultarDatePicker() },
             confirmButton = {
-                TextButton(onClick = { datePickerState.selectedDateMillis?.let { viewModel.seleccionarFecha(it) } }) {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let { viewModel.seleccionarFecha(it) }
+                }) {
                     Text(stringResource(R.string.accept_buttom), color = MainGreen)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.ocultarDatePicker() }) {
-                    Text(stringResource(R.string.cancel_buttom), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.cancel_buttom),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         ) {
             DatePicker(
                 state = datePickerState,
-                colors = DatePickerDefaults.colors(selectedDayContainerColor = MainGreen, todayDateBorderColor = MainGreen)
+                colors = DatePickerDefaults.colors(
+                    selectedDayContainerColor = MainGreen,
+                    todayDateBorderColor = MainGreen
+                )
             )
         }
     }
@@ -165,10 +179,16 @@ fun IdentificacionApalzada(
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                        CircularProgressIndicator(modifier = Modifier.size(48.dp), color = MainGreen, strokeWidth = 4.dp)
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        CircularProgressIndicator(modifier = Modifier.size(48.dp),
+                            color = MainGreen, strokeWidth = 4.dp)
                         Spacer(modifier = Modifier.height(12.dp))
-                        Text(stringResource(R.string.loading_processing), fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(R.string.loading_processing),
+                            fontSize = 14.sp, fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
@@ -179,10 +199,13 @@ fun IdentificacionApalzada(
                 TopAppBar(
                     title = {
                         Column {
-                            Text(stringResource(R.string.name_identification_postpone), fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
+                            Text(stringResource(R.string.name_identification_postpone),
+                                fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
                             Text(
-                                if (modoLectura) "Solo lectura" else stringResource(R.string.subtitle_identification_postpone),
-                                fontSize = 13.sp, fontWeight = FontWeight.Normal, color = Color.White.copy(alpha = 0.9f)
+                                if (modoLectura) "Solo lectura"
+                                else stringResource(R.string.subtitle_identification_postpone),
+                                fontSize = 13.sp, fontWeight = FontWeight.Normal,
+                                color = Color.White.copy(alpha = 0.9f)
                             )
                         }
                     },
@@ -190,11 +213,12 @@ fun IdentificacionApalzada(
                         IconButton(onClick = {
                             when {
                                 historialId.isNotEmpty() -> navController.popBackStack()
-                                borradorId.isNotEmpty() -> navController.popBackStack()
+                                borradorId.isNotEmpty()  -> navController.popBackStack()
                                 else -> navController.navigate(Routes.GestionBovinos.route)
                             }
                         }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
+                            Icon(Icons.Default.ArrowBack,
+                                contentDescription = stringResource(R.string.content_description_back))
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -206,7 +230,8 @@ fun IdentificacionApalzada(
             },
             snackbarHost = {
                 SnackbarHost(hostState = snackbarHostState) { data ->
-                    Snackbar(snackbarData = data, containerColor = MainGreen, contentColor = Color.White, shape = RoundedCornerShape(12.dp))
+                    Snackbar(snackbarData = data, containerColor = MainGreen,
+                        contentColor = Color.White, shape = RoundedCornerShape(12.dp))
                 }
             },
             containerColor = MaterialTheme.colorScheme.background
@@ -220,17 +245,24 @@ fun IdentificacionApalzada(
                 Spacer(modifier = Modifier.height(20.dp))
 
                 Card(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                     shape = MaterialTheme.shapes.large
                 ) {
                     Column(
-                        modifier = Modifier.fillMaxWidth().padding(24.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
                         if (!modoLectura) {
-                            useDebounce(identificadorAnimal, delayMillis = 300L) { viewModel.searchBovinos(it) }
+                            useDebounce(identificadorAnimal, delayMillis = 300L) {
+                                viewModel.searchBovinos(it)
+                            }
                         }
                         CampoIdentificadorAutoComplete(
                             label = stringResource(R.string.form_id_animal),
@@ -241,14 +273,18 @@ fun IdentificacionApalzada(
                             suggestions = suggestionsBovinos,
                             onAnimalSelected = { viewModel.onBovinoSelected(it) },
                             isLoadingSuggestions = isLoadingBovinos,
-                            onClickBluetooth = { bluetoothViewModel.iniciarEscaneo(context); mostrarBluetooth = true }
+                            onClickBluetooth = {
+                                bluetoothViewModel.iniciarEscaneo(context)
+                                mostrarBluetooth = true
+                            }
                         )
 
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 stringResource(R.string.form_date_identification),
                                 fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp
+                                color = MaterialTheme.colorScheme.onSurface,
+                                letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
                             Box(
@@ -261,8 +297,14 @@ fun IdentificacionApalzada(
                                     value = fechaIdentificacion,
                                     onValueChange = {},
                                     modifier = Modifier.fillMaxWidth(),
-                                    placeholder = { Text(stringResource(R.string.form_date_description), color = MaterialTheme.colorScheme.onSurfaceVariant) },
-                                    leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = MainGreen) },
+                                    placeholder = {
+                                        Text(stringResource(R.string.form_date_description),
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    },
+                                    leadingIcon = {
+                                        Icon(Icons.Default.DateRange,
+                                            contentDescription = null, tint = MainGreen)
+                                    },
                                     readOnly = true,
                                     enabled = false,
                                     shape = MaterialTheme.shapes.medium,
@@ -283,16 +325,22 @@ fun IdentificacionApalzada(
                 if (!modoLectura) {
                     Button(
                         onClick = { viewModel.registrar() },
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 24.dp).height(56.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 24.dp)
+                            .height(56.dp),
                         enabled = !estadoCarga,
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MainGreen,
                             disabledContainerColor = MaterialTheme.colorScheme.outline
                         ),
                         shape = MaterialTheme.shapes.medium,
-                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp, pressedElevation = 6.dp)
+                        elevation = ButtonDefaults.buttonElevation(
+                            defaultElevation = 2.dp, pressedElevation = 6.dp)
                     ) {
-                        Text(stringResource(R.string.buttom_form_identification_postpone), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.5.sp)
+                        Text(stringResource(R.string.buttom_form_identification_postpone),
+                            fontSize = 16.sp, fontWeight = FontWeight.SemiBold,
+                            letterSpacing = 0.5.sp)
                     }
                 } else {
                     Spacer(modifier = Modifier.height(24.dp))

@@ -17,6 +17,8 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import com.example.terrabit_app.data.local.dao.BorradorDao
 import com.example.terrabit_app.data.local.dao.HistorialDao
+import com.example.terrabit_app.utils.CodigoPaisUtils
+
 @HiltViewModel
 class NacimientoViewmodel @Inject constructor(
     override val repositorio: Repositorio,
@@ -159,6 +161,13 @@ class NacimientoViewmodel @Inject constructor(
     fun actualizarIdMadre(nuevoId: String) { _idMadre.value = nuevoId }
     fun actualizarIdCria(nuevoId: String) { _idCria.value = nuevoId }
     fun actualizarFechaNacimiento(nuevaFecha: String) { _fechaNacimiento.value = nuevaFecha }
+
+    fun actualizarIdMadreDesdeHardware(nuevoId: String) {
+        _idMadre.value = CodigoPaisUtils.traducirCodigoPais(nuevoId.trim())
+    }
+    fun actualizarIdCriaDesdeHardware(nuevoId: String) {
+        _idCria.value = CodigoPaisUtils.traducirCodigoPais(nuevoId.trim())
+    }
 
     // ─── Dropdowns ────────────────────────────────────────────────────────────
     fun seleccionarSexo(sexo: Int, codigo: String) {

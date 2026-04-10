@@ -79,9 +79,10 @@ fun CorregirSexoBovi(
 
     var procedeDeLista by remember { mutableStateOf(false) }
 
+    // ── USB ───────────────────────────────────────────────────────────────────
     LaunchedEffect(Unit) {
         usbViewModel.mensajes.collect { mensaje ->
-            viewModel.actualizarIdentificador(mensaje)   // ← antes: actualizarIdentificadorCorreccionSexo
+            viewModel.actualizarIdentificadorDesdeHardware(mensaje)
         }
     }
 
@@ -91,11 +92,12 @@ fun CorregirSexoBovi(
         }
     }
 
+    // ── Bluetooth ─────────────────────────────────────────────────────────────
     if (mostrarBluetooth) {
         BluetoothScanDialog(
             bluetoothViewModel = bluetoothViewModel,
             onMensajeRecibido = { mensaje ->
-                viewModel.actualizarIdentificador(mensaje)  // ← antes: actualizarIdentificadorCorreccionSexo
+                viewModel.actualizarIdentificadorDesdeHardware(mensaje)
                 mostrarBluetooth = false
             },
             onDismiss = { mostrarBluetooth = false }
@@ -108,7 +110,7 @@ fun CorregirSexoBovi(
             historialId.isNotEmpty() -> viewModel.cargarDesdeHistorial(historialId)
             borradorId.isNotEmpty()  -> viewModel.cargarBorradorPorId(borradorId)
             animalId.isNotEmpty()    -> {
-                viewModel.precargarAnimal(animalId)   // ← añadir al VM (ver Cambio 2)
+                viewModel.precargarAnimal(animalId)
                 procedeDeLista = true
             }
         }
@@ -140,7 +142,7 @@ fun CorregirSexoBovi(
         AlertDialog(
             onDismissRequest = {
                 mostrarDialogoError = false
-                viewModel.resetearEstado()    // ← antes: resetearEstadoCorreccionSexo()
+                viewModel.resetearEstado()
             },
             icon = {
                 Icon(Icons.Default.ArrowBack, contentDescription = null,

@@ -29,6 +29,7 @@ import com.example.terrabit_app.data.local.dao.HistorialDao
 import com.example.terrabit_app.data.local.database.BorradorEntity
 import com.example.terrabit_app.data.local.database.HistorialEntity
 import com.example.terrabit_app.data.network.moviminetos.modelos.Moviment
+import com.example.terrabit_app.utils.CodigoPaisUtils
 import java.io.IOException
 import java.net.SocketTimeoutException
 import java.util.UUID
@@ -426,6 +427,12 @@ class MovimientosViewModel @Inject constructor(
         }
     }
 
+    fun actualizarIdentificadorAnimalDesdeHardware(indice: Int, identificador: String) {
+        _listaAnimales.value = (_listaAnimales.value ?: emptyList()).mapIndexed { index, animal ->
+            if (index == indice) animal.copy(identificador = CodigoPaisUtils.traducirCodigoPais(identificador.trim()))
+            else animal
+        }
+    }
     fun actualizarClassCanal(indice: Int, clase: String) {
         if (clase.length <= limiteClassCanel) {
             _listaAnimales.value = (_listaAnimales.value ?: emptyList()).mapIndexed { index, animal ->

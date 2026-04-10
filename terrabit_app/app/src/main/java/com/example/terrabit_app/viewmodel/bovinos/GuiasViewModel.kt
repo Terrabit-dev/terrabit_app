@@ -16,6 +16,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import com.example.terrabit_app.data.local.dao.BorradorDao
 import com.example.terrabit_app.data.local.dao.HistorialDao
+import com.example.terrabit_app.utils.CodigoPaisUtils
 
 @HiltViewModel
 class GuiasViewModel @Inject constructor(
@@ -257,9 +258,18 @@ class GuiasViewModel @Inject constructor(
     }
 
     // ─── Identificadores ─────────────────────────────────────────────────────
+
     fun actualizarIdentificador(index: Int, valor: String) {
         val lista = _identificadors.value?.toMutableList() ?: mutableListOf()
         if (index < lista.size) { lista[index] = valor; _identificadors.value = lista }
+    }
+
+    fun actualizarIdentificadorDesdeHardware(index: Int, valor: String) {
+        val lista = _identificadors.value?.toMutableList() ?: mutableListOf()
+        if (index < lista.size) {
+            lista[index] = CodigoPaisUtils.traducirCodigoPais(valor.trim())
+            _identificadors.value = lista
+        }
     }
     fun agregarIdentificador() {
         _identificadors.value = (_identificadors.value?.toMutableList() ?: mutableListOf()).also { it.add("") }

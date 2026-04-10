@@ -126,7 +126,7 @@ fun Fallecimiento(
 
     LaunchedEffect(Unit) {
         usbViewModel.mensajes.collect { mensaje ->
-            viewModel.actualizarIdentificador(mensaje)
+            viewModel.actualizarIdentificadorDesdeHardware(mensaje)
         }
     }
 
@@ -140,7 +140,7 @@ fun Fallecimiento(
         BluetoothScanDialog(
             bluetoothViewModel = bluetoothViewModel,
             onMensajeRecibido = { mensaje ->
-                viewModel.actualizarIdentificador(mensaje)
+                viewModel.actualizarIdentificadorDesdeHardware(mensaje)
                 mostrarBluetooth = false
             },
             onDismiss = { mostrarBluetooth = false }

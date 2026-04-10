@@ -14,6 +14,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import com.example.terrabit_app.data.local.dao.BorradorDao
 import com.example.terrabit_app.data.local.dao.HistorialDao
+import com.example.terrabit_app.utils.CodigoPaisUtils
 
 
 @HiltViewModel
@@ -68,9 +69,20 @@ class IdentificacionAplazaViewModel @Inject constructor(
         limpiarSugerencias()
     }
 
-    fun actualizarIdentificador(nuevoId: String) { _identificadorAnimal.value = nuevoId }
-    fun mostrarDatePicker() { _mostrarDatePicker.value = true }
-    fun ocultarDatePicker() { _mostrarDatePicker.value = false }
+    fun actualizarIdentificador(nuevoId: String) {
+        _identificadorAnimal.value = nuevoId
+    }
+
+    fun actualizarIdentificadorDesdeHardware(nuevoId: String) {
+        _identificadorAnimal.value = CodigoPaisUtils.traducirCodigoPais(nuevoId.trim())
+    }
+
+    fun mostrarDatePicker() {
+        _mostrarDatePicker.value = true
+    }
+    fun ocultarDatePicker() {
+        _mostrarDatePicker.value = false
+    }
 
     fun seleccionarFecha(fechaMillis: Long) {
         _fechaIdentificacion.value = fechaMillisAString(fechaMillis)

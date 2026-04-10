@@ -15,6 +15,8 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import com.example.terrabit_app.data.local.dao.BorradorDao
 import com.example.terrabit_app.data.local.dao.HistorialDao
+import com.example.terrabit_app.utils.CodigoPaisUtils
+
 
 @HiltViewModel
 class CorrecionSexoViewModel @Inject constructor(
@@ -74,7 +76,13 @@ class CorrecionSexoViewModel @Inject constructor(
     }
 
     // ─── Actualizadores de campos ─────────────────────────────────────────────
-    fun actualizarIdentificador(nuevoId: String) { _identificadorAnimal.value = nuevoId }
+    fun actualizarIdentificador(nuevoId: String) {
+        _identificadorAnimal.value = nuevoId
+    }
+
+    fun actualizarIdentificadorDesdeHardware(nuevoId: String) {
+        _identificadorAnimal.value = CodigoPaisUtils.traducirCodigoPais(nuevoId.trim())
+    }
 
     // ─── Dropdown sexo ────────────────────────────────────────────────────────
     fun seleccionarSexoCorreccion(sexoId: Int, codigo: String) {

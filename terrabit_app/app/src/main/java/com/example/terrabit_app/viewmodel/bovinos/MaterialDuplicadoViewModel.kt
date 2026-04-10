@@ -8,6 +8,7 @@ import com.example.terrabit_app.data.network.Identificadores.IdenSolicitudDupli
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.lista_bovinos.Animal
 import com.example.terrabit_app.data.network.material.PetSolicitudDuplicado
+import com.example.terrabit_app.utils.CodigoPaisUtils
 import com.example.terrabit_app.utils.UserPreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -93,6 +94,12 @@ class MaterialDuplicadoViewModel @Inject constructor(
         }
     }
 
+    fun actualizarIdentificadorDesdeHardware(indice: Int, identificador: String) {
+        _listaAnimales.value = (_listaAnimales.value ?: emptyList()).mapIndexed { index, animal ->
+            if (index == indice) animal.copy(identificador = CodigoPaisUtils.traducirCodigoPais(identificador.trim()))
+            else animal
+        }
+    }
     fun seleccionarTipoMaterialIdentificador(indice: Int, codigoTipo: String) {
         _listaAnimales.value = (_listaAnimales.value ?: emptyList()).mapIndexed { index, animal ->
             if (index == indice) animal.copy(tipusMaterial = codigoTipo) else animal
