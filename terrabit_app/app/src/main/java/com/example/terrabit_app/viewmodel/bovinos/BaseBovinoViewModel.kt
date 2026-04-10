@@ -70,6 +70,47 @@ abstract class BaseBovinoViewModel : ViewModel() {
     // ─── Borrador ─────────────────────────────────────────────────────────────
     protected var borradorSesionId: String = ""
 
+    // ─── Gestion de codigos MO ─────────────────────────────────────────────────────────────
+    private val _codisMoExpandido = MutableLiveData(false)
+    val codisMoExpandido = _codisMoExpandido
+
+    private val _codiMoActivo = MutableLiveData<String?>(null)
+    val codiMoActivo = _codiMoActivo
+
+    private val _codisMoList = MutableLiveData<List<String>>(emptyList())
+
+    // ─── Gestion de codigos MO ───────────────────────────────────────────────
+    fun cargarCodisMos(){
+        viewModelScope.launch {
+            _codiMoActivo.value = userPreferences.getCodiMO()
+            _codisMoList.value = userPreferences.getUserMOList()
+        }
+    }
+
+    fun toggleCodisMoExpandido() {
+        _codisMoExpandido.value = !(_codisMoExpandido.value ?: false)
+    }
+
+    fun cerrarCodisMo() {
+        _codisMoExpandido.value = false
+    }
+
+    fun getCodisMos(): List<String> = _codisMoList.value ?: emptyList()
+
+    fun seleccionarCodiMo(nuevoCodi: String) {
+        viewModelScope.launch {
+            val nif = userPreferences.getNif() ?: return@launch
+            val password = userPreferences.getPassword() ?: return@launch
+            val rememberMe = userPreferences.getRememberMe()
+            userPreferences.saveCredentials(nif, password, nuevoCodi, rememberMe)
+            _codiMoActivo.value = nuevoCodi
+            _codisMoExpandido.value = false
+            cargarBovinosEnCache()
+        }
+
+    }
+
+
     // ─── Contrato con los hijos ───────────────────────────────────────────────
     /** Tipo de registro: "NACIMIENTO", "MUERTE", etc. */
     protected abstract fun getTipoRegistro(): String

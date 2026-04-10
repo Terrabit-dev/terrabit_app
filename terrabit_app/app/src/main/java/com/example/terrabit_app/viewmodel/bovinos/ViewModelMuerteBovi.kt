@@ -54,6 +54,7 @@ class ViewModelMuerteBovi @Inject constructor(
     val mostrarDatePickerMuerte: LiveData<Boolean> = _mostrarDatePicker
 
     init {
+        cargarCodisMos()
         borradorSesionId = "muerte_auto_${System.currentTimeMillis()}"
         cargarBovinosEnCache()
     }

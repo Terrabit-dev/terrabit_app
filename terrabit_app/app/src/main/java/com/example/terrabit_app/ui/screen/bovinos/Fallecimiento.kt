@@ -100,9 +100,9 @@ fun Fallecimiento(
     val usbState by usbViewModel.state.collectAsState()
     val usbErrorText = usbState.error?.let { stringResource(it) }
 
-    val codiMoViewModel = hiltViewModel<CodiMoManagerViewModel>()
-    val codisMoExpandido by codiMoViewModel.codisMoExpandido.observeAsState(false)
-    val codiMoActivo by codiMoViewModel.codiMoActivo.observeAsState(null)
+
+    val codisMoExpandido by viewModel.codisMoExpandido.observeAsState(false)
+    val codiMoActivo by viewModel.codiMoActivo.observeAsState(null)
 
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
 
@@ -325,12 +325,12 @@ fun Fallecimiento(
                     ) {
                         Row(modifier = Modifier.fillMaxWidth()) {
                             CodiMoSelector(
-                                codisMos = codiMoViewModel.getCodisMos(),
+                                codisMos = viewModel.getCodisMos(),
                                 seleccionado = codiMoActivo,
                                 expanded = codisMoExpandido,
-                                onToggle = { codiMoViewModel.toggleCodisMoExpandido() },
-                                onDismiss = { codiMoViewModel.cerrarCodisMo() },
-                                onSeleccionar = { codi -> codiMoViewModel.seleccionarCodiMo(codi) },
+                                onToggle = { viewModel.toggleCodisMoExpandido() },
+                                onDismiss = { viewModel.cerrarCodisMo() },
+                                onSeleccionar = { codi -> viewModel.seleccionarCodiMo(codi) },
                                 accentColor = ErrorRed
                             )
                         }
