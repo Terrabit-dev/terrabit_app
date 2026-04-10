@@ -47,7 +47,7 @@ fun Material(
 
     val empresaSubministradora by viewModel.empresaSubministradora.observeAsState("")
     val tipoEnviamiento by viewModel.tipoEnviamiento.observeAsState(null)
-    val destinoLliurament by viewModel.destinoLliurament.observeAsState(null)
+    val destinoLliurament by viewModel.destinoEnvio.observeAsState(null)
     val oficinaComarcal by viewModel.oficinaComarcal.observeAsState("")
     val direccion by viewModel.direccion.observeAsState("")
     val poblacion by viewModel.poblacion.observeAsState("")
@@ -60,9 +60,9 @@ fun Material(
     val destinoExpandido by viewModel.destinoExpandido.observeAsState(false)
     val oficinaComarcalExpandida by viewModel.oficinaComarcalExpandida.observeAsState(false)
     val tipoMaterialExpandido by viewModel.tipoMaterialExpandido.observeAsState(false)
-    val registroExitoso by viewModel.registroMaterialExitoso.observeAsState(false)
-    val mensajeError by viewModel.mensajeErrorMaterial.observeAsState("")
-    val estadoCarga by viewModel.cargandoMaterial.observeAsState(false)
+    val registroExitoso by viewModel.operacionExitosa.observeAsState(false)
+    val mensajeError by viewModel.mensajeError.observeAsState("")
+    val estadoCarga by viewModel.estadoCarga.observeAsState(false)
     val listaUnidades by viewModel.listaUnidades.observeAsState(emptyList())
     val historialManager = viewModel.historialCamposManager
 
@@ -82,7 +82,7 @@ fun Material(
     LaunchedEffect(registroExitoso) {
         if (registroExitoso) {
             snackbarHostState.showSnackbar(mensajeExito, duration = SnackbarDuration.Short)
-            viewModel.resetearEstadoRegistroMaterial()
+            viewModel.resetearEstado()
         }
     }
 
@@ -99,13 +99,13 @@ fun Material(
 
     if (mostrarDialogoError && mensajeError.isNotEmpty()) {
         AlertDialog(
-            onDismissRequest = { mostrarDialogoError = false; viewModel.resetearEstadoRegistroMaterial() },
+            onDismissRequest = { mostrarDialogoError = false; viewModel.resetearEstado() },
             icon = { Icon(Icons.Default.ArrowBack, contentDescription = null, tint = MainGreen, modifier = Modifier.size(48.dp)) },
             title = { Text(stringResource(R.string.error_message_material), fontWeight = FontWeight.Bold, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface) },
             text = { Text(mensajeError, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 24.sp) },
             confirmButton = {
                 Button(
-                    onClick = { mostrarDialogoError = false; viewModel.resetearEstadoRegistroMaterial() },
+                    onClick = { mostrarDialogoError = false; viewModel.resetearEstado() },
                     colors = ButtonDefaults.buttonColors(containerColor = MainGreen),
                     shape = RoundedCornerShape(8.dp)
                 ) { Text(stringResource(R.string.error_buttom), fontWeight = FontWeight.SemiBold) }
@@ -265,7 +265,7 @@ fun Material(
                 ) {
                     Column(modifier = Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                            Text(stringResource(R.string.title_identifiers), fontSize = 17.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                            Text(stringResource(R.string.form_unitats), fontSize = 17.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                             if (!modoLectura) {
                                 TextButton(onClick = { viewModel.agregarUnidades() }, colors = ButtonDefaults.textButtonColors(contentColor = MainGreen)) {
                                     Icon(Icons.Default.Add, contentDescription = stringResource(R.string.action_add), modifier = Modifier.size(18.dp))

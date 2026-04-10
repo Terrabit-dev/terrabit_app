@@ -54,9 +54,9 @@ fun MaterialDuplicadosScreen(
 
     val empresaSubministradora by viewModel.empresaSubministradora.observeAsState("")
     val tipoEnviamiento by viewModel.tipoEnviamiento.observeAsState(null)
-    val tipoDireccionEnvio by viewModel.direccionEnvio.observeAsState(null)
+    val tipoDireccionEnvio by viewModel.tipoEnviamiento.observeAsState(null)
     val oficinaComarcal by viewModel.oficinaComarcal.observeAsState("")
-    val direccionEnvio by viewModel.dirrecionEnvio.observeAsState("")
+    val direccionEnvio by viewModel.direccion.observeAsState("")
     val poblacion by viewModel.poblacion.observeAsState("")
     val municipio by viewModel.municipio.observeAsState("")
     val codigoPostal by viewModel.codigoPostal.observeAsState("")
@@ -64,11 +64,11 @@ fun MaterialDuplicadosScreen(
 
     val empresaExpandida by viewModel.empresaExpandida.observeAsState(false)
     val tipoEnviamientoExpandido by viewModel.tipoEnviamientoExpandido.observeAsState(false)
-    val direccionEnvioExpandido by viewModel.direccionEnvioExpandido.observeAsState(false)
-    val oficinaComarcalExpandido by viewModel.oficinaComarcalExpandido.observeAsState(false)
-    val registroExitoso by viewModel.registroExitoso.observeAsState(false)
+    val direccionEnvioExpandido by viewModel.destinoExpandido.observeAsState(false)
+    val oficinaComarcalExpandido by viewModel.oficinaComarcalExpandida.observeAsState(false)
+    val registroExitoso by viewModel.operacionExitosa.observeAsState(false)
     val mensajeError by viewModel.mensajeError.observeAsState("")
-    val cargando by viewModel.cargando.observeAsState(false)
+    val cargando by viewModel.estadoCarga.observeAsState(false)
 
     val suggestionsBovinos by viewModel.suggestionsBovinos.observeAsState(emptyList())
     val isLoadingBovinos by viewModel.isLoadingBovinos.observeAsState(false)
@@ -265,7 +265,7 @@ fun MaterialDuplicadosScreen(
                             enabled = !modoLectura,
                             onExpandedChange = { viewModel.toggleTipoEnviamientoExpandido() },
                             onDismissRequest = { viewModel.cerrarTipoEnviamientoMenu() },
-                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarTipoEnviamiento(codigo, nombre) },
+                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarTipoEnviamiento(nombre, codigo) },
                             accentColor = MainGreen
                         )
                         DropdownField(
@@ -275,13 +275,13 @@ fun MaterialDuplicadosScreen(
                             placeholder = stringResource(R.string.form_send_address_description),
                             opciones = elementosConCodigos.getTiposDireccionEnvio(),
                             enabled = !modoLectura,
-                            onExpandedChange = { viewModel.toggleDireccionEnvioExpandido() },
-                            onDismissRequest = { viewModel.cerrarDireccionEnvioMenu() },
-                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarDireccionEnvio(codigo, nombre) },
+                            onExpandedChange = { viewModel.toggleDestinoExpandido() },
+                            onDismissRequest = { viewModel.cerrarDestinoMenu() },
+                            onSeleccionar = { codigo, nombre -> viewModel.seleccionarDestino(nombre, codigo) },
                             accentColor = MainGreen
                         )
 
-                        if (viewModel.getCodigoDirecioEnvio() == direccionOficinaComarcal) {
+                        if (viewModel.getCodiDestinoEnvio() == direccionOficinaComarcal) {
                             DropdownField(
                                 label = stringResource(R.string.form_comarcal_office) + " *",
                                 selectedValue = oficinaComarcal,
@@ -289,18 +289,18 @@ fun MaterialDuplicadosScreen(
                                 placeholder = stringResource(R.string.form_comarcal_office_description),
                                 opciones = elementosConCodigos.getOficinasComarcales(),
                                 enabled = !modoLectura,
-                                onExpandedChange = { viewModel.toggleOficinaComarcalExpandido() },
+                                onExpandedChange = { viewModel.toggleOficinaComarcalExpandida() },
                                 onDismissRequest = { viewModel.cerrarOficinaComarcalMenu() },
                                 onSeleccionar = { codigo, nombre -> viewModel.seleccionarOficinaComarcal(codigo, nombre) },
                                 accentColor = MainGreen
                             )
                         }
 
-                        if (viewModel.getCodigoDirecioEnvio() == direccionExplotacion || viewModel.getCodigoDirecioEnvio() == direccionAlternativa) {
-                            if (viewModel.getCodigoDirecioEnvio() == direccionExplotacion) {
+                        if (viewModel.getCodiDestinoEnvio() == direccionExplotacion || viewModel.getCodiDestinoEnvio() == direccionAlternativa) {
+                            if (viewModel.getCodiDestinoEnvio() == direccionExplotacion) {
                                 Text(stringResource(R.string.mesagge_send_dades), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant, letterSpacing = 0.15.sp)
                             }
-                            CampoTexto(label = stringResource(R.string.form_address) + " *", valor = direccionEnvio, placeholder = stringResource(R.string.form_address_description), onValueChange = { viewModel.actualizarDireccionEnvio(it) }, defectColor = false, enabled = !modoLectura)
+                            CampoTexto(label = stringResource(R.string.form_address) + " *", valor = direccionEnvio, placeholder = stringResource(R.string.form_address_description), onValueChange = { viewModel.actualizarDireccion(it) }, defectColor = false, enabled = !modoLectura)
                             CampoTexto(label = stringResource(R.string.form_poblacion) + " *", valor = poblacion, placeholder = stringResource(R.string.form_poblacion_description), onValueChange = { viewModel.actualizarPoblacion(it) }, defectColor = false, enabled = !modoLectura)
                             CampoTexto(label = stringResource(R.string.form_postal_code) + " *", valor = codigoPostal, placeholder = stringResource(R.string.form_postal_code_description), keyboardType = KeyboardType.Number, onValueChange = { viewModel.actualizarCodigoPostal(it) }, defectColor = false, enabled = !modoLectura)
                             CampoTexto(label = stringResource(R.string.form_municipality) + " *", valor = municipio, placeholder = stringResource(R.string.form_municipality_description), onValueChange = { viewModel.actualizarMunicipio(it) }, defectColor = false, enabled = !modoLectura)
@@ -362,7 +362,7 @@ fun MaterialDuplicadosScreen(
                                     }
                                 }
                                 if (!modoLectura) {
-                                    useDebounce(animal.identificador, delayMillis = 300L) { viewModel.searchBovinos(indice, it) }
+                                    useDebounce(animal.identificador, delayMillis = 300L) { viewModel.searchBovinosConCampo(indice, it) }
                                 }
                                 CampoIdentificadorAutoComplete(
                                     label = stringResource(R.string.form_id_animal),
