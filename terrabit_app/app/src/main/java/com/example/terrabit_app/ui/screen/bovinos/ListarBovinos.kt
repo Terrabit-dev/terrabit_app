@@ -61,6 +61,7 @@ fun ListarBovinos(navController: NavController) {
     val codiMoViewModel = hiltViewModel<CodiMoManagerViewModel>()
     val codisMoExpandido by codiMoViewModel.codisMoExpandido.observeAsState(false)
     val codiMoActivo by codiMoViewModel.codiMoActivo.observeAsState(null)
+    val codiActualizado by codiMoViewModel.codiActualizado.observeAsState(false)
 
     var mostrarHeader  by remember { mutableStateOf(true) }
     var animalSeleccionado by remember { mutableStateOf<Animal?>(null) }
@@ -76,6 +77,10 @@ fun ListarBovinos(navController: NavController) {
     }
 
     LaunchedEffect(Unit) { viewModel.cargarBovinos() }
+
+    if (codiActualizado){
+        viewModel.refrescar()
+    }
 
     animalSeleccionado?.let { animal ->
         DialogAccionBovino(
@@ -154,7 +159,7 @@ fun ListarBovinos(navController: NavController) {
                                     expanded    = codisMoExpandido,
                                     onToggle    = { codiMoViewModel.toggleCodisMoExpandido() },
                                     onDismiss   = { codiMoViewModel.cerrarCodisMo() },
-                                    onSeleccionar = { codi -> codiMoViewModel.seleccionarCodiMo(codi); viewModel.refrescar() },
+                                    onSeleccionar = { codi -> codiMoViewModel.seleccionarCodiMo(codi)},
                                     accentColor = MainGreen
                                 )
                             }

@@ -16,6 +16,10 @@ class CodiMoManagerViewModel @Inject constructor(
     private val _codisMoExpandido = MutableLiveData(false)
     val codisMoExpandido = _codisMoExpandido
 
+    private val _codiActualizado = MutableLiveData(false)
+    val codiActualizado = _codiActualizado
+
+
     private val _codiMoActivo = MutableLiveData<String?>(null)
     val codiMoActivo = _codiMoActivo
 
@@ -30,10 +34,12 @@ class CodiMoManagerViewModel @Inject constructor(
 
     fun toggleCodisMoExpandido() {
         _codisMoExpandido.value = !(_codisMoExpandido.value ?: false)
+        _codiActualizado.value = false
     }
 
     fun cerrarCodisMo() {
         _codisMoExpandido.value = false
+        _codiActualizado.value = false
     }
 
     fun getCodisMos(): List<String> = _codisMoList.value ?: emptyList()
@@ -46,6 +52,7 @@ class CodiMoManagerViewModel @Inject constructor(
             userPreferences.saveCredentials(nif, password, nuevoCodi, rememberMe)
             _codiMoActivo.value = nuevoCodi
             _codisMoExpandido.value = false
+            _codiActualizado.value = true
         }
     }
 }

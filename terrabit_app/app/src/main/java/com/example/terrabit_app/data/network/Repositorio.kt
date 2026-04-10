@@ -64,7 +64,8 @@ class Repositorio @Inject constructor(
                 bovinoDao.insertAll(animales.map { it.toEntity() })
                 animales
             } else {
-                bovinoDao.getAllBovinos().map { it.toAnimal() }
+                bovinoDao.deleteAll()
+                emptyList()
             }
         }
     }
