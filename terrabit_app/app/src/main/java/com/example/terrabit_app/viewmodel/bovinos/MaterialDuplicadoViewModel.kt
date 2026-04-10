@@ -33,6 +33,7 @@ class MaterialDuplicadoViewModel @Inject constructor(
     val tipoMaterialExpandidoPorIndice: LiveData<Map<Int, Boolean>> = _tipoMaterialExpandidoPorIndice
 
     init {
+        cargarCodisMos()
         borradorSesionId = "material_duplicado_auto_${System.currentTimeMillis()}"
         cargarBovinosEnCache()   // ← este sí usa bovinos
     }

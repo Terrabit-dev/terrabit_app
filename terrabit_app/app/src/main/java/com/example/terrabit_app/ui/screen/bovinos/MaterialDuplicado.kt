@@ -32,6 +32,7 @@ import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.utils.AnimalSeleccionadoHolder
 import com.example.terrabit_app.utils.CampoTexto
+import com.example.terrabit_app.utils.CodiMoSelector
 import com.example.terrabit_app.utils.DropdownField
 import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.bluetooth.BluetoothScanDialog
@@ -79,6 +80,9 @@ fun MaterialDuplicadosScreen(
     var mostrarBluetooth     by remember { mutableStateOf(false) }
     var indiceUsb            by remember { mutableStateOf<Int?>(null) }
     var procedeDeLista       by remember { mutableStateOf(false) }
+
+    val codisMoExpandido by viewModel.codisMoExpandido.observeAsState(false)
+    val codiMoActivo by viewModel.codiMoActivo.observeAsState(null)
 
     val successMessage       = stringResource(R.string.success_duplicate_request)
 
@@ -264,6 +268,17 @@ fun MaterialDuplicadosScreen(
                         modifier = Modifier.fillMaxWidth().padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            CodiMoSelector(
+                                codisMos = viewModel.getCodisMos(),
+                                seleccionado = codiMoActivo,
+                                expanded = codisMoExpandido,
+                                onToggle = { viewModel.toggleCodisMoExpandido() },
+                                onDismiss = { viewModel.cerrarCodisMo() },
+                                onSeleccionar = { codi -> viewModel.seleccionarCodiMo(codi) },
+                                accentColor = MainGreen
+                            )
+                        }
                         DropdownField(
                             label = stringResource(R.string.form_suply_company) + " *",
                             selectedValue = empresaSubministradora,
