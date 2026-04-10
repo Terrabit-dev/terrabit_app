@@ -76,7 +76,8 @@ class ElementosConCodigos {
         "22" to R.string.option_ruminal_bowl,
         "23" to R.string.option_crotal_simple_tisular,
         "24" to R.string.option_crotal_double_tisular,
-        "26" to R.string.option_crotal_electronic_crotal,
+        "26" to R.string.option_crotal_ruminal_bowl,
+        "27" to R.string.option_crotal_electronic_crotal,
         "25" to R.string.option_rebuilding
     )
 

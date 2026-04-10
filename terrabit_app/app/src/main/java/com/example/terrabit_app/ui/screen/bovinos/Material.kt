@@ -65,6 +65,8 @@ fun Material(
     val estadoCarga by viewModel.estadoCarga.observeAsState(false)
     val listaUnidades by viewModel.listaUnidades.observeAsState(emptyList())
     val historialManager = viewModel.historialCamposManager
+    val moObligatorio by viewModel.codigoMoObligatorio.observeAsState(false)
+
 
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
@@ -283,6 +285,7 @@ fun Material(
 
                         listaUnidades.forEachIndexed { indice, item ->
                             UnidadesItem(
+                                obligatorio = moObligatorio,
                                 indice = indice,
                                 codiMo = item.codiExplotacio,
                                 unidades = item.nombreUnitats,
@@ -328,6 +331,7 @@ fun Material(
 
 @Composable
 private fun UnidadesItem(
+    obligatorio: Boolean,
     indice: Int,
     codiMo: String?,
     unidades: String,
@@ -351,17 +355,19 @@ private fun UnidadesItem(
 
         val esError = codiMoObligatorio && codiMo.isNullOrEmpty()
 
-        HistorialAutoCompleteField(
-            valor            = codiMo ?: "",
-            onValorChange    = oncodiMoChange,
-            label            = stringResource(R.string.label_codimo) + if (codiMoObligatorio) " *" else "",
-            clave            = "codi_mo",
-            historialManager = historialManager,
-            modifier         = Modifier.fillMaxWidth(),
-            enabled          = !modoLectura,
-            isError          = esError,
-            accentColor      = if (esError) ErrorRed else MainGreen
-        )
+        if (obligatorio){
+            HistorialAutoCompleteField(
+                valor            = codiMo ?: "",
+                onValorChange    = oncodiMoChange,
+                label            = stringResource(R.string.label_codimo) + if (codiMoObligatorio) " *" else "",
+                clave            = "codi_mo",
+                historialManager = historialManager,
+                modifier         = Modifier.fillMaxWidth(),
+                enabled          = !modoLectura,
+                isError          = esError,
+                accentColor      = if (esError) ErrorRed else MainGreen
+            )
+        }
         if (esError) {
             Text(stringResource(R.string.alert_necessary_codiMO), fontSize = 12.sp, color = ErrorRed)
         }

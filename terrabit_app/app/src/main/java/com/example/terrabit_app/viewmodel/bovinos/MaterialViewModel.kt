@@ -50,6 +50,10 @@ class MaterialViewModel @Inject constructor(
     private val _tipoMaterialExpandido = MutableLiveData(false)
     val tipoMaterialExpandido: LiveData<Boolean> = _tipoMaterialExpandido
 
+    private val _codigoMoObligatorio = MutableLiveData(false)
+    val codigoMoObligatorio: LiveData<Boolean> = _codigoMoObligatorio
+
+
     private val tiposMaterialConCodiMoObligatorio = setOf("21", "22", "25", "26")
 
     init {
@@ -97,12 +101,20 @@ class MaterialViewModel @Inject constructor(
                 (_listaUnidades.value?.any { !it.nombreUnitats.isNullOrEmpty() } == true)
 
     // ─── Helpers de tipo material ─────────────────────────────────────────────
+    private fun comprobarMaterial(){
+        if (_codigoTipoMaterial.value in tiposMaterialConCodiMoObligatorio) {
+            _codigoMoObligatorio.value = true
+        } else {
+            _codigoMoObligatorio.value = false
+        }
+    }
     fun codiMoEsObligatorio() = _codigoTipoMaterial.value in tiposMaterialConCodiMoObligatorio
     fun getCodigoTipoMaterial() = _codigoTipoMaterial.value ?: ""
 
     fun seleccionarTipoMaterial(nombre: Int, codigo: String) {
         _tipoMaterial.value = nombre; _codigoTipoMaterial.value = codigo
         _tipoMaterialExpandido.value = false
+        comprobarMaterial()
     }
     fun toggleTipoMaterialExpandido() { _tipoMaterialExpandido.value = !(_tipoMaterialExpandido.value ?: false) }
     fun cerrarTipoMaterialMenu()      { _tipoMaterialExpandido.value = false }
