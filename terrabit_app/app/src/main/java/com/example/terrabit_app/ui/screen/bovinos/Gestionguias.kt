@@ -7,6 +7,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
@@ -222,7 +223,8 @@ fun GestionGuias(
         AlertDialog(
             onDismissRequest = { mostrarDialogoError = false; viewModel.resetearEstado() },
             icon = {
-                Icon(Icons.Default.ArrowBack, contentDescription = null,
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null,
                     tint = MainOrange, modifier = Modifier.size(48.dp))
             },
             title = {

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Terrabit</string>
 
     <string name="app_version">Versió 1.0.0</string>
@@ -309,12 +309,12 @@
     <string name="delete_button_individual_card">Eliminar</string>
     <string name="title_draft_selected">Seleccionat</string>
     <string name="title_delete_selected_draft">Eliminar seleccionats</string>
-    <plurals name="message_delete_selected_draft">
+    <plurals name="message_delete_selected_draft" tools:ignore="MissingQuantity">
         <item quantity="one">Eliminar %d esborrany?</item>
         <item quantity="other">Eliminar %d esborranys?</item>
     </plurals>
 
-    <plurals name="title_draft_selected_count">
+    <plurals name="title_draft_selected_count" tools:ignore="MissingQuantity">
         <item quantity="one">%d seleccionat</item>
         <item quantity="other">%d seleccionats</item>
     </plurals>

@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -88,7 +89,7 @@ fun Home(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     TarjetaMenu(
-                        icono = Icons.Default.List,
+                        icono = Icons.AutoMirrored.Filled.List,
                         titulo = stringResource(R.string.list_bovinos),
                         descripcion = stringResource(R.string.list_bovinos_subtitle),
                         colorFondo = Color(0xFFE28F41),

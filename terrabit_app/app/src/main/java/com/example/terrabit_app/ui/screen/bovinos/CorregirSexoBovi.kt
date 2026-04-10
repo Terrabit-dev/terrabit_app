@@ -7,6 +7,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -131,7 +132,7 @@ fun CorregirSexoBovi(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    // ── Cambio 1: operacionExitosa + resetearEstado() ─────────────────────────
+    // ── operacionExitosa + resetearEstado() ─────────────────────────
     LaunchedEffect(operacionExitosa) {
         if (operacionExitosa) {
             snackbarHostState.showSnackbar(mensajeCorreccionSexoExitosa, duration = SnackbarDuration.Short)
@@ -150,7 +151,8 @@ fun CorregirSexoBovi(
                 viewModel.resetearEstado()
             },
             icon = {
-                Icon(Icons.Default.ArrowBack, contentDescription = null,
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null,
                     tint = MainGreen, modifier = Modifier.size(48.dp))
             },
             title = {
@@ -168,7 +170,7 @@ fun CorregirSexoBovi(
                 Button(
                     onClick = {
                         mostrarDialogoError = false
-                        viewModel.resetearEstado()    // ← antes: resetearEstadoCorreccionSexo()
+                        viewModel.resetearEstado()
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MainGreen),
                     shape = RoundedCornerShape(8.dp)
@@ -179,7 +181,7 @@ fun CorregirSexoBovi(
         )
     }
 
-    // ── UI sin cambios estructurales ──────────────────────────────────────────
+    // ── UI  ──────────────────────────────────────────
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             topBar = {
@@ -201,7 +203,8 @@ fun CorregirSexoBovi(
                                 else                     -> navController.navigate(Routes.GestionBovinos.route)
                             }
                         }) {
-                            Icon(Icons.Default.ArrowBack,
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = stringResource(R.string.content_description_back))
                         }
                     },

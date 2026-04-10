@@ -98,7 +98,7 @@ class MaterialViewModel @Inject constructor(
                 (_tipoEnviamiento.value ?: 0) != 0 ||
                 (_destinoEnvio.value ?: 0) != 0 ||
                 (_tipoMaterial.value ?: 0) != 0 ||
-                (_listaUnidades.value?.any { !it.nombreUnitats.isNullOrEmpty() } == true)
+                (_listaUnidades.value?.any { it.nombreUnitats.isNotEmpty() } == true)
 
     // ─── Helpers de tipo material ─────────────────────────────────────────────
     private fun comprobarMaterial(){
@@ -150,7 +150,7 @@ class MaterialViewModel @Inject constructor(
                 _telefonoContacto.value.isNullOrEmpty()) return false
         }
         val unidades = _listaUnidades.value ?: return false
-        if (unidades.isEmpty() || unidades.any { it.nombreUnitats.isNullOrEmpty() }) return false
+        if (unidades.isEmpty() || unidades.any { it.nombreUnitats.isEmpty() }) return false
         if (codiMoEsObligatorio() && unidades.any { it.codiExplotacio.isNullOrEmpty() }) return false
         return true
     }
@@ -168,7 +168,7 @@ class MaterialViewModel @Inject constructor(
                 codigoDestino == "03" && _municipio.value.isNullOrEmpty()                              -> "Por favor, introduzca el municipio"
                 codigoDestino == "03" && _telefonoContacto.value.isNullOrEmpty()                       -> "Por favor, introduzca el teléfono de contacto"
                 (_tipoMaterial.value ?: 0) == 0                                                        -> "Por favor, seleccione el tipo de material"
-                _listaUnidades.value?.any { it.nombreUnitats.isNullOrEmpty() } == true                 -> "Por favor, introduzca el número de unidades en cada fila"
+                _listaUnidades.value?.any { it.nombreUnitats.isEmpty() } == true                 -> "Por favor, introduzca el número de unidades en cada fila"
                 codiMoEsObligatorio() && _listaUnidades.value?.any { it.codiExplotacio.isNullOrEmpty() } == true -> "El Codi MO es obligatorio para el tipo de material seleccionado"
                 else                                                                                   -> "Por favor, complete todos los campos obligatorios"
             }

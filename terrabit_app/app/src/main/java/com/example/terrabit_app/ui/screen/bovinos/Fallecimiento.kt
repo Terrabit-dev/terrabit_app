@@ -50,6 +50,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import com.example.terrabit_app.utils.AnimalSeleccionadoHolder
 import com.example.terrabit_app.utils.DropdownField
 import com.example.terrabit_app.utils.LocationUtils
@@ -277,7 +278,7 @@ fun Fallecimiento(
                             }
                         }) {
                             Icon(
-                                Icons.Default.ArrowBack,
+                                Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = stringResource(R.string.content_description_back)
                             )
                         }

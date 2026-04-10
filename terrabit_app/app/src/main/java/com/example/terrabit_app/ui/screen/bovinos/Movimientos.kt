@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.data.network.moviminetos.modelos.Moviment
@@ -75,7 +76,7 @@ fun Movimientos(
 
     val modoLectura    = historialId.isNotEmpty()
     val context        = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     val historialManager = viewModel.historialCamposManager
 
     val codiRemo                 by viewModel.codiRemo.observeAsState("")

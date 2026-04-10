@@ -7,6 +7,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
@@ -164,7 +165,8 @@ fun Nacimiento(
         AlertDialog(
             onDismissRequest = { mostrarDialogoError = false; viewModel.resetearEstado() },
             icon = {
-                Icon(Icons.Default.ArrowBack, contentDescription = null,
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null,
                     tint = MainGreen, modifier = Modifier.size(48.dp))
             },
             title = {
@@ -291,7 +293,8 @@ fun Nacimiento(
                                 else -> navController.navigate(Routes.GestionBovinos.route)
                             }
                         }) {
-                            Icon(Icons.Default.ArrowBack,
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = stringResource(R.string.content_description_back))
                         }
                     },
