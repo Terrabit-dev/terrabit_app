@@ -13,9 +13,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Schedule
@@ -46,6 +49,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -74,6 +80,7 @@ fun ConfirmarEditarGuiasPorci(
     val uiStateEdita by viewModelEditarGuias.uiState.collectAsState()
     val uiStateLista by viewModelGestionarGuias.uiState.collectAsState()
     val historialManager = viewModelEditarGuias.historialCamposManager
+    var mostrarDialogoError by remember { mutableStateOf(false) }
 
     Log.d("Guia seleccionada", "Nose: ${uiStateLista.guiaSeleccionada}  ")
 
@@ -83,8 +90,28 @@ fun ConfirmarEditarGuiasPorci(
             Log.d("Datos Guia", "guia: '$guia'  - ${guia.remo}")
         }
     }
+    LaunchedEffect(uiStateEdita.error) {
+        if (uiStateEdita.error != null) mostrarDialogoError = true
+    }
 
     val elementosConCodigos = ElementosConCodigosPorcinos()
+
+    if (mostrarDialogoError) {
+        AlertDialog(
+            onDismissRequest = { mostrarDialogoError = false },
+            icon = { Icon(Icons.Default.ArrowBack, contentDescription = null, tint = MainOrange, modifier = Modifier.size(48.dp)) },
+            title = { Text(stringResource(R.string.error_message_guie_edit), fontWeight = FontWeight.Bold, fontSize = 20.sp) },
+            text = { Text(uiStateEdita.error ?: "", fontSize = 16.sp, lineHeight = 24.sp) },
+            confirmButton = {
+                Button(
+                    onClick = { mostrarDialogoError = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = MainOrange),
+                    shape = RoundedCornerShape(8.dp)
+                ) { Text(stringResource(R.string.error_buttom), fontWeight = FontWeight.SemiBold) }
+            },
+            shape = RoundedCornerShape(16.dp)
+        )
+    }
 
     if (uiStateEdita.mostrarDatePickerSalida) {
         val datePickerState = rememberDatePickerState()
@@ -172,7 +199,7 @@ fun ConfirmarEditarGuiasPorci(
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MainOrange, titleContentColor = Color.White, navigationIconContentColor = Color.White)

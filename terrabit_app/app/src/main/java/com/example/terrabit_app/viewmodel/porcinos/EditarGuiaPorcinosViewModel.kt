@@ -28,31 +28,50 @@ import javax.inject.Inject
 
 @HiltViewModel
 class EditarGuiaPorcinosViewModel @Inject constructor(
-    private val repositorio: Repositorio,
-    private val userPreferences: UserPreferences,
+    override val repositorio: Repositorio,
+    override val userPreferences: UserPreferences,
     val historialCamposManager: HistorialCamposManager
-) : ViewModel() {
+) : BasePorcinosViewModel() {
 
     private val _uiState = MutableStateFlow(EditarGuiasPorcionsUiState())
     val uiState: StateFlow<EditarGuiasPorcionsUiState> = _uiState.asStateFlow()
 
+    // ─── Carga de datos desde guía seleccionada ───────────────────────────────
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun cargarDatosGuia(guia: GuiaGTRLista) {
+        val nombreCategoria = ElementosConCodigosPorcinos().categoriasB()
+            .filterValues { it == guia.categoria }.keys.firstOrNull() ?: "Desconocida"
+        _uiState.update {
+            it.copy(
+                remoActual            = guia.remo,
+                categoriaSeleccionada = nombreCategoria,
+                categoriaCodigo       = guia.categoria,
+                numAnimales           = guia.nombreAnimals.toString(),
+                fechaSalida           = formatMillisToDate(guia.dataSortida),
+                horaSalida            = formatMillisToTime(guia.dataSortida),
+                fechaLlegada          = formatMillisToDate(guia.dataArribada),
+                horaLlegada           = formatMillisToTime(guia.dataArribada),
+                codigoSIR             = guia.transportista ?: "",
+                matricula             = guia.vehicle       ?: "",
+                nifConductor          = guia.responsable   ?: ""
+            )
+        }
+    }
+
+    // ─── Dropdowns ────────────────────────────────────────────────────────────
     fun seleccionarCategoria(nombre: String, codigo: String) {
         _uiState.update { it.copy(categoriaSeleccionada = nombre, categoriaCodigo = codigo, categoriaExpandido = false) }
     }
+    fun toggleCategoriaExpandido() { _uiState.update { it.copy(categoriaExpandido = !it.categoriaExpandido) } }
+    fun cerrarCategoriaMenu()      { _uiState.update { it.copy(categoriaExpandido = false) } }
 
-    fun toggleCategoriaExpandido() {
-        _uiState.update { it.copy(categoriaExpandido = !it.categoriaExpandido) }
-    }
+    // ─── Campos ───────────────────────────────────────────────────────────────
+    fun actualizarNumAnimales(valor: String)  { _uiState.update { it.copy(numAnimales = valor) } }
+    fun actualizarCodigoSIR(valor: String)    { _uiState.update { it.copy(codigoSIR = valor) } }
+    fun actualizarMatricula(valor: String)    { _uiState.update { it.copy(matricula = valor) } }
+    fun actualizarNifConductor(valor: String) { _uiState.update { it.copy(nifConductor = valor) } }
 
-    fun cerrarCategoriaMenu() {
-        _uiState.update { it.copy(categoriaExpandido = false) }
-    }
-
-    fun actualizarNumAnimales(valor: String)   { _uiState.update { it.copy(numAnimales = valor) } }
-    fun actualizarCodigoSIR(valor: String)     { _uiState.update { it.copy(codigoSIR = valor) } }
-    fun actualizarMatricula(valor: String)     { _uiState.update { it.copy(matricula = valor) } }
-    fun actualizarNifConductor(valor: String)  { _uiState.update { it.copy(nifConductor = valor) } }
-
+    // ─── DatePicker / TimePicker salida ──────────────────────────────────────
     fun mostrarDatePickerSalida()  { _uiState.update { it.copy(mostrarDatePickerSalida = true) } }
     fun ocultarDatePickerSalida()  { _uiState.update { it.copy(mostrarDatePickerSalida = false) } }
     fun mostrarTimePickerSalida()  { _uiState.update { it.copy(mostrarTimePickerSalida = true) } }
@@ -60,13 +79,14 @@ class EditarGuiaPorcinosViewModel @Inject constructor(
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun seleccionarFechaSalida(millis: Long) {
-        _uiState.update { it.copy(fechaSalida = formatLongToDate(millis), mostrarDatePickerSalida = false, mostrarTimePickerSalida = true) }
+        _uiState.update { it.copy(fechaSalida = formatMillisToDate(millis),
+            mostrarDatePickerSalida = false, mostrarTimePickerSalida = true) }
     }
-
     fun actualizarHoraSalida(h: String, m: String) {
-        _uiState.update { it.copy(horaSalida = "${h.padStart(2, '0')}:${m.padStart(2, '0')}") }
+        _uiState.update { it.copy(horaSalida = "${h.padStart(2,'0')}:${m.padStart(2,'0')}") }
     }
 
+    // ─── DatePicker / TimePicker llegada ─────────────────────────────────────
     fun mostrarDatePickerLlegada()  { _uiState.update { it.copy(mostrarDatePickerLlegada = true) } }
     fun ocultarDatePickerLlegada()  { _uiState.update { it.copy(mostrarDatePickerLlegada = false) } }
     fun mostrarTimePickerLlegada()  { _uiState.update { it.copy(mostrarTimePickerLlegada = true) } }
@@ -74,31 +94,72 @@ class EditarGuiaPorcinosViewModel @Inject constructor(
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun seleccionarFechaLlegada(millis: Long) {
-        _uiState.update { it.copy(fechaLlegada = formatLongToDate(millis), mostrarDatePickerLlegada = false, mostrarTimePickerLlegada = true) }
+        _uiState.update { it.copy(fechaLlegada = formatMillisToDate(millis),
+            mostrarDatePickerLlegada = false, mostrarTimePickerLlegada = true) }
     }
-
     fun actualizarHoraLlegada(h: String, m: String) {
-        _uiState.update { it.copy(horaLlegada = "${h.padStart(2, '0')}:${m.padStart(2, '0')}") }
+        _uiState.update { it.copy(horaLlegada = "${h.padStart(2,'0')}:${m.padStart(2,'0')}") }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun cargarDatosGuia(guia: GuiaGTRLista) {
-        val utils = ElementosConCodigosPorcinos()
-        val nombreCategoria = utils.categoriasB().filterValues { it == guia.categoria }.keys.firstOrNull() ?: "Desconocida"
-        _uiState.update { currentState ->
-            currentState.copy(
-                remoActual            = guia.remo,
-                categoriaSeleccionada = nombreCategoria,
-                categoriaCodigo       = guia.categoria,
-                numAnimales           = guia.nombreAnimals.toString(),
-                fechaSalida           = formatLongToDate(guia.dataSortida),
-                horaSalida            = formatLongToTime(guia.dataSortida),
-                fechaLlegada          = formatLongToDate(guia.dataArribada),
-                horaLlegada           = formatLongToTime(guia.dataArribada),
-                codigoSIR             = guia.transportista ?: "",
-                matricula             = guia.vehicle ?: "",
-                nifConductor          = guia.responsable ?: ""
-            )
+    // ─── Envío ────────────────────────────────────────────────────────────────
+    fun editarYConfirmarGuia(onSuccess: () -> Unit) {
+        val s = _uiState.value
+        if (s.categoriaCodigo.isBlank() || s.numAnimales.isBlank() || s.fechaSalida.isBlank() ||
+            s.horaSalida.isBlank() || s.fechaLlegada.isBlank() || s.horaLlegada.isBlank() ||
+            s.codigoSIR.isBlank() || s.matricula.isBlank() || s.nifConductor.isBlank()) {
+            Log.w("GTR_EDITAR", "Validación fallida — campos vacíos")
+            _uiState.update { it.copy(error = "Todos los campos son obligatorios.") }
+            return
+        }
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            try {
+                val request = ModificarMovimentsAGias(
+                    nif = nif, password = password, remo = s.remoActual,
+                    categoria = s.categoriaCodigo, nombreAnimals = s.numAnimales,
+                    transportista = s.codigoSIR, responsable = s.nifConductor,
+                    vehicle = s.matricula,
+                    dataSortida = convertirFechaHoraAFormatoAPI(s.fechaSalida, s.horaSalida),
+                    dataArribada = convertirFechaHoraAFormatoAPI(s.fechaLlegada, s.horaLlegada)
+                )
+
+
+
+                val response = repositorio.tramitarGuiaPorcina(request)
+
+                Log.d("GTR_EDITAR", "HTTP code: ${response.code()}")
+
+                if (response.isSuccessful) {
+                    val rawJson = response.body()?.string() ?: ""
+
+
+                    val gson = Gson()
+                    if (rawJson.trimStart().startsWith("[")) {
+                        val error = gson.fromJson(rawJson, Array<GtrStandardResponse>::class.java).firstOrNull()
+                        Log.w("GTR_EDITAR", "API devolvió array de errores: ${error?.descripcio}")
+                        _uiState.update { it.copy(isLoading = false, error = error?.descripcio) }
+                    } else {
+                        val resultado = gson.fromJson(rawJson, GtrStandardResponse::class.java)
+                        Log.d("GTR_EDITAR", "resultado.codi: ${resultado.codi} | resultado.descripcio: ${resultado.descripcio}")
+                        if (resultado.codi == "OK") {
+                            Log.d("GTR_EDITAR", "Edición completada")
+                            guardarHistorialCampos()
+                            _uiState.update { it.copy(isLoading = false) }
+                            onSuccess()
+                        } else {
+                            Log.w("GTR_EDITAR", "⚠️ API rechazó: ${resultado.descripcio}")
+                            _uiState.update { it.copy(isLoading = false, error = resultado.descripcio) }
+                        }
+                    }
+                } else {
+                    val errorBody = response.errorBody()?.string() ?: ""
+                    Log.e("GTR_EDITAR", "Error HTTP ${response.code()}: $errorBody")
+                    _uiState.update { it.copy(isLoading = false, error = "Error servidor (${response.code()})") }
+                }
+            } catch (e: Exception) {
+                Log.e("GTR_EDITAR", "Excepción: ${e.javaClass.simpleName}: ${e.message}", e)
+                _uiState.update { it.copy(isLoading = false, error = e.localizedMessage) }
+            }
         }
     }
 
@@ -110,102 +171,14 @@ class EditarGuiaPorcinosViewModel @Inject constructor(
             if (s.nifConductor.isNotBlank()) historialCamposManager.guardarValor("porcinos_nif_conductor", s.nifConductor)
         }
     }
-
-    fun editarYConfirmarGuia(onSuccess: () -> Unit) {
-        val state = _uiState.value
-
-        val camposVacios = state.categoriaCodigo.isBlank() ||
-                state.numAnimales.isBlank() ||
-                state.fechaSalida.isBlank() ||
-                state.horaSalida.isBlank() ||
-                state.fechaLlegada.isBlank() ||
-                state.horaLlegada.isBlank() ||
-                state.codigoSIR.isBlank() ||
-                state.matricula.isBlank() ||
-                state.nifConductor.isBlank()
-
-        if (camposVacios) {
-            _uiState.update { it.copy(error = "Todos los campos son obligatorios.") }
-            return
-        }
-
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
-
-            val fechaS = combinarFechaHora(state.fechaSalida, state.horaSalida)
-            val fechaA = combinarFechaHora(state.fechaLlegada, state.horaLlegada)
-
-            val nif      = userPreferences.getNif()      ?: ""
-            val password = userPreferences.getPassword() ?: ""
-
-            val request = ModificarMovimentsAGias(
-                nif           = nif,
-                password      = password,
-                remo          = state.remoActual,
-                categoria     = state.categoriaCodigo,
-                nombreAnimals = state.numAnimales,
-                transportista = state.codigoSIR,
-                responsable   = state.nifConductor,
-                vehicle       = state.matricula,
-                dataSortida   = fechaS,
-                dataArribada  = fechaA
-            )
-
-            Log.d("EDITAR_GUIA", "Request enviada: $request")
-
-            try {
-                val response = repositorio.tramitarGuiaPorcina(request)
-
-                if (response.isSuccessful) {
-                    val rawJson = response.body()?.string() ?: ""
-                    Log.d("EDITAR_GUIA", "Raw JSON: $rawJson")
-
-                    val gson = Gson()
-                    if (rawJson.trimStart().startsWith("[")) {
-                        val errores = gson.fromJson(rawJson, Array<GtrStandardResponse>::class.java)
-                        val primerError = errores.firstOrNull()
-                        Log.w("EDITAR_GUIA", "API devolvió errores: ${primerError?.descripcio}")
-                        _uiState.update { it.copy(isLoading = false, error = primerError?.descripcio) }
-                    } else {
-                        val resultado = gson.fromJson(rawJson, GtrStandardResponse::class.java)
-                        if (resultado.codi == "OK") {
-                            Log.i("EDITAR_GUIA", "Trámite completado correctamente")
-                            guardarHistorialCampos()
-                            _uiState.update { it.copy(isLoading = false) }
-                            onSuccess()
-                        } else {
-                            Log.w("EDITAR_GUIA", "API rechazó: ${resultado.descripcio}")
-                            _uiState.update { it.copy(isLoading = false, error = resultado.descripcio) }
-                        }
-                    }
-                } else {
-                    val errorBody = response.errorBody()?.string()
-                    Log.e("EDITAR_GUIA", "Error HTTP ${response.code()}: $errorBody")
-                    _uiState.update { it.copy(isLoading = false, error = "Error servidor (${response.code()})") }
-                }
-            } catch (e: Exception) {
-                Log.e("EDITAR_GUIA", "EXCEPCIÓN: ${e.localizedMessage}", e)
-                _uiState.update { it.copy(isLoading = false, error = e.localizedMessage) }
-            }
-        }
-    }
+    // ─── Utilidades de fecha con java.time (solo en este VM) ──────────────────
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun formatMillisToDate(millis: Long): String =
+        LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault())
+            .format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun formatLongToDate(millis: Long): String {
-        val dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault())
-        return dateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun formatLongToTime(millis: Long): String {
-        val dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault())
-        return dateTime.format(DateTimeFormatter.ofPattern("HH:mm"))
-    }
-
-    private fun combinarFechaHora(fecha: String, hora: String): String {
-        val partesFecha = fecha.split("/")
-        val partesHora  = hora.split(":")
-        if (partesFecha.size < 3 || partesHora.size < 2) return ""
-        return "${partesFecha[2]}${partesFecha[1]}${partesFecha[0]}${partesHora[0]}${partesHora[1]}"
-    }
+    private fun formatMillisToTime(millis: Long): String =
+        LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault())
+            .format(DateTimeFormatter.ofPattern("HH:mm"))
 }

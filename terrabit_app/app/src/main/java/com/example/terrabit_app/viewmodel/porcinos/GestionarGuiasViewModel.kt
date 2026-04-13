@@ -1,7 +1,7 @@
 package com.example.terrabit_app.viewmodel.porcinos
 
+import android.annotation.SuppressLint
 import android.util.Log
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.network.DataClassPorcinos.GtrErrorResponseLista
 import com.example.terrabit_app.data.network.DataClassPorcinos.GuiaGTRLista
@@ -22,23 +22,19 @@ import javax.inject.Inject
 
 @HiltViewModel
 class GestionarGuiasViewModel @Inject constructor(
-    private val repo: Repositorio,
-    private val userPreferences: UserPreferences
-) : ViewModel() {
+    override val repositorio: Repositorio,
+    override val userPreferences: UserPreferences
+) : BasePorcinosViewModel() {
 
     private val _uiState = MutableStateFlow(GestionarGuiasPorcinosUiState())
     val uiState: StateFlow<GestionarGuiasPorcinosUiState> = _uiState.asStateFlow()
 
-    private val nif    = userPreferences.getNif()      ?: ""
-    private val pass   = userPreferences.getPassword() ?: ""
-    private val codiMo = userPreferences.getCodiMO()   ?: ""
-
     private var fechaMillisSeleccionada: Long = 0L
 
-    fun actualizarRega(valor: String) {
-        _uiState.update { it.copy(rega = valor) }
-    }
+    // ─── Campos ───────────────────────────────────────────────────────────────
+    fun actualizarRega(valor: String) { _uiState.update { it.copy(rega = valor) } }
 
+    // ─── DatePicker / TimePicker ──────────────────────────────────────────────
     fun mostrarDatePicker() { _uiState.update { it.copy(mostrarDatePicker = true) } }
     fun ocultarDatePicker() { _uiState.update { it.copy(mostrarDatePicker = false) } }
     fun mostrarTimePicker() { _uiState.update { it.copy(mostrarTimePicker = true) } }
@@ -49,133 +45,119 @@ class GestionarGuiasViewModel @Inject constructor(
         _uiState.update { it.copy(mostrarDatePicker = false, mostrarTimePicker = true) }
     }
 
+    @SuppressLint("DefaultLocale")
     fun seleccionarHora(hora: Int, minutos: Int) {
-        val cal = Calendar.getInstance()
-        cal.timeInMillis = fechaMillisSeleccionada
-        val display = String.format(
-            "%02d/%02d/%04d %02d:%02d",
-            cal.get(Calendar.DAY_OF_MONTH),
-            cal.get(Calendar.MONTH) + 1,
-            cal.get(Calendar.YEAR),
-            hora, minutos
-        )
-        val apiFormat = String.format(
-            "%04d%02d%02d%02d%02d",
-            cal.get(Calendar.YEAR),
-            cal.get(Calendar.MONTH) + 1,
-            cal.get(Calendar.DAY_OF_MONTH),
-            hora, minutos
-        )
+        val cal = Calendar.getInstance().apply { timeInMillis = fechaMillisSeleccionada }
+        val display = String.format("%02d/%02d/%04d %02d:%02d",
+            cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH) + 1,
+            cal.get(Calendar.YEAR), hora, minutos)
+        // Formato API construido directamente con los valores del calendario
+        val apiFormat = String.format("%04d%02d%02d%02d%02d",
+            cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1,
+            cal.get(Calendar.DAY_OF_MONTH), hora, minutos)
         _uiState.update { it.copy(fechaCorteDisplay = display, fechaCorte = apiFormat, mostrarTimePicker = false) }
     }
 
+    // ─── Consulta ─────────────────────────────────────────────────────────────
     fun consultarLista() {
-        val state = _uiState.value
-        if (state.rega.isBlank()) {
-            _uiState.update { it.copy(mensajeError = "El código REGA es obligatorio.") }
-            return
-        }
-        if (state.fechaCorte.isBlank()) {
-            _uiState.update { it.copy(mensajeError = "La fecha de corte es obligatoria.") }
-            return
-        }
+        val s = _uiState.value
+        if (s.rega.isBlank()) { _uiState.update { it.copy(mensajeError = "El código REGA es obligatorio.") }; return }
+        if (s.fechaCorte.isBlank()) { _uiState.update { it.copy(mensajeError = "La fecha de corte es obligatoria.") }; return }
         _uiState.update { it.copy(consultaIniciada = true, mensajeError = null) }
-        cargarMovimientosDesdeApi(state.rega, state.fechaCorte)
+        cargarMovimientosDesdeApi(s.rega, s.fechaCorte)
     }
 
     private fun cargarMovimientosDesdeApi(rega: String, fechaCorte: String) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             try {
-                val response = repo.getGuiasMobilitatPorcinas(nif, pass, codiMo, rega, fechaCorte)
+                Log.d("GTR_GESTIONAR", "━━━ CONSULTA LISTA ━━━")
+                Log.d("GTR_GESTIONAR", "nif:       $nif")
+                Log.d("GTR_GESTIONAR", "password:  $password")
+                Log.d("GTR_GESTIONAR", "codiMo:    $codiMo")
+                Log.d("GTR_GESTIONAR", "rega:      $rega")
+                Log.d("GTR_GESTIONAR", "fechaCorte: $fechaCorte")
+
+                val response = repositorio.getGuiasMobilitatPorcinas(nif, password, codiMo, rega, fechaCorte)
+
+                Log.d("GTR_GESTIONAR", "━━━ RESPUESTA ━━━")
+                Log.d("GTR_GESTIONAR", "HTTP code: ${response.code()}")
+                Log.d("GTR_GESTIONAR", "isSuccessful: ${response.isSuccessful}")
+
                 if (response.isSuccessful) {
                     val rawJson = response.body()?.string() ?: ""
-                    Log.d("DEBUG_API", "Raw JSON: $rawJson")
+                    Log.d("GTR_GESTIONAR", "rawJson: $rawJson")
+
+                    if (rawJson.isBlank()) {
+                        Log.e("GTR_GESTIONAR", "❌ rawJson vacío")
+                        _uiState.update { it.copy(isLoading = false, mensajeError = "Respuesta vacía del servidor", consultaIniciada = false) }
+                        return@launch
+                    }
+
                     val gson = Gson()
                     val jsonArray = JsonParser.parseString(rawJson).asJsonArray
+                    Log.d("GTR_GESTIONAR", "jsonArray size: ${jsonArray.size()}")
+                    Log.d("GTR_GESTIONAR", "primer elemento: ${jsonArray.firstOrNull()?.asJsonObject}")
+
                     val primerElemento = jsonArray.firstOrNull()?.asJsonObject
                     if (primerElemento?.has("moOrigen") == true) {
-                        val listaGuias = gson.fromJson(rawJson, Array<GuiaGTRLista>::class.java)
-                        _uiState.update { it.copy(listaGuiasPorcinos = listaGuias.toList(), isLoading = false, mensajeError = null) }
+                        val lista = gson.fromJson(rawJson, Array<GuiaGTRLista>::class.java).toList()
+                        Log.d("GTR_GESTIONAR", "✅ Guías recibidas: ${lista.size}")
+                        lista.forEachIndexed { i, g -> Log.d("GTR_GESTIONAR", "  [$i] remo=${g.remo} moOrigen=${g.moOrigen}") }
+                        _uiState.update { it.copy(listaGuiasPorcinos = lista, isLoading = false, mensajeError = null) }
                     } else {
-                        val errores = gson.fromJson(rawJson, Array<GtrErrorResponseLista>::class.java)
-                        val mensajeError = errores.firstOrNull()?.descripcio ?: "Error desconocido"
-                        _uiState.update { it.copy(isLoading = false, mensajeError = mensajeError, consultaIniciada = false) }
+                        val msg = gson.fromJson(rawJson, Array<GtrErrorResponseLista>::class.java)
+                            .firstOrNull()?.descripcio ?: "Error desconocido"
+                        Log.w("GTR_GESTIONAR", "⚠️ API devolvió error: $msg")
+                        _uiState.update { it.copy(isLoading = false, mensajeError = msg, consultaIniciada = false) }
                     }
                 } else {
-                    val rawError = response.errorBody()?.string() ?: ""
-                    _uiState.update { it.copy(isLoading = false, mensajeError = extraerDescripcion(rawError, response.code()), consultaIniciada = false) }
+                    val errorBody = response.errorBody()?.string() ?: ""
+                    Log.e("GTR_GESTIONAR", "❌ Error HTTP ${response.code()}: $errorBody")
+                    _uiState.update { it.copy(isLoading = false,
+                        mensajeError = extraerDescripcion(errorBody, response.code()),
+                        consultaIniciada = false) }
                 }
             } catch (e: Exception) {
-                _uiState.update { it.copy(isLoading = false, mensajeError = "Error de conexión: ${e.localizedMessage}", consultaIniciada = false) }
+                Log.e("GTR_GESTIONAR", "❌ Excepción: ${e.javaClass.simpleName}: ${e.message}", e)
+                _uiState.update { it.copy(isLoading = false,
+                    mensajeError = "Error de conexión: ${e.localizedMessage}",
+                    consultaIniciada = false) }
             }
         }
     }
 
     fun resetearConsulta() {
-        _uiState.update { it.copy(consultaIniciada = false, listaGuiasPorcinos = emptyList(), mensajeError = null, fechaCorteDisplay = "", fechaCorte = "") }
+        _uiState.update { it.copy(consultaIniciada = false, listaGuiasPorcinos = emptyList(),
+            mensajeError = null, fechaCorteDisplay = "", fechaCorte = "") }
     }
 
+    // ─── Confirmar guía ───────────────────────────────────────────────────────
     fun confirmarGuia(guia: GuiaGTRLista) {
         if (guia.transportista.isNullOrBlank() || guia.vehicle.isNullOrBlank() || guia.responsable.isNullOrBlank()) {
-            _uiState.update { it.copy(mensajeError = "Faltan datos obligatorios (Transportista, Vehículo o Responsable). Por favor, edite la guía antes de confirmar.") }
+            _uiState.update { it.copy(mensajeError = "Faltan datos obligatorios. Por favor, edite la guía antes de confirmar.") }
             return
         }
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            val request = ModificarMovimentsAGias(
-                nif           = nif,
-                password      = pass,
-                remo          = guia.remo,
-                categoria     = guia.categoria,
-                nombreAnimals = guia.nombreAnimals.toString(),
-                transportista = guia.transportista,
-                responsable   = guia.responsable,
-                vehicle       = guia.vehicle,
-                dataSortida   = guia.dataSortida.toString(),
-                dataArribada  = guia.dataArribada.toString()
-            )
             try {
-                val response = repo.tramitarGuiaPorcina(request)
+                val request = ModificarMovimentsAGias(
+                    nif = nif, password = password, remo = guia.remo,
+                    categoria = guia.categoria, nombreAnimals = guia.nombreAnimals.toString(),
+                    transportista = guia.transportista, responsable = guia.responsable,
+                    vehicle = guia.vehicle, dataSortida = guia.dataSortida.toString(),
+                    dataArribada = guia.dataArribada.toString()
+                )
+                val response = repositorio.tramitarGuiaPorcina(request)
                 if (response.isSuccessful) {
-                    val rawJson = response.body()?.string() ?: ""
                     _uiState.update { it.copy(isLoading = false) }
                 } else {
-                    val rawError = response.errorBody()?.string() ?: ""
-                    _uiState.update { it.copy(isLoading = false, mensajeError = extraerDescripcion(rawError, response.code())) }
+                    _uiState.update { it.copy(isLoading = false,
+                        mensajeError = extraerDescripcion(response.errorBody()?.string() ?: "", response.code())) }
                 }
             } catch (e: Exception) {
                 _uiState.update { it.copy(isLoading = false, mensajeError = "Error de conexión: ${e.localizedMessage}") }
             }
-        }
-    }
-
-    private fun extraerDescripcion(rawJson: String, httpCode: Int): String {
-        if (rawJson.isBlank()) return "Error $httpCode"
-        return try {
-            val element = JsonParser.parseString(rawJson)
-            when {
-                element.isJsonArray -> {
-                    element.asJsonArray
-                        .mapNotNull { it.asJsonObject.get("descripcio")?.asString }
-                        .filter { it.isNotBlank() }
-                        .joinToString("\n")
-                        .ifBlank { "Error $httpCode" }
-                }
-                element.isJsonObject -> {
-                    val obj = element.asJsonObject
-                    obj.getAsJsonArray("errors")
-                        ?.mapNotNull { it.asJsonObject.get("descripcio")?.asString }
-                        ?.filter { it.isNotBlank() }
-                        ?.joinToString("\n")
-                        ?.ifBlank { obj.get("descripcio")?.asString ?: "Error $httpCode" }
-                        ?: obj.get("descripcio")?.asString
-                        ?: "Error $httpCode"
-                }
-                else -> "Error $httpCode"
-            }
-        } catch (e: Exception) {
-            "Error $httpCode"
         }
     }
 }

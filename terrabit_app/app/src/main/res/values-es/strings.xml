@@ -840,4 +840,5 @@
     <string name="motion_dades">Datos del movimiento</string>
     <string name="transport_dades">Datos de transporte</string>
     <string name="confirm_modification">Confirmar modificación</string>
+    <string name="error_message_guie_edit">Error al confirmar Guía</string>
 </resources>
