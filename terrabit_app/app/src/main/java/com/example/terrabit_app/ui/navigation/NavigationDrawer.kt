@@ -42,7 +42,7 @@ import com.example.terrabit_app.ui.screen.bovinos.DetailBovino
 import com.example.terrabit_app.ui.screen.bovinos.EditarGuiaBovi
 import com.example.terrabit_app.ui.screen.bovinos.ListaGuiasBovi
 import com.example.terrabit_app.ui.screen.bovinos.ListarMovimientosBovi
-import com.example.terrabit_app.ui.screen.bovinos.UsbTestScreen
+
 import com.example.terrabit_app.viewmodel.bovinos.ListarBovinosViewModel
 import com.example.terrabit_app.viewmodel.bovinos.ListarGuiasBoviViewModel
 import com.example.terrabit_app.viewmodel.bovinos.ListarMovisBoviViewModel
@@ -60,9 +60,7 @@ fun NavigationDrawer(
         navController = navController,
         startDestination = Routes.HomeBovinos.route
     ) {
-        composable(Routes.Usb.route) {
-            UsbTestScreen( navController = navController)
-        }
+
         // ========== PANTALLAS CON HEADER PERSONALIZADO ==========
 
         // Pantalla principal Bovinos - CON header verde
