@@ -155,7 +155,7 @@ fun ListarMovimientosBovi(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Gestión de Movimientos de bovinos",
+                        text = stringResource(R.string.gest_bovinos_movi),
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
@@ -211,7 +211,7 @@ fun ListarMovimientosBovi(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text     = "Cargando movimientos...",
+                            text     = stringResource(R.string.gest_porcinos_cargando_mov),
                             color    = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 14.sp
                         )
@@ -235,7 +235,7 @@ fun ListarMovimientosBovi(
                                     modifier           = Modifier.size(48.dp)
                                 )
                                 Text(
-                                    text     = "No se encontraron movimientos",
+                                    text     = stringResource(R.string.no_found_result),
                                     fontSize = 16.sp,
                                     color    = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -254,7 +254,7 @@ fun ListarMovimientosBovi(
                         ) {
                             item {
                                 Text(
-                                    text     = "${listaMovimientos.size} movimiento(s) encontrado(s)",
+                                    text     = "${listaMovimientos.size} ${stringResource(R.string.found_mov)}",
                                     fontSize = 13.sp,
                                     color    = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)

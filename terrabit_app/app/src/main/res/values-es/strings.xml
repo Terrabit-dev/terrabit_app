@@ -841,4 +841,10 @@
     <string name="transport_dades">Datos de transporte</string>
     <string name="confirm_modification">Confirmar modificación</string>
     <string name="error_message_guie_edit">Error al confirmar Guía</string>
+    <string name="gest_porcinos_cargando_guides">Cargando guías...</string>
+    <string name="new_query">Nueva consulta</string>
+    <string name="consult_bovine_guide">Consultar guías bovinas</string>
+    <string name="no_registration">Sin matrícula</string>
+    <string name="gest_bovinos_movi">Gestión de movimientos</string>
+    <string name="found_mov">movimientos encontrados</string>
 </resources>

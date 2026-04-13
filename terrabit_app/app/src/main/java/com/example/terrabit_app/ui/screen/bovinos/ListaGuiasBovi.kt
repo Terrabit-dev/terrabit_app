@@ -69,11 +69,11 @@ fun ListaGuiasBovi(
             confirmButton = {
                 TextButton(onClick = {
                     dpState.selectedDateMillis?.let { viewModel.seleccionarFecha(it) }
-                }) { Text("Aceptar", color = MainOrange) }
+                }) { Text(stringResource(R.string.accept_buttom), color = MainOrange) }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.ocultarDatePicker() }) {
-                    Text("Cancelar", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.cancel_buttom), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         ) {
@@ -94,11 +94,11 @@ fun ListaGuiasBovi(
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.seleccionarHora(tpState.hour, tpState.minute)
-                }) { Text("Aceptar", color = MainOrange) }
+                }) { Text(stringResource(R.string.accept_buttom), color = MainOrange) }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.ocultarTimePicker() }) {
-                    Text("Cancelar", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.cancel_buttom), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             },
             containerColor = MaterialTheme.colorScheme.surface,
@@ -119,7 +119,7 @@ fun ListaGuiasBovi(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Gestión de guías bovinas",
+                        text = stringResource(R.string.name_manage_guides),
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
@@ -168,7 +168,7 @@ fun ListaGuiasBovi(
                     ) {
                         CircularProgressIndicator(color = MainOrange, strokeWidth = 4.dp, modifier = Modifier.size(48.dp))
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text(text = "Cargando guías...", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+                        Text(text = stringResource(R.string.gest_porcinos_cargando_guides), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                     }
                 }
 
@@ -177,9 +177,9 @@ fun ListaGuiasBovi(
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 Icon(imageVector = Icons.Default.SearchOff, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(48.dp))
-                                Text(text = "No se encontraron guías", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(text = stringResource(R.string.no_found_result), fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 TextButton(onClick = viewModel::resetearConsulta) {
-                                    Text("Nueva consulta", color = MainOrange)
+                                    Text(stringResource(R.string.new_query), color = MainOrange)
                                 }
                             }
                         }
@@ -261,7 +261,7 @@ fun MiniFormulario(
                         )
                     }
                     Text(
-                        text       = "Consultar guías bovinas",
+                        text       = stringResource(R.string.consult_bovine_guide),
                         fontSize   = 18.sp,
                         fontWeight = FontWeight.SemiBold,
                         color      = MaterialTheme.colorScheme.onSurface
@@ -281,7 +281,7 @@ fun MiniFormulario(
 
                 Column {
                     Text(
-                        text       = "Fecha de salida",
+                        text       = stringResource(R.string.form_date_departure).dropLast(1), //quitamos el *
                         fontSize   = 15.sp,
                         fontWeight = FontWeight.SemiBold,
                         color      = MaterialTheme.colorScheme.onSurface,
@@ -294,7 +294,7 @@ fun MiniFormulario(
                             onValueChange = {},
                             modifier      = Modifier.fillMaxWidth(),
                             placeholder   = {
-                                Text("Selecciona fecha y hora", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(stringResource(R.string.form_porcinos_descr_fechaS), color = MaterialTheme.colorScheme.onSurfaceVariant)
                             },
                             leadingIcon   = {
                                 Icon(Icons.Default.DateRange, contentDescription = null, tint = MainOrange)
@@ -405,8 +405,8 @@ private fun GuiaCardBovi(
             }
 
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                BoviInfoChip(icon = Icons.Default.Pets,          label = "${guia.numeroAnimals} animales")
-                BoviInfoChip(icon = Icons.Default.LocalShipping, label = guia.matricula.ifBlank { "Sin matrícula" })
+                BoviInfoChip(icon = Icons.Default.Pets,          label = "${guia.numeroAnimals} ${stringResource(R.string.animals)}")
+                BoviInfoChip(icon = Icons.Default.LocalShipping, label = guia.matricula.ifBlank { stringResource(R.string.no_registration) })
                 if (guia.nifConductor.isNotBlank()) {
                     BoviInfoChip(icon = Icons.Default.Person, label = guia.nifConductor)
                 }
