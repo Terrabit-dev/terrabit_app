@@ -5,17 +5,25 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalance
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.House
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Bluetooth
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -26,25 +34,33 @@ import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.window.Dialog
 import com.example.terrabit_app.ui.theme.DarkBlueGrey
 import com.example.terrabit_app.ui.theme.DarkWhiteBackground
 import com.example.terrabit_app.R
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DropdownField(
+fun <T> DropdownField(
     label: String,
-    selectedValue: String,
+    selectedValue: T?,
     expanded: Boolean,
     placeholder: String,
-    opciones: Map<String, String>,
+    opciones: Map<String, T>,
     onExpandedChange: () -> Unit,
     onDismissRequest: () -> Unit,
-    onSeleccionar: (String, String) -> Unit,
-    defectColor: Boolean,
+    onSeleccionar: (String, T) -> Unit,
+    accentColor: Color = MainGreen,
     enabled: Boolean = true
 ) {
-    val accentColor = if (defectColor) MainGreen else MainOrange
+
+    // Resolvemos el texto que se mostrará en el campo principal dependiendo del tipo T
+    val textoMostrar = when (selectedValue) {
+        is Int -> if (selectedValue != 0) stringResource(id = selectedValue) else "" // Evita error si mandas 0 por defecto
+        is String -> selectedValue
+        else -> selectedValue?.toString() ?: ""
+    }
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
@@ -60,7 +76,7 @@ fun DropdownField(
             onExpandedChange = { if (enabled) onExpandedChange() }
         ) {
             OutlinedTextField(
-                value = selectedValue,
+                value = textoMostrar, // Usamos el valor ya resuelto
                 onValueChange = {},
                 modifier = Modifier
                     .fillMaxWidth()
@@ -94,18 +110,188 @@ fun DropdownField(
                     onDismissRequest = { onDismissRequest() },
                     modifier = Modifier.background(MaterialTheme.colorScheme.surface)
                 ) {
-                    opciones.forEach { (codigo, nombre) ->
+                    opciones.forEach { (codigo, valorRaw) ->
+
+                        // Resolvemos el texto para cada elemento de la lista desplegable
+                        val nombreItem = when (valorRaw) {
+                            is Int -> stringResource(id = valorRaw)
+                            is String -> valorRaw
+                            else -> valorRaw.toString()
+                        }
+
                         DropdownMenuItem(
                             text = {
                                 Text(
-                                    nombre,
+                                    nombreItem,
                                     fontSize = 15.sp,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                             },
-                            onClick = { onSeleccionar(codigo, nombre) },
+                            onClick = {
+                                // Devolvemos el código (String) y el valor original en su tipo correspondiente (T)
+                                onSeleccionar(codigo, valorRaw)
+                            },
                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
                         )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun <T> LargeDropdownField(
+    label: String,
+    selectedValue: T?,
+    expanded: Boolean,
+    placeholder: String,
+    opciones: Map<String, T>,
+    onExpandedChange: () -> Unit,
+    onDismissRequest: () -> Unit,
+    onSeleccionar: (String, T) -> Unit,
+    defectColor: Boolean,
+    enabled: Boolean = true
+) {
+    // Definimos el color según tu lógica (asegúrate de importar MainGreen/MainOrange si los tienes en otro archivo)
+    val accentColor = if (defectColor) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+
+    // Texto del campo principal
+    val textoMostrar = when (selectedValue) {
+        is Int -> if (selectedValue != 0) stringResource(id = selectedValue) else ""
+        is String -> selectedValue
+        else -> selectedValue?.toString() ?: ""
+    }
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            label,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface,
+            letterSpacing = 0.15.sp
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+
+        OutlinedTextField(
+            value = textoMostrar,
+            onValueChange = {},
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { if (enabled) onExpandedChange() },
+            enabled = false,
+            readOnly = true,
+            placeholder = {
+                Text(placeholder, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            },
+            trailingIcon = {
+                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+            },
+            singleLine = true,
+            shape = MaterialTheme.shapes.medium,
+            colors = OutlinedTextFieldDefaults.colors(
+                disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                disabledBorderColor = MaterialTheme.colorScheme.outline,
+                disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                disabledContainerColor = MaterialTheme.colorScheme.surface,
+            )
+        )
+    }
+
+    // Diálogo con buscador y LazyColumn
+    if (expanded && enabled) {
+        // Estado de la búsqueda (se reinicia al cerrar)
+        var searchQuery by remember { mutableStateOf("") }
+
+        Dialog(onDismissRequest = {
+            searchQuery = "" // Limpiamos la búsqueda al cancelar
+            onDismissRequest()
+        }) {
+            Surface(
+                shape = MaterialTheme.shapes.medium,
+                color = MaterialTheme.colorScheme.surface,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 500.dp) // Limita la altura para que no ocupe toda la pantalla
+            ) {
+                Column {
+                    // 1. Barra de Búsqueda
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = { searchQuery = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        placeholder = { Text("Buscar...", fontSize = 15.sp) },
+                        leadingIcon = {
+                            Icon(Icons.Default.Search, contentDescription = "Buscar", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        },
+                        trailingIcon = {
+                            if (searchQuery.isNotEmpty()) {
+                                IconButton(onClick = { searchQuery = "" }) {
+                                    Icon(Icons.Default.Clear, contentDescription = "Borrar", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                            }
+                        },
+                        singleLine = true,
+                        shape = MaterialTheme.shapes.medium
+                    )
+
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+
+                    // 2. Traducir y Filtrar (¡El truco está aquí!)
+                    // Usamos .map para convertir los Int a String y luego .filter para buscar
+                    val opcionesProcesadas = opciones.entries.map { entry ->
+                        val textoItem = when (val valorRaw = entry.value) {
+                            is Int -> if (valorRaw != 0) stringResource(id = valorRaw) else ""
+                            is String -> valorRaw
+                            else -> valorRaw.toString()
+                        }
+                        // Guardamos el Código Original, el Valor Original, y el Texto Traducido
+                        Triple(entry.key, entry.value, textoItem)
+                    }.filter {
+                        // Filtramos ignorando mayúsculas/minúsculas. Buscamos tanto por el texto como por el código (ej. "9999")
+                        it.third.contains(searchQuery, ignoreCase = true) ||
+                                it.first.contains(searchQuery, ignoreCase = true)
+                    }
+
+                    // 3. Renderizar la lista filtrada
+                    LazyColumn(
+                        modifier = Modifier.fillMaxWidth().weight(1f, fill = false)
+                    ) {
+                        items(opcionesProcesadas) { (codigo, valorRaw, nombreItem) ->
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        nombreItem,
+                                        fontSize = 15.sp,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                },
+                                onClick = {
+                                    searchQuery = "" // Limpiamos la búsqueda tras elegir
+                                    onSeleccionar(codigo, valorRaw)
+                                    onDismissRequest()
+                                },
+                                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 14.dp)
+                            )
+                        }
+
+                        // Mensaje si no hay resultados
+                        if (opcionesProcesadas.isEmpty()) {
+                            item {
+                                Text(
+                                    text = stringResource(R.string.no_found_result),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(24.dp),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontSize = 14.sp
+                                )
+                            }
+                        }
                     }
                 }
             }

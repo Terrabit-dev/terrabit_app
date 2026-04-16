@@ -1,4 +1,4 @@
-package com.example.terrabit_app.viewmodel.bovinos
+package com.example.terrabit_app.viewmodel
 
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
@@ -49,23 +49,10 @@ class HistorialViewModel @Inject constructor(
     }
 
     private fun filtrar(historial: Historial, texto: String): Boolean {
-        return obtenerNombreTipo(historial.tipo).contains(texto, ignoreCase = true) ||
+        return historial.tipo.contains(texto, ignoreCase = true) ||
                 historial.fecha.contains(texto, ignoreCase = true) ||
                 historial.hora.contains(texto, ignoreCase = true) ||
                 historial.resumen.contains(texto, ignoreCase = true)
-    }
-
-    private fun obtenerNombreTipo(tipo: String): String = when (tipo) {
-        "MUERTE" -> "Muerte"
-        "MATERIAL" -> "Material"
-        "NACIMIENTO" -> "Nacimiento"
-        "CORRECCION_SEXO" -> "Corrección Sexo"
-        "IDENTIFICACION_APLAZADA" -> "ID Aplazada"
-        "MATERIAL_DUPLICADO" -> "Material Duplicado"
-        "MOVIMIENTO" -> "Movimiento"
-        "GUIA" -> "Guía"
-        "GUIA_PORCINOS" -> "Guía Porcinos"
-        else -> tipo
     }
 
     fun eliminarRegistro(id: String) {

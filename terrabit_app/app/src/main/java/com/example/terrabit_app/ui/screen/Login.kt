@@ -44,8 +44,8 @@ import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.ui.theme.MainGreen
-import com.example.terrabit_app.viewmodel.bovinos.LoginState
-import com.example.terrabit_app.viewmodel.bovinos.LoginViewModel
+import com.example.terrabit_app.viewmodel.LoginState
+import com.example.terrabit_app.viewmodel.LoginViewModel
 
 @Composable
 fun Login(

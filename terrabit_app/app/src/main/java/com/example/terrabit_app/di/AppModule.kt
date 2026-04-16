@@ -2,16 +2,17 @@ package com.example.terrabit_app.di
 
 import android.content.Context
 import com.example.terrabit_app.data.SharedPreferencesManager
+import com.example.terrabit_app.data.local.SecureStorage
 import com.example.terrabit_app.data.local.dao.BorradorDao
 import com.example.terrabit_app.data.local.dao.HistorialDao
 import com.example.terrabit_app.data.local.database.AppDatabase
-import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.utils.UserPreferences
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import androidx.room.Room
 import javax.inject.Singleton
 
 @Module
@@ -20,38 +21,37 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideUserPreferences(@ApplicationContext context: Context): UserPreferences {
-        return UserPreferences(context)
-    }
+    fun provideSecureStorage(@ApplicationContext context: Context): SecureStorage =
+        SecureStorage(context)
 
     @Provides
     @Singleton
-    fun provideRepositorio(@ApplicationContext context: Context): Repositorio {
-        return Repositorio(context)
-    }
+    fun provideUserPreferences(
+        @ApplicationContext context: Context,
+        secureStorage: SecureStorage
+    ): UserPreferences = UserPreferences(context, secureStorage)
 
     @Provides
     @Singleton
-    fun provideSharedPreferencesManager(@ApplicationContext context: Context): SharedPreferencesManager {
-        return SharedPreferencesManager(context)
-    }
-
+    fun provideSharedPreferencesManager(@ApplicationContext context: Context): SharedPreferencesManager =
+        SharedPreferencesManager(context)
 
     @Provides
     @Singleton
-    fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
-        return AppDatabase.getDatabase(context)
-    }
+    fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase =
+        Room.databaseBuilder(
+            context.applicationContext,
+            AppDatabase::class.java,
+            "terrabit_database"
+        )
+            .addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3)
+            .build()
 
     @Provides
     @Singleton
-    fun provideBorradorDao(database: AppDatabase): BorradorDao {
-        return database.borradorDao()
-    }
+    fun provideBorradorDao(database: AppDatabase): BorradorDao = database.borradorDao()
 
     @Provides
     @Singleton
     fun provideHistorialDao(database: AppDatabase): HistorialDao = database.historialDao()
-
-
 }

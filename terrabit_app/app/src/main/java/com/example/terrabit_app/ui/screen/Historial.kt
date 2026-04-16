@@ -32,7 +32,7 @@ import com.example.terrabit_app.ui.theme.Blue
 import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
-import com.example.terrabit_app.viewmodel.bovinos.HistorialViewModel
+import com.example.terrabit_app.viewmodel.HistorialViewModel
 import kotlinx.coroutines.launch
 
 private fun rutaDetalle(historial: Historial): String? = when (historial.tipo) {

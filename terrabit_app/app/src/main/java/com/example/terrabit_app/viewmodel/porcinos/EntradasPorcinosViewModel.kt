@@ -1,17 +1,17 @@
 package com.example.terrabit_app.viewmodel.porcinos
 
-import android.app.Application
-import android.content.Context
+import android.annotation.SuppressLint
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.network.DataClassPorcinos.ConfirmarMovimientosRequest
 import com.example.terrabit_app.data.network.DataClassPorcinos.MovimentPteDetail
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.ui.screen.porcinos.EntradasPorcinosUiState
 import com.example.terrabit_app.utils.UserPreferences
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,54 +19,105 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.Calendar
+import javax.inject.Inject
 
 @RequiresApi(Build.VERSION_CODES.O)
-class EntradasPorcinosViewModel(application: Application): AndroidViewModel(application){
+@HiltViewModel
+class EntradasPorcinosViewModel @Inject constructor(
+    override val repositorio: Repositorio,
+    override val userPreferences: UserPreferences
+) : BasePorcinosViewModel() {
+
     private val _uiState = MutableStateFlow(EntradasPorcinosUiState())
-    val uiState : StateFlow<EntradasPorcinosUiState> = _uiState.asStateFlow()
+    val uiState: StateFlow<EntradasPorcinosUiState> = _uiState.asStateFlow()
 
-    private val repositorio = Repositorio(application)
+    // ─── Fecha display con DatePicker + TimePicker ────────────────────────────
+    private val _fechaDisplay = MutableStateFlow("")
+    val fechaDisplay: StateFlow<String> = _fechaDisplay
 
-    private lateinit var userPreferences: UserPreferences
+    private val _mostrarDatePicker = MutableStateFlow(false)
+    val mostrarDatePicker: StateFlow<Boolean> = _mostrarDatePicker
 
-    fun inicializarUserPreferences(application: Context) {
-        userPreferences = UserPreferences(application)
+    private val _mostrarTimePicker = MutableStateFlow(false)
+    val mostrarTimePicker: StateFlow<Boolean> = _mostrarTimePicker
 
+    private val _consultaIniciada = MutableStateFlow(false)
+    val consultaIniciada: StateFlow<Boolean> = _consultaIniciada
+
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
+    private var fechaMillisSeleccionada: Long = 0L
+
+    fun mostrarDatePicker() { _mostrarDatePicker.value = true }
+    fun ocultarDatePicker() { _mostrarDatePicker.value = false }
+    fun ocultarTimePicker() { _mostrarTimePicker.value = false }
+
+    fun seleccionarFecha(millis: Long) {
+        fechaMillisSeleccionada = millis
+        _mostrarDatePicker.value = false
+        _mostrarTimePicker.value = true
+    }
+
+    @SuppressLint("DefaultLocale")
+    fun seleccionarHora(hora: Int, minutos: Int) {
+        val cal = Calendar.getInstance().apply { timeInMillis = fechaMillisSeleccionada }
+        _fechaDisplay.value = String.format("%02d/%02d/%04d %02d:%02d",
+            cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH) + 1,
+            cal.get(Calendar.YEAR), hora, minutos)
+        _mostrarTimePicker.value = false
+    }
+
+    fun validarYConsultar() {
+        if (_fechaDisplay.value.isBlank()) { _error.value = "La fecha de sortida és obligatòria."; return }
+        _error.value = null; _consultaIniciada.value = true
         cargarGuiasPendientes()
+    }
+
+    fun resetearConsulta() {
+        _consultaIniciada.value = false
+        _uiState.update { it.copy(listaEntradasPorcinos = emptyList()) }
+        _fechaDisplay.value = ""; _error.value = null
     }
 
     private fun cargarGuiasPendientes() {
         val fechaFin = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"))
-
+        val fechaInicio = displayToApiFormat(_fechaDisplay.value)
         viewModelScope.launch {
-            // 1. Iniciamos carga
-            _uiState.value = _uiState.value.copy(isLoading = true)
-
+            _uiState.update { it.copy(isLoading = true) }
             try {
+                Log.d("GTR_ENTRADAS", "━━━ CARGAR PENDIENTES ━━━")
+                Log.d("GTR_ENTRADAS", "nif:        $nif")
+                Log.d("GTR_ENTRADAS", "codiMo:     $codiMo")
+                Log.d("GTR_ENTRADAS", "fechaInicio: $fechaInicio")
+                Log.d("GTR_ENTRADAS", "fechaFin:   $fechaFin")
+
                 val response = repositorio.getPendientesConfirmarEntradaPorcina(
-                    /*nif = userPreferences.getNif(),
-                    password = userPreferences.getPassword(),
-                    moDesti = userPreferences.getCodiMO(),*/
-                    nif = "37370803N",
-                    password = "5Q62h4rP",
-                    moDesti = "1880AE",
-                    desde = "000101010000",
-                    fins = fechaFin
+                    nif = nif, password = password, moDesti = codiMo,
+                    desde = fechaInicio, fins = fechaFin
                 )
 
+                Log.d("GTR_ENTRADAS", "HTTP code: ${response.code()}")
+                Log.d("GTR_ENTRADAS", "isSuccessful: ${response.isSuccessful}")
+
                 if (response.isSuccessful) {
-                    val nuevasGuias = response.body()?.llistat ?: emptyList()
-                    _uiState.value = _uiState.value.copy(
-                        listaEntradasPorcinos = nuevasGuias,
-                        isLoading = false // 2. Éxito: quitamos carga
-                    )
+                    val lista = response.body()?.llistat ?: emptyList()
+                    Log.d("GTR_ENTRADAS", "✅ Entradas recibidas: ${lista.size}")
+                    lista.forEachIndexed { i, e -> Log.d("GTR_ENTRADAS", "  [$i] remo=${e.codiRemo}") }
+                    _uiState.update { it.copy(listaEntradasPorcinos = lista, isLoading = false) }
                 } else {
-                    _uiState.value = _uiState.value.copy(isLoading = false) // Error de API
-                    Log.e("EntradasPorcinosViewModel", "Error: ${response.code()}")
+                    val errorBody = response.errorBody()?.string() ?: ""
+                    Log.e("GTR_ENTRADAS", "❌ Error HTTP ${response.code()}: $errorBody")
+                    _error.value = "Error ${response.code()}"
+                    _uiState.update { it.copy(isLoading = false) }
+                    _consultaIniciada.value = false
                 }
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(isLoading = false) // Error de Red
-                Log.e("EntradasPorcinosViewModel", "Error en la llamada", e)
+                Log.e("GTR_ENTRADAS", "❌ Excepción: ${e.javaClass.simpleName}: ${e.message}", e)
+                _error.value = "Error de connexió: ${e.localizedMessage}"
+                _uiState.update { it.copy(isLoading = false) }
+                _consultaIniciada.value = false
             }
         }
     }
@@ -74,41 +125,39 @@ class EntradasPorcinosViewModel(application: Application): AndroidViewModel(appl
     fun confirmarEntrada(guia: MovimentPteDetail) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-
-            // Mapeo desde MovimentPteDetail a ConfirmarMovimientosRequest
             val request = ConfirmarMovimientosRequest(
-                nif = "37370803N", // TODO: userPreferences.getNif()
-                password = "5Q62h4rP", // TODO: userPreferences.getPass()
-                moDesti = guia.moDesti,
-                remo = guia.codiRemo,
-                codiAtes = guia.codiAtes, // Ajustar si MovimentPteDetail tiene transportista
-                nifConductor = guia.nifConductor?: "",
-                matricula = guia.matricula?: "",
-                nombreAnimals = guia.numAnimals?: "0" // Ajustar si el detalle incluye cantidad
+                nif = nif, password = password, moDesti = guia.moDesti,
+                remo = guia.codiRemo, codiAtes = guia.codiAtes,
+                nifConductor = guia.nifConductor ?: "", matricula = guia.matricula ?: "",
+                nombreAnimals = guia.numAnimals ?: "0"
             )
+
+            Log.d("GTR_ENTRADAS", "━━━ CONFIRMAR ENTRADA ━━━")
+            Log.d("GTR_ENTRADAS", "request: $request")
 
             try {
                 val response = repositorio.confirmarEntradaPorcina(request)
 
-                if (response.isSuccessful && response.body()?.codi == "OK") {
-                    // Filtramos la lista eliminando la guía confirmada por su código REMO
-                    val listaActualizada = _uiState.value.listaEntradasPorcinos.filter {
-                        it.codiRemo != guia.codiRemo
-                    }
+                Log.d("GTR_ENTRADAS", "HTTP code: ${response.code()}")
+                Log.d("GTR_ENTRADAS", "body.codi: ${response.body()?.codi}")
+                Log.d("GTR_ENTRADAS", "body.descripcio: ${response.body()?.descripcio}")
 
+                if (response.isSuccessful && response.body()?.codi == "OK") {
+                    Log.d("GTR_ENTRADAS", "✅ Entrada confirmada: ${guia.codiRemo}")
                     _uiState.update { it.copy(
-                        listaEntradasPorcinos = listaActualizada,
+                        listaEntradasPorcinos = it.listaEntradasPorcinos.filter { it.codiRemo != guia.codiRemo },
                         isLoading = false
                     )}
-                    Log.d("DEBUG_API", "Confirmación OK: ${guia.codiRemo}")
                 } else {
-                    val errorMsg = response.body()?.descripcio ?: "Error al confirmar"
+                    val msg = response.body()?.descripcio ?: "Error al confirmar"
+                    Log.w("GTR_ENTRADAS", "⚠️ $msg")
+                    _error.value = msg
                     _uiState.update { it.copy(isLoading = false) }
-                    Log.e("DEBUG_API", "Error Negocio: $errorMsg")
                 }
             } catch (e: Exception) {
+                Log.e("GTR_ENTRADAS", "❌ Excepción: ${e.javaClass.simpleName}: ${e.message}", e)
+                _error.value = e.localizedMessage
                 _uiState.update { it.copy(isLoading = false) }
-                Log.e("DEBUG_API", "Error Conexión: ${e.localizedMessage}")
             }
         }
     }

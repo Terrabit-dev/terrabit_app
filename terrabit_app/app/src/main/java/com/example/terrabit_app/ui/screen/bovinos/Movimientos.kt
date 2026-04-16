@@ -31,8 +31,11 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
+import com.example.terrabit_app.data.network.moviminetos.modelos.Moviment
+import com.example.terrabit_app.ui.components.HistorialAutoCompleteField
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.utils.components.CampoIdentificadorAutoComplete
 import com.example.terrabit_app.utils.components.useDebounce
@@ -40,6 +43,7 @@ import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.ui.theme.MainOrange
 import com.example.terrabit_app.utils.CampoTexto
+import com.example.terrabit_app.utils.CodiMoSelector
 import com.example.terrabit_app.utils.DropdownField
 import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.utils.alertsErrosScreens
@@ -54,54 +58,70 @@ fun Movimientos(
     navController: NavController,
     bluetoothViewModel: BluetoothViewModel,
     borradorId: String = "",
-    historialId: String = ""
+    historialId: String = "",
+    movimientoSeleccionado: Moviment
 ) {
     val viewModel = hiltViewModel<MovimientosViewModel>()
-    val modoLectura = historialId.isNotEmpty()
+    val elementosConCodigos = ElementosConCodigos()
+    val transportMap      = elementosConCodigos.getTransportes()
+    val estadosLLegada    = elementosConCodigos.getEstadosLLegada()
+    val tiposPresentacion = elementosConCodigos.getTiposPresentacion()
 
-    val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(movimientoSeleccionado.codiRemo) {
+        if (movimientoSeleccionado.codiRemo.isNotEmpty()) {
+            val transportNombre = elementosConCodigos.getTransportesId(movimientoSeleccionado.mitjaTransport)
+            viewModel.cargarDatosMovimiento(movimientoSeleccionado, transportNombre)
+        }
+    }
 
-    val codiRemo by viewModel.codiRemo.observeAsState("")
-    val dataArribada by viewModel.dataArribada.observeAsState("")
-    val horaArribada by viewModel.horaArribada.observeAsState("")
-    val codiAtes by viewModel.codiAtes.observeAsState("")
-    val nomTransportista by viewModel.nomTransportista.observeAsState("")
-    val matricula by viewModel.matricula.observeAsState("")
-    val mitjaTransport by viewModel.mitjaTransport.observeAsState("")
-    val nifConductor by viewModel.nifConductor.observeAsState("")
-    val nomConductor by viewModel.nomConductor.observeAsState("")
-    val explotacioDestinacio by viewModel.explotacioDestinacio.observeAsState("")
-    val codiAtesExpandido by viewModel.codiAtesExpandido.observeAsState(false)
-    val mitjaTransportExpandido by viewModel.mitjaTransportExpandido.observeAsState(false)
+    val modoLectura    = historialId.isNotEmpty()
+    val context        = LocalContext.current
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    val historialManager = viewModel.historialCamposManager
+
+    val codiRemo                 by viewModel.codiRemo.observeAsState("")
+    val dataArribada             by viewModel.dataArribada.observeAsState("")
+    val horaArribada             by viewModel.horaArribada.observeAsState("")
+    val codiAtes                 by viewModel.codiAtes.observeAsState("")
+    val nomTransportista         by viewModel.nomTransportista.observeAsState("")
+    val matricula                by viewModel.matricula.observeAsState("")
+    val mitjaTransport           by viewModel.mitjaTransport.observeAsState(null)
+    val nifConductor             by viewModel.nifConductor.observeAsState("")
+    val nomConductor             by viewModel.nomConductor.observeAsState("")
+    val explotacioDestinacio     by viewModel.explotacioDestinacio.observeAsState("")
+    val codiAtesExpandido        by viewModel.codiAtesExpandido.observeAsState(false)
+    val mitjaTransportExpandido  by viewModel.mitjaTransportExpandido.observeAsState(false)
     val mostrarDatePickerArribada by viewModel.mostrarDatePickerArribada.observeAsState(false)
     val mostrarTimePickerArribada by viewModel.mostrarTimePickerArribada.observeAsState(false)
-    val registroExitoso by viewModel.registroExitoso.observeAsState(false)
-    val mensajeError by viewModel.mensajeError.observeAsState("")
-    val estadoCarga by viewModel.cargandoMovimiento.observeAsState(false)
-    val codiError by viewModel.codiError.observeAsState()
-    val suggestionsBovinos by viewModel.suggestionsBovinos.observeAsState(emptyList())
-    val isLoadingBovinos by viewModel.isLoadingBovinos.observeAsState(false)
-    val activeIndex by viewModel.activeFieldIndex.observeAsState(-1)
+    val registroExitoso          by viewModel.operacionExitosa.observeAsState(false)
+    val mensajeError             by viewModel.mensajeError.observeAsState("")
+    val estadoCarga              by viewModel.estadoCarga.observeAsState(false)
+    val codiError                by viewModel.codiError.observeAsState()
+    val suggestionsBovinos       by viewModel.suggestionsBovinos.observeAsState(emptyList())
+    val isLoadingBovinos         by viewModel.isLoadingBovinos.observeAsState(false)
+    val activeIndex              by viewModel.activeFieldIndex.observeAsState(-1)
 
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
     var mostrarDialogoAviso by remember { mutableStateOf(false) }
-    var cantidadBorradores by remember { mutableStateOf(0) }
-    var indiceBluetooth by remember { mutableStateOf<Int?>(null) }
-    var mostrarBluetooth by remember { mutableStateOf(false) }
+    var cantidadBorradores  by remember { mutableStateOf(0) }
+    var indiceBluetooth     by remember { mutableStateOf<Int?>(null) }
+    var mostrarBluetooth    by remember { mutableStateOf(false) }
+    var indiceUsb           by remember { mutableStateOf<Int?>(null) }
 
     val successMessage = stringResource(R.string.successful_message_confirm_movs)
-    val elementosConCodigos = ElementosConCodigos()
 
     val usbViewModel = hiltViewModel<UsbSerialViewModel>()
-    val usbState by usbViewModel.state.collectAsState()
+    val usbState     by usbViewModel.state.collectAsState()
     val usbErrorText = usbState.error?.let { stringResource(it) }
-    var indiceUsb by remember { mutableStateOf<Int?>(null) }
 
+    val codisMoExpandido by viewModel.codisMoExpandido.observeAsState(false)
+    val codiMoActivo by viewModel.codiMoActivo.observeAsState(null)
+
+    // ── USB: traducción automática de prefijo de país ──────────────────────
     LaunchedEffect(Unit) {
         usbViewModel.mensajes.collect { mensaje ->
-            indiceUsb?.let { viewModel.actualizarIdentificadorAnimal(it, mensaje) }
+            indiceUsb?.let { viewModel.actualizarIdentificadorAnimalDesdeHardware(it, mensaje) }
             indiceUsb = null
         }
     }
@@ -112,22 +132,26 @@ fun Movimientos(
         }
     }
 
+    // ── Bluetooth: traducción automática de prefijo de país ───────────────
     if (mostrarBluetooth) {
         BluetoothScanDialog(
             bluetoothViewModel = bluetoothViewModel,
             onMensajeRecibido = { mensaje ->
-                indiceBluetooth?.let { viewModel.actualizarIdentificadorAnimal(it, mensaje) }
+                indiceBluetooth?.let { viewModel.actualizarIdentificadorAnimalDesdeHardware(it, mensaje) }
                 mostrarBluetooth = false
-                indiceBluetooth = null
+                indiceBluetooth  = null
             },
-            onDismiss = { mostrarBluetooth = false; indiceBluetooth = null }
+            onDismiss = {
+                mostrarBluetooth = false
+                indiceBluetooth  = null
+            }
         )
     }
 
     LaunchedEffect(Unit) {
         when {
             historialId.isNotEmpty() -> viewModel.cargarDesdeHistorial(historialId)
-            borradorId.isNotEmpty() -> viewModel.cargarBorradorPorId(borradorId)
+            borradorId.isNotEmpty()  -> viewModel.cargarBorradorPorId(borradorId)
             else -> {
                 cantidadBorradores = viewModel.obtenerCantidadBorradoresMovimiento()
                 if (cantidadBorradores >= 2) mostrarDialogoAviso = true
@@ -148,7 +172,7 @@ fun Movimientos(
     LaunchedEffect(registroExitoso) {
         if (registroExitoso) {
             snackbarHostState.showSnackbar(successMessage, duration = SnackbarDuration.Short)
-            viewModel.resetearEstadoRegistro()
+            viewModel.resetearEstado()
         }
     }
 
@@ -159,12 +183,20 @@ fun Movimientos(
     if (mostrarDialogoAviso) {
         AlertDialog(
             onDismissRequest = {},
-            icon = { Icon(Icons.Default.Description, contentDescription = null, tint = MainOrange, modifier = Modifier.size(48.dp)) },
-            title = { Text("Borradores pendientes", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface) },
+            icon = {
+                Icon(Icons.Default.Description, contentDescription = null,
+                    tint = MainOrange, modifier = Modifier.size(48.dp))
+            },
+            title = {
+                Text("Borradores pendientes", fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface)
+            },
             text = {
                 Text(
-                    "Tienes $cantidadBorradores borradores guardados de este formulario. Puedes verlos en la página de Borradores.\n\n¿Deseas crear uno nuevo?",
-                    fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 24.sp
+                    "Tienes $cantidadBorradores borradores guardados de este formulario. " +
+                            "Puedes verlos en la página de Borradores.\n\n¿Deseas crear uno nuevo?",
+                    fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    lineHeight = 24.sp
                 )
             },
             confirmButton = {
@@ -181,18 +213,25 @@ fun Movimientos(
 
     if (mostrarDialogoError) {
         AlertDialog(
-            onDismissRequest = { mostrarDialogoError = false; viewModel.resetearEstadoRegistro() },
-            icon = { Icon(Icons.Default.ArrowBack, contentDescription = null, tint = MainOrange, modifier = Modifier.size(48.dp)) },
-            title = { Text(stringResource(R.string.error_message_confirm_movs), fontWeight = FontWeight.Bold, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface) },
+            onDismissRequest = { mostrarDialogoError = false; viewModel.resetearEstado() },
+            icon = {
+                Icon(Icons.Default.ArrowBack, contentDescription = null,
+                    tint = MainOrange, modifier = Modifier.size(48.dp))
+            },
+            title = {
+                Text(stringResource(R.string.error_message_confirm_movs), fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface)
+            },
             text = {
                 Text(
                     if (codiError != null) alertsErrosScreens(codiError!!) else mensajeError,
-                    fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 24.sp
+                    fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    lineHeight = 24.sp
                 )
             },
             confirmButton = {
                 Button(
-                    onClick = { mostrarDialogoError = false; viewModel.resetearEstadoRegistro() },
+                    onClick = { mostrarDialogoError = false; viewModel.resetearEstado() },
                     colors = ButtonDefaults.buttonColors(containerColor = MainOrange),
                     shape = RoundedCornerShape(8.dp)
                 ) { Text(stringResource(R.string.error_buttom), fontWeight = FontWeight.SemiBold) }
@@ -207,17 +246,19 @@ fun Movimientos(
         DatePickerDialog(
             onDismissRequest = { viewModel.ocultarDatePickerArribada() },
             confirmButton = {
-                TextButton(onClick = { datePickerState.selectedDateMillis?.let { viewModel.seleccionarFechaArribada(it) } }) {
-                    Text(stringResource(R.string.accept_buttom), color = MainOrange)
-                }
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let { viewModel.seleccionarFechaArribada(it) }
+                }) { Text(stringResource(R.string.accept_buttom), color = MainOrange) }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.ocultarDatePickerArribada() }) {
-                    Text(stringResource(R.string.cancel_buttom), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.cancel_buttom),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         ) {
-            DatePicker(state = datePickerState, colors = DatePickerDefaults.colors(selectedDayContainerColor = MainOrange, todayDateBorderColor = MainOrange))
+            DatePicker(state = datePickerState, colors = DatePickerDefaults.colors(
+                selectedDayContainerColor = MainOrange, todayDateBorderColor = MainOrange))
         }
     }
 
@@ -227,18 +268,21 @@ fun Movimientos(
             onDismissRequest = { viewModel.ocultarTimePickerArribada() },
             confirmButton = {
                 TextButton(onClick = {
-                    viewModel.actualizarHoraArribada(timePickerState.hour.toString(), timePickerState.minute.toString())
+                    viewModel.actualizarHoraArribada(
+                        timePickerState.hour.toString(), timePickerState.minute.toString())
                     viewModel.ocultarTimePickerArribada()
                 }) { Text(stringResource(R.string.accept_buttom), color = MainOrange) }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.ocultarTimePickerArribada() }) {
-                    Text(stringResource(R.string.cancel_buttom), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.cancel_buttom),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             },
             containerColor = MaterialTheme.colorScheme.surface,
             text = {
-                TimePicker(state = timePickerState, colors = TimePickerDefaults.colors(clockDialSelectedContentColor = Color.White, selectorColor = MainOrange))
+                TimePicker(state = timePickerState, colors = TimePickerDefaults.colors(
+                    clockDialSelectedContentColor = Color.White, selectorColor = MainOrange))
             }
         )
     }
@@ -258,10 +302,16 @@ fun Movimientos(
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                        CircularProgressIndicator(modifier = Modifier.size(48.dp), color = MainOrange, strokeWidth = 4.dp)
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        CircularProgressIndicator(modifier = Modifier.size(48.dp),
+                            color = MainOrange, strokeWidth = 4.dp)
                         Spacer(modifier = Modifier.height(12.dp))
-                        Text(stringResource(R.string.loading_processing), fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(R.string.loading_processing),
+                            fontSize = 14.sp, fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
@@ -272,19 +322,22 @@ fun Movimientos(
                 TopAppBar(
                     title = {
                         Column {
-                            Text(stringResource(R.string.name_confirm_movs), fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
-                            if (modoLectura) Text("Solo lectura", fontSize = 13.sp, color = Color.White.copy(alpha = 0.9f))
+                            Text(stringResource(R.string.name_confirm_movs),
+                                fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
+                            if (modoLectura) Text("Solo lectura",
+                                fontSize = 13.sp, color = Color.White.copy(alpha = 0.9f))
                         }
                     },
                     navigationIcon = {
                         IconButton(onClick = {
                             when {
                                 historialId.isNotEmpty() -> navController.popBackStack()
-                                borradorId.isNotEmpty() -> navController.popBackStack()
+                                borradorId.isNotEmpty()  -> navController.popBackStack()
                                 else -> navController.navigate(Routes.GuiasMovimientos.route)
                             }
                         }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
+                            Icon(Icons.Default.ArrowBack,
+                                contentDescription = stringResource(R.string.content_description_back))
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -296,7 +349,8 @@ fun Movimientos(
             },
             snackbarHost = {
                 SnackbarHost(hostState = snackbarHostState) { data ->
-                    Snackbar(snackbarData = data, containerColor = MainGreen, contentColor = Color.White, shape = RoundedCornerShape(12.dp))
+                    Snackbar(snackbarData = data, containerColor = MainGreen,
+                        contentColor = Color.White, shape = RoundedCornerShape(12.dp))
                 }
             },
             containerColor = MaterialTheme.colorScheme.background
@@ -309,6 +363,7 @@ fun Movimientos(
             ) {
                 Spacer(modifier = Modifier.height(20.dp))
 
+                // ── Card campos obligatorios ───────────────────────────────
                 Card(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -319,24 +374,39 @@ fun Movimientos(
                         modifier = Modifier.fillMaxWidth().padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
-                        Text(stringResource(R.string.form_movs_title_necessary), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            CodiMoSelector(
+                                codisMos = viewModel.getCodisMos(),
+                                seleccionado = codiMoActivo,
+                                expanded = codisMoExpandido,
+                                onToggle = { viewModel.toggleCodisMoExpandido() },
+                                onDismiss = { viewModel.cerrarCodisMo() },
+                                onSeleccionar = { codi -> viewModel.seleccionarCodiMo(codi) },
+                                accentColor = ErrorRed
+                            )
+                        }
+                        Text(stringResource(R.string.form_movs_title_necessary),
+                            fontSize = 18.sp, fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface)
 
-                        SimpleTextField(
+                        HistorialAutoCompleteField(
+                            valor = codiRemo,
+                            onValorChange = { if (!modoLectura) viewModel.actualizarCodiRemo(it) },
                             label = stringResource(R.string.form_codi_remo),
-                            value = codiRemo,
-                            placeholder = stringResource(R.string.form_codi_remo_description),
-                            onValueChange = { viewModel.actualizarCodiRemo(it) },
-                            enabled = !modoLectura,
-                            imeAction = ImeAction.Next
+                            clave = "codi_remo_guia",
+                            historialManager = historialManager,
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !modoLectura
                         )
 
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Row(modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                             DateTimeFieldMovs(
                                 modifier = Modifier.weight(1f),
                                 label = stringResource(R.string.form_date_arrival),
                                 value = dataArribada,
                                 placeholder = stringResource(R.string.form_date_arrival_description),
-                                icon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = MainOrange) },
+                                icon = { Icon(Icons.Default.DateRange, null, tint = MainOrange) },
                                 enabled = !modoLectura,
                                 onClick = { viewModel.mostrarDatePickerArribada() }
                             )
@@ -345,14 +415,16 @@ fun Movimientos(
                                 label = stringResource(R.string.form_hour_arrival),
                                 value = horaArribada,
                                 placeholder = stringResource(R.string.form_hour_arrival_description),
-                                icon = { Icon(Icons.Default.Schedule, contentDescription = null, tint = MainOrange) },
+                                icon = { Icon(Icons.Default.Schedule, null, tint = MainOrange) },
                                 enabled = !modoLectura,
                                 onClick = { viewModel.mostrarTimePickerArribada() }
                             )
                         }
 
                         Column(modifier = Modifier.fillMaxWidth()) {
-                            Text(stringResource(R.string.form_codi_ates), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
+                            Text(stringResource(R.string.form_codi_ates),
+                                fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
                             Spacer(modifier = Modifier.height(10.dp))
                             ExposedDropdownMenuBox(
                                 expanded = if (modoLectura) false else codiAtesExpandido,
@@ -364,8 +436,14 @@ fun Movimientos(
                                     modifier = Modifier.fillMaxWidth().menuAnchor(),
                                     enabled = !modoLectura,
                                     readOnly = true,
-                                    placeholder = { Text(stringResource(R.string.form_codi_ates_description), color = MaterialTheme.colorScheme.onSurfaceVariant) },
-                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = if (modoLectura) false else codiAtesExpandido) },
+                                    placeholder = {
+                                        Text(stringResource(R.string.form_codi_ates_description),
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    },
+                                    trailingIcon = {
+                                        ExposedDropdownMenuDefaults.TrailingIcon(
+                                            expanded = if (modoLectura) false else codiAtesExpandido)
+                                    },
                                     singleLine = true,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
@@ -380,7 +458,7 @@ fun Movimientos(
                                         disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
                                         disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
                                         disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        disabledContainerColor = MaterialTheme.colorScheme.surface,
+                                        disabledContainerColor = MaterialTheme.colorScheme.surface
                                     )
                                 )
                                 if (!modoLectura) {
@@ -391,9 +469,15 @@ fun Movimientos(
                                     ) {
                                         viewModel.listaCodigosAtes.forEach { ates ->
                                             DropdownMenuItem(
-                                                text = { Text("${ates.codigo} - ${ates.nombre}", fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Normal) },
+                                                text = {
+                                                    Text("${ates.codigo} - ${ates.nombre}",
+                                                        fontSize = 15.sp,
+                                                        color = MaterialTheme.colorScheme.onSurface,
+                                                        fontWeight = FontWeight.Normal)
+                                                },
                                                 onClick = { viewModel.seleccionarCodiAtes(ates.codigo) },
-                                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
+                                                contentPadding = PaddingValues(
+                                                    horizontal = 16.dp, vertical = 14.dp)
                                             )
                                         }
                                     }
@@ -401,19 +485,21 @@ fun Movimientos(
                             }
                         }
 
-                        SimpleTextField(
+                        HistorialAutoCompleteField(
+                            valor = explotacioDestinacio,
+                            onValorChange = { if (!modoLectura) viewModel.actualizarExplotacioDestinacio(it) },
                             label = stringResource(R.string.form_exploitation_destination),
-                            value = explotacioDestinacio,
-                            placeholder = stringResource(R.string.form_exploitation_destination_description),
-                            onValueChange = { viewModel.actualizarExplotacioDestinacio(it) },
-                            enabled = !modoLectura,
-                            imeAction = ImeAction.Next
+                            clave = "explotacio_destino",
+                            historialManager = historialManager,
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !modoLectura
                         )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // ── Card transporte ───────────────────────────────────────
                 Card(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -424,67 +510,66 @@ fun Movimientos(
                         modifier = Modifier.fillMaxWidth().padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
-                        Text(stringResource(R.string.form_movs_title_animals), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                        Text(stringResource(R.string.form_movs_title_animals),
+                            fontSize = 18.sp, fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface)
 
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            Text(stringResource(R.string.form_ways_transports), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
-                            Spacer(modifier = Modifier.height(10.dp))
-                            ExposedDropdownMenuBox(
-                                expanded = if (modoLectura) false else mitjaTransportExpandido,
-                                onExpandedChange = { if (!modoLectura) viewModel.toggleMitjaTransportExpandido() }
-                            ) {
-                                OutlinedTextField(
-                                    value = mitjaTransport,
-                                    onValueChange = {},
-                                    modifier = Modifier.fillMaxWidth().menuAnchor(),
-                                    enabled = !modoLectura,
-                                    readOnly = true,
-                                    placeholder = { Text(stringResource(R.string.form_ways_transports_description), color = MaterialTheme.colorScheme.onSurfaceVariant) },
-                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = if (modoLectura) false else mitjaTransportExpandido) },
-                                    singleLine = true,
-                                    shape = MaterialTheme.shapes.medium,
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = MainOrange,
-                                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                        focusedContainerColor = MaterialTheme.colorScheme.surface,
-                                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                                        disabledBorderColor = MaterialTheme.colorScheme.outline,
-                                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        disabledContainerColor = MaterialTheme.colorScheme.surface,
-                                    )
-                                )
-                                if (!modoLectura) {
-                                    ExposedDropdownMenu(
-                                        expanded = mitjaTransportExpandido,
-                                        onDismissRequest = { viewModel.cerrarMitjaTransportMenu() },
-                                        modifier = Modifier.background(MaterialTheme.colorScheme.surface)
-                                    ) {
-                                        elementosConCodigos.transporte().forEach { (medio, codigo) ->
-                                            DropdownMenuItem(
-                                                text = { Text(medio, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Normal) },
-                                                onClick = { viewModel.seleccionarMitjaTransport(medio, codigo) },
-                                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        SimpleTextField(label = stringResource(R.string.form_matricule_transport), value = matricula, placeholder = stringResource(R.string.form_matricule_transports_description), onValueChange = { viewModel.actualizarMatricula(it) }, enabled = !modoLectura, imeAction = ImeAction.Next)
-                        SimpleTextField(label = stringResource(R.string.form_name_transportits), value = nomTransportista, placeholder = stringResource(R.string.form_name_transportits_description), onValueChange = { viewModel.actualizarNomTransportista(it) }, enabled = !modoLectura, imeAction = ImeAction.Next)
-                        SimpleTextField(label = stringResource(R.string.form_nif_driver), value = nifConductor, placeholder = stringResource(R.string.form_nif_driver_description), onValueChange = { viewModel.actualizarNifConductor(it) }, enabled = !modoLectura, imeAction = ImeAction.Next)
-                        SimpleTextField(label = stringResource(R.string.form_name_driver), value = nomConductor, placeholder = stringResource(R.string.form_name_driver_description), onValueChange = { viewModel.actualizarNomConductor(it) }, enabled = !modoLectura, imeAction = ImeAction.Done)
+                        DropdownField(
+                            label = stringResource(R.string.form_ways_transports),
+                            selectedValue = mitjaTransport,
+                            expanded = if (modoLectura) false else mitjaTransportExpandido,
+                            placeholder = stringResource(R.string.form_ways_transports_description),
+                            opciones = transportMap,
+                            enabled = !modoLectura,
+                            onExpandedChange = { if (!modoLectura) viewModel.toggleMitjaTransportExpandido() },
+                            onDismissRequest = { viewModel.cerrarMitjaTransportMenu() },
+                            onSeleccionar = { codigo, nombre ->
+                                if (!modoLectura) viewModel.seleccionarMitjaTransport(nombre, codigo)
+                            },
+                            accentColor = MainOrange
+                        )
+                        HistorialAutoCompleteField(
+                            valor = matricula,
+                            onValorChange = { if (!modoLectura) viewModel.actualizarMatricula(it) },
+                            label = stringResource(R.string.form_matricule_transport),
+                            clave = "matricula_vehicle",
+                            historialManager = historialManager,
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !modoLectura
+                        )
+                        HistorialAutoCompleteField(
+                            valor = nomTransportista,
+                            onValorChange = { if (!modoLectura) viewModel.actualizarNomTransportista(it) },
+                            label = stringResource(R.string.form_name_transportits),
+                            clave = "nom_transportista",
+                            historialManager = historialManager,
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !modoLectura
+                        )
+                        HistorialAutoCompleteField(
+                            valor = nifConductor,
+                            onValorChange = { if (!modoLectura) viewModel.actualizarNifConductor(it) },
+                            label = stringResource(R.string.form_nif_driver),
+                            clave = "nif_conductor",
+                            historialManager = historialManager,
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !modoLectura
+                        )
+                        HistorialAutoCompleteField(
+                            valor = nomConductor,
+                            onValorChange = { if (!modoLectura) viewModel.actualizarNomConductor(it) },
+                            label = stringResource(R.string.form_name_driver),
+                            clave = "nom_conductor",
+                            historialManager = historialManager,
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !modoLectura
+                        )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // ── Card animales ─────────────────────────────────────────
                 Card(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -500,45 +585,57 @@ fun Movimientos(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(stringResource(R.string.form_movs_title_animals), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                            Text(stringResource(R.string.form_movs_title_animals),
+                                fontSize = 18.sp, fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface)
                             if (!modoLectura) {
                                 IconButton(
                                     onClick = { viewModel.agregarAnimal() },
-                                    modifier = Modifier.size(40.dp).background(color = MainOrange, shape = RoundedCornerShape(8.dp))
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .background(color = MainOrange, shape = RoundedCornerShape(8.dp))
                                 ) {
-                                    Icon(Icons.Default.Add, contentDescription = "Agregar animal", tint = Color.White, modifier = Modifier.size(24.dp))
+                                    Icon(Icons.Default.Add, contentDescription = "Agregar animal",
+                                        tint = Color.White, modifier = Modifier.size(24.dp))
                                 }
                             }
                         }
 
-                        val animales by viewModel.listaAnimales.observeAsState(emptyList())
+                        val animales              by viewModel.listaAnimales.observeAsState(emptyList())
                         val estatExpandidoPorIndice by viewModel.estatArribadaExpandidoPorIndice.observeAsState(emptyMap())
                         val tipusExpandidoPorIndice by viewModel.tipusPresentacioExpandidoPorIndice.observeAsState(emptyMap())
-                        val datePickerPorIndice by viewModel.mostrarDatePickerPorIndice.observeAsState(emptyMap())
+                        val datePickerPorIndice   by viewModel.mostrarDatePickerPorIndice.observeAsState(emptyMap())
 
                         animales.forEachIndexed { index, animal ->
+
                             if (datePickerPorIndice[index] == true && !modoLectura) {
                                 val datePickerState = rememberDatePickerState()
                                 DatePickerDialog(
                                     onDismissRequest = { viewModel.ocultarDatePickerSacrMort(index) },
                                     confirmButton = {
-                                        TextButton(onClick = { datePickerState.selectedDateMillis?.let { viewModel.seleccionarFechaSacrMort(index, it) } }) {
-                                            Text(stringResource(R.string.accept_buttom), color = MainOrange)
-                                        }
+                                        TextButton(onClick = {
+                                            datePickerState.selectedDateMillis?.let {
+                                                viewModel.seleccionarFechaSacrMort(index, it)
+                                            }
+                                        }) { Text(stringResource(R.string.accept_buttom), color = MainOrange) }
                                     },
                                     dismissButton = {
                                         TextButton(onClick = { viewModel.ocultarDatePickerSacrMort(index) }) {
-                                            Text(stringResource(R.string.cancel_buttom), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                            Text(stringResource(R.string.cancel_buttom),
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant)
                                         }
                                     }
                                 ) {
-                                    DatePicker(state = datePickerState, colors = DatePickerDefaults.colors(selectedDayContainerColor = MainOrange, todayDateBorderColor = MainOrange))
+                                    DatePicker(state = datePickerState, colors = DatePickerDefaults.colors(
+                                        selectedDayContainerColor = MainOrange,
+                                        todayDateBorderColor = MainOrange))
                                 }
                             }
 
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
-                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant),
                                 shape = RoundedCornerShape(12.dp),
                                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                             ) {
@@ -551,73 +648,111 @@ fun Movimientos(
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Text("Animal ${index + 1}", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MainOrange)
+                                        Text("Animal ${index + 1}",
+                                            fontSize = 16.sp, fontWeight = FontWeight.Bold,
+                                            color = MainOrange)
                                         if (!modoLectura && animales.size > 1) {
-                                            IconButton(onClick = { viewModel.eliminarAnimal(index) }, modifier = Modifier.size(32.dp)) {
-                                                Icon(Icons.Default.Delete, contentDescription = "Eliminar animal", tint = ErrorRed, modifier = Modifier.size(20.dp))
+                                            IconButton(
+                                                onClick = { viewModel.eliminarAnimal(index) },
+                                                modifier = Modifier.size(32.dp)
+                                            ) {
+                                                Icon(Icons.Default.Delete,
+                                                    contentDescription = "Eliminar animal",
+                                                    tint = ErrorRed, modifier = Modifier.size(20.dp))
                                             }
                                         }
                                     }
 
                                     if (!modoLectura) {
-                                        useDebounce(animal.identificador, delayMillis = 300L) { viewModel.searchBovinos(index, it) }
+                                        useDebounce(animal.identificador, delayMillis = 300L) {
+                                            viewModel.searchBovinosConCampo(index, it)
+                                        }
                                     }
+
                                     CampoIdentificadorAutoComplete(
                                         label = stringResource(R.string.form_id_animal),
                                         valor = animal.identificador,
                                         placeholder = stringResource(R.string.form_animal_id_example),
                                         enabled = !modoLectura,
-                                        onValueChange = { viewModel.actualizarIdentificadorAnimal(index, it) },
-                                        suggestions = if (activeIndex == index) suggestionsBovinos else emptyList(),
-                                        onAnimalSelected = { viewModel.onBovinoSelected(index, it) },
-                                        isLoadingSuggestions = isLoadingBovinos,
+                                        onValueChange = {
+                                            if (!modoLectura)
+                                                viewModel.actualizarIdentificadorAnimal(index, it)
+                                        },
+                                        suggestions = if (modoLectura || activeIndex != index)
+                                            emptyList() else suggestionsBovinos,
+                                        onAnimalSelected = {
+                                            if (!modoLectura) viewModel.onBovinoSelected(index, it)
+                                        },
+                                        isLoadingSuggestions = !modoLectura && isLoadingBovinos,
                                         defectColor = false,
                                         onClickBluetooth = {
-                                            indiceBluetooth = index
-                                            bluetoothViewModel.iniciarEscaneo(context)
-                                            mostrarBluetooth = true
+                                            if (!modoLectura) {
+                                                indiceBluetooth = index
+                                                bluetoothViewModel.iniciarEscaneo(context)
+                                                mostrarBluetooth = true
+                                            }
                                         },
                                         onClickUsb = {
-                                            indiceUsb = index
-                                            usbViewModel.conectar()
+                                            if (!modoLectura) {
+                                                indiceUsb = index
+                                                usbViewModel.conectar()
+                                            }
                                         }
                                     )
 
                                     DropdownField(
                                         label = stringResource(R.string.form_state_arrival),
-                                        selectedValue = elementosConCodigos.estadosLlegada()[animal.estatArribada] ?: "",
+                                        selectedValue = estadosLLegada[animal.estatArribada],
                                         expanded = estatExpandidoPorIndice[index] ?: false,
                                         placeholder = stringResource(R.string.form_state_arrival_description),
-                                        opciones = elementosConCodigos.estadosLlegada(),
+                                        opciones = estadosLLegada,
                                         enabled = !modoLectura,
-                                        onExpandedChange = { viewModel.toggleEstatArribadaExpandido(index) },
+                                        onExpandedChange = {
+                                            viewModel.toggleEstatArribadaExpandido(index)
+                                        },
                                         onDismissRequest = { viewModel.cerrarEstatArribadaMenu(index) },
-                                        onSeleccionar = { codigo, nombre -> viewModel.seleccionarEstatArribadaAnimal(index, nombre, codigo) },
-                                        defectColor = true
+                                        onSeleccionar = { codigo, nombre ->
+                                            viewModel.seleccionarEstatArribadaAnimal(index, nombre, codigo)
+                                        },
+                                        accentColor = MainOrange
                                     )
 
                                     if (animal.estatArribada == "80") {
-                                        HorizontalDivider(color = MaterialTheme.colorScheme.outline, thickness = 1.dp)
+                                        HorizontalDivider(
+                                            color = MaterialTheme.colorScheme.outline,
+                                            thickness = 1.dp)
 
-                                        Text(stringResource(R.string.form_movs_title_sacrifate_dade), fontSize = 15.sp, fontWeight = FontWeight.Bold, color = MainOrange)
+                                        Text(stringResource(R.string.form_movs_title_sacrifate_dade),
+                                            fontSize = 15.sp, fontWeight = FontWeight.Bold,
+                                            color = MainOrange)
 
                                         Column(modifier = Modifier.fillMaxWidth()) {
-                                            Text(stringResource(R.string.form_date_sacrifice), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
+                                            Text(stringResource(R.string.form_date_sacrifice),
+                                                fontSize = 14.sp, fontWeight = FontWeight.SemiBold,
+                                                color = MaterialTheme.colorScheme.onSurface,
+                                                letterSpacing = 0.15.sp)
                                             Spacer(modifier = Modifier.height(8.dp))
                                             Box(
                                                 modifier = if (!modoLectura)
-                                                    Modifier.fillMaxWidth().clickable { viewModel.mostrarDatePickerSacrMort(index) }
-                                                else
-                                                    Modifier.fillMaxWidth()
+                                                    Modifier.fillMaxWidth().clickable {
+                                                        viewModel.mostrarDatePickerSacrMort(index)
+                                                    }
+                                                else Modifier.fillMaxWidth()
                                             ) {
                                                 OutlinedTextField(
                                                     value = animal.dataSacrMort ?: "",
                                                     onValueChange = {},
                                                     modifier = Modifier.fillMaxWidth(),
-                                                    placeholder = { Text(stringResource(R.string.form_date_description), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp) },
-                                                    leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = MainOrange) },
-                                                    readOnly = true,
-                                                    enabled = false,
+                                                    placeholder = {
+                                                        Text(stringResource(R.string.form_date_description),
+                                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                            fontSize = 14.sp)
+                                                    },
+                                                    leadingIcon = {
+                                                        Icon(Icons.Default.DateRange, null,
+                                                            tint = MainOrange)
+                                                    },
+                                                    readOnly = true, enabled = false,
                                                     shape = MaterialTheme.shapes.medium,
                                                     colors = OutlinedTextFieldDefaults.colors(
                                                         disabledTextColor = MaterialTheme.colorScheme.onSurface,
@@ -631,20 +766,41 @@ fun Movimientos(
                                             }
                                         }
 
-                                        CampoTexto(label = stringResource(R.string.form_weight_canal), valor = animal.pesCanal ?: "0", placeholder = stringResource(R.string.form_weight_canal_description), onValueChange = { viewModel.actualizarPesCanal(index, it) }, defectColor = false, keyboardType = KeyboardType.Decimal, enabled = !modoLectura)
-                                        CampoTexto(label = stringResource(R.string.form_class_canal), valor = animal.classCanal ?: "", placeholder = stringResource(R.string.form_class_canal_description), onValueChange = { viewModel.actualizarClassCanal(index, it) }, defectColor = false, enabled = !modoLectura)
+                                        CampoTexto(
+                                            label = stringResource(R.string.form_weight_canal),
+                                            valor = animal.pesCanal ?: "0",
+                                            placeholder = stringResource(R.string.form_weight_canal_description),
+                                            onValueChange = { viewModel.actualizarPesCanal(index, it) },
+                                            defectColor = false,
+                                            keyboardType = KeyboardType.Decimal,
+                                            enabled = !modoLectura
+                                        )
+                                        CampoTexto(
+                                            label = stringResource(R.string.form_class_canal),
+                                            valor = animal.classCanal ?: "",
+                                            placeholder = stringResource(R.string.form_class_canal_description),
+                                            onValueChange = { viewModel.actualizarClassCanal(index, it) },
+                                            defectColor = false,
+                                            enabled = !modoLectura
+                                        )
 
                                         DropdownField(
                                             label = stringResource(R.string.form_type_presentation),
-                                            selectedValue = elementosConCodigos.tiposPresentacion()[animal.tipusPresentacio] ?: "",
+                                            selectedValue = tiposPresentacion[animal.tipusPresentacio] ?: "",
                                             expanded = tipusExpandidoPorIndice[index] ?: false,
                                             placeholder = stringResource(R.string.form_type_presentation_description),
-                                            opciones = elementosConCodigos.tiposPresentacion(),
+                                            opciones = tiposPresentacion,
                                             enabled = !modoLectura,
-                                            onExpandedChange = { viewModel.toggleTipusPresentacioExpandido(index) },
-                                            onDismissRequest = { viewModel.cerrarTipusPresentacioMenu(index) },
-                                            onSeleccionar = { codigo, _ -> viewModel.seleccionarTipusPresentacio(index, codigo) },
-                                            defectColor = false
+                                            onExpandedChange = {
+                                                viewModel.toggleTipusPresentacioExpandido(index)
+                                            },
+                                            onDismissRequest = {
+                                                viewModel.cerrarTipusPresentacioMenu(index)
+                                            },
+                                            onSeleccionar = { codigo, _ ->
+                                                viewModel.seleccionarTipusPresentacio(index, codigo)
+                                            },
+                                            accentColor = MainOrange
                                         )
                                     }
                                 }
@@ -658,16 +814,22 @@ fun Movimientos(
                 if (!modoLectura) {
                     Button(
                         onClick = { viewModel.confirmarMovimiento() },
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 24.dp).height(56.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 24.dp)
+                            .height(56.dp),
                         enabled = !estadoCarga,
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MainOrange,
                             disabledContainerColor = MaterialTheme.colorScheme.outline
                         ),
                         shape = MaterialTheme.shapes.medium,
-                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp, pressedElevation = 6.dp)
+                        elevation = ButtonDefaults.buttonElevation(
+                            defaultElevation = 2.dp, pressedElevation = 6.dp)
                     ) {
-                        Text(stringResource(R.string.buttom_form_confirm_movs), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.5.sp)
+                        Text(stringResource(R.string.buttom_form_confirm_movs),
+                            fontSize = 16.sp, fontWeight = FontWeight.SemiBold,
+                            letterSpacing = 0.5.sp)
                     }
                 } else {
                     Spacer(modifier = Modifier.height(24.dp))
@@ -688,22 +850,19 @@ private fun DateTimeFieldMovs(
     onClick: () -> Unit
 ) {
     Column(modifier = modifier) {
-        Text(label, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
+        Text(label, fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
         Spacer(modifier = Modifier.height(10.dp))
         Box(
-            modifier = if (enabled)
-                Modifier.fillMaxWidth().clickable { onClick() }
-            else
-                Modifier.fillMaxWidth()
+            modifier = if (enabled) Modifier.fillMaxWidth().clickable { onClick() }
+            else Modifier.fillMaxWidth()
         ) {
             OutlinedTextField(
-                value = value,
-                onValueChange = {},
+                value = value, onValueChange = {},
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text(placeholder, color = MaterialTheme.colorScheme.onSurfaceVariant) },
                 leadingIcon = icon,
-                readOnly = true,
-                enabled = false,
+                readOnly = true, enabled = false,
                 shape = MaterialTheme.shapes.medium,
                 colors = OutlinedTextFieldDefaults.colors(
                     disabledTextColor = MaterialTheme.colorScheme.onSurface,
@@ -728,11 +887,11 @@ private fun SimpleTextField(
     imeAction: ImeAction = ImeAction.Next
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        Text(label, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
+        Text(label, fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp)
         Spacer(modifier = Modifier.height(10.dp))
         OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
+            value = value, onValueChange = onValueChange,
             enabled = enabled,
             modifier = Modifier.fillMaxWidth(),
             placeholder = { Text(placeholder, color = MaterialTheme.colorScheme.onSurfaceVariant) },
@@ -750,9 +909,10 @@ private fun SimpleTextField(
                 disabledTextColor = MaterialTheme.colorScheme.onSurface,
                 disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                disabledContainerColor = MaterialTheme.colorScheme.surface,
+                disabledContainerColor = MaterialTheme.colorScheme.surface
             ),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = imeAction)
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text, imeAction = imeAction)
         )
     }
 }

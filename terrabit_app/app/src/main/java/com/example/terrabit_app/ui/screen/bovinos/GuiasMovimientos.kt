@@ -1,17 +1,23 @@
 package com.example.terrabit_app.ui.pantallas
 
+import android.bluetooth.BluetoothAdapter
+import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Checklist
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -21,10 +27,47 @@ import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.components.TarjetaAccion
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.theme.MainOrange
+import com.example.terrabit_app.utils.bluetooth.BluetoothUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GuiasMovimientos(navController: NavController) {
+    val context = LocalContext.current
+    var mostrarDialogo by remember { mutableStateOf(false) }
+
+    val launcherBluetooth = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { }
+
+    LaunchedEffect(Unit) {
+        if (BluetoothUtils.deberiasPedirActivar(context)) {
+            mostrarDialogo = true
+        }
+    }
+
+    if (mostrarDialogo) {
+        AlertDialog(
+            onDismissRequest = {
+                mostrarDialogo = false
+                BluetoothUtils.marcarCancelado(context)
+            },
+            title = { stringResource(R.string.bluetooth_disabled_title) },
+            text = { stringResource(R.string.bluetooth_description_activation_menu) },
+            confirmButton = {
+                Button(onClick = {
+                    mostrarDialogo = false
+                    launcherBluetooth.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
+                }) { stringResource(R.string.bluetooth_activate_button) }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    mostrarDialogo = false
+                    BluetoothUtils.marcarCancelado(context)
+                }) { stringResource(R.string.cancel_buttom) }
+            }
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -37,7 +80,7 @@ fun GuiasMovimientos(navController: NavController) {
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigate(Routes.HomeBovinos.route) }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver", tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MainOrange)
@@ -100,7 +143,14 @@ fun GuiasMovimientos(navController: NavController) {
                         modifier = Modifier.weight(1f),
                         onClick = { navController.navigate(Routes.GuiasBovinos.route) }
                     )
-                    Box(modifier = Modifier.weight(1f))
+                    TarjetaAccion(
+                        icono = Icons.Default.Checklist,
+                        titulo = "Lista Movimientos",
+                        subtitulo = "",
+                        colorFondo = MainOrange,
+                        modifier = Modifier.weight(1f),
+                        onClick = { navController.navigate(Routes.MovimientosBovinos.route) }
+                    )
                 }
             }
 

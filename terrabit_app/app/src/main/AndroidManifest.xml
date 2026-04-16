@@ -17,6 +17,8 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
+
+        android:networkSecurityConfig="@xml/network_security_config"
         android:name=".TerrabitApplication"
         android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -37,8 +39,6 @@
             android:configChanges="locale|layoutDirection|fontScale|screenSize|uiMode"
             >
 
-
-            <!-- Solo el launcher aquí, sin USB -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

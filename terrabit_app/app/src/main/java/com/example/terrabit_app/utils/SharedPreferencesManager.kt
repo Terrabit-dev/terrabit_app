@@ -1,51 +1,55 @@
 package com.example.terrabit_app.data
 
 import android.content.Context
-import android.content.SharedPreferences
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class SharedPreferencesManager(context: Context) {
+private val Context.borradorDataStore: DataStore<Preferences> by preferencesDataStore(name = "terrabit_borradores")
 
-    private val sharedPreferences: SharedPreferences =
-        context.getSharedPreferences("terrabit_borradores", Context.MODE_PRIVATE)
-
+@Singleton
+class SharedPreferencesManager @Inject constructor(
+    @ApplicationContext private val context: Context
+) {
     private val gson = Gson()
 
     companion object {
-        private const val KEY_BORRADORES = "borradores_list"
+        private val KEY_BORRADORES = stringPreferencesKey("borradores_list")
     }
 
-    fun guardarBorrador(borrador: Borrador) {
+    suspend fun guardarBorrador(borrador: Borrador) {
         val borradores = obtenerBorradores().toMutableList()
-
-        // Si ya existe, actualizar
         val index = borradores.indexOfFirst { it.id == borrador.id }
-        if (index != -1) {
-            borradores[index] = borrador
-        } else {
-            borradores.add(borrador)
-        }
-
+        if (index != -1) borradores[index] = borrador
+        else borradores.add(borrador)
         val json = gson.toJson(borradores)
-        sharedPreferences.edit().putString(KEY_BORRADORES, json).apply()
+        context.borradorDataStore.edit { it[KEY_BORRADORES] = json }
     }
 
-    fun obtenerBorradores(): List<Borrador> {
-        val json = sharedPreferences.getString(KEY_BORRADORES, null) ?: return emptyList()
+    suspend fun obtenerBorradores(): List<Borrador> {
+        val json = context.borradorDataStore.data.map { it[KEY_BORRADORES] }.first()
+            ?: return emptyList()
         val type = object : TypeToken<List<Borrador>>() {}.type
         return gson.fromJson(json, type)
     }
 
-    fun eliminarBorrador(id: String) {
+    suspend fun eliminarBorrador(id: String) {
         val borradores = obtenerBorradores().toMutableList()
         borradores.removeAll { it.id == id }
-
         val json = gson.toJson(borradores)
-        sharedPreferences.edit().putString(KEY_BORRADORES, json).apply()
+        context.borradorDataStore.edit { it[KEY_BORRADORES] = json }
     }
 
-    fun limpiarBorradores() {
-        sharedPreferences.edit().remove(KEY_BORRADORES).apply()
+    suspend fun limpiarBorradores() {
+        context.borradorDataStore.edit { it.remove(KEY_BORRADORES) }
     }
 }

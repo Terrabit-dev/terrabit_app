@@ -13,6 +13,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.terrabit_app.data.network.moviminetos.modelos.Moviment
 import com.example.terrabit_app.ui.pantallas.BorradoresScreen
 import com.example.terrabit_app.ui.pantallas.CrearGuiasPorcinos
 import com.example.terrabit_app.ui.pantallas.GestionBovinos
@@ -37,10 +38,14 @@ import com.example.terrabit_app.ui.screen.porcinos.HomePorcinos
 import com.example.terrabit_app.ui.screen.porcinos.GestionGuiasPorcinos
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 import com.example.terrabit_app.ui.screen.bovinos.ConfigurationScreen
+import com.example.terrabit_app.ui.screen.bovinos.DetailBovino
 import com.example.terrabit_app.ui.screen.bovinos.EditarGuiaBovi
 import com.example.terrabit_app.ui.screen.bovinos.ListaGuiasBovi
-import com.example.terrabit_app.ui.screen.bovinos.UsbTestScreen
+import com.example.terrabit_app.ui.screen.bovinos.ListarMovimientosBovi
+
+import com.example.terrabit_app.viewmodel.bovinos.ListarBovinosViewModel
 import com.example.terrabit_app.viewmodel.bovinos.ListarGuiasBoviViewModel
+import com.example.terrabit_app.viewmodel.bovinos.ListarMovisBoviViewModel
 import com.example.terrabit_app.viewmodel.porcinos.EditarGuiaPorcinosViewModel
 import com.example.terrabit_app.viewmodel.porcinos.GestionarGuiasViewModel
 
@@ -55,9 +60,7 @@ fun NavigationDrawer(
         navController = navController,
         startDestination = Routes.HomeBovinos.route
     ) {
-        composable(Routes.Usb.route) {
-            UsbTestScreen( navController = navController)
-        }
+
         // ========== PANTALLAS CON HEADER PERSONALIZADO ==========
 
         // Pantalla principal Bovinos - CON header verde
@@ -110,6 +113,17 @@ fun NavigationDrawer(
         // Listado de Bovinos
         composable(Routes.ListarBovinos.route) {
             ListarBovinos(navController)
+        }
+        composable(Routes.DeatilBovino.route) { currentEntry ->
+            val parentEntry = remember(currentEntry) {
+                navController.getBackStackEntry(Routes.ListarBovinos.route)
+            }
+            val viewModelLista = hiltViewModel<ListarBovinosViewModel>(parentEntry)
+            val animal by viewModelLista.animalSeleccionado.observeAsState(null)
+
+            animal?.let {
+                DetailBovino(navController = navController, animal = it)
+            }
         }
 
         // Gestión de Bovinos
@@ -219,7 +233,24 @@ fun NavigationDrawer(
         ) { backStackEntry ->
             val borradorId = backStackEntry.arguments?.getString("borradorId") ?: ""
             val historialId = backStackEntry.arguments?.getString("historialId") ?: ""
-            Movimientos(navController = navController, bluetooth, borradorId, historialId)
+            Movimientos(navController = navController, bluetooth, borradorId, historialId, Moviment())
+        }
+        composable(Routes.ConfirmarMovimientoBovi.route) { currentEntry ->
+            val parentEntry = remember(currentEntry) {
+                navController.getBackStackEntry(Routes.MovimientosBovinos.route)
+            }
+            val viewModelLista = hiltViewModel<ListarMovisBoviViewModel>(parentEntry)
+            val movimientoSeleccionado by viewModelLista.movimientoSeleccionado.observeAsState(null)
+
+            movimientoSeleccionado?.let { movimiento ->
+                Movimientos(
+                    navController = navController,
+                    bluetoothViewModel = bluetooth,
+                    borradorId = "",
+                    historialId = "",
+                    movimientoSeleccionado = movimiento
+                )
+            }
         }
 
 
@@ -309,12 +340,12 @@ fun NavigationDrawer(
 
         // Pantallas Porcinos
         composable(Routes.GestionGuiasPorcinos.route) {
-            val viewModelGestionarGuias = viewModel<GestionarGuiasViewModel>(it)
-            val viewModelEditarGuias = viewModel<EditarGuiaPorcinosViewModel>(it)
+            val viewModelGestionarGuias = hiltViewModel<GestionarGuiasViewModel>(it)
+            val viewModelEditarGuias    = hiltViewModel<EditarGuiaPorcinosViewModel>(it)
             ListaGuiasPorcinas(
-                navController = navController,
+                navController           = navController,
                 viewModelGestionarGuias = viewModelGestionarGuias,
-                viewModelEditarGuias = viewModelEditarGuias
+                viewModelEditarGuias    = viewModelEditarGuias
             )
         }
 
@@ -324,6 +355,13 @@ fun NavigationDrawer(
         composable(Routes.GuiasBovinos.route) {
             val viewModel = hiltViewModel<ListarGuiasBoviViewModel>(it)   // ViewModel vive en esta entrada
             ListaGuiasBovi(
+                navController = navController,
+                viewModel     = viewModel
+            )
+        }
+        composable(Routes.MovimientosBovinos.route) {
+            val viewModel = hiltViewModel<ListarMovisBoviViewModel>(it)   // ViewModel vive en esta entrada
+            ListarMovimientosBovi(
                 navController = navController,
                 viewModel     = viewModel
             )
@@ -372,12 +410,12 @@ fun NavigationDrawer(
             val parentEntry = remember(currentEntry) {
                 navController.getBackStackEntry(Routes.GestionGuiasPorcinos.route)
             }
-            val viewModelGestionarGuias = viewModel<GestionarGuiasViewModel>(parentEntry)
-            val viewModelEditarGuias = viewModel<EditarGuiaPorcinosViewModel>(parentEntry)
+            val viewModelGestionarGuias = hiltViewModel<GestionarGuiasViewModel>(parentEntry)
+            val viewModelEditarGuias    = hiltViewModel<EditarGuiaPorcinosViewModel>(parentEntry)
             ConfirmarEditarGuiasPorci(
-                navController = navController,
+                navController           = navController,
                 viewModelGestionarGuias = viewModelGestionarGuias,
-                viewModelEditarGuias = viewModelEditarGuias
+                viewModelEditarGuias    = viewModelEditarGuias
             )
         }
     }

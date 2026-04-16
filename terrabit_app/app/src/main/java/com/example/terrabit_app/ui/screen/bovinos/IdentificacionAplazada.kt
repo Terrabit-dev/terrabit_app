@@ -7,6 +7,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
@@ -27,9 +28,11 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
+import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.utils.components.CampoIdentificadorAutoComplete
 import com.example.terrabit_app.utils.components.useDebounce
 import com.example.terrabit_app.ui.theme.MainGreen
+import com.example.terrabit_app.utils.CodiMoSelector
 import com.example.terrabit_app.utils.alertsErrosScreens
 import com.example.terrabit_app.utils.bluetooth.BluetoothScanDialog
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
@@ -49,28 +52,32 @@ fun IdentificacionApalzada(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    val identificadorAnimal by viewModel.identificadorAnimal.observeAsState("")
-    val identifiacionExitosa by viewModel.identificacionExitosa.observeAsState(false)
-    val mensajeError by viewModel.mensajeErrorIdentificacion.observeAsState("")
-    val codiError by viewModel.codiError.observeAsState()
-    val estadoCarga by viewModel.estadoCarga.observeAsState(false)
-    val fechaIdentificacion by viewModel.fechaIdentificacion.observeAsState("")
-    val mostrarDatePickerIdentificadores by viewModel.mostrarDatePickerIdentificacion.observeAsState(false)
-    val suggestionsBovinos by viewModel.suggestionsBovinos.observeAsState(emptyList())
-    val isLoadingBovinos by viewModel.isLoadingBovinos.observeAsState(false)
+    val identificadorAnimal              by viewModel.identificadorAnimal.observeAsState("")
+    val identifiacionExitosa             by viewModel.operacionExitosa.observeAsState(false)
+    val mensajeError                     by viewModel.mensajeError.observeAsState("")
+    val codiError                        by viewModel.codiError.observeAsState()
+    val estadoCarga                      by viewModel.estadoCarga.observeAsState(false)
+    val fechaIdentificacion              by viewModel.fechaIdentificacion.observeAsState("")
+    val mostrarDatePickerIdentificadores by viewModel.mostrarDatePicker.observeAsState(false)
+    val suggestionsBovinos               by viewModel.suggestionsBovinos.observeAsState(emptyList())
+    val isLoadingBovinos                 by viewModel.isLoadingBovinos.observeAsState(false)
 
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
-    var mostrarBluetooth by remember { mutableStateOf(false) }
+    var mostrarBluetooth    by remember { mutableStateOf(false) }
 
-    val tituloExito = stringResource(R.string.successful_message_identification_postpone)
+    val codisMoExpandido by viewModel.codisMoExpandido.observeAsState(false)
+    val codiMoActivo by viewModel.codiMoActivo.observeAsState(null)
+
+    val tituloExito  = stringResource(R.string.successful_message_identification_postpone)
     val titulloError = stringResource(R.string.error_message_identification_postpone)
 
+    // ── Bluetooth──────────────────────────────────────────
     if (mostrarBluetooth) {
         BluetoothScanDialog(
             bluetoothViewModel = bluetoothViewModel,
             onMensajeRecibido = { mensaje ->
-                viewModel.actualizarIdentificadorAnimal(mensaje)
+                viewModel.actualizarIdentificadorDesdeHardware(mensaje)
                 mostrarBluetooth = false
             },
             onDismiss = { mostrarBluetooth = false }
@@ -80,7 +87,7 @@ fun IdentificacionApalzada(
     LaunchedEffect(Unit) {
         when {
             historialId.isNotEmpty() -> viewModel.cargarDesdeHistorial(historialId)
-            borradorId.isNotEmpty() -> viewModel.cargarBorradorPorId(borradorId)
+            borradorId.isNotEmpty()  -> viewModel.cargarBorradorPorId(borradorId)
         }
     }
 
@@ -97,7 +104,7 @@ fun IdentificacionApalzada(
     LaunchedEffect(identifiacionExitosa) {
         if (identifiacionExitosa) {
             snackbarHostState.showSnackbar(tituloExito, duration = SnackbarDuration.Short)
-            viewModel.resetearEstadoIdentificacion()
+            viewModel.resetearEstado()
         }
     }
 
@@ -107,18 +114,25 @@ fun IdentificacionApalzada(
 
     if (mostrarDialogoError) {
         AlertDialog(
-            onDismissRequest = { mostrarDialogoError = false; viewModel.resetearEstadoIdentificacion() },
-            icon = { Icon(Icons.Default.ArrowBack, contentDescription = null, tint = MainGreen, modifier = Modifier.size(48.dp)) },
-            title = { Text(titulloError, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface) },
+            onDismissRequest = { mostrarDialogoError = false; viewModel.resetearEstado() },
+            icon = {
+                Icon(Icons.Default.ArrowBack, contentDescription = null,
+                    tint = MainGreen, modifier = Modifier.size(48.dp))
+            },
+            title = {
+                Text(titulloError, fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface)
+            },
             text = {
                 Text(
                     if (codiError != null) alertsErrosScreens(codiError!!) else mensajeError,
-                    fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 24.sp
+                    fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    lineHeight = 24.sp
                 )
             },
             confirmButton = {
                 Button(
-                    onClick = { mostrarDialogoError = false; viewModel.resetearEstadoIdentificacion() },
+                    onClick = { mostrarDialogoError = false; viewModel.resetearEstado() },
                     colors = ButtonDefaults.buttonColors(containerColor = MainGreen),
                     shape = RoundedCornerShape(8.dp)
                 ) { Text(stringResource(R.string.error_buttom), fontWeight = FontWeight.SemiBold) }
@@ -131,21 +145,27 @@ fun IdentificacionApalzada(
     if (mostrarDatePickerIdentificadores && !modoLectura) {
         val datePickerState = rememberDatePickerState()
         DatePickerDialog(
-            onDismissRequest = { viewModel.ocultarDatePickerIdentificacion() },
+            onDismissRequest = { viewModel.ocultarDatePicker() },
             confirmButton = {
-                TextButton(onClick = { datePickerState.selectedDateMillis?.let { viewModel.seleccionarFechaIdentificacion(it) } }) {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let { viewModel.seleccionarFecha(it) }
+                }) {
                     Text(stringResource(R.string.accept_buttom), color = MainGreen)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { viewModel.ocultarDatePickerIdentificacion() }) {
-                    Text(stringResource(R.string.cancel_buttom), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                TextButton(onClick = { viewModel.ocultarDatePicker() }) {
+                    Text(stringResource(R.string.cancel_buttom),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         ) {
             DatePicker(
                 state = datePickerState,
-                colors = DatePickerDefaults.colors(selectedDayContainerColor = MainGreen, todayDateBorderColor = MainGreen)
+                colors = DatePickerDefaults.colors(
+                    selectedDayContainerColor = MainGreen,
+                    todayDateBorderColor = MainGreen
+                )
             )
         }
     }
@@ -165,10 +185,16 @@ fun IdentificacionApalzada(
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                        CircularProgressIndicator(modifier = Modifier.size(48.dp), color = MainGreen, strokeWidth = 4.dp)
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        CircularProgressIndicator(modifier = Modifier.size(48.dp),
+                            color = MainGreen, strokeWidth = 4.dp)
                         Spacer(modifier = Modifier.height(12.dp))
-                        Text(stringResource(R.string.loading_processing), fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(R.string.loading_processing),
+                            fontSize = 14.sp, fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
@@ -179,10 +205,13 @@ fun IdentificacionApalzada(
                 TopAppBar(
                     title = {
                         Column {
-                            Text(stringResource(R.string.name_identification_postpone), fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
+                            Text(stringResource(R.string.name_identification_postpone),
+                                fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
                             Text(
-                                if (modoLectura) "Solo lectura" else stringResource(R.string.subtitle_identification_postpone),
-                                fontSize = 13.sp, fontWeight = FontWeight.Normal, color = Color.White.copy(alpha = 0.9f)
+                                if (modoLectura) "Solo lectura"
+                                else stringResource(R.string.subtitle_identification_postpone),
+                                fontSize = 13.sp, fontWeight = FontWeight.Normal,
+                                color = Color.White.copy(alpha = 0.9f)
                             )
                         }
                     },
@@ -190,11 +219,13 @@ fun IdentificacionApalzada(
                         IconButton(onClick = {
                             when {
                                 historialId.isNotEmpty() -> navController.popBackStack()
-                                borradorId.isNotEmpty() -> navController.popBackStack()
+                                borradorId.isNotEmpty()  -> navController.popBackStack()
                                 else -> navController.navigate(Routes.GestionBovinos.route)
                             }
                         }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(R.string.content_description_back))
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -206,7 +237,8 @@ fun IdentificacionApalzada(
             },
             snackbarHost = {
                 SnackbarHost(hostState = snackbarHostState) { data ->
-                    Snackbar(snackbarData = data, containerColor = MainGreen, contentColor = Color.White, shape = RoundedCornerShape(12.dp))
+                    Snackbar(snackbarData = data, containerColor = MainGreen,
+                        contentColor = Color.White, shape = RoundedCornerShape(12.dp))
                 }
             },
             containerColor = MaterialTheme.colorScheme.background
@@ -220,40 +252,62 @@ fun IdentificacionApalzada(
                 Spacer(modifier = Modifier.height(20.dp))
 
                 Card(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                     shape = MaterialTheme.shapes.large
                 ) {
                     Column(
-                        modifier = Modifier.fillMaxWidth().padding(24.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            CodiMoSelector(
+                                codisMos = viewModel.getCodisMos(),
+                                seleccionado = codiMoActivo,
+                                expanded = codisMoExpandido,
+                                onToggle = { viewModel.toggleCodisMoExpandido() },
+                                onDismiss = { viewModel.cerrarCodisMo() },
+                                onSeleccionar = { codi -> viewModel.seleccionarCodiMo(codi) },
+                                accentColor = ErrorRed
+                            )
+                        }
                         if (!modoLectura) {
-                            useDebounce(identificadorAnimal, delayMillis = 300L) { viewModel.searchBovinos(it) }
+                            useDebounce(identificadorAnimal, delayMillis = 300L) {
+                                viewModel.searchBovinos(it)
+                            }
                         }
                         CampoIdentificadorAutoComplete(
                             label = stringResource(R.string.form_id_animal),
                             valor = identificadorAnimal,
                             placeholder = stringResource(R.string.form_id_animal_description),
                             enabled = !modoLectura,
-                            onValueChange = { viewModel.actualizarIdentificadorAnimal(it) },
+                            onValueChange = { viewModel.actualizarIdentificador(it) },
                             suggestions = suggestionsBovinos,
                             onAnimalSelected = { viewModel.onBovinoSelected(it) },
                             isLoadingSuggestions = isLoadingBovinos,
-                            onClickBluetooth = { bluetoothViewModel.iniciarEscaneo(context); mostrarBluetooth = true }
+                            onClickBluetooth = {
+                                bluetoothViewModel.iniciarEscaneo(context)
+                                mostrarBluetooth = true
+                            }
                         )
 
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 stringResource(R.string.form_date_identification),
                                 fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp
+                                color = MaterialTheme.colorScheme.onSurface,
+                                letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
                             Box(
                                 modifier = if (!modoLectura)
-                                    Modifier.fillMaxWidth().clickable { viewModel.mostrarDatePickerIdentificacion() }
+                                    Modifier.fillMaxWidth().clickable { viewModel.mostrarDatePicker() }
                                 else
                                     Modifier.fillMaxWidth()
                             ) {
@@ -261,8 +315,14 @@ fun IdentificacionApalzada(
                                     value = fechaIdentificacion,
                                     onValueChange = {},
                                     modifier = Modifier.fillMaxWidth(),
-                                    placeholder = { Text(stringResource(R.string.form_date_description), color = MaterialTheme.colorScheme.onSurfaceVariant) },
-                                    leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = MainGreen) },
+                                    placeholder = {
+                                        Text(stringResource(R.string.form_date_description),
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    },
+                                    leadingIcon = {
+                                        Icon(Icons.Default.DateRange,
+                                            contentDescription = null, tint = MainGreen)
+                                    },
                                     readOnly = true,
                                     enabled = false,
                                     shape = MaterialTheme.shapes.medium,
@@ -282,17 +342,23 @@ fun IdentificacionApalzada(
 
                 if (!modoLectura) {
                     Button(
-                        onClick = { viewModel.corregirIdentificacion() },
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 24.dp).height(56.dp),
+                        onClick = { viewModel.registrar() },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 24.dp)
+                            .height(56.dp),
                         enabled = !estadoCarga,
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MainGreen,
                             disabledContainerColor = MaterialTheme.colorScheme.outline
                         ),
                         shape = MaterialTheme.shapes.medium,
-                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp, pressedElevation = 6.dp)
+                        elevation = ButtonDefaults.buttonElevation(
+                            defaultElevation = 2.dp, pressedElevation = 6.dp)
                     ) {
-                        Text(stringResource(R.string.buttom_form_identification_postpone), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.5.sp)
+                        Text(stringResource(R.string.buttom_form_identification_postpone),
+                            fontSize = 16.sp, fontWeight = FontWeight.SemiBold,
+                            letterSpacing = 0.5.sp)
                     }
                 } else {
                     Spacer(modifier = Modifier.height(24.dp))

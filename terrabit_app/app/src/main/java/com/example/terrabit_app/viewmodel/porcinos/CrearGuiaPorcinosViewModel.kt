@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.terrabit_app.data.local.HistorialCamposManager
 import com.example.terrabit_app.data.local.dao.BorradorDao
 import com.example.terrabit_app.data.local.dao.HistorialDao
 import com.example.terrabit_app.data.local.database.BorradorEntity
@@ -25,17 +26,19 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
 class CrearGuiaPorcinosViewModel @Inject constructor(
-    private val repositorio: Repositorio,
-    private val userPreferences: UserPreferences,
+    override val repositorio: Repositorio,
+    override val userPreferences: UserPreferences,
     private val borradorDao: BorradorDao,
-    private val historialDao: HistorialDao
-) : ViewModel() {
+    private val historialDao: HistorialDao,
+    val historialCamposManager: HistorialCamposManager
+) : BasePorcinosViewModel() {
 
-    private var borradorSesionId: String = ""
+    private var borradorSesionId = ""
 
     private val _uiState = MutableStateFlow(CrearGuiasPorcinosUiState())
     val uiState: StateFlow<CrearGuiasPorcinosUiState> = _uiState.asStateFlow()
@@ -44,55 +47,70 @@ class CrearGuiaPorcinosViewModel @Inject constructor(
         borradorSesionId = "guiaporcinos_auto_${System.currentTimeMillis()}"
     }
 
-    suspend fun obtenerCantidadBorradoresPorcinos(): Int {
-        return borradorDao.getAll().count { it.tipo == "GUIA_PORCINOS" && it.estado == "BORRADOR_AUTO" }
-    }
-
+    // ─── Borrador ─────────────────────────────────────────────────────────────
     fun tieneContenido(): Boolean {
         val s = _uiState.value
         return s.explotacion.isNotEmpty() || s.categoriaSeleccionada.isNotEmpty() ||
                 s.numAnimales.isNotEmpty() || s.fechaSalida.isNotEmpty() ||
-                s.horaSalida.isNotEmpty() || s.fechaLlegada.isNotEmpty() ||
+                s.horaSalida.isNotEmpty()  || s.fechaLlegada.isNotEmpty() ||
                 s.horaLlegada.isNotEmpty() || s.codigoSIR.isNotEmpty() ||
                 s.medioTransporteSeleccionado.isNotEmpty() || s.matricula.isNotEmpty() ||
                 s.nifConductor.isNotEmpty()
+    }
+
+    private fun serializarEstado(): Map<String, Any?> {
+        val s = _uiState.value
+        return mapOf(
+            "explotacion"                   to s.explotacion,
+            "categoriaSeleccionada"         to s.categoriaSeleccionada,
+            "categoriaApiSeleccionada"      to s.categoriaApiSeleccionada,
+            "numAnimales"                   to s.numAnimales,
+            "fechaSalida"                   to s.fechaSalida,
+            "horaSalida"                    to s.horaSalida,
+            "fechaLlegada"                  to s.fechaLlegada,
+            "horaLlegada"                   to s.horaLlegada,
+            "codigoSIR"                     to s.codigoSIR,
+            "medioTransporteSeleccionado"   to s.medioTransporteSeleccionado,
+            "medioTransporteApiSeleccionado" to s.medioTransporteApiSeleccionado,
+            "matricula"                     to s.matricula,
+            "nifConductor"                  to s.nifConductor
+        )
+    }
+
+    private fun restaurarEstado(datos: Map<String, Any?>) {
+        _uiState.update {
+            it.copy(
+                explotacion                    = datos["explotacion"] as? String ?: "",
+                categoriaSeleccionada          = datos["categoriaSeleccionada"] as? String ?: "",
+                categoriaApiSeleccionada       = datos["categoriaApiSeleccionada"] as? String ?: "",
+                numAnimales                    = datos["numAnimales"] as? String ?: "",
+                fechaSalida                    = datos["fechaSalida"] as? String ?: "",
+                horaSalida                     = datos["horaSalida"] as? String ?: "",
+                fechaLlegada                   = datos["fechaLlegada"] as? String ?: "",
+                horaLlegada                    = datos["horaLlegada"] as? String ?: "",
+                codigoSIR                      = datos["codigoSIR"] as? String ?: "",
+                medioTransporteSeleccionado    = datos["medioTransporteSeleccionado"] as? String ?: "",
+                medioTransporteApiSeleccionado = datos["medioTransporteApiSeleccionado"] as? String ?: "",
+                matricula                      = datos["matricula"] as? String ?: "",
+                nifConductor                   = datos["nifConductor"] as? String ?: ""
+            )
+        }
     }
 
     fun guardarBorradorAutomatico() {
         if (!tieneContenido()) return
         viewModelScope.launch {
             try {
-                val s = _uiState.value
-                val datos = mapOf(
-                    "explotacion" to s.explotacion,
-                    "categoriaSeleccionada" to s.categoriaSeleccionada,
-                    "categoriaApiSeleccionada" to s.categoriaApiSeleccionada,
-                    "numAnimales" to s.numAnimales,
-                    "fechaSalida" to s.fechaSalida,
-                    "horaSalida" to s.horaSalida,
-                    "fechaLlegada" to s.fechaLlegada,
-                    "horaLlegada" to s.horaLlegada,
-                    "codigoSIR" to s.codigoSIR,
-                    "medioTransporteSeleccionado" to s.medioTransporteSeleccionado,
-                    "medioTransporteApiSeleccionado" to s.medioTransporteApiSeleccionado,
-                    "matricula" to s.matricula,
-                    "nifConductor" to s.nifConductor
-                )
+                val json = Gson().toJson(serializarEstado())
+                val hoy = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
+                val ahora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
                 val existente = borradorDao.getAll().find { it.id == borradorSesionId }
-                val entity = existente?.copy(
-                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
-                    datos = Gson().toJson(datos)
-                ) ?: BorradorEntity(
-                    id = borradorSesionId,
-                    tipo = "GUIA_PORCINOS",
-                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
-                    hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
-                    datos = Gson().toJson(datos),
-                    estado = "BORRADOR_AUTO"
-                )
+                val entity = existente?.copy(fecha = hoy, datos = json)
+                    ?: BorradorEntity(id = borradorSesionId, tipo = "GUIA_PORCINOS",
+                        fecha = hoy, hora = ahora, datos = json, estado = "BORRADOR_AUTO")
                 borradorDao.upsert(entity)
             } catch (e: Exception) {
-                Log.e("AutoguardadoPorcinos", "Error: ${e.message}", e)
+                Log.e("CrearGuiaPorcinosVM", "Error autoguardado: ${e.message}", e)
             }
         }
     }
@@ -102,26 +120,9 @@ class CrearGuiaPorcinosViewModel @Inject constructor(
             try {
                 val borrador = borradorDao.getAll().find { it.id == id } ?: return@launch
                 borradorSesionId = borrador.id
-                val datos: Map<String, Any?> = Gson().fromJson(borrador.datos, object : TypeToken<Map<String, Any?>>() {}.type)
-                _uiState.update {
-                    it.copy(
-                        explotacion = datos["explotacion"] as? String ?: "",
-                        categoriaSeleccionada = datos["categoriaSeleccionada"] as? String ?: "",
-                        categoriaApiSeleccionada = datos["categoriaApiSeleccionada"] as? String ?: "",
-                        numAnimales = datos["numAnimales"] as? String ?: "",
-                        fechaSalida = datos["fechaSalida"] as? String ?: "",
-                        horaSalida = datos["horaSalida"] as? String ?: "",
-                        fechaLlegada = datos["fechaLlegada"] as? String ?: "",
-                        horaLlegada = datos["horaLlegada"] as? String ?: "",
-                        codigoSIR = datos["codigoSIR"] as? String ?: "",
-                        medioTransporteSeleccionado = datos["medioTransporteSeleccionado"] as? String ?: "",
-                        medioTransporteApiSeleccionado = datos["medioTransporteApiSeleccionado"] as? String ?: "",
-                        matricula = datos["matricula"] as? String ?: "",
-                        nifConductor = datos["nifConductor"] as? String ?: ""
-                    )
-                }
+                restaurarEstado(Gson().fromJson(borrador.datos, object : TypeToken<Map<String, Any?>>() {}.type))
             } catch (e: Exception) {
-                Log.e("CrearGuiaPorcinosVM", "Error al cargar borrador: ${e.message}", e)
+                Log.e("CrearGuiaPorcinosVM", "Error cargar borrador: ${e.message}", e)
             }
         }
     }
@@ -130,44 +131,10 @@ class CrearGuiaPorcinosViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 if (borradorSesionId.isNotEmpty()) {
-                    borradorDao.deleteById(borradorSesionId)
-                    borradorSesionId = ""
+                    borradorDao.deleteById(borradorSesionId); borradorSesionId = ""
                 }
             } catch (e: Exception) {
-                Log.e("EliminarBorradorPorcinos", "Error: ${e.message}", e)
-            }
-        }
-    }
-
-    private fun guardarEnHistorial(resumen: String = "") {
-        viewModelScope.launch {
-            try {
-                val s = _uiState.value
-                val datos = mapOf(
-                    "explotacion" to s.explotacion,
-                    "categoriaSeleccionada" to s.categoriaSeleccionada,
-                    "categoriaApiSeleccionada" to s.categoriaApiSeleccionada,
-                    "numAnimales" to s.numAnimales,
-                    "fechaSalida" to s.fechaSalida,
-                    "horaSalida" to s.horaSalida,
-                    "fechaLlegada" to s.fechaLlegada,
-                    "horaLlegada" to s.horaLlegada,
-                    "codigoSIR" to s.codigoSIR,
-                    "medioTransporteSeleccionado" to s.medioTransporteSeleccionado,
-                    "medioTransporteApiSeleccionado" to s.medioTransporteApiSeleccionado,
-                    "matricula" to s.matricula,
-                    "nifConductor" to s.nifConductor
-                )
-                historialDao.insert(HistorialEntity(
-                    id = java.util.UUID.randomUUID().toString(),
-                    tipo = "GUIA_PORCINOS",
-                    fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
-                    hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
-                    datos = Gson().toJson(datos),
-                    resumen = resumen
-                ))
-            } catch (e: Exception) {
-                Log.e("HistorialPorcinos", "Error: ${e.message}", e)
+                Log.e("CrearGuiaPorcinosVM", "Error eliminar borrador: ${e.message}", e)
             }
         }
     }
@@ -176,177 +143,147 @@ class CrearGuiaPorcinosViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val registro = historialDao.getAll().find { it.id == id } ?: return@launch
-                val datos: Map<String, Any?> = Gson().fromJson(registro.datos, object : TypeToken<Map<String, Any?>>() {}.type)
-                _uiState.update {
-                    it.copy(
-                        explotacion = datos["explotacion"] as? String ?: "",
-                        categoriaSeleccionada = datos["categoriaSeleccionada"] as? String ?: "",
-                        categoriaApiSeleccionada = datos["categoriaApiSeleccionada"] as? String ?: "",
-                        numAnimales = datos["numAnimales"] as? String ?: "",
-                        fechaSalida = datos["fechaSalida"] as? String ?: "",
-                        horaSalida = datos["horaSalida"] as? String ?: "",
-                        fechaLlegada = datos["fechaLlegada"] as? String ?: "",
-                        horaLlegada = datos["horaLlegada"] as? String ?: "",
-                        codigoSIR = datos["codigoSIR"] as? String ?: "",
-                        medioTransporteSeleccionado = datos["medioTransporteSeleccionado"] as? String ?: "",
-                        medioTransporteApiSeleccionado = datos["medioTransporteApiSeleccionado"] as? String ?: "",
-                        matricula = datos["matricula"] as? String ?: "",
-                        nifConductor = datos["nifConductor"] as? String ?: ""
-                    )
-                }
+                restaurarEstado(Gson().fromJson(registro.datos, object : TypeToken<Map<String, Any?>>() {}.type))
             } catch (e: Exception) {
-                Log.e("CrearGuiaPorcinosVM", "Error al cargar historial: ${e.message}", e)
+                Log.e("CrearGuiaPorcinosVM", "Error cargar historial: ${e.message}", e)
             }
         }
     }
 
-    fun resetearEstado() {
-        _uiState.update { it.copy(mensajeExito = null, mensajeError = null) }
+    suspend fun obtenerCantidadBorradoresPorcinos(): Int =
+        borradorDao.getAll().count { it.tipo == "GUIA_PORCINOS" && it.estado == "BORRADOR_AUTO" }
+
+    // ─── Formulario ───────────────────────────────────────────────────────────
+    fun resetearEstado() { _uiState.update { it.copy(mensajeExito = null, mensajeError = null) } }
+
+    fun actualizarExplotacion(valor: String) {
+        if (valor.length <= 14) _uiState.update { it.copy(explotacion = valor) }
+    }
+    fun actualizarNumAnimales(valor: String) {
+        if (valor.isEmpty()) { _uiState.update { it.copy(numAnimales = "") }; return }
+        if (valor.isDigitsOnly() && (valor.toIntOrNull() ?: 0) >= 1)
+            _uiState.update { it.copy(numAnimales = valor) }
+    }
+    fun actualizarCodigoSIR(valor: String) {
+        if (valor.length <= 15) _uiState.update { it.copy(codigoSIR = valor) }
+    }
+    fun actualizarMatricula(valor: String) {
+        if (valor.length <= 10) _uiState.update { it.copy(matricula = valor) }
+    }
+    fun actualizarNifConductor(valor: String) {
+        if (valor.length <= 9) _uiState.update { it.copy(nifConductor = valor) }
     }
 
-    fun actualizarExplotacion(nuevaExplotacion: String) {
-        if (nuevaExplotacion.length <= 14) {
-            _uiState.update { it.copy(explotacion = nuevaExplotacion) }
-        }
+    // ─── Dropdowns ────────────────────────────────────────────────────────────
+    fun toggleCategoriaExpandido()          { _uiState.update { it.copy(categoriaExpandido = !it.categoriaExpandido) } }
+    fun cerrarCategoriaMenu()               { _uiState.update { it.copy(categoriaExpandido = false) } }
+    fun toggleMedioTransporteExpandido()    { _uiState.update { it.copy(medioTransporteExpandido = !it.medioTransporteExpandido) } }
+    fun cerrarMedioTransporteMenu()         { _uiState.update { it.copy(medioTransporteExpandido = false) } }
+
+    fun seleccionarCategoria(nombre: String, codigo: String) {
+        _uiState.update { it.copy(categoriaSeleccionada = nombre, categoriaApiSeleccionada = codigo, categoriaExpandido = false) }
+    }
+    fun seleccionarMedioTransporte(nombre: String, codigo: String) {
+        _uiState.update { it.copy(medioTransporteSeleccionado = nombre, medioTransporteApiSeleccionado = codigo, medioTransporteExpandido = false) }
     }
 
-    fun toggleCategoriaExpandido() {
-        _uiState.update { it.copy(categoriaExpandido = !it.categoriaExpandido) }
-    }
+    // ─── DatePicker / TimePicker salida ──────────────────────────────────────
+    fun mostrarDatePickerSalida()  { _uiState.update { it.copy(mostrarDatePickerSalida = true) } }
+    fun ocultarDatePickerSalida()  { _uiState.update { it.copy(mostrarDatePickerSalida = false) } }
+    fun mostrarTimePickerSalida()  { _uiState.update { it.copy(mostrarTimePickerSalida = true) } }
+    fun ocultarTimePickerSalida()  { _uiState.update { it.copy(mostrarTimePickerSalida = false) } }
 
-    fun cerrarCategoriaMenu() {
-        _uiState.update { it.copy(categoriaExpandido = false) }
-    }
-
-    fun seleccionarCategoria(categoria: String, codigo: String) {
-        _uiState.update { it.copy(categoriaSeleccionada = categoria, categoriaExpandido = false, categoriaApiSeleccionada = codigo) }
-    }
-
-    fun actualizarNumAnimales(nuevoNumAnimales: String) {
-        if (nuevoNumAnimales.isEmpty()) { _uiState.update { it.copy(numAnimales = "") }; return }
-        if (nuevoNumAnimales.isDigitsOnly()) {
-            val numero = nuevoNumAnimales.toIntOrNull() ?: 1
-            if (numero >= 1) _uiState.update { it.copy(numAnimales = nuevoNumAnimales) }
-        }
-    }
-
-    fun mostrarDatePickerSalida() { _uiState.update { it.copy(mostrarDatePickerSalida = true) } }
-    fun ocultarDatePickerSalida() { _uiState.update { it.copy(mostrarDatePickerSalida = false) } }
-    fun mostrarTimePickerSalida() { _uiState.update { it.copy(mostrarTimePickerSalida = true) } }
-    fun ocultarTimePickerSalida() { _uiState.update { it.copy(mostrarTimePickerSalida = false) } }
-
-    @SuppressLint("DefaultLocale")
-    fun actualizarHoraSalida(hora: String, minutos: String) {
-        _uiState.update { it.copy(horaSalida = String.format("%02d:%02d", hora.toInt(), minutos.toInt())) }
-    }
-
-    @SuppressLint("DefaultLocale")
-    fun seleccionarFechaSalida(fechaMillis: Long) {
-        val calendar = Calendar.getInstance().apply { timeInMillis = fechaMillis }
+    fun seleccionarFechaSalida(millis: Long) {
+        val cal = Calendar.getInstance().apply { timeInMillis = millis }
         _uiState.update {
             it.copy(
-                fechaSalida = String.format("%02d/%02d/%04d", calendar.get(Calendar.DAY_OF_MONTH), calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.YEAR)),
+                fechaSalida = String.format("%02d/%02d/%04d",
+                    cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.YEAR)),
                 mostrarDatePickerSalida = false
             )
         }
     }
+    fun actualizarHoraSalida(h: String, m: String) {
+        _uiState.update { it.copy(horaSalida = String.format("%02d:%02d", h.toInt(), m.toInt())) }
+    }
 
+    // ─── DatePicker / TimePicker llegada ─────────────────────────────────────
     fun mostrarDatePickerLlegada() { _uiState.update { it.copy(mostrarDatePickerLlegada = true) } }
     fun ocultarDatePickerLlegada() { _uiState.update { it.copy(mostrarDatePickerLlegada = false) } }
     fun mostrarTimePickerLlegada() { _uiState.update { it.copy(mostrarTimePickerLlegada = true) } }
     fun ocultarTimePickerLlegada() { _uiState.update { it.copy(mostrarTimePickerLlegada = false) } }
 
-    @SuppressLint("DefaultLocale")
-    fun actualizarHoraLlegada(hora: String, minutos: String) {
-        _uiState.update { it.copy(horaLlegada = String.format("%02d:%02d", hora.toInt(), minutos.toInt())) }
-    }
-
-    fun seleccionarFechaLlegada(fechaMillis: Long) {
-        val calendar = Calendar.getInstance().apply { timeInMillis = fechaMillis }
+    fun seleccionarFechaLlegada(millis: Long) {
+        val cal = Calendar.getInstance().apply { timeInMillis = millis }
         _uiState.update {
             it.copy(
-                fechaLlegada = String.format("%02d/%02d/%04d", calendar.get(Calendar.DAY_OF_MONTH), calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.YEAR)),
+                fechaLlegada = String.format("%02d/%02d/%04d",
+                    cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.YEAR)),
                 mostrarDatePickerLlegada = false
             )
         }
     }
-
-    fun actualizarCodigoSIR(nuevoCodigoSIR: String) {
-        if (nuevoCodigoSIR.length <= 15) _uiState.update { it.copy(codigoSIR = nuevoCodigoSIR) }
+    fun actualizarHoraLlegada(h: String, m: String) {
+        _uiState.update { it.copy(horaLlegada = String.format("%02d:%02d", h.toInt(), m.toInt())) }
     }
 
-    fun toggleMedioTransporteExpandido() {
-        _uiState.update { it.copy(medioTransporteExpandido = !it.medioTransporteExpandido) }
-    }
-
-    fun cerrarMedioTransporteMenu() {
-        _uiState.update { it.copy(medioTransporteExpandido = false) }
-    }
-
-    fun seleccionarMedioTransporte(medioTransporte: String, codigo: String) {
-        _uiState.update { it.copy(medioTransporteSeleccionado = medioTransporte, medioTransporteApiSeleccionado = codigo, medioTransporteExpandido = false) }
-    }
-
-    fun actualizarMatricula(nuevaMatricula: String) {
-        if (nuevaMatricula.length <= 10) _uiState.update { it.copy(matricula = nuevaMatricula) }
-    }
-
-    fun actualizarNifConductor(nif: String) {
-        if (nif.length <= 9) _uiState.update { it.copy(nifConductor = nif) }
-    }
-
+    // ─── Envío ────────────────────────────────────────────────────────────────
     fun crearGuia() {
-        val TAG = "GTR_API_DEBUG"
+        val s = _uiState.value
+        if (s.explotacion.isBlank() || s.numAnimales.isBlank() || s.fechaSalida.isBlank() ||
+            s.horaSalida.isBlank() || s.fechaLlegada.isBlank() || s.horaLlegada.isBlank() ||
+            s.categoriaSeleccionada.isBlank()) {
+            Log.w("GTR_EDITAR", "Validación fallida — campos vacíos")
+            _uiState.update { it.copy(mensajeError = "Todos los campos con * son obligatorios.") }
+            return
+        }
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, mensajeError = null) }
             try {
-                val nifAdmin = userPreferences.getNif() ?: ""
-                val passwordAdmin = userPreferences.getPassword() ?: ""
-                val codiMoOrigen = userPreferences.getCodiMO() ?: ""
-                val state = _uiState.value
-
+                val s = _uiState.value
                 val request = AltaMovimientoGTR(
-                    nif = nifAdmin,
-                    password = passwordAdmin,
-                    tipusEspecie = "02",
-                    tipusAccio = "NO",
-                    tipusMoviment = "01",
-                    explotacioSortida = codiMoOrigen,
-                    explotacioEntrada = state.explotacion,
-                    codiCategoria = state.categoriaApiSeleccionada,
-                    numAnimals = state.numAnimales.toIntOrNull() ?: 0,
-                    dataSortida = convertirFechaHoraAFormatoAPI(state.fechaSalida, state.horaSalida),
-                    dataArribada = convertirFechaHoraAFormatoAPI(state.fechaLlegada, state.horaLlegada),
-                    codiSirentra = state.codigoSIR,
-                    mitjaTransport = state.medioTransporteApiSeleccionado,
-                    matricula = state.matricula,
-                    nifConductor = state.nifConductor,
-                    mobilitat = "SI"
+                    nif = nif, password = password,
+                    tipusEspecie = "02", tipusAccio = "NO", tipusMoviment = "01",
+                    explotacioSortida = codiMo, explotacioEntrada = s.explotacion,
+                    codiCategoria = s.categoriaApiSeleccionada,
+                    numAnimals = s.numAnimales.toIntOrNull() ?: 0,
+                    dataSortida = convertirFechaHoraAFormatoAPI(s.fechaSalida, s.horaSalida),
+                    dataArribada = convertirFechaHoraAFormatoAPI(s.fechaLlegada, s.horaLlegada),
+                    codiSirentra = s.codigoSIR, mitjaTransport = s.medioTransporteApiSeleccionado,
+                    matricula = s.matricula, nifConductor = s.nifConductor, mobilitat = "SI"
                 )
 
-                Log.d(TAG, "Enviando petición PUT a la API: $request")
+                Log.d("GTR_CREAR", "━━━ CREAR GUÍA ━━━")
+                Log.d("GTR_CREAR", "request: $request")
+
                 val response = repositorio.altaGuiaPorcinas(request)
+
+                Log.d("GTR_CREAR", "HTTP code: ${response.code()}")
+                Log.d("GTR_CREAR", "isSuccessful: ${response.isSuccessful}")
 
                 if (response.isSuccessful) {
                     val body = response.body()
-                    Log.i(TAG, "Respuesta exitosa: ${body?.descripcio}")
+                    Log.d("GTR_CREAR", "body: $body")
+                    Log.d("GTR_CREAR", "body.descripcio: ${body?.descripcio}")
+
                     if (body?.descripcio?.firstOrNull() == "OK") {
                         val codigoGuia = body.descripcio.getOrNull(1)
-                        Log.d(TAG, "Guía generada: $codigoGuia")
+                        Log.d("GTR_CREAR", "✅ Guía creada: $codigoGuia")
                         guardarEnHistorial("Guía porcinos enviada")
+                        guardarHistorialCampos()
                         eliminarBorradorAutomatico()
                         _uiState.update { CrearGuiasPorcinosUiState(mensajeExito = "Guía creada: $codigoGuia") }
                     } else {
-                        Log.w(TAG, "Respuesta inesperada de la API")
+                        Log.w("GTR_CREAR", "⚠️ Respuesta inesperada: ${body?.descripcio}")
                         _uiState.update { it.copy(isLoading = false, mensajeError = "Respuesta inesperada del servidor") }
                     }
                 } else {
-                    val errorBody = response.errorBody()?.string()
-                    Log.e(TAG, "Error API ${response.code()}: $errorBody")
+                    val errorBody = response.errorBody()?.string() ?: ""
+                    Log.e("GTR_CREAR", "❌ Error HTTP ${response.code()}: $errorBody")
                     _uiState.update { it.copy(isLoading = false, mensajeError = "Error en la API: ${response.message()}") }
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Excepción: ${e.message}", e)
+                Log.e("GTR_CREAR", "❌ Excepción: ${e.javaClass.simpleName}: ${e.message}", e)
                 _uiState.update { it.copy(isLoading = false, mensajeError = "Error de red: ${e.localizedMessage}") }
             } finally {
                 _uiState.update { it.copy(isLoading = false) }
@@ -354,11 +291,29 @@ class CrearGuiaPorcinosViewModel @Inject constructor(
         }
     }
 
-    private fun convertirFechaHoraAFormatoAPI(fecha: String, hora: String): String {
-        val partesFecha = fecha.split("/")
-        val partesHora = hora.split(":")
-        return if (partesFecha.size == 3 && partesHora.size == 2) {
-            "${partesFecha[2]}${partesFecha[1]}${partesFecha[0]}${partesHora[0]}${partesHora[1]}"
-        } else ""
+    private fun guardarEnHistorial(resumen: String = "") {
+        viewModelScope.launch {
+            try {
+                val hoy = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
+                val ahora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
+                historialDao.insert(HistorialEntity(
+                    id = UUID.randomUUID().toString(), tipo = "GUIA_PORCINOS",
+                    fecha = hoy, hora = ahora,
+                    datos = Gson().toJson(serializarEstado()), resumen = resumen
+                ))
+            } catch (e: Exception) {
+                Log.e("CrearGuiaPorcinosVM", "Error historial: ${e.message}", e)
+            }
+        }
+    }
+
+    private fun guardarHistorialCampos() {
+        viewModelScope.launch {
+            val s = _uiState.value
+            if (s.explotacion.isNotBlank())  historialCamposManager.guardarValor("porcinos_explotacion", s.explotacion)
+            if (s.codigoSIR.isNotBlank())    historialCamposManager.guardarValor("porcinos_sir", s.codigoSIR)
+            if (s.matricula.isNotBlank())    historialCamposManager.guardarValor("porcinos_matricula", s.matricula)
+            if (s.nifConductor.isNotBlank()) historialCamposManager.guardarValor("porcinos_nif_conductor", s.nifConductor)
+        }
     }
 }

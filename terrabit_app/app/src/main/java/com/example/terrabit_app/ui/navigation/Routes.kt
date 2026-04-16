@@ -11,6 +11,8 @@ sealed class Routes(val route: String) {
     object GestionBovinos : Routes("gestion_bovinos")
     object GuiasMovimientos : Routes("guias_movimientos")
     object ListarBovinos : Routes("listar_bovinos")
+    object DeatilBovino : Routes("detail_bovino")
+
 
     object GestionPorcinos : Routes("gestion_porcinos")
     object GuiasMovimientosPorcinos : Routes("guias_movimientos_porcinos")
@@ -85,6 +87,9 @@ sealed class Routes(val route: String) {
     object Usb : Routes("usb")
 
     object GuiasBovinos : Routes("lista_guias_bovinos")
+    object MovimientosBovinos : Routes("lista_movimientos_bovinos")
     object GuiasPorcinos : Routes("lista_guias_porcinos")
+    object ConfirmarMovimientoBovi : Routes("confirmar_movimiento_bovi")
     object EditarGuiaBovi : Routes("editar_guia_bovi")
+    object EditarMovimientoBovi : Routes("editar_movimiento_bovi")
 }

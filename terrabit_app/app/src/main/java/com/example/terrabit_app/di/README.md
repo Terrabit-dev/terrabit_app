@@ -11,3 +11,9 @@ repetitivo de insertar dependencias de forma manual.
 Ensenya a Hilt como construir UserPreferences. 
 @Singleton -> Se crea una sola instancia en toda la app
 @ApplicationContext -> Inyecta el contexto de manera automatica
+
+
+## /terrabit_app/di/NetworkModule.kt
+
+Es la seccion de network de la app, todo lo que tiene que ver con los endpoints
+el endpoint base esta aqui y las dependencias del network lo llaman aqui.

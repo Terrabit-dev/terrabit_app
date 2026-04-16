@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
+import com.example.terrabit_app.data.local.HistorialCamposManager
+import com.example.terrabit_app.ui.components.HistorialAutoCompleteField
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.ui.theme.MainGreen
@@ -44,24 +46,27 @@ fun Material(
     val modoLectura = historialId.isNotEmpty()
 
     val empresaSubministradora by viewModel.empresaSubministradora.observeAsState("")
-    val tipoEnviamiento by viewModel.tipoEnviamiento.observeAsState("")
-    val destinoLliurament by viewModel.destinoLliurament.observeAsState("")
+    val tipoEnviamiento by viewModel.tipoEnviamiento.observeAsState(null)
+    val destinoLliurament by viewModel.destinoEnvio.observeAsState(null)
     val oficinaComarcal by viewModel.oficinaComarcal.observeAsState("")
     val direccion by viewModel.direccion.observeAsState("")
     val poblacion by viewModel.poblacion.observeAsState("")
     val codigoPostal by viewModel.codigoPostal.observeAsState("")
     val municipio by viewModel.municipio.observeAsState("")
     val telefonoContacto by viewModel.telefonoContacto.observeAsState("")
-    val tipoMaterial by viewModel.tipoMaterial.observeAsState("")
+    val tipoMaterial by viewModel.tipoMaterial.observeAsState(null)
     val empresaExpandida by viewModel.empresaExpandida.observeAsState(false)
     val tipoEnviamientoExpandido by viewModel.tipoEnviamientoExpandido.observeAsState(false)
     val destinoExpandido by viewModel.destinoExpandido.observeAsState(false)
     val oficinaComarcalExpandida by viewModel.oficinaComarcalExpandida.observeAsState(false)
     val tipoMaterialExpandido by viewModel.tipoMaterialExpandido.observeAsState(false)
-    val registroExitoso by viewModel.registroMaterialExitoso.observeAsState(false)
-    val mensajeError by viewModel.mensajeErrorMaterial.observeAsState("")
-    val estadoCarga by viewModel.cargandoMaterial.observeAsState(false)
+    val registroExitoso by viewModel.operacionExitosa.observeAsState(false)
+    val mensajeError by viewModel.mensajeError.observeAsState("")
+    val estadoCarga by viewModel.estadoCarga.observeAsState(false)
     val listaUnidades by viewModel.listaUnidades.observeAsState(emptyList())
+    val historialManager = viewModel.historialCamposManager
+    val moObligatorio by viewModel.codigoMoObligatorio.observeAsState(false)
+
 
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
@@ -70,12 +75,16 @@ fun Material(
     val codigoDestino = viewModel.getCodiDestinoEnvio()
     val codiMoObligatorio = viewModel.codiMoEsObligatorio()
 
+    val direccionAlternativa = "03"
+    val direccionExplotacion = "02"
+    val direccionOficinaComarcal = "01"
+
     val mensajeExito = stringResource(R.string.successful_message_material)
 
     LaunchedEffect(registroExitoso) {
         if (registroExitoso) {
             snackbarHostState.showSnackbar(mensajeExito, duration = SnackbarDuration.Short)
-            viewModel.resetearEstadoRegistroMaterial()
+            viewModel.resetearEstado()
         }
     }
 
@@ -92,13 +101,13 @@ fun Material(
 
     if (mostrarDialogoError && mensajeError.isNotEmpty()) {
         AlertDialog(
-            onDismissRequest = { mostrarDialogoError = false; viewModel.resetearEstadoRegistroMaterial() },
+            onDismissRequest = { mostrarDialogoError = false; viewModel.resetearEstado() },
             icon = { Icon(Icons.Default.ArrowBack, contentDescription = null, tint = MainGreen, modifier = Modifier.size(48.dp)) },
             title = { Text(stringResource(R.string.error_message_material), fontWeight = FontWeight.Bold, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface) },
             text = { Text(mensajeError, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 24.sp) },
             confirmButton = {
                 Button(
-                    onClick = { mostrarDialogoError = false; viewModel.resetearEstadoRegistroMaterial() },
+                    onClick = { mostrarDialogoError = false; viewModel.resetearEstado() },
                     colors = ButtonDefaults.buttonColors(containerColor = MainGreen),
                     shape = RoundedCornerShape(8.dp)
                 ) { Text(stringResource(R.string.error_buttom), fontWeight = FontWeight.SemiBold) }
@@ -174,55 +183,55 @@ fun Material(
                             selectedValue = empresaSubministradora,
                             expanded = empresaExpandida,
                             placeholder = stringResource(R.string.form_suply_company_description),
-                            opciones = elementosConCodigos.tipoEmpresaSubministradora(),
+                            opciones = elementosConCodigos.getEmpresaSubministradora(),
                             enabled = !modoLectura,
                             onExpandedChange = { viewModel.toggleEmpresaExpandida() },
                             onDismissRequest = { viewModel.cerrarEmpresaMenu() },
                             onSeleccionar = { codigo, nombre -> viewModel.seleccionarEmpresa(nombre, codigo) },
-                            defectColor = true
+                            accentColor = MainGreen
                         )
                         DropdownField(
                             label = stringResource(R.string.form_send_type) + " *",
                             selectedValue = tipoEnviamiento,
                             expanded = tipoEnviamientoExpandido,
                             placeholder = stringResource(R.string.form_send_type_description),
-                            opciones = elementosConCodigos.tiposEnvios(),
+                            opciones = elementosConCodigos.getTiposEnvios(),
                             enabled = !modoLectura,
                             onExpandedChange = { viewModel.toggleTipoEnviamientoExpandido() },
                             onDismissRequest = { viewModel.cerrarTipoEnviamientoMenu() },
                             onSeleccionar = { codigo, nombre -> viewModel.seleccionarTipoEnviamiento(nombre, codigo) },
-                            defectColor = true
+                            accentColor = MainGreen
                         )
                         DropdownField(
                             label = stringResource(R.string.form_send_address) + " *",
                             selectedValue = destinoLliurament,
                             expanded = destinoExpandido,
                             placeholder = stringResource(R.string.form_send_address_description),
-                            opciones = elementosConCodigos.tiposDireccionEnvio(),
+                            opciones = elementosConCodigos.getTiposDireccionEnvio(),
                             enabled = !modoLectura,
                             onExpandedChange = { viewModel.toggleDestinoExpandido() },
                             onDismissRequest = { viewModel.cerrarDestinoMenu() },
                             onSeleccionar = { codigo, nombre -> viewModel.seleccionarDestino(nombre, codigo) },
-                            defectColor = true
+                            accentColor = MainGreen
                         )
 
-                        if (codigoDestino == "01") {
+                        if (viewModel.getCodiDestinoEnvio() == direccionOficinaComarcal) {
                             DropdownField(
                                 label = stringResource(R.string.form_comarcal_office) + " *",
                                 selectedValue = oficinaComarcal,
                                 expanded = oficinaComarcalExpandida,
                                 placeholder = stringResource(R.string.form_comarcal_office_description),
-                                opciones = elementosConCodigos.tiposOficinasComarcales(),
+                                opciones = elementosConCodigos.getOficinasComarcales(),
                                 enabled = !modoLectura,
                                 onExpandedChange = { viewModel.toggleOficinaComarcalExpandida() },
                                 onDismissRequest = { viewModel.cerrarOficinaComarcalMenu() },
-                                onSeleccionar = { codigo, nombre -> viewModel.seleccionarOficinaComarcal(codigo, nombre) },
-                                defectColor = true
+                                onSeleccionar = { codigo, nombre -> viewModel.seleccionarOficinaComarcal(nombre, codigo) },
+                                accentColor = MainGreen
                             )
                         }
 
-                        if (codigoDestino == "02" || codigoDestino == "03") {
-                            if (codigoDestino == "02") {
+                        if (viewModel.getCodiDestinoEnvio() == direccionExplotacion || viewModel.getCodiDestinoEnvio() == direccionAlternativa) {
+                            if (viewModel.getCodiDestinoEnvio() == direccionExplotacion) {
                                 Text(stringResource(R.string.mesagge_send_dades), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant, letterSpacing = 0.15.sp)
                             }
                             val sufijo = if (codigoDestino == "03") " *" else ""
@@ -238,12 +247,12 @@ fun Material(
                             selectedValue = tipoMaterial,
                             expanded = tipoMaterialExpandido,
                             placeholder = stringResource(R.string.form_material_type_description),
-                            opciones = elementosConCodigos.tiposMaterial(),
+                            opciones = elementosConCodigos.getTiposMaterial(),
                             enabled = !modoLectura,
                             onExpandedChange = { viewModel.toggleTipoMaterialExpandido() },
                             onDismissRequest = { viewModel.cerrarTipoMaterialMenu() },
                             onSeleccionar = { codigo, nombre -> viewModel.seleccionarTipoMaterial(nombre, codigo) },
-                            defectColor = true
+                            accentColor = MainGreen
                         )
                     }
                 }
@@ -258,7 +267,7 @@ fun Material(
                 ) {
                     Column(modifier = Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                            Text(stringResource(R.string.title_identifiers), fontSize = 17.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                            Text(stringResource(R.string.form_unitats), fontSize = 17.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                             if (!modoLectura) {
                                 TextButton(onClick = { viewModel.agregarUnidades() }, colors = ButtonDefaults.textButtonColors(contentColor = MainGreen)) {
                                     Icon(Icons.Default.Add, contentDescription = stringResource(R.string.action_add), modifier = Modifier.size(18.dp))
@@ -276,12 +285,14 @@ fun Material(
 
                         listaUnidades.forEachIndexed { indice, item ->
                             UnidadesItem(
+                                obligatorio = moObligatorio,
                                 indice = indice,
                                 codiMo = item.codiExplotacio,
                                 unidades = item.nombreUnitats,
                                 mostrarEliminar = !modoLectura && listaUnidades.size > 1,
                                 codiMoObligatorio = codiMoObligatorio,
                                 modoLectura = modoLectura,
+                                historialManager = historialManager,
                                 oncodiMoChange = { viewModel.actualizarCodiExplotacio(indice, it) },
                                 onEliminar = { viewModel.eliminarUnidades(indice) },
                                 onUnidadesChange = { viewModel.actualizarUnidades(indice, it) }
@@ -320,12 +331,14 @@ fun Material(
 
 @Composable
 private fun UnidadesItem(
+    obligatorio: Boolean,
     indice: Int,
     codiMo: String?,
     unidades: String,
     mostrarEliminar: Boolean,
     codiMoObligatorio: Boolean,
     modoLectura: Boolean = false,
+    historialManager: HistorialCamposManager,
     oncodiMoChange: (String) -> Unit,
     onUnidadesChange: (String) -> Unit,
     onEliminar: () -> Unit
@@ -340,40 +353,23 @@ private fun UnidadesItem(
             }
         }
 
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Text(
-                text = stringResource(R.string.label_codimo) + if (codiMoObligatorio) " *" else "",
-                fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp
+        val esError = codiMoObligatorio && codiMo.isNullOrEmpty()
+
+        if (obligatorio){
+            HistorialAutoCompleteField(
+                valor            = codiMo ?: "",
+                onValorChange    = oncodiMoChange,
+                label            = stringResource(R.string.label_codimo) + if (codiMoObligatorio) " *" else "",
+                clave            = "codi_mo",
+                historialManager = historialManager,
+                modifier         = Modifier.fillMaxWidth(),
+                enabled          = !modoLectura,
+                isError          = esError,
+                accentColor      = if (esError) ErrorRed else MainGreen
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(
-                value = codiMo ?: "",
-                onValueChange = { oncodiMoChange(it) },
-                enabled = !modoLectura,
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text(stringResource(R.string.form_codiMo_description), color = MaterialTheme.colorScheme.onSurfaceVariant) },
-                singleLine = true,
-                shape = MaterialTheme.shapes.medium,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = if (codiMoObligatorio && codiMo.isNullOrEmpty()) ErrorRed else MainGreen,
-                    unfocusedBorderColor = if (codiMoObligatorio && codiMo.isNullOrEmpty()) ErrorRed.copy(alpha = 0.5f) else MaterialTheme.colorScheme.outline,
-                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    cursorColor = MainGreen,
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                    disabledBorderColor = if (codiMoObligatorio && codiMo.isNullOrEmpty()) ErrorRed.copy(alpha = 0.5f) else MaterialTheme.colorScheme.outline,
-                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                    disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    disabledContainerColor = MaterialTheme.colorScheme.surface,
-                ),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, autoCorrect = false)
-            )
-            if (codiMoObligatorio && codiMo.isNullOrEmpty()) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(stringResource(R.string.alert_necessary_codiMO), fontSize = 12.sp, color = ErrorRed)
-            }
+        }
+        if (esError) {
+            Text(stringResource(R.string.alert_necessary_codiMO), fontSize = 12.sp, color = ErrorRed)
         }
 
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -388,18 +384,18 @@ private fun UnidadesItem(
                 singleLine = true,
                 shape = MaterialTheme.shapes.medium,
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MainGreen,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    cursorColor = MainGreen,
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    focusedBorderColor      = MainGreen,
+                    unfocusedBorderColor    = MaterialTheme.colorScheme.outline,
+                    focusedTextColor        = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor      = MaterialTheme.colorScheme.onSurface,
+                    cursorColor             = MainGreen,
+                    focusedContainerColor   = MaterialTheme.colorScheme.surface,
                     unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                    disabledBorderColor = MaterialTheme.colorScheme.outline,
-                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                    disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    disabledBorderColor     = MaterialTheme.colorScheme.outline,
+                    disabledTextColor       = MaterialTheme.colorScheme.onSurface,
+                    disabledLabelColor      = MaterialTheme.colorScheme.onSurfaceVariant,
                     disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    disabledContainerColor = MaterialTheme.colorScheme.surface,
+                    disabledContainerColor  = MaterialTheme.colorScheme.surface
                 ),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )

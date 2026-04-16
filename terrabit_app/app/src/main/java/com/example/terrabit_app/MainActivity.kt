@@ -16,11 +16,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.terrabit_app.ui.navigation.Navigation
 import com.example.terrabit_app.ui.theme.Terrabit_appTheme
-import com.example.terrabit_app.viewmodel.bovinos.ConfigurationViewModel
-import com.example.terrabit_app.viewmodel.bovinos.DrawerViewModel
+import com.example.terrabit_app.viewmodel.ConfigurationViewModel
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
+import com.example.terrabit_app.viewmodel.bovinos.DrawerViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -31,6 +31,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)
+
         setContent {
             val configViewModel: ConfigurationViewModel = hiltViewModel()
             val isDarkTheme by configViewModel.isDarkTheme.collectAsStateWithLifecycle()

@@ -50,6 +50,9 @@ import android.Manifest
 import android.annotation.SuppressLint
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import com.example.terrabit_app.utils.AnimalSeleccionadoHolder
+import com.example.terrabit_app.utils.DropdownField
 import com.example.terrabit_app.utils.LocationUtils
 import com.google.android.gms.location.LocationServices
 
@@ -67,7 +70,7 @@ fun Fallecimiento(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    val tipoSeleccionado by viewModel.tipoMuerte.observeAsState("")
+    val tipoSeleccionado by viewModel.tipoMuerte.observeAsState(null)
     val identificadorAnimal by viewModel.identificadorMuerte.observeAsState("")
     val fechaMuerte by viewModel.fechaMuerte.observeAsState("")
     val mesesGestacion by viewModel.mesesGestacion.observeAsState("")
@@ -77,16 +80,17 @@ fun Fallecimiento(
     val tipoExpandido by viewModel.tipoMuerteExpandido.observeAsState(false)
     val mostrarDatePickerMuerte by viewModel.mostrarDatePickerMuerte.observeAsState(false)
     val tipoMuerte by viewModel.codigoTipoMuerte.observeAsState("")
-    val registroExitoso by viewModel.registroMuerteExitoso.observeAsState(false)
-    val mensajeError by viewModel.mensajeErrorMuerte.observeAsState("")
+    val registroExitoso by viewModel.operacionExitosa.observeAsState(false)
+    val mensajeError by viewModel.mensajeError.observeAsState("")
     val codiError by viewModel.codiError.observeAsState()
-    val estadoCarga by viewModel.cargandoMuerte.observeAsState(false)
+    val estadoCarga by viewModel.estadoCarga.observeAsState(false)
     val suggestionsBovinos by viewModel.suggestionsBovinos.observeAsState(emptyList())
     val isLoadingBovinos by viewModel.isLoadingBovinos.observeAsState(false)
 
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
     var mostrarBluetooth by remember { mutableStateOf(false) }
+    var cargandoUbicacion by remember { mutableStateOf(false) }
 
     val mensajeRegistroExitoso = stringResource(R.string.successful_message_dead)
     val mensajeRegistroError = stringResource(R.string.error_message_dead)
@@ -97,11 +101,13 @@ fun Fallecimiento(
     val usbState by usbViewModel.state.collectAsState()
     val usbErrorText = usbState.error?.let { stringResource(it) }
 
-    val codiMoViewModel = hiltViewModel<CodiMoManagerViewModel>()
-    val codisMoExpandido by codiMoViewModel.codisMoExpandido.observeAsState(false)
-    val codiMoActivo by codiMoViewModel.codiMoActivo.observeAsState(null)
+
+    val codisMoExpandido by viewModel.codisMoExpandido.observeAsState(false)
+    val codiMoActivo by viewModel.codiMoActivo.observeAsState(null)
 
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+
+    var procedeDeLista by remember { mutableStateOf(false) }
 
     val locationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
@@ -109,13 +115,19 @@ fun Fallecimiento(
         val granted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true
                 || permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
         if (granted) {
-            obtenerUbicacion(fusedLocationClient, viewModel)
+            obtenerUbicacion(
+                fusedLocationClient = fusedLocationClient,
+                viewModel = viewModel,
+                onComplete = { cargandoUbicacion = false }
+            )
+        } else {
+            cargandoUbicacion = false
         }
     }
 
     LaunchedEffect(Unit) {
         usbViewModel.mensajes.collect { mensaje ->
-            viewModel.actualizarIdentificadorMuerte(mensaje)
+            viewModel.actualizarIdentificadorDesdeHardware(mensaje)
         }
     }
 
@@ -129,7 +141,7 @@ fun Fallecimiento(
         BluetoothScanDialog(
             bluetoothViewModel = bluetoothViewModel,
             onMensajeRecibido = { mensaje ->
-                viewModel.actualizarIdentificadorMuerte(mensaje)
+                viewModel.actualizarIdentificadorDesdeHardware(mensaje)
                 mostrarBluetooth = false
             },
             onDismiss = { mostrarBluetooth = false }
@@ -137,9 +149,14 @@ fun Fallecimiento(
     }
 
     LaunchedEffect(Unit) {
+        val animalId = AnimalSeleccionadoHolder.consume()
         when {
             historialId.isNotEmpty() -> viewModel.cargarDesdeHistorial(historialId)
             borradorId.isNotEmpty() -> viewModel.cargarBorradorPorId(borradorId)
+            animalId.isNotEmpty() -> {
+                viewModel.precargarAnimal(animalId)
+                procedeDeLista = true
+            }
         }
     }
 
@@ -156,7 +173,7 @@ fun Fallecimiento(
     LaunchedEffect(registroExitoso) {
         if (registroExitoso) {
             snackbarHostState.showSnackbar(mensajeRegistroExitoso, duration = SnackbarDuration.Short)
-            viewModel.resetearEstadoRegistroMuerte()
+            viewModel.resetearEstado()
         }
     }
 
@@ -166,21 +183,39 @@ fun Fallecimiento(
 
     if (mostrarDialogoError) {
         AlertDialog(
-            onDismissRequest = { mostrarDialogoError = false; viewModel.resetearEstadoRegistroMuerte() },
-            icon = { Icon(Icons.Default.ArrowBack, contentDescription = null, tint = ErrorRed, modifier = Modifier.size(48.dp)) },
-            title = { Text(mensajeRegistroError, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface) },
+            onDismissRequest = { mostrarDialogoError = false; viewModel.resetearEstado() },
+            icon = {
+                Icon(
+                    Icons.Default.ArrowBack,
+                    contentDescription = null,
+                    tint = ErrorRed,
+                    modifier = Modifier.size(48.dp)
+                )
+            },
+            title = {
+                Text(
+                    mensajeRegistroError,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            },
             text = {
                 Text(
                     mensajeError.ifEmpty { alertsErrosScreens(codiError!!) },
-                    fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 24.sp
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    lineHeight = 24.sp
                 )
             },
             confirmButton = {
                 Button(
-                    onClick = { mostrarDialogoError = false; viewModel.resetearEstadoRegistroMuerte() },
+                    onClick = { mostrarDialogoError = false; viewModel.resetearEstado() },
                     colors = ButtonDefaults.buttonColors(containerColor = ErrorRed),
                     shape = RoundedCornerShape(8.dp)
-                ) { Text(stringResource(R.string.error_buttom), fontWeight = FontWeight.SemiBold) }
+                ) {
+                    Text(stringResource(R.string.error_buttom), fontWeight = FontWeight.SemiBold)
+                }
             },
             containerColor = MaterialTheme.colorScheme.surface,
             shape = RoundedCornerShape(16.dp)
@@ -191,7 +226,9 @@ fun Fallecimiento(
         DatePickerDialog(
             onDismissRequest = { viewModel.ocultarDatePickerMuerte() },
             confirmButton = {
-                TextButton(onClick = { datePickerState.selectedDateMillis?.let { viewModel.seleccionarFechaMuerte(it) } }) {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let { viewModel.seleccionarFechaMuerte(it) }
+                }) {
                     Text(stringResource(R.string.accept_buttom), color = ErrorRed)
                 }
             },
@@ -203,7 +240,10 @@ fun Fallecimiento(
         ) {
             DatePicker(
                 state = datePickerState,
-                colors = DatePickerDefaults.colors(selectedDayContainerColor = ErrorRed, todayDateBorderColor = ErrorRed)
+                colors = DatePickerDefaults.colors(
+                    selectedDayContainerColor = ErrorRed,
+                    todayDateBorderColor = ErrorRed
+                )
             )
         }
     }
@@ -214,8 +254,18 @@ fun Fallecimiento(
                 TopAppBar(
                     title = {
                         Column {
-                            Text(stringResource(R.string.name_report_dead), fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
-                            if (modoLectura) Text("Solo lectura", fontSize = 13.sp, color = Color.White.copy(alpha = 0.8f))
+                            Text(
+                                stringResource(R.string.name_report_dead),
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            if (modoLectura) {
+                                Text(
+                                    "Solo lectura",
+                                    fontSize = 13.sp,
+                                    color = Color.White.copy(alpha = 0.8f)
+                                )
+                            }
                         }
                     },
                     navigationIcon = {
@@ -223,10 +273,14 @@ fun Fallecimiento(
                             when {
                                 historialId.isNotEmpty() -> navController.popBackStack()
                                 borradorId.isNotEmpty() -> navController.popBackStack()
+                                procedeDeLista -> navController.navigate(Routes.ListarBovinos.route)
                                 else -> navController.navigate(Routes.GestionBovinos.route)
                             }
                         }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(R.string.content_description_back)
+                            )
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -238,7 +292,12 @@ fun Fallecimiento(
             },
             snackbarHost = {
                 SnackbarHost(hostState = snackbarHostState) { data ->
-                    Snackbar(snackbarData = data, containerColor = MainGreen, contentColor = Color.White, shape = RoundedCornerShape(12.dp))
+                    Snackbar(
+                        snackbarData = data,
+                        containerColor = MainGreen,
+                        contentColor = Color.White,
+                        shape = RoundedCornerShape(12.dp)
+                    )
                 }
             },
             containerColor = MaterialTheme.colorScheme.background
@@ -252,109 +311,84 @@ fun Fallecimiento(
                 Spacer(modifier = Modifier.height(20.dp))
 
                 Card(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                     shape = MaterialTheme.shapes.large
                 ) {
                     Column(
-                        modifier = Modifier.fillMaxWidth().padding(24.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        ) {
+                        Row(modifier = Modifier.fillMaxWidth()) {
                             CodiMoSelector(
-                                codisMos = codiMoViewModel.getCodisMos(),
+                                codisMos = viewModel.getCodisMos(),
                                 seleccionado = codiMoActivo,
                                 expanded = codisMoExpandido,
-                                onToggle = { codiMoViewModel.toggleCodisMoExpandido() },
-                                onDismiss = { codiMoViewModel.cerrarCodisMo() },
-                                onSeleccionar = { codi -> codiMoViewModel.seleccionarCodiMo(codi) },
+                                onToggle = { viewModel.toggleCodisMoExpandido() },
+                                onDismiss = { viewModel.cerrarCodisMo() },
+                                onSeleccionar = { codi -> viewModel.seleccionarCodiMo(codi) },
                                 accentColor = ErrorRed
                             )
                         }
 
                         Column(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                stringResource(R.string.form_type_dead),
-                                fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-
-                            ExposedDropdownMenuBox(
+                            DropdownField(
+                                label = stringResource(R.string.form_type_dead),
+                                selectedValue = tipoSeleccionado,
                                 expanded = if (modoLectura) false else tipoExpandido,
-                                onExpandedChange = { if (!modoLectura) viewModel.toggleTipoMuerteExpandido() }
-                            ) {
-                                OutlinedTextField(
-                                    value = tipoSeleccionado,
-                                    onValueChange = {},
-                                    modifier = Modifier.fillMaxWidth().menuAnchor(),
-                                    enabled = !modoLectura,
-                                    readOnly = true,
-                                    placeholder = { Text(stringResource(R.string.form_type_dead_description), color = MaterialTheme.colorScheme.onSurfaceVariant) },
-                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = if (modoLectura) false else tipoExpandido) },
-                                    singleLine = true,
-                                    shape = MaterialTheme.shapes.medium,
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = ErrorRed,
-                                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                        focusedContainerColor = MaterialTheme.colorScheme.surface,
-                                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                                        disabledBorderColor = MaterialTheme.colorScheme.outline,
-                                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        disabledContainerColor = MaterialTheme.colorScheme.surface,
-                                    )
-                                )
-                                if (!modoLectura) {
-                                    ExposedDropdownMenu(
-                                        expanded = tipoExpandido,
-                                        onDismissRequest = { viewModel.cerrarTipoMuerteMenu() },
-                                        modifier = Modifier.background(MaterialTheme.colorScheme.surface)
-                                    ) {
-                                        elementosConCodigos.muertes().forEach { (tipo, codigo) ->
-                                            DropdownMenuItem(
-                                                text = { Text(tipo, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Normal) },
-                                                onClick = { viewModel.seleccionarTipoMuerte(tipo, codigo) },
-                                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
-                                            )
-                                        }
-                                    }
-                                }
-                            }
+                                placeholder = stringResource(R.string.form_type_dead_description),
+                                opciones = elementosConCodigos.getMuertes(),
+                                enabled = !modoLectura,
+                                onExpandedChange = { if (!modoLectura) viewModel.toggleTipoMuerteExpandido() },
+                                onDismissRequest = { viewModel.cerrarTipoMuerteMenu() },
+                                onSeleccionar = { codigo, nombre ->
+                                    if (!modoLectura) viewModel.seleccionarTipoMuerte(nombre, codigo)
+                                },
+                                accentColor = ErrorRed
+                            )
                         }
 
                         if (!modoLectura) {
-                            useDebounce(identificadorAnimal, delayMillis = 300L) { viewModel.searchBovinos(it) }
+                            useDebounce(identificadorAnimal, delayMillis = 300L) {
+                                viewModel.searchBovinos(it)
+                            }
                         }
                         CampoIdentificadorAutoComplete(
-                            label = if (tipoMuerte.contains("01")) stringResource(R.string.form_id_animal) else stringResource(R.string.form_id_mother),
+                            label = if (tipoMuerte.contains("01"))
+                                stringResource(R.string.form_id_animal)
+                            else
+                                stringResource(R.string.form_id_mother),
                             valor = identificadorAnimal,
-                            placeholder = if (tipoMuerte.contains("01")) stringResource(R.string.form_id_animal_description) else stringResource(R.string.form_mother_description),
+                            placeholder = if (tipoMuerte.contains("01"))
+                                stringResource(R.string.form_id_animal_description)
+                            else
+                                stringResource(R.string.form_mother_description),
                             enabled = !modoLectura,
-                            onValueChange = { viewModel.actualizarIdentificadorMuerte(it) },
+                            onValueChange = { viewModel.actualizarIdentificador(it) },
                             suggestions = suggestionsBovinos,
                             onAnimalSelected = { viewModel.onBovinoSelected(it) },
                             isLoadingSuggestions = isLoadingBovinos,
-                            onClickBluetooth = { bluetoothViewModel.iniciarEscaneo(context); mostrarBluetooth = true },
+                            onClickBluetooth = {
+                                bluetoothViewModel.iniciarEscaneo(context)
+                                mostrarBluetooth = true
+                            },
                             onClickUsb = { usbViewModel.conectar() }
                         )
 
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 stringResource(R.string.form_dead_date),
-                                fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                letterSpacing = 0.15.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
-
                             Box(
                                 modifier = if (!modoLectura)
                                     Modifier.fillMaxWidth().clickable { viewModel.mostrarDatePickerMuerte() }
@@ -365,8 +399,15 @@ fun Fallecimiento(
                                     value = fechaMuerte,
                                     onValueChange = {},
                                     modifier = Modifier.fillMaxWidth(),
-                                    placeholder = { Text(stringResource(R.string.form_date_description), color = MaterialTheme.colorScheme.onSurfaceVariant) },
-                                    leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = ErrorRed) },
+                                    placeholder = {
+                                        Text(
+                                            stringResource(R.string.form_date_description),
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    },
+                                    leadingIcon = {
+                                        Icon(Icons.Default.DateRange, contentDescription = null, tint = ErrorRed)
+                                    },
                                     readOnly = true,
                                     enabled = false,
                                     shape = MaterialTheme.shapes.medium,
@@ -386,8 +427,10 @@ fun Fallecimiento(
                             Column(modifier = Modifier.fillMaxWidth()) {
                                 Text(
                                     stringResource(R.string.form_pregnancy_months),
-                                    fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.onSurface, letterSpacing = 0.15.sp
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    letterSpacing = 0.15.sp
                                 )
                                 Spacer(modifier = Modifier.height(10.dp))
                                 OutlinedTextField(
@@ -395,7 +438,12 @@ fun Fallecimiento(
                                     onValueChange = { viewModel.actualizarMesesGestacion(it) },
                                     modifier = Modifier.fillMaxWidth(),
                                     enabled = !modoLectura,
-                                    placeholder = { Text(stringResource(R.string.form_pregnancy_months_description), color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                                    placeholder = {
+                                        Text(
+                                            stringResource(R.string.form_pregnancy_months_description),
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    },
                                     singleLine = true,
                                     shape = MaterialTheme.shapes.medium,
                                     colors = OutlinedTextFieldDefaults.colors(
@@ -412,7 +460,10 @@ fun Fallecimiento(
                                         disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
                                         disabledContainerColor = MaterialTheme.colorScheme.surface,
                                     ),
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done)
+                                    keyboardOptions = KeyboardOptions(
+                                        keyboardType = KeyboardType.Number,
+                                        imeAction = ImeAction.Done
+                                    )
                                 )
                             }
                         }
@@ -422,7 +473,9 @@ fun Fallecimiento(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Card(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                     shape = MaterialTheme.shapes.large
@@ -434,11 +487,20 @@ fun Fallecimiento(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(stringResource(R.string.title_cadaver), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+                                Text(
+                                    stringResource(R.string.title_cadaver),
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
                                 Spacer(modifier = Modifier.height(4.dp))
-                                Text(stringResource(R.string.description_cadaver), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 18.sp)
+                                Text(
+                                    stringResource(R.string.description_cadaver),
+                                    fontSize = 13.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    lineHeight = 18.sp
+                                )
                             }
-
                             Switch(
                                 checked = cadaverInaccesible,
                                 onCheckedChange = if (modoLectura) null else { { viewModel.toggleCadaverInaccesible() } },
@@ -455,21 +517,34 @@ fun Fallecimiento(
                             Spacer(modifier = Modifier.height(24.dp))
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
-                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                                ),
                                 shape = RoundedCornerShape(12.dp),
                                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                             ) {
                                 Column(modifier = Modifier.fillMaxWidth().padding(20.dp)) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Icon(Icons.Default.LocationOn, contentDescription = null, tint = MainOrange, modifier = Modifier.size(24.dp))
+                                        Icon(
+                                            Icons.Default.LocationOn,
+                                            contentDescription = null,
+                                            tint = MainOrange,
+                                            modifier = Modifier.size(24.dp)
+                                        )
                                         Spacer(modifier = Modifier.width(8.dp))
-                                        Text(stringResource(R.string.title_gps), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = ErrorRed)
+                                        Text(
+                                            stringResource(R.string.title_gps),
+                                            fontSize = 16.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = ErrorRed
+                                        )
                                     }
                                     Spacer(modifier = Modifier.height(16.dp))
 
                                     if (!modoLectura) {
                                         Button(
                                             onClick = {
+                                                cargandoUbicacion = true
                                                 val permisos = arrayOf(
                                                     Manifest.permission.ACCESS_FINE_LOCATION,
                                                     Manifest.permission.ACCESS_COARSE_LOCATION
@@ -477,25 +552,67 @@ fun Fallecimiento(
                                                 locationPermissionLauncher.launch(permisos)
                                             },
                                             modifier = Modifier.fillMaxWidth(),
-                                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),
+                                            enabled = !cargandoUbicacion,
+                                            colors = ButtonDefaults.buttonColors(
+                                                containerColor = MaterialTheme.colorScheme.surface,
+                                                disabledContainerColor = MaterialTheme.colorScheme.surface
+                                            ),
                                             shape = RoundedCornerShape(10.dp),
                                             elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
                                         ) {
-                                            Icon(Icons.Default.LocationOn, contentDescription = null, tint = MainOrange, modifier = Modifier.size(20.dp))
-                                            Spacer(modifier = Modifier.width(8.dp))
-                                            Text(stringResource(R.string.buttom_gps), color = ErrorRed, fontWeight = FontWeight.SemiBold)
+                                            if (cargandoUbicacion) {
+                                                CircularProgressIndicator(
+                                                    modifier = Modifier.size(20.dp),
+                                                    color = ErrorRed,
+                                                    strokeWidth = 2.dp
+                                                )
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text(
+                                                    stringResource(R.string.loading_processing),
+                                                    color = ErrorRed,
+                                                    fontWeight = FontWeight.SemiBold
+                                                )
+                                            } else {
+                                                Icon(
+                                                    Icons.Default.LocationOn,
+                                                    contentDescription = null,
+                                                    tint = MainOrange,
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text(
+                                                    stringResource(R.string.buttom_gps),
+                                                    color = ErrorRed,
+                                                    fontWeight = FontWeight.SemiBold
+                                                )
+                                            }
                                         }
+                                        Spacer(modifier = Modifier.height(16.dp))
                                     }
 
-                                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                    ) {
                                         Column(modifier = Modifier.weight(1f)) {
-                                            Text(stringResource(R.string.gps_laltitud), fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = ErrorRed)
+                                            Text(
+                                                stringResource(R.string.gps_laltitud),
+                                                fontSize = 13.sp,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = ErrorRed
+                                            )
                                             Spacer(modifier = Modifier.height(6.dp))
                                             OutlinedTextField(
                                                 value = coordenadaX,
                                                 onValueChange = { viewModel.actualizarCoordenadaX(it) },
                                                 enabled = !modoLectura,
-                                                placeholder = { Text(stringResource(R.string.gps_laltitud_description), fontSize = 13.sp, color = DarkOrange) },
+                                                placeholder = {
+                                                    Text(
+                                                        stringResource(R.string.gps_laltitud_description),
+                                                        fontSize = 13.sp,
+                                                        color = DarkOrange
+                                                    )
+                                                },
                                                 singleLine = true,
                                                 shape = RoundedCornerShape(8.dp),
                                                 colors = OutlinedTextFieldDefaults.colors(
@@ -513,17 +630,31 @@ fun Fallecimiento(
                                                     disabledContainerColor = MaterialTheme.colorScheme.surface,
                                                 ),
                                                 modifier = Modifier.fillMaxWidth(),
-                                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next)
+                                                keyboardOptions = KeyboardOptions(
+                                                    keyboardType = KeyboardType.Decimal,
+                                                    imeAction = ImeAction.Next
+                                                )
                                             )
                                         }
                                         Column(modifier = Modifier.weight(1f)) {
-                                            Text(stringResource(R.string.gps_longitud), fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = ErrorRed)
+                                            Text(
+                                                stringResource(R.string.gps_longitud),
+                                                fontSize = 13.sp,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = ErrorRed
+                                            )
                                             Spacer(modifier = Modifier.height(6.dp))
                                             OutlinedTextField(
                                                 value = coordenadaY,
                                                 onValueChange = { viewModel.actualizarCoordenadaY(it) },
                                                 enabled = !modoLectura,
-                                                placeholder = { Text(stringResource(R.string.gps_longitud_description), fontSize = 13.sp, color = DarkOrange) },
+                                                placeholder = {
+                                                    Text(
+                                                        stringResource(R.string.gps_longitud_description),
+                                                        fontSize = 13.sp,
+                                                        color = DarkOrange
+                                                    )
+                                                },
                                                 singleLine = true,
                                                 shape = RoundedCornerShape(8.dp),
                                                 colors = OutlinedTextFieldDefaults.colors(
@@ -541,7 +672,10 @@ fun Fallecimiento(
                                                     disabledContainerColor = MaterialTheme.colorScheme.surface,
                                                 ),
                                                 modifier = Modifier.fillMaxWidth(),
-                                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Done)
+                                                keyboardOptions = KeyboardOptions(
+                                                    keyboardType = KeyboardType.Decimal,
+                                                    imeAction = ImeAction.Done
+                                                )
                                             )
                                         }
                                     }
@@ -554,16 +688,27 @@ fun Fallecimiento(
                 if (!modoLectura) {
                     Button(
                         onClick = { viewModel.putMuerteBovino() },
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 24.dp).height(56.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 24.dp)
+                            .height(56.dp),
                         enabled = !estadoCarga,
                         colors = ButtonDefaults.buttonColors(
                             containerColor = ErrorRed,
                             disabledContainerColor = MaterialTheme.colorScheme.outline
                         ),
                         shape = MaterialTheme.shapes.medium,
-                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp, pressedElevation = 6.dp)
+                        elevation = ButtonDefaults.buttonElevation(
+                            defaultElevation = 2.dp,
+                            pressedElevation = 6.dp
+                        )
                     ) {
-                        Text(stringResource(R.string.buttom_form_dead), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.5.sp)
+                        Text(
+                            stringResource(R.string.buttom_form_dead),
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            letterSpacing = 0.5.sp
+                        )
                     }
                 } else {
                     Spacer(modifier = Modifier.height(24.dp))
@@ -586,10 +731,22 @@ fun Fallecimiento(
                     shape = RoundedCornerShape(16.dp)
                 ) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                            CircularProgressIndicator(modifier = Modifier.size(48.dp), color = ErrorRed, strokeWidth = 4.dp)
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(48.dp),
+                                color = ErrorRed,
+                                strokeWidth = 4.dp
+                            )
                             Spacer(modifier = Modifier.height(12.dp))
-                            Text(stringResource(R.string.loading_processing), fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(
+                                stringResource(R.string.loading_processing),
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                     }
                 }
@@ -598,16 +755,40 @@ fun Fallecimiento(
     }
 }
 
-
 @SuppressLint("MissingPermission")
 private fun obtenerUbicacion(
     fusedLocationClient: com.google.android.gms.location.FusedLocationProviderClient,
-    viewModel: ViewModelMuerteBovi
+    viewModel: ViewModelMuerteBovi,
+    onComplete: () -> Unit
 ) {
-    fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+    val cancellationTokenSource = com.google.android.gms.tasks.CancellationTokenSource()
+
+    fusedLocationClient.getCurrentLocation(
+        com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY,
+        cancellationTokenSource.token
+    ).addOnSuccessListener { location ->
         if (location != null) {
             val (x, y) = LocationUtils.latLonToUTM(location.latitude, location.longitude)
             viewModel.actualizarUbicacion(x, y)
+            onComplete()
+        } else {
+            fusedLocationClient.lastLocation
+                .addOnSuccessListener { lastLoc ->
+                    if (lastLoc != null) {
+                        val (x, y) = LocationUtils.latLonToUTM(lastLoc.latitude, lastLoc.longitude)
+                        viewModel.actualizarUbicacion(x, y)
+                    }
+                }
+                .addOnCompleteListener { onComplete() }
         }
+    }.addOnFailureListener {
+        fusedLocationClient.lastLocation
+            .addOnSuccessListener { lastLoc ->
+                if (lastLoc != null) {
+                    val (x, y) = LocationUtils.latLonToUTM(lastLoc.latitude, lastLoc.longitude)
+                    viewModel.actualizarUbicacion(x, y)
+                }
+            }
+            .addOnCompleteListener { onComplete() }
     }
 }

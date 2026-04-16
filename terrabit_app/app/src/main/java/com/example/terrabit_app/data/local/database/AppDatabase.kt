@@ -1,8 +1,6 @@
 package com.example.terrabit_app.data.local.database
 
-import android.content.Context
 import androidx.room.Database
-import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
@@ -21,10 +19,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun historialDao(): HistorialDao
 
     companion object {
-        @Volatile
-        private var INSTANCE: AppDatabase? = null
-
-        private val MIGRATION_1_2 = object : Migration(1, 2) {
+        val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL(
                     """
@@ -43,7 +38,8 @@ abstract class AppDatabase : RoomDatabase() {
 
         val MIGRATION_2_3 = object : Migration(2, 3) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("""
+                database.execSQL(
+                    """
                     CREATE TABLE IF NOT EXISTS historial (
                         id TEXT NOT NULL PRIMARY KEY,
                         tipo TEXT NOT NULL,
@@ -52,20 +48,8 @@ abstract class AppDatabase : RoomDatabase() {
                         datos TEXT NOT NULL,
                         resumen TEXT NOT NULL DEFAULT ''
                     )
-                """)
-            }
-        }
-        fun getDatabase(context: Context): AppDatabase {
-            return INSTANCE ?: synchronized(this) {
-                val instance = Room.databaseBuilder(
-                    context.applicationContext,
-                    AppDatabase::class.java,
-                    "terrabit_database"
+                    """.trimIndent()
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
-                    .build()
-                INSTANCE = instance
-                instance
             }
         }
     }
