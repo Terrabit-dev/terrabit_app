@@ -17,10 +17,10 @@ import javax.inject.Singleton
 object NetworkModule {
 
     private const val BASE_URL =
-        "https://preproduccio.aplicacions.agricultura.gencat.cat/gtr/"
+        "https://aplicacions.agricultura.gencat.cat/gtr/"
 
     private const val GTR_HOST =
-        "preproduccio.aplicacions.agricultura.gencat.cat"
+        "aplicacions.agricultura.gencat.cat"
 
     // Pines obtenidos con printCertPin() — actualizar antes de ir a producción
     private const val GTR_PIN        = "sha256/iQtsyFXPKCKfjjgrS/Cp0qbEYNmueGHXwDXwxancVHQ="
