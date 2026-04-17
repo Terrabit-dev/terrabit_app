@@ -382,7 +382,7 @@ fun Movimientos(
                                 onToggle = { viewModel.toggleCodisMoExpandido() },
                                 onDismiss = { viewModel.cerrarCodisMo() },
                                 onSeleccionar = { codi -> viewModel.seleccionarCodiMo(codi) },
-                                accentColor = ErrorRed
+                                accentColor = MainOrange
                             )
                         }
                         Text(stringResource(R.string.form_movs_title_necessary),

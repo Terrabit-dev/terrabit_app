@@ -104,7 +104,7 @@ fun GestionGuias(
     var indiceUsb           by remember { mutableStateOf<Int?>(null) }
 
     val successMessage  = stringResource(R.string.success_create_guide)
-    val datePlaceholder = stringResource(R.string.form_date_description)
+    val datePlaceholder = stringResource(R.string.form_date_arrival_description)
     val hourPlaceholder = stringResource(R.string.form_hour_arrival_description)
 
     val elementosConCodigos = ElementosConCodigos()

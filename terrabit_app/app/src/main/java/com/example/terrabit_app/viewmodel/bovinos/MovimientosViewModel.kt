@@ -136,6 +136,7 @@ class MovimientosViewModel @Inject constructor(
     private val limiteClassCanal = 5
 
     init {
+        cargarCodisMos()
         borradorSesionId = "movimiento_auto_${System.currentTimeMillis()}"
         cargarBovinosEnCache()
     }
