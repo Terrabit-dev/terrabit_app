@@ -43,7 +43,7 @@ fun GestionGuiasPorcinos(navController: NavController) {
             TopAppBar(
                 title = {
                     Text(
-                        "Gestion de Guias Porcinos",
+                        stringResource(R.string.gestion_name_porcinos),
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
@@ -94,7 +94,7 @@ fun GestionGuiasPorcinos(navController: NavController) {
                 ) {
                     TarjetaAccion(
                         icono = Icons.Default.Add,
-                        titulo = "Crear Guia",
+                        titulo = stringResource(R.string.btn_create_guide),
                         subtitulo = "",
                         colorFondo = MainOrange,
                         modifier = Modifier.weight(1f),

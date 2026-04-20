@@ -123,34 +123,28 @@ fun GuiasMovimientos(navController: NavController) {
                         onClick = { navController.navigate(Routes.GestionGuias.nuevo()) }
                     )
                     TarjetaAccion(
-                        icono = Icons.Default.Send,
-                        titulo = stringResource(R.string.action_confirm_movement),
+                        icono = Icons.Default.Checklist,
+                        titulo = stringResource(R.string.list_guies),
                         subtitulo = "",
                         colorFondo = MainOrange,
                         modifier = Modifier.weight(1f),
-                        onClick = { navController.navigate(Routes.Movimientos.nuevo()) }
+                        onClick = { navController.navigate(Routes.GuiasBovinos.route) }
                     )
                 }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+
                     TarjetaAccion(
                         icono = Icons.Default.Checklist,
-                        titulo = "Lista Guias",
-                        subtitulo = "",
-                        colorFondo = MainOrange,
-                        modifier = Modifier.weight(1f),
-                        onClick = { navController.navigate(Routes.GuiasBovinos.route) }
-                    )
-                    TarjetaAccion(
-                        icono = Icons.Default.Checklist,
-                        titulo = "Lista Movimientos",
+                        titulo = stringResource(R.string.list_moviment),
                         subtitulo = "",
                         colorFondo = MainOrange,
                         modifier = Modifier.weight(1f),
                         onClick = { navController.navigate(Routes.MovimientosBovinos.route) }
                     )
+                    Box(modifier = Modifier.weight(1f))
                 }
             }
 

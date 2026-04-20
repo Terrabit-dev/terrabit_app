@@ -395,11 +395,11 @@ private fun GuiaCardBovi(
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(text = stringResource(R.string.form_porcinos_fecha_salida), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(text = stringResource(R.string.form_porcinos_fecha_salida).dropLast(1), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(text = guia.dataSortida.ifBlank { "--/--/----" }, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(text = "Fecha de llegada", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(text = stringResource(R.string.form_porcinos_fecha_llegada).dropLast(1), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(text = guia.dataArribada.ifBlank { "--/--/----" }, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
                 }
             }
