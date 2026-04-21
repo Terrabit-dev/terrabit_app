@@ -204,7 +204,7 @@ class MaterialViewModel @Inject constructor(
                         limpiarFormulario()
                     }
                     !response.isSuccessful -> {
-                        _mensajeError.value = "Error HTTP ${response.code()}: ${response.message()}"
+                        _mensajeError.value = parsearMensajeError(response)
                         _operacionExitosa.value = false
                     }
                     else -> { _operacionExitosa.value = false; _mensajeError.value = "Error: Respuesta vacía del servidor" }
