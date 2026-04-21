@@ -186,13 +186,12 @@ class MaterialDuplicadoViewModel @Inject constructor(
                 identificadors         = _listaAnimales.value ?: emptyList()
             )
             val response = repositorio.putSolicitudDuplicado(request)
-            val body = response.body()!!
-            val codi = body.codi
+            val body = if (response.isSuccessful) response.body() else null
             withContext(Dispatchers.Main) {
                 _estadoCarga.value = false
                 when {
-                    response.isSuccessful && response.body()
-                        ?.let { it.codi == "0" || it.descripcio == "OK" } == true -> {
+                    response.isSuccessful && body?.descripcio == "OK" -> {
+                        val codi = body.codi
                         _operacionExitosa.value = true; _mensajeError.value = ""
                         _codiSeguimiento.value = codi
                         guardarEnHistorial(codi)
