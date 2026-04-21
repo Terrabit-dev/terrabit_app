@@ -186,13 +186,16 @@ class MaterialDuplicadoViewModel @Inject constructor(
                 identificadors         = _listaAnimales.value ?: emptyList()
             )
             val response = repositorio.putSolicitudDuplicado(request)
+            val body = response.body()!!
+            val codi = body.codi
             withContext(Dispatchers.Main) {
                 _estadoCarga.value = false
                 when {
                     response.isSuccessful && response.body()
                         ?.let { it.codi == "0" || it.descripcio == "OK" } == true -> {
                         _operacionExitosa.value = true; _mensajeError.value = ""
-                        guardarEnHistorial("Solicitud de duplicado enviada")
+                        _codiSeguimiento.value = codi
+                        guardarEnHistorial(codi)
                         eliminarBorradorAutomatico()
                         limpiarFormulario()
                     }

@@ -67,6 +67,9 @@ abstract class BaseBovinoViewModel : ViewModel() {
     protected val _codiError = MutableLiveData<Int?>()
     val codiError: LiveData<Int?> = _codiError
 
+    protected val _codiSeguimiento = MutableLiveData<String?>()
+    val codiSeguimiento: LiveData<String?> = _codiSeguimiento
+
     // ─── Borrador ─────────────────────────────────────────────────────────────
     protected var borradorSesionId: String = ""
 
@@ -315,6 +318,7 @@ abstract class BaseBovinoViewModel : ViewModel() {
         _operacionExitosa.value = false
         _mensajeError.value = ""
         _codiError.value = null
+        _codiSeguimiento.value = null
     }
 
     // ─── Métodos que los hijos pueden necesitar sobreescribir ─────────────────

@@ -192,13 +192,16 @@ class MaterialViewModel @Inject constructor(
                 unitats                = _listaUnidades.value ?: listOf(Unitat(codiExplotacio = null, nombreUnitats = "1"))
             )
             val response = repositorio.putSolicitudMaterial(request)
+            val body = response.body()!!
+            val codi = body.codi
             withContext(Dispatchers.Main) {
                 _estadoCarga.value = false
                 when {
                     response.isSuccessful && response.body()
                         ?.let { it.codi == "0" || it.descripcio == "OK" } == true -> {
                         _operacionExitosa.value = true; _mensajeError.value = ""
-                        guardarEnHistorial("Solicitud de material enviada")
+                        _codiSeguimiento.value = codi
+                        guardarEnHistorial("Solicitud de material enviada - $codi")
                         guardarHistorialCampos()
                         eliminarBorradorAutomatico()
                         limpiarFormulario()

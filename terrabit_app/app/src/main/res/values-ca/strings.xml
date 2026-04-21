@@ -850,4 +850,7 @@
     <string name="list_guies">Llista Guies</string>
     <string name="list_moviment">Llista Moviments</string>
     <string name="gestion_name_porcinos">Gestió de Guies Porcins</string>
+    <string name="message_save_codi">Guarda aquest codi per a consultar l\'estat de la teva sol·licitud.</string>
+    <string name="tracking_code">Codi de seguiment:</string>
+    <string name="request_sent">Sol·licitud enviada</string>
 </resources>
