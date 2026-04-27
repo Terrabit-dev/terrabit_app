@@ -2,12 +2,12 @@ package com.example.terrabit_app.data.network
 
 import com.example.terrabit_app.data.network.guias.Guias
 import com.example.terrabit_app.data.network.Identificadores.Identificadores
-import com.example.terrabit_app.data.network.moviminetos.modelos.Movimientos
-import com.example.terrabit_app.data.network.moviminetos.modelos.PetConfirmacionMovi
+import com.example.terrabit_app.data.network.movimientos.modelos.Movimientos
+import com.example.terrabit_app.data.network.movimientos.modelos.PetConfirmacionMovi
 import com.example.terrabit_app.data.network.animales.PetIdentificacion
 import com.example.terrabit_app.data.network.animales.PetModicarAnimal
-import com.example.terrabit_app.data.network.moviminetos.modelos.PetModificacioMovi
-import com.example.terrabit_app.data.network.moviminetos.modelos.PetRegistroIntercanvi
+import com.example.terrabit_app.data.network.movimientos.modelos.PetModificacioMovi
+import com.example.terrabit_app.data.network.movimientos.modelos.PetRegistroIntercanvi
 import com.example.terrabit_app.data.network.material.PetSolicitudDuplicado
 import com.example.terrabit_app.data.network.material.PetSolicitudMaterial
 import com.example.terrabit_app.data.network.guias.PeticionAltaGuia
