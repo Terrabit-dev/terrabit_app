@@ -396,19 +396,19 @@ private fun GuiaCardBovi(
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(text = stringResource(R.string.form_porcinos_fecha_salida).dropLast(1), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text(text = guia.dataSortida.ifBlank { "--/--/----" }, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
+                    Text(text = guia.dataSortida?.ifBlank { "--/--/----" } ?: "--/--/----", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     Text(text = stringResource(R.string.form_porcinos_fecha_llegada).dropLast(1), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text(text = guia.dataArribada.ifBlank { "--/--/----" }, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
+                    Text(text = guia.dataArribada?.ifBlank { "--/--/----" } ?: "--/--/----", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
                 }
             }
 
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 BoviInfoChip(icon = Icons.Default.Pets,          label = "${guia.numeroAnimals} ${stringResource(R.string.animals)}")
-                BoviInfoChip(icon = Icons.Default.LocalShipping, label = guia.matricula.ifBlank { stringResource(R.string.no_registration) })
-                if (guia.nifConductor.isNotBlank()) {
-                    BoviInfoChip(icon = Icons.Default.Person, label = guia.nifConductor)
+                BoviInfoChip(icon = Icons.Default.LocalShipping, label = guia.matricula?.ifBlank { stringResource(R.string.no_registration) } ?: stringResource(R.string.no_registration))
+                if (!guia.nifConductor.isNullOrBlank()) {
+                    BoviInfoChip(icon = Icons.Default.Person, label = guia.nifConductor!!)
                 }
             }
         }

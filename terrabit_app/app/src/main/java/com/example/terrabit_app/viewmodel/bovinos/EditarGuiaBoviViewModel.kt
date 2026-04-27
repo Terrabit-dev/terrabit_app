@@ -107,28 +107,27 @@ class EditarGuiaBoviViewModel @Inject constructor(
     fun cargarDatosGuia(guia: Guia) {
         codiRemoActual = guia.remo
 
-        _explotacioOrigen.value     = guia.explotacioOrigen
-        _explotacioDestinacio.value = guia.explotacioDestinacio
+        _explotacioOrigen.value     = guia.explotacioOrigen     ?: ""
+        _explotacioDestinacio.value = guia.explotacioDestinacio ?: ""
 
         // Fechas en formato "dd/MM/yyyy" y horas "HH:mm"
-        val partesSortida  = parsearFechaHora(guia.dataSortida)
-        val partesArribada = parsearFechaHora(guia.dataArribada)
+
+        val partesSortida  = parsearFechaHora(guia.dataSortida  ?: "")
+        val partesArribada = parsearFechaHora(guia.dataArribada ?: "")
 
         _dataSortida.value  = partesSortida.first
         _horaSortida.value  = partesSortida.second
         _dataArribada.value = partesArribada.first
         _horaArribada.value = partesArribada.second
 
-        _nomTransportista.value = guia.codiTransportista
-        _matricula.value        = guia.matricula
-        _nifConductor.value     = guia.nifConductor
+        _nomTransportista.value = guia.codiTransportista ?: ""   // ← antes sin ?: ""
+        _matricula.value        = guia.matricula         ?: ""   // ← antes sin ?: ""
+        _nifConductor.value     = guia.nifConductor      ?: ""   // ← antes sin ?: ""
 
         // La lista de identificadores viene directamente del modelo
-        _identificadors.value = if (guia.identificadors.isNotEmpty()) {
+        _identificadors.value = if (guia.identificadors.isNotEmpty())
             guia.identificadors.toMutableList()
-        } else {
-            mutableListOf("")
-        }
+        else mutableListOf("")
 
         Log.d("EDITAR_BOVI_VM", "Guía cargada: ${guia.remo}, ${guia.identificadors.size} ids")
     }
