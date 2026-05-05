@@ -285,6 +285,14 @@ abstract class BaseBovinoViewModel : ViewModel() {
             "Error al procesar respuesta"
         }
     }
+    protected fun parsearMensajeErrorRaw(errorBody: String): String {
+        return try {
+            val errorObj = Gson().fromJson(errorBody, RespuestaUnificada::class.java)
+            errorObj.errors?.firstOrNull()?.descripcio ?: "Error desconocido del servidor"
+        } catch (e: Exception) {
+            "Error al procesar respuesta"
+        }
+    }
 
     // ─── Utilidades de fecha ──────────────────────────────────────────────────
     @SuppressLint("DefaultLocale")

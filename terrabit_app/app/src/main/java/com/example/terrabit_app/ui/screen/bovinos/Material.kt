@@ -397,19 +397,19 @@ private fun UnidadesItem(
 
         val esError = codiMoObligatorio && codiMo.isNullOrEmpty()
 
-        if (obligatorio){
-            HistorialAutoCompleteField(
-                valor            = codiMo ?: "",
-                onValorChange    = oncodiMoChange,
-                label            = stringResource(R.string.label_codimo) + if (codiMoObligatorio) " *" else "",
-                clave            = "codi_mo",
-                historialManager = historialManager,
-                modifier         = Modifier.fillMaxWidth(),
-                enabled          = !modoLectura,
-                isError          = esError,
-                accentColor      = if (esError) ErrorRed else MainGreen
-            )
-        }
+
+        HistorialAutoCompleteField(
+            valor            = codiMo ?: "",
+            onValorChange    = oncodiMoChange,
+            label            = stringResource(R.string.label_codimo) + if (codiMoObligatorio) " *" else "",
+            clave            = "codi_mo",
+            historialManager = historialManager,
+            modifier         = Modifier.fillMaxWidth(),
+            enabled          = !modoLectura,
+            isError          = esError,
+            accentColor      = if (esError) ErrorRed else MainGreen
+        )
+
         if (esError) {
             Text(stringResource(R.string.alert_necessary_codiMO), fontSize = 12.sp, color = ErrorRed)
         }

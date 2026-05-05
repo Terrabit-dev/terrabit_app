@@ -191,10 +191,9 @@ class MaterialViewModel @Inject constructor(
                 tipusMaterial          = _codigoTipoMaterial.value ?: "",
                 unitats                = _listaUnidades.value ?: listOf(Unitat(codiExplotacio = null, nombreUnitats = "1"))
             )
-            Log.d("Solicitud Material", "Request: $request")
             val response = repositorio.putSolicitudMaterial(request)
-            val body = if (response.isSuccessful) response.body() else null  // ← una sola lectura
-
+            val body     = if (response.isSuccessful) response.body() else null
+            val errorRaw = if (!response.isSuccessful) response.errorBody()?.string() ?: "" else ""
             withContext(Dispatchers.Main) {
                 _estadoCarga.value = false
                 when {
@@ -209,7 +208,7 @@ class MaterialViewModel @Inject constructor(
                         limpiarFormulario()
                     }
                     !response.isSuccessful -> {
-                        _mensajeError.value = parsearMensajeError(response)
+                        _mensajeError.value = parsearMensajeErrorRaw(errorRaw)  // ← ya leído arriba
                         _operacionExitosa.value = false
                     }
                     else -> {
