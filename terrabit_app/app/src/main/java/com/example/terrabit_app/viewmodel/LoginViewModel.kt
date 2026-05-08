@@ -2,6 +2,7 @@ package com.example.terrabit_app.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.terrabit_app.data.local.DemoCredentialsLoader
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.utils.UserPreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,7 +22,8 @@ sealed class LoginState {
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val repository: Repositorio,
-    private val userPreferences: UserPreferences
+    private val userPreferences: UserPreferences,
+    private val demoLoader: DemoCredentialsLoader
 ) : ViewModel() {
 
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
@@ -48,8 +50,17 @@ class LoginViewModel @Inject constructor(
     private val _savedRememberMe = MutableStateFlow(false)
     val savedRememberMe: StateFlow<Boolean> = _savedRememberMe.asStateFlow()
 
+    /** True si el APK incluye credenciales demo cifradas. */
+    private val _demoDisponible = MutableStateFlow(false)
+    val demoDisponible: StateFlow<Boolean> = _demoDisponible.asStateFlow()
+
+    /** True mientras se está usando el flujo demo (los 3 campos se muestran como "*****"). */
+    private val _credencialesEnmascaradas = MutableStateFlow(false)
+    val credencialesEnmascaradas: StateFlow<Boolean> = _credencialesEnmascaradas.asStateFlow()
+
     init {
         loadSavedCredentials()
+        _demoDisponible.value = demoLoader.isAvailable()
     }
 
     private fun loadSavedCredentials() {
@@ -71,6 +82,11 @@ class LoginViewModel @Inject constructor(
         }
     }
 
+    /** Sale del modo enmascarado (para volver a editar tras un error en login demo). */
+    fun limpiarMascara() {
+        _credencialesEnmascaradas.value = false
+    }
+
     private fun validateFields(nif: String, password: String, codiMO: String): Boolean {
         var isValid = true
         if (nif.isBlank()) { _nifError.value = "El NIF es obligatorio"; isValid = false }
@@ -86,22 +102,7 @@ class LoginViewModel @Inject constructor(
         if (!validateFields(nif, password, codiMO)) return
         viewModelScope.launch {
             _loginState.value = LoginState.Loading
-            try {
-                val response = repository.getIdentificadoresDisponibles(nif, password, codiMO)
-                if (response.isSuccessful && response.body() != null) {
-                    val body = response.body()!!
-                    if (body.errors == null) {
-                        userPreferences.saveCredentials(nif, password, codiMO, rememberMe)
-                        _loginState.value = LoginState.Success(nif, password, codiMO)
-                    } else {
-                        _loginState.value = LoginState.Error("Credenciales incorrectas")
-                    }
-                } else {
-                    _loginState.value = LoginState.Error("Error: ${response.code()}")
-                }
-            } catch (e: Exception) {
-                _loginState.value = LoginState.Error("Error de conexión: ${e.message}")
-            }
+            ejecutarLogin(nif, password, codiMO, rememberMe)
         }
     }
 
@@ -110,6 +111,50 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch {
             userPreferences.saveCredentials(nif, password, codiMO, rememberMe)
             _loginState.value = LoginState.Success(nif, password, codiMO)
+        }
+    }
+
+    /**
+     * Carga las credenciales demo cifradas del APK, enmascara los campos
+     * de la UI ("*****") y ejecuta el login con las credenciales reales.
+     * Tras el éxito, las credenciales reales quedan en SecureStorage para
+     * que todos los endpoints (BaseBovinoViewModel, BasePorcinosViewModel, ...)
+     * las usen exactamente igual que en un login normal.
+     */
+    fun loginConCuentaDemo() {
+        viewModelScope.launch {
+            _loginState.value = LoginState.Loading
+            val demo = demoLoader.load()
+            if (demo == null) {
+                _loginState.value = LoginState.Error("No se pudo cargar la cuenta demo")
+                return@launch
+            }
+            _credencialesEnmascaradas.value = true
+            ejecutarLogin(demo.nif, demo.password, demo.codiMO, rememberMe = true)
+        }
+    }
+
+    private suspend fun ejecutarLogin(
+        nif: String,
+        password: String,
+        codiMO: String,
+        rememberMe: Boolean
+    ) {
+        try {
+            val response = repository.getIdentificadoresDisponibles(nif, password, codiMO)
+            if (response.isSuccessful && response.body() != null) {
+                val body = response.body()!!
+                if (body.errors == null) {
+                    userPreferences.saveCredentials(nif, password, codiMO, rememberMe)
+                    _loginState.value = LoginState.Success(nif, password, codiMO)
+                } else {
+                    _loginState.value = LoginState.Error("Credenciales incorrectas")
+                }
+            } else {
+                _loginState.value = LoginState.Error("Error: ${response.code()}")
+            }
+        } catch (e: Exception) {
+            _loginState.value = LoginState.Error("Error de conexión: ${e.message}")
         }
     }
 
