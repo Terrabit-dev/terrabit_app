@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
@@ -62,7 +63,7 @@ fun GestionGuias(
     val modoLectura = historialId.isNotEmpty()
 
     val context       = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
 
     val explotacioOrigen        by viewModel.explotacioOrigen.observeAsState("")
     val explotacioDestinacio    by viewModel.explotacioDestinacio.observeAsState("")
@@ -104,7 +105,7 @@ fun GestionGuias(
     var indiceUsb           by remember { mutableStateOf<Int?>(null) }
 
     val successMessage  = stringResource(R.string.success_create_guide)
-    val datePlaceholder = stringResource(R.string.form_date_description)
+    val datePlaceholder = stringResource(R.string.form_date_arrival_description)
     val hourPlaceholder = stringResource(R.string.form_hour_arrival_description)
 
     val elementosConCodigos = ElementosConCodigos()

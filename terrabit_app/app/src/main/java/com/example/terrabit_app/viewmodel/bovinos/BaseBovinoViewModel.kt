@@ -67,6 +67,9 @@ abstract class BaseBovinoViewModel : ViewModel() {
     protected val _codiError = MutableLiveData<Int?>()
     val codiError: LiveData<Int?> = _codiError
 
+    protected val _codiSeguimiento = MutableLiveData<String?>()
+    val codiSeguimiento: LiveData<String?> = _codiSeguimiento
+
     // ─── Borrador ─────────────────────────────────────────────────────────────
     protected var borradorSesionId: String = ""
 
@@ -282,6 +285,14 @@ abstract class BaseBovinoViewModel : ViewModel() {
             "Error al procesar respuesta"
         }
     }
+    protected fun parsearMensajeErrorRaw(errorBody: String): String {
+        return try {
+            val errorObj = Gson().fromJson(errorBody, RespuestaUnificada::class.java)
+            errorObj.errors?.firstOrNull()?.descripcio ?: "Error desconocido del servidor"
+        } catch (e: Exception) {
+            "Error al procesar respuesta"
+        }
+    }
 
     // ─── Utilidades de fecha ──────────────────────────────────────────────────
     @SuppressLint("DefaultLocale")
@@ -315,6 +326,7 @@ abstract class BaseBovinoViewModel : ViewModel() {
         _operacionExitosa.value = false
         _mensajeError.value = ""
         _codiError.value = null
+        _codiSeguimiento.value = null
     }
 
     // ─── Métodos que los hijos pueden necesitar sobreescribir ─────────────────

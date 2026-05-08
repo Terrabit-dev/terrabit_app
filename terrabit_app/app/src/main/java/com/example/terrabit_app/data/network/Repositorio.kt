@@ -11,9 +11,9 @@ import com.example.terrabit_app.data.network.guias.PeticionAltaGuia
 import com.example.terrabit_app.data.network.guias.PeticionModificarGuia
 import com.example.terrabit_app.data.network.material.PetSolicitudDuplicado
 import com.example.terrabit_app.data.network.material.PetSolicitudMaterial
-import com.example.terrabit_app.data.network.moviminetos.modelos.PetConfirmacionMovi
-import com.example.terrabit_app.data.network.moviminetos.modelos.PetModificacioMovi
-import com.example.terrabit_app.data.network.moviminetos.modelos.PetRegistroIntercanvi
+import com.example.terrabit_app.data.network.movimientos.modelos.PetConfirmacionMovi
+import com.example.terrabit_app.data.network.movimientos.modelos.PetModificacioMovi
+import com.example.terrabit_app.data.network.movimientos.modelos.PetRegistroIntercanvi
 import com.example.terrabit_app.data.network.DataClassPorcinos.AltaMovimientoGTR
 import com.example.terrabit_app.data.network.DataClassPorcinos.ConfirmarMovimientosRequest
 import com.example.terrabit_app.data.network.DataClassPorcinos.ModificarMovimentsAGias

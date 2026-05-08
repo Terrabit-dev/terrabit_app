@@ -5,7 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.local.HistorialCamposManager
 import com.example.terrabit_app.data.network.Repositorio
-import com.example.terrabit_app.data.network.moviminetos.modelos.Moviment
+import com.example.terrabit_app.data.network.movimientos.modelos.Moviment
 import com.example.terrabit_app.utils.UserPreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch

@@ -274,7 +274,7 @@ fun IdentificacionApalzada(
                                 onToggle = { viewModel.toggleCodisMoExpandido() },
                                 onDismiss = { viewModel.cerrarCodisMo() },
                                 onSeleccionar = { codi -> viewModel.seleccionarCodiMo(codi) },
-                                accentColor = ErrorRed
+                                accentColor = MainGreen
                             )
                         }
                         if (!modoLectura) {

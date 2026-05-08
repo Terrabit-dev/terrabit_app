@@ -10,6 +10,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -20,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -79,13 +81,53 @@ fun Material(
     val direccionExplotacion = "02"
     val direccionOficinaComarcal = "01"
 
-    val mensajeExito = stringResource(R.string.successful_message_material)
+
+    val codiSeguimiento by viewModel.codiSeguimiento.observeAsState()
+    var mostrarDialogoExito by remember { mutableStateOf(false) }
 
     LaunchedEffect(registroExitoso) {
-        if (registroExitoso) {
-            snackbarHostState.showSnackbar(mensajeExito, duration = SnackbarDuration.Short)
-            viewModel.resetearEstado()
-        }
+        if (registroExitoso) mostrarDialogoExito = true
+    }
+
+    if (mostrarDialogoExito && codiSeguimiento != null) {
+        AlertDialog(
+            onDismissRequest = {
+                mostrarDialogoExito = false
+                viewModel.resetearEstado()
+            },
+            icon = {
+                Icon(Icons.Default.CheckCircle, contentDescription = null,
+                    tint = MainGreen, modifier = Modifier.size(48.dp))
+            },
+            title = {
+                Text(stringResource(R.string.request_sent), fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface)
+            },
+            text = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.tracking_code), fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(codiSeguimiento!!, fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold, color = MainGreen,
+                        letterSpacing = 1.sp)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(stringResource(R.string.message_save_codi),
+                        fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center, lineHeight = 18.sp)
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { mostrarDialogoExito = false; viewModel.resetearEstado() },
+                    colors = ButtonDefaults.buttonColors(containerColor = MainGreen),
+                    shape = RoundedCornerShape(8.dp)
+                ) { Text(stringResource(R.string.accept_buttom), fontWeight = FontWeight.SemiBold) }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(16.dp)
+        )
     }
 
     LaunchedEffect(mensajeError) {
@@ -355,19 +397,19 @@ private fun UnidadesItem(
 
         val esError = codiMoObligatorio && codiMo.isNullOrEmpty()
 
-        if (obligatorio){
-            HistorialAutoCompleteField(
-                valor            = codiMo ?: "",
-                onValorChange    = oncodiMoChange,
-                label            = stringResource(R.string.label_codimo) + if (codiMoObligatorio) " *" else "",
-                clave            = "codi_mo",
-                historialManager = historialManager,
-                modifier         = Modifier.fillMaxWidth(),
-                enabled          = !modoLectura,
-                isError          = esError,
-                accentColor      = if (esError) ErrorRed else MainGreen
-            )
-        }
+
+        HistorialAutoCompleteField(
+            valor            = codiMo ?: "",
+            onValorChange    = oncodiMoChange,
+            label            = stringResource(R.string.label_codimo) + if (codiMoObligatorio) " *" else "",
+            clave            = "codi_mo",
+            historialManager = historialManager,
+            modifier         = Modifier.fillMaxWidth(),
+            enabled          = !modoLectura,
+            isError          = esError,
+            accentColor      = if (esError) ErrorRed else MainGreen
+        )
+
         if (esError) {
             Text(stringResource(R.string.alert_necessary_codiMO), fontSize = 12.sp, color = ErrorRed)
         }

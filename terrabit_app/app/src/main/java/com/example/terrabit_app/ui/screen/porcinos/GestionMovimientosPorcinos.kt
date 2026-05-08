@@ -43,7 +43,7 @@ fun GuiasMovimientosPorcinos(navController: NavController) {
             TopAppBar(
                 title = {
                     Text(
-                        text = stringResource(R.string.card_name_guias),
+                        text = stringResource(R.string.gest_bovinos_movi),
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )

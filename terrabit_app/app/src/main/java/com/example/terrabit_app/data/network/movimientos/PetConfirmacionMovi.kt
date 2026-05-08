@@ -1,4 +1,4 @@
-package com.example.terrabit_app.data.network.moviminetos.modelos
+package com.example.terrabit_app.data.network.movimientos.modelos
 
 import com.example.terrabit_app.data.network.Identificadores.IdenMovimiento
 

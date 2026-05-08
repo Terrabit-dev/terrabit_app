@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -21,6 +22,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -56,7 +58,7 @@ fun MaterialDuplicadosScreen(
 
     val empresaSubministradora      by viewModel.empresaSubministradora.observeAsState("")
     val tipoEnviamiento             by viewModel.tipoEnviamiento.observeAsState(null)
-    val tipoDireccionEnvio          by viewModel.tipoEnviamiento.observeAsState(null)
+    val tipoDireccionEnvio          by viewModel.destinoEnvio.observeAsState(null)
     val oficinaComarcal             by viewModel.oficinaComarcal.observeAsState("")
     val direccionEnvio              by viewModel.direccion.observeAsState("")
     val poblacion                   by viewModel.poblacion.observeAsState("")
@@ -85,8 +87,6 @@ fun MaterialDuplicadosScreen(
     val codisMoExpandido by viewModel.codisMoExpandido.observeAsState(false)
     val codiMoActivo by viewModel.codiMoActivo.observeAsState(null)
 
-    val successMessage       = stringResource(R.string.success_duplicate_request)
-
     val direccionAlternativa     = "03"
     val direccionExplotacion     = "02"
     val direccionOficinaComarcal = "01"
@@ -94,6 +94,54 @@ fun MaterialDuplicadosScreen(
     val usbViewModel = hiltViewModel<UsbSerialViewModel>()
     val usbState     by usbViewModel.state.collectAsState()
     val usbErrorText = usbState.error?.let { stringResource(it) }
+
+    val codiSeguimiento by viewModel.codiSeguimiento.observeAsState()
+    var mostrarDialogoExito by remember { mutableStateOf(false) }
+
+    LaunchedEffect(registroExitoso) {
+        if (registroExitoso) mostrarDialogoExito = true
+    }
+
+    if (mostrarDialogoExito && codiSeguimiento != null) {
+        AlertDialog(
+            onDismissRequest = {
+                mostrarDialogoExito = false
+                viewModel.resetearEstado()
+            },
+            icon = {
+                Icon(Icons.Default.CheckCircle, contentDescription = null,
+                    tint = MainGreen, modifier = Modifier.size(48.dp))
+            },
+            title = {
+                Text(stringResource(R.string.request_sent), fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface)
+            },
+            text = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.tracking_code), fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(codiSeguimiento!!, fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold, color = MainGreen,
+                        letterSpacing = 1.sp)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(stringResource(R.string.message_save_codi),
+                        fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center, lineHeight = 18.sp)
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { mostrarDialogoExito = false; viewModel.resetearEstado() },
+                    colors = ButtonDefaults.buttonColors(containerColor = MainGreen),
+                    shape = RoundedCornerShape(8.dp)
+                ) { Text(stringResource(R.string.accept_buttom), fontWeight = FontWeight.SemiBold) }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(16.dp)
+        )
+    }
 
     // ── USB: traducción automática de prefijo de país ──────────────────────
     LaunchedEffect(Unit) {
@@ -123,13 +171,6 @@ fun MaterialDuplicadosScreen(
                 indiceBluetooth  = null
             }
         )
-    }
-
-    LaunchedEffect(registroExitoso) {
-        if (registroExitoso) {
-            snackbarHostState.showSnackbar(successMessage, duration = SnackbarDuration.Short)
-            viewModel.resetearEstado()
-        }
     }
 
     LaunchedEffect(mensajeError) {
@@ -292,7 +333,7 @@ fun MaterialDuplicadosScreen(
                             onExpandedChange = { viewModel.toggleEmpresaExpandida() },
                             onDismissRequest = { viewModel.cerrarEmpresaMenu() },
                             onSeleccionar = { codigo, nombre ->
-                                viewModel.seleccionarEmpresa(codigo, nombre)
+                                viewModel.seleccionarEmpresa(nombre, codigo)
                             },
                             accentColor = MainGreen
                         )
@@ -336,7 +377,7 @@ fun MaterialDuplicadosScreen(
                                 onExpandedChange = { viewModel.toggleOficinaComarcalExpandida() },
                                 onDismissRequest = { viewModel.cerrarOficinaComarcalMenu() },
                                 onSeleccionar = { codigo, nombre ->
-                                    viewModel.seleccionarOficinaComarcal(codigo, nombre)
+                                    viewModel.seleccionarOficinaComarcal(nombre, codigo)
                                 },
                                 accentColor = MainGreen
                             )

@@ -356,7 +356,7 @@ fun EditarGuiaBovi(
                                 modifier = Modifier.weight(1f),
                                 label    = stringResource(R.string.form_date_departure),
                                 value    = dataSortida,
-                                placeholder = stringResource(R.string.form_date_description),
+                                placeholder = stringResource(R.string.form_date_arrival_description),
                                 icon    = { Icon(Icons.Default.DateRange, contentDescription = null, tint = MainOrange) },
                                 onClick = { viewModel.mostrarDatePickerSortida() }
                             )
@@ -379,7 +379,7 @@ fun EditarGuiaBovi(
                                 modifier    = Modifier.weight(1f),
                                 label       = stringResource(R.string.form_date_arrival),
                                 value       = dataArribada,
-                                placeholder = stringResource(R.string.form_date_description),
+                                placeholder = stringResource(R.string.form_date_arrival_description),
                                 icon        = { Icon(Icons.Default.DateRange, contentDescription = null, tint = MainOrange) },
                                 onClick     = { viewModel.mostrarDatePickerArribada() }
                             )

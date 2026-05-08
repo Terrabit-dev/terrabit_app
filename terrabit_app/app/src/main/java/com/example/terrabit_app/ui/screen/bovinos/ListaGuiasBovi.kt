@@ -375,9 +375,9 @@ private fun GuiaCardBovi(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text(text = guia.explotacioOrigen, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface, maxLines = 1)
+                    Text(text = guia.explotacioOrigen?:"", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface, maxLines = 1)
                     Icon(imageVector = Icons.Default.ArrowForward, contentDescription = null, tint = MainOrange, modifier = Modifier.size(16.dp))
-                    Text(text = guia.explotacioDestinacio, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface, maxLines = 1)
+                    Text(text = guia.explotacioDestinacio?:"", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface, maxLines = 1)
                 }
                 FilledIconButton(
                     onClick  = { onEditarClick() },
@@ -395,20 +395,20 @@ private fun GuiaCardBovi(
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(text = "Fecha de salida", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text(text = guia.dataSortida.ifBlank { "--/--/----" }, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
+                    Text(text = stringResource(R.string.form_porcinos_fecha_salida).dropLast(1), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(text = guia.dataSortida?.ifBlank { "--/--/----" } ?: "--/--/----", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(text = "Fecha de llegada", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text(text = guia.dataArribada.ifBlank { "--/--/----" }, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
+                    Text(text = stringResource(R.string.form_porcinos_fecha_llegada).dropLast(1), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(text = guia.dataArribada?.ifBlank { "--/--/----" } ?: "--/--/----", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
                 }
             }
 
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 BoviInfoChip(icon = Icons.Default.Pets,          label = "${guia.numeroAnimals} ${stringResource(R.string.animals)}")
-                BoviInfoChip(icon = Icons.Default.LocalShipping, label = guia.matricula.ifBlank { stringResource(R.string.no_registration) })
-                if (guia.nifConductor.isNotBlank()) {
-                    BoviInfoChip(icon = Icons.Default.Person, label = guia.nifConductor)
+                BoviInfoChip(icon = Icons.Default.LocalShipping, label = guia.matricula?.ifBlank { stringResource(R.string.no_registration) } ?: stringResource(R.string.no_registration))
+                if (!guia.nifConductor.isNullOrBlank()) {
+                    BoviInfoChip(icon = Icons.Default.Person, label = guia.nifConductor!!)
                 }
             }
         }

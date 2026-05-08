@@ -1,39 +1,25 @@
 package com.example.terrabit_app.viewmodel.bovinos
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.local.HistorialCamposManager
 import com.example.terrabit_app.data.network.Repositorio
 import com.example.terrabit_app.data.network.Identificadores.IdenMovimiento
 import com.example.terrabit_app.data.network.lista_bovinos.Animal
-import com.example.terrabit_app.data.network.moviminetos.modelos.Movimientos
-import com.example.terrabit_app.data.network.moviminetos.modelos.PetConfirmacionMovi
-import com.example.terrabit_app.data.network.respuestas.RespuestaUnificada
+import com.example.terrabit_app.data.network.movimientos.modelos.Movimientos
+import com.example.terrabit_app.data.network.movimientos.modelos.PetConfirmacionMovi
 import com.example.terrabit_app.utils.DateUtils.convertirFechaAFormatoAPI
 import com.example.terrabit_app.utils.UserPreferences
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
 import javax.inject.Inject
 import com.example.terrabit_app.data.local.dao.BorradorDao
 import com.example.terrabit_app.data.local.dao.HistorialDao
-import com.example.terrabit_app.data.local.database.BorradorEntity
-import com.example.terrabit_app.data.local.database.HistorialEntity
-import com.example.terrabit_app.data.network.moviminetos.modelos.Moviment
+import com.example.terrabit_app.data.network.movimientos.modelos.Moviment
 import com.example.terrabit_app.utils.CodigoPaisUtils
-import java.io.IOException
-import java.net.SocketTimeoutException
-import java.util.UUID
 
 @HiltViewModel
 class MovimientosViewModel @Inject constructor(
@@ -136,6 +122,7 @@ class MovimientosViewModel @Inject constructor(
     private val limiteClassCanal = 5
 
     init {
+        cargarCodisMos()
         borradorSesionId = "movimiento_auto_${System.currentTimeMillis()}"
         cargarBovinosEnCache()
     }

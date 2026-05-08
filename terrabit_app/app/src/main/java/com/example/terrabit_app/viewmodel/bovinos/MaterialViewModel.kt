@@ -183,31 +183,38 @@ class MaterialViewModel @Inject constructor(
                 tipusEnviament         = codigoTipoEnvio,
                 adrecaLliurament       = codigoDestino,
                 oc                     = if (codigoDestino == "01") codigoOC else null,
-                adreca                 = _direccion.value?.takeIf { codigoDestino in listOf("02", "03") && it.isNotEmpty() },
-                poblacio               = _poblacion.value?.takeIf { codigoDestino in listOf("02", "03") && it.isNotEmpty() },
-                cp                     = _codigoPostal.value?.takeIf { codigoDestino in listOf("02", "03") && it.isNotEmpty() },
-                municipi               = _municipio.value?.takeIf { codigoDestino in listOf("02", "03") && it.isNotEmpty() },
-                telefonContacte        = _telefonoContacto.value?.takeIf { codigoDestino in listOf("02", "03") && it.isNotEmpty() },
+                adreca                 = if (codigoDestino == "03") _direccion.value else null,
+                poblacio               = if (codigoDestino == "03") _poblacion.value else null,
+                cp                     = if (codigoDestino == "03") _codigoPostal.value else null,
+                municipi               = if (codigoDestino == "03") _municipio.value else null,
+                telefonContacte        = if (codigoDestino == "03") _telefonoContacto.value else null,
                 tipusMaterial          = _codigoTipoMaterial.value ?: "",
                 unitats                = _listaUnidades.value ?: listOf(Unitat(codiExplotacio = null, nombreUnitats = "1"))
             )
             val response = repositorio.putSolicitudMaterial(request)
+            val body     = if (response.isSuccessful) response.body() else null
+            val errorRaw = if (!response.isSuccessful) response.errorBody()?.string() ?: "" else ""
             withContext(Dispatchers.Main) {
                 _estadoCarga.value = false
                 when {
-                    response.isSuccessful && response.body()
-                        ?.let { it.codi == "0" || it.descripcio == "OK" } == true -> {
-                        _operacionExitosa.value = true; _mensajeError.value = ""
-                        guardarEnHistorial("Solicitud de material enviada")
+                    response.isSuccessful && body?.descripcio == "OK" -> {
+                        val codi = body.codi
+                        _operacionExitosa.value = true
+                        _mensajeError.value = ""
+                        _codiSeguimiento.value = codi
+                        guardarEnHistorial("Solicitud de material enviada - $codi")
                         guardarHistorialCampos()
                         eliminarBorradorAutomatico()
                         limpiarFormulario()
                     }
                     !response.isSuccessful -> {
-                        _mensajeError.value = "Error HTTP ${response.code()}: ${response.message()}"
+                        _mensajeError.value = parsearMensajeErrorRaw(errorRaw)  // ← ya leído arriba
                         _operacionExitosa.value = false
                     }
-                    else -> { _operacionExitosa.value = false; _mensajeError.value = "Error: Respuesta vacía del servidor" }
+                    else -> {
+                        _operacionExitosa.value = false
+                        _mensajeError.value = "Error: Respuesta vacía del servidor"
+                    }
                 }
             }
         }

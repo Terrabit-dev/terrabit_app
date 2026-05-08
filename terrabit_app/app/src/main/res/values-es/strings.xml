@@ -847,4 +847,10 @@
     <string name="no_registration">Sin matrícula</string>
     <string name="gest_bovinos_movi">Gestión de movimientos</string>
     <string name="found_mov">movimientos encontrados</string>
+    <string name="list_guies">Lista Guias</string>
+    <string name="list_moviment">Lista Movimientos</string>
+    <string name="gestion_name_porcinos">Gestión de Guías Porcinos</string>
+    <string name="message_save_codi">Guarda este código para consultar el estado de tu solicitud.</string>
+    <string name="tracking_code">Código de seguimiento:</string>
+    <string name="request_sent">Solicitud enviada</string>
 </resources>

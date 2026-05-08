@@ -21,7 +21,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -31,10 +30,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.example.terrabit_app.R
-import com.example.terrabit_app.data.network.moviminetos.modelos.Moviment
+import com.example.terrabit_app.data.network.movimientos.modelos.Moviment
 import com.example.terrabit_app.ui.components.HistorialAutoCompleteField
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.utils.components.CampoIdentificadorAutoComplete
@@ -382,7 +380,7 @@ fun Movimientos(
                                 onToggle = { viewModel.toggleCodisMoExpandido() },
                                 onDismiss = { viewModel.cerrarCodisMo() },
                                 onSeleccionar = { codi -> viewModel.seleccionarCodiMo(codi) },
-                                accentColor = ErrorRed
+                                accentColor = MainOrange
                             )
                         }
                         Text(stringResource(R.string.form_movs_title_necessary),
