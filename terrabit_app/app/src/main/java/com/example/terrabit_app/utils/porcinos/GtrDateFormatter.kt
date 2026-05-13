@@ -1,6 +1,6 @@
 package com.example.terrabit_app.utils.porcinos
 
-import android.util.Log
+import com.example.terrabit_app.utils.SecureLog
 
 object GtrDateFormatter {
 
@@ -23,7 +23,7 @@ object GtrDateFormatter {
                 } else ""
             } else ""
         } catch (e: Exception) {
-            Log.e("GTR_Conv", "Error en conversión API: ${e.message}")
+            SecureLog.e("GTR_Conv", "Error en conversión API: ${e.message}")
             ""
         }
     }

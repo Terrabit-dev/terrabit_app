@@ -1,6 +1,6 @@
 package com.example.terrabit_app.viewmodel.bovinos
 
-import android.util.Log
+import com.example.terrabit_app.utils.SecureLog
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
@@ -105,7 +105,7 @@ class CorrecionSexoViewModel @Inject constructor(
                     ?: return@launch
                 cargarBorradorPorId(borrador.id)
             } catch (e: Exception) {
-                Log.e(getTipoRegistro(), "Error al cargar borrador existente: ${e.message}", e)
+                SecureLog.e(getTipoRegistro(), "Error al cargar borrador existente: ${e.message}", e)
             }
         }
     }

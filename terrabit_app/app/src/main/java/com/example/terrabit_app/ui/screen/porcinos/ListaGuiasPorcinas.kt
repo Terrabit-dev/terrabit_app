@@ -1,7 +1,7 @@
 package com.example.terrabit_app.ui.screen.porcinos
 
 import android.os.Build
-import android.util.Log
+import com.example.terrabit_app.utils.SecureLog
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -280,7 +280,7 @@ fun GuiaCard(
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 InfoChip(icon = Icons.Default.Pets, label = "${guia.nombreAnimals}")
                 InfoChip(icon = Icons.Default.Category, label = "Cat. ${ElementosConCodigosPorcinos().categorias()[guia.categoria]}")
-                Log.d("Guia info", "Informacion: $guia - ${guia.categoria}")
+                SecureLog.d("Guia info", "Informacion: $guia - ${guia.categoria}")
                 guia.vehicle?.let { InfoChip(icon = Icons.Default.LocalShipping, label = it) }
             }
         }

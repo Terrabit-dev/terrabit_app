@@ -7,7 +7,7 @@ import android.bluetooth.BluetoothSocket
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
-import android.util.Log
+import com.example.terrabit_app.utils.SecureLog
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -49,7 +49,7 @@ object ArduinoBluetoothManager {
                 Pair(device.name ?: "Desconocido", device.address)
             } ?: emptyList()
         } catch (e: SecurityException) {
-            Log.e(TAG, "Sin permiso para listar dispositivos: ${e.message}")
+            SecureLog.e(TAG, "Sin permiso para listar dispositivos: ${e.message}")
             emptyList()
         }
     }
@@ -81,7 +81,7 @@ object ArduinoBluetoothManager {
                 socket = device.createRfcommSocketToServiceRecord(SPP_UUID)
                 socket!!.connect()
 
-                Log.d(TAG, "Conectado a $macAddress")
+                SecureLog.d(TAG, "Conectado a $macAddress")
 
                 // Leer hasta encontrar salto de línea (\n) o retorno (\r\n)
                 val inputStream = socket!!.inputStream
@@ -104,18 +104,18 @@ object ArduinoBluetoothManager {
                     }
                 }
 
-                Log.d(TAG, "Mensaje recibido: $mensaje")
+                SecureLog.d(TAG, "Mensaje recibido: $mensaje")
                 _mensajesFlow.emit(mensaje)
                 cerrarSocket()
 
                 Result.success(mensaje)
 
             } catch (e: IOException) {
-                Log.e(TAG, "Error de conexión: ${e.message}")
+                SecureLog.e(TAG, "Error de conexión: ${e.message}")
                 cerrarSocket()
                 Result.failure(e)
             } catch (e: SecurityException) {
-                Log.e(TAG, "Error de permisos: ${e.message}")
+                SecureLog.e(TAG, "Error de permisos: ${e.message}")
                 cerrarSocket()
                 Result.failure(e)
             }

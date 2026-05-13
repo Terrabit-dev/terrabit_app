@@ -8,6 +8,7 @@ import com.example.terrabit_app.utils.UserPreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -38,12 +39,25 @@ class ConfigurationViewModel @Inject constructor(
     private val _isDarkTheme = MutableStateFlow(false)
     val isDarkTheme: StateFlow<Boolean> = _isDarkTheme
 
-    val nif: String = userPreferences.getNif() ?: "No disponible"
+    // ──────────────────────────────────────────────────────────────────
+    // NIF reactivo. Antes era `val nif: String = userPreferences.getNif()`,
+    // que se evaluaba una sola vez al construir el ViewModel (cuando las
+    // credenciales aún podían ser null tras login). Con StateFlow + refreshNif()
+    // la UI puede re-pedirlo cada vez que se monta la pantalla.
+    // ──────────────────────────────────────────────────────────────────
+    private val _nif = MutableStateFlow("")
+    val nif: StateFlow<String> = _nif.asStateFlow()
 
     init {
+        refreshNif()
         viewModelScope.launch {
             _isDarkTheme.value = userPreferences.getDarkTheme()
         }
+    }
+
+    /** Releer el NIF desde SecureStorage. Llamar desde la UI con un LaunchedEffect. */
+    fun refreshNif() {
+        _nif.value = userPreferences.getNif() ?: "No disponible"
     }
 
     fun toggleTheme(isDark: Boolean) {

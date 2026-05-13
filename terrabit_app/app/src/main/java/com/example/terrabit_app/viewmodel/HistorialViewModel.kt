@@ -1,6 +1,6 @@
 package com.example.terrabit_app.viewmodel
 
-import android.util.Log
+import com.example.terrabit_app.utils.SecureLog
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -35,7 +35,7 @@ class HistorialViewModel @Inject constructor(
                 val texto = _textoBusqueda.value ?: ""
                 _historialFiltrado.postValue(if (texto.isBlank()) lista else lista.filter { filtrar(it, texto) })
             } catch (e: Exception) {
-                Log.e("HistorialVM", "Error al cargar: ${e.message}", e)
+                SecureLog.e("HistorialVM", "Error al cargar: ${e.message}", e)
                 _historial.postValue(emptyList())
                 _historialFiltrado.postValue(emptyList())
             }
@@ -61,7 +61,7 @@ class HistorialViewModel @Inject constructor(
                 historialDao.deleteById(id)
                 cargarHistorial()
             } catch (e: Exception) {
-                Log.e("HistorialVM", "Error al eliminar: ${e.message}", e)
+                SecureLog.e("HistorialVM", "Error al eliminar: ${e.message}", e)
             }
         }
     }
@@ -72,7 +72,7 @@ class HistorialViewModel @Inject constructor(
             _historial.postValue(emptyList())
             _historialFiltrado.postValue(emptyList())
         } catch (e: Exception) {
-            Log.e("HistorialVM", "Error al limpiar: ${e.message}", e)
+            SecureLog.e("HistorialVM", "Error al limpiar: ${e.message}", e)
         }
     }
 }

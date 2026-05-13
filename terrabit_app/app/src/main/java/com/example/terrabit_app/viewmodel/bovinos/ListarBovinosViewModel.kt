@@ -1,6 +1,6 @@
 package com.example.terrabit_app.viewmodel.bovinos
 
-import android.util.Log
+import com.example.terrabit_app.utils.SecureLog
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -66,31 +66,31 @@ class ListarBovinosViewModel @Inject constructor(
     }
 
     fun cargarBovinos(esRefresh: Boolean = false) {
-        Log.d("PARSEO", "✅ Datos del request: $nif, $password, $codiMo")
+        SecureLog.d("PARSEO", "✅ Datos del request: $nif, $password, $codiMo")
         viewModelScope.launch {
             if (esRefresh) _refrescando.value = true else _cargando.value = true
             _error.value = null
             try {
                 val response = repositorio.getListaBovinos(nif, password, "1", codiMo)
-                Log.d("PARSEO", "Response code: ${response.code()}")
+                SecureLog.d("PARSEO", "Response code: ${response.code()}")
                 if (response.isSuccessful) {
                     val body = response.body()
-                    Log.d("PARSEO", "Body: $body")
-                    Log.d("PARSEO", "Codi: ${body?.codi}")
-                    Log.d("PARSEO", "Identificadors size: ${body?.identificadors?.size}")
+                    SecureLog.d("PARSEO", "Body: $body")
+                    SecureLog.d("PARSEO", "Codi: ${body?.codi}")
+                    SecureLog.d("PARSEO", "Identificadors size: ${body?.identificadors?.size}")
                     if (body != null && !body.identificadors.isNullOrEmpty()) {
                         _listaBovinos.value = body.identificadors
                         filtrarBovinos(_busqueda.value ?: "")
-                        Log.d("PARSEO", "✅ Lista cargada: ${body.identificadors.size} bovinos")
+                        SecureLog.d("PARSEO", "✅ Lista cargada: ${body.identificadors.size} bovinos")
                     } else {
                         _error.value = "Lista vacía"
-                        Log.e("PARSEO", "❌ Lista vacía o null")
+                        SecureLog.e("PARSEO", "❌ Lista vacía o null")
                     }
                 } else {
                     _error.value = "Error ${response.code()}"
                 }
             } catch (e: Exception) {
-                Log.e("PARSEO", "Error: ${e.message}", e)
+                SecureLog.e("PARSEO", "Error: ${e.message}", e)
                 _error.value = "Error: ${e.message}"
             } finally {
                 _cargando.value = false

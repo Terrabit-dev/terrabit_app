@@ -1,7 +1,7 @@
 package com.example.terrabit_app.viewmodel.bovinos
 
 import android.annotation.SuppressLint
-import android.util.Log
+import com.example.terrabit_app.utils.SecureLog
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -144,7 +144,7 @@ abstract class BaseBovinoViewModel : ViewModel() {
             } catch (e: Exception) {
                 _isLoadingBovinos.postValue(false)
                 _bovinosCargados.postValue(false)
-                Log.e(getTipoRegistro(), "Error al cargar bovinos: ${e.message}", e)
+                SecureLog.e(getTipoRegistro(), "Error al cargar bovinos: ${e.message}", e)
             }
         }
     }
@@ -158,7 +158,7 @@ abstract class BaseBovinoViewModel : ViewModel() {
                 _suggestionsBovinos.postValue(resultados)
             } catch (e: Exception) {
                 _suggestionsBovinos.postValue(emptyList())
-                Log.e(getTipoRegistro(), "Error en búsqueda: ${e.message}", e)
+                SecureLog.e(getTipoRegistro(), "Error en búsqueda: ${e.message}", e)
             }
         }
     }
@@ -181,7 +181,7 @@ abstract class BaseBovinoViewModel : ViewModel() {
                     )
                 borradorDao.upsert(entity)
             } catch (e: Exception) {
-                Log.e("Autoguardado_${getTipoRegistro()}", "Error: ${e.message}", e)
+                SecureLog.e("Autoguardado_${getTipoRegistro()}", "Error: ${e.message}", e)
             }
         }
     }
@@ -193,7 +193,7 @@ abstract class BaseBovinoViewModel : ViewModel() {
                 borradorSesionId = borrador.id
                 restaurarDatos(parsearDatos(borrador.datos))
             } catch (e: Exception) {
-                Log.e(getTipoRegistro(), "Error al cargar borrador: ${e.message}", e)
+                SecureLog.e(getTipoRegistro(), "Error al cargar borrador: ${e.message}", e)
             }
         }
     }
@@ -206,7 +206,7 @@ abstract class BaseBovinoViewModel : ViewModel() {
                     borradorSesionId = ""
                 }
             } catch (e: Exception) {
-                Log.e("EliminarBorrador_${getTipoRegistro()}", "Error: ${e.message}", e)
+                SecureLog.e("EliminarBorrador_${getTipoRegistro()}", "Error: ${e.message}", e)
             }
         }
     }
@@ -225,7 +225,7 @@ abstract class BaseBovinoViewModel : ViewModel() {
                     )
                 )
             } catch (e: Exception) {
-                Log.e("Historial_${getTipoRegistro()}", "Error: ${e.message}", e)
+                SecureLog.e("Historial_${getTipoRegistro()}", "Error: ${e.message}", e)
             }
         }
     }
@@ -236,7 +236,7 @@ abstract class BaseBovinoViewModel : ViewModel() {
                 val registro = historialDao.getAll().find { it.id == id } ?: return@launch
                 restaurarDatos(parsearDatos(registro.datos))
             } catch (e: Exception) {
-                Log.e(getTipoRegistro(), "Error al cargar desde historial: ${e.message}", e)
+                SecureLog.e(getTipoRegistro(), "Error al cargar desde historial: ${e.message}", e)
             }
         }
     }
@@ -314,7 +314,7 @@ abstract class BaseBovinoViewModel : ViewModel() {
                 "$anio$mes$dia$horas$minutos"
             } else ""
         } catch (e: Exception) {
-            Log.e("BaseBovinoVM", "Error conversión fecha/hora: ${e.message}"); ""
+            SecureLog.e("BaseBovinoVM", "Error conversión fecha/hora: ${e.message}"); ""
         }
     }
 

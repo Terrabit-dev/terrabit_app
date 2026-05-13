@@ -130,8 +130,8 @@
 }
 
 # ---------- Eliminar logs en release (seguridad) ----------
-# IMPORTANTE: dejamos Log.e activo TEMPORALMENTE para diagnosticar el primer
-# release. Cuando confirmes que todo funciona, descomenta también Log.e.
+# IMPORTANTE: dejamos SecureLog.e activo TEMPORALMENTE para diagnosticar el primer
+# release. Cuando confirmes que todo funciona, descomenta también SecureLog.e.
 -assumenosideeffects class android.util.Log {
     public static boolean isLoggable(java.lang.String, int);
     public static int v(...);

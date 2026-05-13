@@ -1,7 +1,7 @@
 package com.example.terrabit_app.viewmodel.porcinos
 
 import android.os.Build
-import android.util.Log
+import com.example.terrabit_app.utils.SecureLog
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -107,7 +107,7 @@ class EditarGuiaPorcinosViewModel @Inject constructor(
         if (s.categoriaCodigo.isBlank() || s.numAnimales.isBlank() || s.fechaSalida.isBlank() ||
             s.horaSalida.isBlank() || s.fechaLlegada.isBlank() || s.horaLlegada.isBlank() ||
             s.codigoSIR.isBlank() || s.matricula.isBlank() || s.nifConductor.isBlank()) {
-            Log.w("GTR_EDITAR", "Validación fallida — campos vacíos")
+            SecureLog.w("GTR_EDITAR", "Validación fallida — campos vacíos")
             _uiState.update { it.copy(error = "Todos los campos son obligatorios.") }
             return
         }
@@ -127,7 +127,7 @@ class EditarGuiaPorcinosViewModel @Inject constructor(
 
                 val response = repositorio.tramitarGuiaPorcina(request)
 
-                Log.d("GTR_EDITAR", "HTTP code: ${response.code()}")
+                SecureLog.d("GTR_EDITAR", "HTTP code: ${response.code()}")
 
                 if (response.isSuccessful) {
                     val rawJson = response.body()?.string() ?: ""
@@ -136,28 +136,28 @@ class EditarGuiaPorcinosViewModel @Inject constructor(
                     val gson = Gson()
                     if (rawJson.trimStart().startsWith("[")) {
                         val error = gson.fromJson(rawJson, Array<GtrStandardResponse>::class.java).firstOrNull()
-                        Log.w("GTR_EDITAR", "API devolvió array de errores: ${error?.descripcio}")
+                        SecureLog.w("GTR_EDITAR", "API devolvió array de errores: ${error?.descripcio}")
                         _uiState.update { it.copy(isLoading = false, error = error?.descripcio) }
                     } else {
                         val resultado = gson.fromJson(rawJson, GtrStandardResponse::class.java)
-                        Log.d("GTR_EDITAR", "resultado.codi: ${resultado.codi} | resultado.descripcio: ${resultado.descripcio}")
+                        SecureLog.d("GTR_EDITAR", "resultado.codi: ${resultado.codi} | resultado.descripcio: ${resultado.descripcio}")
                         if (resultado.codi == "OK") {
-                            Log.d("GTR_EDITAR", "Edición completada")
+                            SecureLog.d("GTR_EDITAR", "Edición completada")
                             guardarHistorialCampos()
                             _uiState.update { it.copy(isLoading = false) }
                             onSuccess()
                         } else {
-                            Log.w("GTR_EDITAR", "⚠️ API rechazó: ${resultado.descripcio}")
+                            SecureLog.w("GTR_EDITAR", "⚠️ API rechazó: ${resultado.descripcio}")
                             _uiState.update { it.copy(isLoading = false, error = resultado.descripcio) }
                         }
                     }
                 } else {
                     val errorBody = response.errorBody()?.string() ?: ""
-                    Log.e("GTR_EDITAR", "Error HTTP ${response.code()}: $errorBody")
+                    SecureLog.e("GTR_EDITAR", "Error HTTP ${response.code()}: $errorBody")
                     _uiState.update { it.copy(isLoading = false, error = "Error servidor (${response.code()})") }
                 }
             } catch (e: Exception) {
-                Log.e("GTR_EDITAR", "Excepción: ${e.javaClass.simpleName}: ${e.message}", e)
+                SecureLog.e("GTR_EDITAR", "Excepción: ${e.javaClass.simpleName}: ${e.message}", e)
                 _uiState.update { it.copy(isLoading = false, error = e.localizedMessage) }
             }
         }

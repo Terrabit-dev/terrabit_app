@@ -1,6 +1,6 @@
 package com.example.terrabit_app.viewmodel.bovinos
 
-import android.util.Log
+import com.example.terrabit_app.utils.SecureLog
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
@@ -218,7 +218,7 @@ class NacimientoViewmodel @Inject constructor(
             val response = repositorio.getIdentificadoresDisponibles(nif, password, codiMO)
             withContext(Dispatchers.Main) {
                 if (response.isSuccessful) _identificadores.value = response.body()
-                else Log.e("NacimientoVM", "Error identificadores: ${response.message()}")
+                else SecureLog.e("NacimientoVM", "Error identificadores: ${response.message()}")
             }
         }
     }

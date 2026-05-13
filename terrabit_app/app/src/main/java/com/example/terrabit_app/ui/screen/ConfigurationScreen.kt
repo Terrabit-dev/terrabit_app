@@ -40,6 +40,9 @@ import com.example.terrabit_app.utils.PantallaCargaIdioma
 import com.example.terrabit_app.viewmodel.ConfigurationViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 
 @Composable
 fun ConfigurationScreen(
@@ -58,7 +61,11 @@ fun ConfigurationScreen(
     val alreadyAdded by viewModel.isAlreadyAdded.observeAsState(false)
     var cambiandoIdioma by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    val nif by viewModel.nif.collectAsState()
 
+    LaunchedEffect(Unit) {
+        viewModel.refreshNif()
+    }
     if (agregarMo) {
         Dialog(onDismissRequest = { if (!loading) { viewModel.resetState(); agregarMo = false } }) {
             Card(
@@ -411,7 +418,7 @@ fun ConfigurationScreen(
                         }
                         Column {
                             Text(text = "NIF", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text(text = viewModel.nif, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+                            Text(text = nif, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
                         }
                     }
                 }

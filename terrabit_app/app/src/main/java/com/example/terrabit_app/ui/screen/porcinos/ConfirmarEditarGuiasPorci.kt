@@ -1,7 +1,7 @@
 package com.example.terrabit_app.ui.screen.porcinos
 
 import android.os.Build
-import android.util.Log
+import com.example.terrabit_app.utils.SecureLog
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -82,12 +82,12 @@ fun ConfirmarEditarGuiasPorci(
     val historialManager = viewModelEditarGuias.historialCamposManager
     var mostrarDialogoError by remember { mutableStateOf(false) }
 
-    Log.d("Guia seleccionada", "Nose: ${uiStateLista.guiaSeleccionada}  ")
+    SecureLog.d("Guia seleccionada", "Nose: ${uiStateLista.guiaSeleccionada}  ")
 
     LaunchedEffect(Unit) {
         uiStateLista.guiaSeleccionada?.let { guia ->
             viewModelEditarGuias.cargarDatosGuia(guia)
-            Log.d("Datos Guia", "guia: '$guia'  - ${guia.remo}")
+            SecureLog.d("Datos Guia", "guia: '$guia'  - ${guia.remo}")
         }
     }
     LaunchedEffect(uiStateEdita.error) {

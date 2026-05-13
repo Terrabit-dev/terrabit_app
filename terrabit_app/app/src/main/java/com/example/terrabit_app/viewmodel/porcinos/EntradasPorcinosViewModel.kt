@@ -2,7 +2,7 @@ package com.example.terrabit_app.viewmodel.porcinos
 
 import android.annotation.SuppressLint
 import android.os.Build
-import android.util.Log
+import com.example.terrabit_app.utils.SecureLog
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -87,34 +87,34 @@ class EntradasPorcinosViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             try {
-                Log.d("GTR_ENTRADAS", "━━━ CARGAR PENDIENTES ━━━")
-                Log.d("GTR_ENTRADAS", "nif:        $nif")
-                Log.d("GTR_ENTRADAS", "codiMo:     $codiMo")
-                Log.d("GTR_ENTRADAS", "fechaInicio: $fechaInicio")
-                Log.d("GTR_ENTRADAS", "fechaFin:   $fechaFin")
+                SecureLog.d("GTR_ENTRADAS", "━━━ CARGAR PENDIENTES ━━━")
+                SecureLog.d("GTR_ENTRADAS", "nif:        $nif")
+                SecureLog.d("GTR_ENTRADAS", "codiMo:     $codiMo")
+                SecureLog.d("GTR_ENTRADAS", "fechaInicio: $fechaInicio")
+                SecureLog.d("GTR_ENTRADAS", "fechaFin:   $fechaFin")
 
                 val response = repositorio.getPendientesConfirmarEntradaPorcina(
                     nif = nif, password = password, moDesti = codiMo,
                     desde = fechaInicio, fins = fechaFin
                 )
 
-                Log.d("GTR_ENTRADAS", "HTTP code: ${response.code()}")
-                Log.d("GTR_ENTRADAS", "isSuccessful: ${response.isSuccessful}")
+                SecureLog.d("GTR_ENTRADAS", "HTTP code: ${response.code()}")
+                SecureLog.d("GTR_ENTRADAS", "isSuccessful: ${response.isSuccessful}")
 
                 if (response.isSuccessful) {
                     val lista = response.body()?.llistat ?: emptyList()
-                    Log.d("GTR_ENTRADAS", "✅ Entradas recibidas: ${lista.size}")
-                    lista.forEachIndexed { i, e -> Log.d("GTR_ENTRADAS", "  [$i] remo=${e.codiRemo}") }
+                    SecureLog.d("GTR_ENTRADAS", "✅ Entradas recibidas: ${lista.size}")
+                    lista.forEachIndexed { i, e -> SecureLog.d("GTR_ENTRADAS", "  [$i] remo=${e.codiRemo}") }
                     _uiState.update { it.copy(listaEntradasPorcinos = lista, isLoading = false) }
                 } else {
                     val errorBody = response.errorBody()?.string() ?: ""
-                    Log.e("GTR_ENTRADAS", "❌ Error HTTP ${response.code()}: $errorBody")
+                    SecureLog.e("GTR_ENTRADAS", "❌ Error HTTP ${response.code()}: $errorBody")
                     _error.value = "Error ${response.code()}"
                     _uiState.update { it.copy(isLoading = false) }
                     _consultaIniciada.value = false
                 }
             } catch (e: Exception) {
-                Log.e("GTR_ENTRADAS", "❌ Excepción: ${e.javaClass.simpleName}: ${e.message}", e)
+                SecureLog.e("GTR_ENTRADAS", "❌ Excepción: ${e.javaClass.simpleName}: ${e.message}", e)
                 _error.value = "Error de connexió: ${e.localizedMessage}"
                 _uiState.update { it.copy(isLoading = false) }
                 _consultaIniciada.value = false
@@ -132,30 +132,30 @@ class EntradasPorcinosViewModel @Inject constructor(
                 nombreAnimals = guia.numAnimals ?: "0"
             )
 
-            Log.d("GTR_ENTRADAS", "━━━ CONFIRMAR ENTRADA ━━━")
-            Log.d("GTR_ENTRADAS", "request: $request")
+            SecureLog.d("GTR_ENTRADAS", "━━━ CONFIRMAR ENTRADA ━━━")
+            SecureLog.d("GTR_ENTRADAS", "request: $request")
 
             try {
                 val response = repositorio.confirmarEntradaPorcina(request)
 
-                Log.d("GTR_ENTRADAS", "HTTP code: ${response.code()}")
-                Log.d("GTR_ENTRADAS", "body.codi: ${response.body()?.codi}")
-                Log.d("GTR_ENTRADAS", "body.descripcio: ${response.body()?.descripcio}")
+                SecureLog.d("GTR_ENTRADAS", "HTTP code: ${response.code()}")
+                SecureLog.d("GTR_ENTRADAS", "body.codi: ${response.body()?.codi}")
+                SecureLog.d("GTR_ENTRADAS", "body.descripcio: ${response.body()?.descripcio}")
 
                 if (response.isSuccessful && response.body()?.codi == "OK") {
-                    Log.d("GTR_ENTRADAS", "✅ Entrada confirmada: ${guia.codiRemo}")
+                    SecureLog.d("GTR_ENTRADAS", "✅ Entrada confirmada: ${guia.codiRemo}")
                     _uiState.update { it.copy(
                         listaEntradasPorcinos = it.listaEntradasPorcinos.filter { it.codiRemo != guia.codiRemo },
                         isLoading = false
                     )}
                 } else {
                     val msg = response.body()?.descripcio ?: "Error al confirmar"
-                    Log.w("GTR_ENTRADAS", "⚠️ $msg")
+                    SecureLog.w("GTR_ENTRADAS", "⚠️ $msg")
                     _error.value = msg
                     _uiState.update { it.copy(isLoading = false) }
                 }
             } catch (e: Exception) {
-                Log.e("GTR_ENTRADAS", "❌ Excepción: ${e.javaClass.simpleName}: ${e.message}", e)
+                SecureLog.e("GTR_ENTRADAS", "❌ Excepción: ${e.javaClass.simpleName}: ${e.message}", e)
                 _error.value = e.localizedMessage
                 _uiState.update { it.copy(isLoading = false) }
             }

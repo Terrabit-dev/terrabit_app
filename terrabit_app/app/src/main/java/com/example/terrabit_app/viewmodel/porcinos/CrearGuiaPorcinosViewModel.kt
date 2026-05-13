@@ -1,7 +1,7 @@
 package com.example.terrabit_app.viewmodel.porcinos
 
 import android.annotation.SuppressLint
-import android.util.Log
+import com.example.terrabit_app.utils.SecureLog
 import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -110,7 +110,7 @@ class CrearGuiaPorcinosViewModel @Inject constructor(
                         fecha = hoy, hora = ahora, datos = json, estado = "BORRADOR_AUTO")
                 borradorDao.upsert(entity)
             } catch (e: Exception) {
-                Log.e("CrearGuiaPorcinosVM", "Error autoguardado: ${e.message}", e)
+                SecureLog.e("CrearGuiaPorcinosVM", "Error autoguardado: ${e.message}", e)
             }
         }
     }
@@ -122,7 +122,7 @@ class CrearGuiaPorcinosViewModel @Inject constructor(
                 borradorSesionId = borrador.id
                 restaurarEstado(Gson().fromJson(borrador.datos, object : TypeToken<Map<String, Any?>>() {}.type))
             } catch (e: Exception) {
-                Log.e("CrearGuiaPorcinosVM", "Error cargar borrador: ${e.message}", e)
+                SecureLog.e("CrearGuiaPorcinosVM", "Error cargar borrador: ${e.message}", e)
             }
         }
     }
@@ -134,7 +134,7 @@ class CrearGuiaPorcinosViewModel @Inject constructor(
                     borradorDao.deleteById(borradorSesionId); borradorSesionId = ""
                 }
             } catch (e: Exception) {
-                Log.e("CrearGuiaPorcinosVM", "Error eliminar borrador: ${e.message}", e)
+                SecureLog.e("CrearGuiaPorcinosVM", "Error eliminar borrador: ${e.message}", e)
             }
         }
     }
@@ -145,7 +145,7 @@ class CrearGuiaPorcinosViewModel @Inject constructor(
                 val registro = historialDao.getAll().find { it.id == id } ?: return@launch
                 restaurarEstado(Gson().fromJson(registro.datos, object : TypeToken<Map<String, Any?>>() {}.type))
             } catch (e: Exception) {
-                Log.e("CrearGuiaPorcinosVM", "Error cargar historial: ${e.message}", e)
+                SecureLog.e("CrearGuiaPorcinosVM", "Error cargar historial: ${e.message}", e)
             }
         }
     }
@@ -233,7 +233,7 @@ class CrearGuiaPorcinosViewModel @Inject constructor(
         if (s.explotacion.isBlank() || s.numAnimales.isBlank() || s.fechaSalida.isBlank() ||
             s.horaSalida.isBlank() || s.fechaLlegada.isBlank() || s.horaLlegada.isBlank() ||
             s.categoriaSeleccionada.isBlank()) {
-            Log.w("GTR_EDITAR", "Validación fallida — campos vacíos")
+            SecureLog.w("GTR_EDITAR", "Validación fallida — campos vacíos")
             _uiState.update { it.copy(mensajeError = "Todos los campos con * son obligatorios.") }
             return
         }
@@ -253,37 +253,37 @@ class CrearGuiaPorcinosViewModel @Inject constructor(
                     matricula = s.matricula, nifConductor = s.nifConductor, mobilitat = "SI"
                 )
 
-                Log.d("GTR_CREAR", "━━━ CREAR GUÍA ━━━")
-                Log.d("GTR_CREAR", "request: $request")
+                SecureLog.d("GTR_CREAR", "━━━ CREAR GUÍA ━━━")
+                SecureLog.d("GTR_CREAR", "request: $request")
 
                 val response = repositorio.altaGuiaPorcinas(request)
 
-                Log.d("GTR_CREAR", "HTTP code: ${response.code()}")
-                Log.d("GTR_CREAR", "isSuccessful: ${response.isSuccessful}")
+                SecureLog.d("GTR_CREAR", "HTTP code: ${response.code()}")
+                SecureLog.d("GTR_CREAR", "isSuccessful: ${response.isSuccessful}")
 
                 if (response.isSuccessful) {
                     val body = response.body()
-                    Log.d("GTR_CREAR", "body: $body")
-                    Log.d("GTR_CREAR", "body.descripcio: ${body?.descripcio}")
+                    SecureLog.d("GTR_CREAR", "body: $body")
+                    SecureLog.d("GTR_CREAR", "body.descripcio: ${body?.descripcio}")
 
                     if (body?.descripcio?.firstOrNull() == "OK") {
                         val codigoGuia = body.descripcio.getOrNull(1)
-                        Log.d("GTR_CREAR", "✅ Guía creada: $codigoGuia")
+                        SecureLog.d("GTR_CREAR", "✅ Guía creada: $codigoGuia")
                         guardarEnHistorial("Guía porcinos enviada")
                         guardarHistorialCampos()
                         eliminarBorradorAutomatico()
                         _uiState.update { CrearGuiasPorcinosUiState(mensajeExito = "Guía creada: $codigoGuia") }
                     } else {
-                        Log.w("GTR_CREAR", "⚠️ Respuesta inesperada: ${body?.descripcio}")
+                        SecureLog.w("GTR_CREAR", "⚠️ Respuesta inesperada: ${body?.descripcio}")
                         _uiState.update { it.copy(isLoading = false, mensajeError = "Respuesta inesperada del servidor") }
                     }
                 } else {
                     val errorBody = response.errorBody()?.string() ?: ""
-                    Log.e("GTR_CREAR", "❌ Error HTTP ${response.code()}: $errorBody")
+                    SecureLog.e("GTR_CREAR", "❌ Error HTTP ${response.code()}: $errorBody")
                     _uiState.update { it.copy(isLoading = false, mensajeError = "Error en la API: ${response.message()}") }
                 }
             } catch (e: Exception) {
-                Log.e("GTR_CREAR", "❌ Excepción: ${e.javaClass.simpleName}: ${e.message}", e)
+                SecureLog.e("GTR_CREAR", "❌ Excepción: ${e.javaClass.simpleName}: ${e.message}", e)
                 _uiState.update { it.copy(isLoading = false, mensajeError = "Error de red: ${e.localizedMessage}") }
             } finally {
                 _uiState.update { it.copy(isLoading = false) }
@@ -302,7 +302,7 @@ class CrearGuiaPorcinosViewModel @Inject constructor(
                     datos = Gson().toJson(serializarEstado()), resumen = resumen
                 ))
             } catch (e: Exception) {
-                Log.e("CrearGuiaPorcinosVM", "Error historial: ${e.message}", e)
+                SecureLog.e("CrearGuiaPorcinosVM", "Error historial: ${e.message}", e)
             }
         }
     }

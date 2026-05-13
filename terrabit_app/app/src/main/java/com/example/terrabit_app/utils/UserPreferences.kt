@@ -36,6 +36,15 @@ class UserPreferences @Inject constructor(
 
     // ── Credenciales (delegadas a SecureStorage) ──────────────────────────
 
+    /**
+     * Guarda las credenciales en SecureStorage SIEMPRE (la sesión activa las necesita
+     * para llamar a los endpoints), y registra en DataStore si el usuario quiere
+     * "Recordarme" (para futuras aperturas / auto-rellenar tras logout).
+     *
+     * Nota: la implementación anterior llamaba a clearCredentials() cuando
+     * rememberMe era false, lo que borraba las credenciales que acababa de
+     * escribir y rompía la sesión activa (p. ej. al cambiar codiMO en pleno uso).
+     */
     suspend fun saveCredentials(nif: String, password: String, codiMO: String, rememberMe: Boolean) {
         secureStorage.saveNif(nif)
         secureStorage.savePassword(password)
@@ -43,23 +52,21 @@ class UserPreferences @Inject constructor(
         context.dataStore.edit { prefs ->
             prefs[KEY_CODI_MO] = codiMO
             prefs[KEY_REMEMBER_ME] = rememberMe
-            if (!rememberMe) {
-                prefs.remove(KEY_CODI_MO)
-                secureStorage.clearCredentials()
-            }
         }
         addMOToUserList(codiMO)
     }
 
     fun getNif(): String? = secureStorage.getNif()
     fun getPassword(): String? = secureStorage.getPassword()
-
     fun getCodiMO(): String? = secureStorage.getCodiMO()
-
 
     suspend fun getRememberMe(): Boolean =
         context.dataStore.data.map { it[KEY_REMEMBER_ME] ?: false }.first()
 
+    /**
+     * Indica si hay una sesión persistente activa que permite saltarse el login.
+     * Solo es true si el usuario marcó "Recordarme" Y hay credenciales válidas.
+     */
     suspend fun haySesionPersistente(): Boolean {
         val rememberMe = getRememberMe()
         return rememberMe && !getNif().isNullOrEmpty() && !getPassword().isNullOrEmpty()
@@ -118,8 +125,36 @@ class UserPreferences @Inject constructor(
 
     // ── Logout ────────────────────────────────────────────────────────────
 
+    /**
+     * Cierra la sesión activa.
+     *
+     * Distingue dos casos según el flag "Recordarme":
+     *  - rememberMe = true:  conserva NIF/password/codiMO en SecureStorage para
+     *                        que el LoginViewModel pueda pre-rellenar el formulario
+     *                        en el próximo arranque. Borra el flag REMEMBER_ME para
+     *                        que NO se haga auto-login (el usuario debe pulsar Acceder).
+     *  - rememberMe = false: borra todo. Próximo login mostrará el formulario vacío.
+     *
+     * En ambos casos conservamos KEY_DARK_THEME para no perder la preferencia de tema.
+     */
     suspend fun logout() {
-        secureStorage.clearAll()
-        context.dataStore.edit { it.clear() }
+        val rememberMe = getRememberMe()
+        val darkTheme = getDarkTheme()
+
+        if (rememberMe) {
+            // Conservar credenciales en SecureStorage; solo invalidar la sesión activa
+            context.dataStore.edit { prefs ->
+                prefs.clear()
+                prefs[KEY_DARK_THEME] = darkTheme
+                // No persistimos REMEMBER_ME=true; al volver al login se vuelve a
+                // marcar manualmente si el usuario quiere mantener la preferencia.
+            }
+        } else {
+            secureStorage.clearAll()
+            context.dataStore.edit { prefs ->
+                prefs.clear()
+                prefs[KEY_DARK_THEME] = darkTheme
+            }
+        }
     }
 }

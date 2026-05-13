@@ -1,6 +1,6 @@
 package com.example.terrabit_app.utils
 
-import android.util.Log
+import com.example.terrabit_app.utils.SecureLog
 
 object DateUtils {
     fun convertirFechaAFormatoAPI(fecha: String): String {
@@ -15,7 +15,7 @@ object DateUtils {
                 ""
             }
         } catch (e: Exception) {
-            Log.e("Error conversión fecha", e.message ?: "Error desconocido")
+            SecureLog.e("Error conversión fecha", e.message ?: "Error desconocido")
             ""
         }
     }

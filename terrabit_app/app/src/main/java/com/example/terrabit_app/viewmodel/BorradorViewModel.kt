@@ -1,6 +1,6 @@
 package com.example.terrabit_app.viewmodel
 
-import android.util.Log
+import com.example.terrabit_app.utils.SecureLog
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -43,7 +43,7 @@ class BorradorViewModel @Inject constructor(
                     _borradoresFiltrados.postValue(listaBorradores.filter { filtrar(it, texto) })
                 }
             } catch (e: Exception) {
-                Log.e("Error Borradores", "Error al cargar: ${e.message}", e)
+                SecureLog.e("Error Borradores", "Error al cargar: ${e.message}", e)
                 _borradores.postValue(emptyList())
                 _borradoresFiltrados.postValue(emptyList())
             }
@@ -89,9 +89,9 @@ class BorradorViewModel @Inject constructor(
             try {
                 borradorDao.deleteById(id)
                 cargarBorradores()
-                Log.d("Borrador", "Eliminado exitosamente: $id")
+                SecureLog.d("Borrador", "Eliminado exitosamente: $id")
             } catch (e: Exception) {
-                Log.e("Error Borrador", "Error al eliminar: ${e.message}", e)
+                SecureLog.e("Error Borrador", "Error al eliminar: ${e.message}", e)
             }
         }
     }
@@ -101,9 +101,9 @@ class BorradorViewModel @Inject constructor(
             try {
                 ids.forEach { borradorDao.deleteById(it) }
                 cargarBorradores()
-                Log.d("Borrador", "Eliminados ${ids.size} borradores")
+                SecureLog.d("Borrador", "Eliminados ${ids.size} borradores")
             } catch (e: Exception) {
-                Log.e("Error Borrador", "Error al eliminar seleccionados: ${e.message}", e)
+                SecureLog.e("Error Borrador", "Error al eliminar seleccionados: ${e.message}", e)
             }
         }
     }
@@ -116,9 +116,9 @@ class BorradorViewModel @Inject constructor(
             borradorDao.deleteAll()
             _borradores.postValue(emptyList())
             _borradoresFiltrados.postValue(emptyList())
-            Log.d("Borrador", "Todos los borradores eliminados")
+            SecureLog.d("Borrador", "Todos los borradores eliminados")
         } catch (e: Exception) {
-            Log.e("Error Borrador", "Error al eliminar todos: ${e.message}", e)
+            SecureLog.e("Error Borrador", "Error al eliminar todos: ${e.message}", e)
         }
     }
 }

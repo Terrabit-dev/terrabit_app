@@ -1,7 +1,7 @@
 package com.example.terrabit_app.viewmodel.porcinos
 
 import android.annotation.SuppressLint
-import android.util.Log
+import com.example.terrabit_app.utils.SecureLog
 import androidx.lifecycle.viewModelScope
 import com.example.terrabit_app.data.network.DataClassPorcinos.GtrErrorResponseLista
 import com.example.terrabit_app.data.network.DataClassPorcinos.GuiaGTRLista
@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import javax.inject.Inject
+
 
 @HiltViewModel
 class GestionarGuiasViewModel @Inject constructor(
@@ -71,55 +72,55 @@ class GestionarGuiasViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             try {
-                Log.d("GTR_GESTIONAR", "━━━ CONSULTA LISTA ━━━")
-                Log.d("GTR_GESTIONAR", "nif:       $nif")
-                Log.d("GTR_GESTIONAR", "password:  $password")
-                Log.d("GTR_GESTIONAR", "codiMo:    $codiMo")
-                Log.d("GTR_GESTIONAR", "rega:      $rega")
-                Log.d("GTR_GESTIONAR", "fechaCorte: $fechaCorte")
+                SecureLog.d("GTR_GESTIONAR", "━━━ CONSULTA LISTA ━━━")
+                SecureLog.d("GTR_GESTIONAR", "nif:       $nif")
+                SecureLog.d("GTR_GESTIONAR", "password:  $password")
+                SecureLog.d("GTR_GESTIONAR", "codiMo:    $codiMo")
+                SecureLog.d("GTR_GESTIONAR", "rega:      $rega")
+                SecureLog.d("GTR_GESTIONAR", "fechaCorte: $fechaCorte")
 
                 val response = repositorio.getGuiasMobilitatPorcinas(nif, password, codiMo, rega, fechaCorte)
 
-                Log.d("GTR_GESTIONAR", "━━━ RESPUESTA ━━━")
-                Log.d("GTR_GESTIONAR", "HTTP code: ${response.code()}")
-                Log.d("GTR_GESTIONAR", "isSuccessful: ${response.isSuccessful}")
+                SecureLog.d("GTR_GESTIONAR", "━━━ RESPUESTA ━━━")
+                SecureLog.d("GTR_GESTIONAR", "HTTP code: ${response.code()}")
+                SecureLog.d("GTR_GESTIONAR", "isSuccessful: ${response.isSuccessful}")
 
                 if (response.isSuccessful) {
                     val rawJson = response.body()?.string() ?: ""
-                    Log.d("GTR_GESTIONAR", "rawJson: $rawJson")
+                    SecureLog.d("GTR_GESTIONAR", "rawJson: $rawJson")
 
                     if (rawJson.isBlank()) {
-                        Log.e("GTR_GESTIONAR", "❌ rawJson vacío")
+                        SecureLog.e("GTR_GESTIONAR", "❌ rawJson vacío")
                         _uiState.update { it.copy(isLoading = false, mensajeError = "Respuesta vacía del servidor", consultaIniciada = false) }
                         return@launch
                     }
 
                     val gson = Gson()
                     val jsonArray = JsonParser.parseString(rawJson).asJsonArray
-                    Log.d("GTR_GESTIONAR", "jsonArray size: ${jsonArray.size()}")
-                    Log.d("GTR_GESTIONAR", "primer elemento: ${jsonArray.firstOrNull()?.asJsonObject}")
+                    SecureLog.d("GTR_GESTIONAR", "jsonArray size: ${jsonArray.size()}")
+                    SecureLog.d("GTR_GESTIONAR", "primer elemento: ${jsonArray.firstOrNull()?.asJsonObject}")
 
                     val primerElemento = jsonArray.firstOrNull()?.asJsonObject
                     if (primerElemento?.has("moOrigen") == true) {
                         val lista = gson.fromJson(rawJson, Array<GuiaGTRLista>::class.java).toList()
-                        Log.d("GTR_GESTIONAR", "✅ Guías recibidas: ${lista.size}")
-                        lista.forEachIndexed { i, g -> Log.d("GTR_GESTIONAR", "  [$i] remo=${g.remo} moOrigen=${g.moOrigen}") }
+                        SecureLog.d("GTR_GESTIONAR", "✅ Guías recibidas: ${lista.size}")
+                        lista.forEachIndexed { i, g -> SecureLog.d("GTR_GESTIONAR", "  [$i] remo=${g.remo} moOrigen=${g.moOrigen}") }
                         _uiState.update { it.copy(listaGuiasPorcinos = lista, isLoading = false, mensajeError = null) }
                     } else {
                         val msg = gson.fromJson(rawJson, Array<GtrErrorResponseLista>::class.java)
                             .firstOrNull()?.descripcio ?: "Error desconocido"
-                        Log.w("GTR_GESTIONAR", "⚠️ API devolvió error: $msg")
+                        SecureLog.w("GTR_GESTIONAR", "⚠️ API devolvió error: $msg")
                         _uiState.update { it.copy(isLoading = false, mensajeError = msg, consultaIniciada = false) }
                     }
                 } else {
                     val errorBody = response.errorBody()?.string() ?: ""
-                    Log.e("GTR_GESTIONAR", "❌ Error HTTP ${response.code()}: $errorBody")
+                    SecureLog.e("GTR_GESTIONAR", "❌ Error HTTP ${response.code()}: $errorBody")
                     _uiState.update { it.copy(isLoading = false,
                         mensajeError = extraerDescripcion(errorBody, response.code()),
                         consultaIniciada = false) }
                 }
             } catch (e: Exception) {
-                Log.e("GTR_GESTIONAR", "❌ Excepción: ${e.javaClass.simpleName}: ${e.message}", e)
+                SecureLog.e("GTR_GESTIONAR", "❌ Excepción: ${e.javaClass.simpleName}: ${e.message}", e)
                 _uiState.update { it.copy(isLoading = false,
                     mensajeError = "Error de conexión: ${e.localizedMessage}",
                     consultaIniciada = false) }

@@ -1,6 +1,6 @@
 package com.example.terrabit_app.viewmodel.bovinos
 
-import android.util.Log
+import com.example.terrabit_app.utils.SecureLog
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.terrabit_app.data.network.Repositorio

@@ -1,7 +1,7 @@
 package com.example.terrabit_app.ui.screen.porcinos
 
 import android.os.Build
-import android.util.Log
+import com.example.terrabit_app.utils.SecureLog
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -340,7 +340,7 @@ private fun EntradaCard(
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 InfoChip(icon = Icons.Default.Pets, label = movimiento.numAnimals ?: "")
                 InfoChip(icon = Icons.Default.Category, label = "Cat. ${ElementosConCodigosPorcinos().categorias()[movimiento.categoria]}")
-                Log.d("Guia info", "Informacion: $movimiento - ${movimiento.categoria}")
+                SecureLog.d("Guia info", "Informacion: $movimiento - ${movimiento.categoria}")
                 movimiento.matricula?.let {
                     InfoChip(icon = Icons.Default.LocalShipping, label = it)
                 }

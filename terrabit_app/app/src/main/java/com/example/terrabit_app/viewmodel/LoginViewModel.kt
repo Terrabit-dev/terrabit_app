@@ -52,13 +52,25 @@ class LoginViewModel @Inject constructor(
         loadSavedCredentials()
     }
 
+    /**
+     * Carga las credenciales guardadas para pre-rellenar el formulario.
+     *
+     * Antes la condición era `if (getRememberMe())`, pero eso impedía mostrar
+     * las credenciales tras un logout (porque logout borra el flag). Ahora se
+     * leen SIEMPRE que existan en SecureStorage; el checkbox solo se marca si
+     * el flag REMEMBER_ME sigue activo (sesión nunca cerrada explícitamente).
+     */
     private fun loadSavedCredentials() {
         viewModelScope.launch {
-            if (userPreferences.getRememberMe()) {
-                _savedNif.value = userPreferences.getNif()
-                _savedPassword.value = userPreferences.getPassword()
-                _savedCodiMO.value = userPreferences.getCodiMO()
-                _savedRememberMe.value = true
+            val nif = userPreferences.getNif()
+            val password = userPreferences.getPassword()
+            val codiMO = userPreferences.getCodiMO()
+
+            if (!nif.isNullOrEmpty() && !password.isNullOrEmpty()) {
+                _savedNif.value = nif
+                _savedPassword.value = password
+                _savedCodiMO.value = codiMO
+                _savedRememberMe.value = userPreferences.getRememberMe()
             }
         }
     }
@@ -86,22 +98,7 @@ class LoginViewModel @Inject constructor(
         if (!validateFields(nif, password, codiMO)) return
         viewModelScope.launch {
             _loginState.value = LoginState.Loading
-            try {
-                val response = repository.getIdentificadoresDisponibles(nif, password, codiMO)
-                if (response.isSuccessful && response.body() != null) {
-                    val body = response.body()!!
-                    if (body.errors == null) {
-                        userPreferences.saveCredentials(nif, password, codiMO, rememberMe)
-                        _loginState.value = LoginState.Success(nif, password, codiMO)
-                    } else {
-                        _loginState.value = LoginState.Error("Credenciales incorrectas")
-                    }
-                } else {
-                    _loginState.value = LoginState.Error("Error: ${response.code()}")
-                }
-            } catch (e: Exception) {
-                _loginState.value = LoginState.Error("Error de conexión: ${e.message}")
-            }
+            ejecutarLogin(nif, password, codiMO, rememberMe)
         }
     }
 
@@ -110,6 +107,30 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch {
             userPreferences.saveCredentials(nif, password, codiMO, rememberMe)
             _loginState.value = LoginState.Success(nif, password, codiMO)
+        }
+    }
+
+    private suspend fun ejecutarLogin(
+        nif: String,
+        password: String,
+        codiMO: String,
+        rememberMe: Boolean
+    ) {
+        try {
+            val response = repository.getIdentificadoresDisponibles(nif, password, codiMO)
+            if (response.isSuccessful && response.body() != null) {
+                val body = response.body()!!
+                if (body.errors == null) {
+                    userPreferences.saveCredentials(nif, password, codiMO, rememberMe)
+                    _loginState.value = LoginState.Success(nif, password, codiMO)
+                } else {
+                    _loginState.value = LoginState.Error("Credenciales incorrectas")
+                }
+            } else {
+                _loginState.value = LoginState.Error("Error: ${response.code()}")
+            }
+        } catch (e: Exception) {
+            _loginState.value = LoginState.Error("Error de conexión: ${e.message}")
         }
     }
 

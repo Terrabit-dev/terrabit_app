@@ -3,7 +3,7 @@ package com.example.terrabit_app.viewmodel.bovinos
 
 
 import android.annotation.SuppressLint
-import android.util.Log
+import com.example.terrabit_app.utils.SecureLog
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -129,7 +129,7 @@ class EditarGuiaBoviViewModel @Inject constructor(
             guia.identificadors.toMutableList()
         else mutableListOf("")
 
-        Log.d("EDITAR_BOVI_VM", "Guía cargada: ${guia.remo}, ${guia.identificadors.size} ids")
+        SecureLog.d("EDITAR_BOVI_VM", "Guía cargada: ${guia.remo}, ${guia.identificadors.size} ids")
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -251,19 +251,19 @@ class EditarGuiaBoviViewModel @Inject constructor(
             identificadors    = ids
         )
 
-        Log.d("EDITAR_BOVI_VM", "Enviando request: $request")
+        SecureLog.d("EDITAR_BOVI_VM", "Enviando request: $request")
 
         viewModelScope.launch {
             _cargando.postValue(true)
             _error.postValue(null)
 
             try {
-                Log.d("EDITAR_BOVI_VM", "Request: $request")
+                SecureLog.d("EDITAR_BOVI_VM", "Request: $request")
                 val response = repositorio.putModificarGuia(request)
 
                 if (response.isSuccessful) {
                     val body = response.body()
-                    Log.d("EDITAR_BOVI_VM", "Respuesta: ${body?.codiRemo} - ${body?.descripcio}")
+                    SecureLog.d("EDITAR_BOVI_VM", "Respuesta: ${body?.codiRemo} - ${body?.descripcio}")
 
                     if (body?.codiRemo != null && body.codiRemo != "0" || body?.descripcio?.contains("correcte", ignoreCase = true) == true) {
                         _cargando.postValue(false)
@@ -275,13 +275,13 @@ class EditarGuiaBoviViewModel @Inject constructor(
                     }
                 } else {
                     val rawError = response.errorBody()?.string() ?: ""
-                    Log.e("EDITAR_BOVI_VM", "HTTP ${response.code()}: $rawError")
+                    SecureLog.e("EDITAR_BOVI_VM", "HTTP ${response.code()}: $rawError")
                     _cargando.postValue(false)
                     _error.postValue(extraerDescripcion(rawError, response.code()))
                 }
 
             } catch (e: Exception) {
-                Log.e("EDITAR_BOVI_VM", "Excepción: ${e.message}")
+                SecureLog.e("EDITAR_BOVI_VM", "Excepción: ${e.message}")
                 _cargando.postValue(false)
                 _error.postValue("Error de conexión: ${e.localizedMessage}")
             }

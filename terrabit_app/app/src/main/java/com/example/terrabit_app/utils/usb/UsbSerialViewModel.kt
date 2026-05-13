@@ -7,7 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
-import android.util.Log
+import com.example.terrabit_app.utils.SecureLog
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -63,7 +63,7 @@ class UsbSerialViewModel @Inject constructor(
             override fun onReceive(ctx: Context, intent: Intent) {
                 when (intent.action) {
                     UsbManager.ACTION_USB_DEVICE_DETACHED -> {
-                        Log.d(TAG, "Cable desconectado")
+                        SecureLog.d(TAG, "Cable desconectado")
                         cerrarConexion()
                         _state.value = UsbSerialState()
                     }
@@ -72,7 +72,7 @@ class UsbSerialViewModel @Inject constructor(
                         val granted = intent.getBooleanExtra(
                             UsbManager.EXTRA_PERMISSION_GRANTED, false
                         )
-                        Log.d(TAG, "Permiso: granted=$granted device=${device?.deviceName}")
+                        SecureLog.d(TAG, "Permiso: granted=$granted device=${device?.deviceName}")
                         when {
                             device == null -> _state.value = UsbSerialState(error = R.string.usb_error_not_found)
                             !granted -> _state.value = UsbSerialState(error = R.string.usb_error_permission_denied)
@@ -95,7 +95,7 @@ class UsbSerialViewModel @Inject constructor(
         ContextCompat.registerReceiver(
             context, receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED
         )
-        Log.d(TAG, "Receiver registrado")
+        SecureLog.d(TAG, "Receiver registrado")
     }
 
     fun conectar() {
@@ -131,7 +131,7 @@ class UsbSerialViewModel @Inject constructor(
         serialDevice?.close()
         serialDevice = null
         byteBuffer.clear()
-        Log.d(TAG, "Conexión cerrada")
+        SecureLog.d(TAG, "Conexión cerrada")
     }
 
     private fun abrirPuerto(device: UsbDevice) {
@@ -140,24 +140,24 @@ class UsbSerialViewModel @Inject constructor(
         val connection = try {
             usbManager.openDevice(device)
         } catch (e: IllegalArgumentException) {
-            Log.e(TAG, "Device obsoleto: ${e.message}")
+            SecureLog.e(TAG, "Device obsoleto: ${e.message}")
             _state.value = UsbSerialState(error = R.string.usb_error_reconnect_cable) //"Desconecta y vuelve a conectar el cable"
             return
         } ?: run {
-            Log.e(TAG, "openDevice devolvió null")
+            SecureLog.e(TAG, "openDevice devolvió null")
             _state.value = UsbSerialState(error = R.string.usb_error_cannot_open_connection)
             return
         }
 
         val serial = UsbSerialDevice.createUsbSerialDevice(device, connection) ?: run {
-            Log.e(TAG, "Driver no soportado VID=${device.vendorId} PID=${device.productId}")
+            SecureLog.e(TAG, "Driver no soportado VID=${device.vendorId} PID=${device.productId}")
             connection.close()
             _state.value = UsbSerialState(error = R.string.usb_error_unsupported_driver)
             return
         }
 
         if (!serial.open()) {
-            Log.e(TAG, "serial.open() devolvió false")
+            SecureLog.e(TAG, "serial.open() devolvió false")
             connection.close()
             _state.value = UsbSerialState(error = R.string.usb_error_cannot_open_port)
             return
@@ -168,7 +168,7 @@ class UsbSerialViewModel @Inject constructor(
         serial.setStopBits(UsbSerialInterface.STOP_BITS_1)
         serial.setParity(UsbSerialInterface.PARITY_NONE)
         serial.setFlowControl(UsbSerialInterface.FLOW_CONTROL_OFF)
-        Log.d(TAG, "Puerto configurado")
+        SecureLog.d(TAG, "Puerto configurado")
 
         byteBuffer.clear()
 
@@ -181,7 +181,7 @@ class UsbSerialViewModel @Inject constructor(
                 repeat(idx + 1) { byteBuffer.removeAt(0) }
                 val linea = String(lineaBytes, Charsets.UTF_8).trim()
                 if (linea.isNotEmpty()) {
-                    Log.d(TAG, "Línea recibida: $linea")
+                    SecureLog.d(TAG, "Línea recibida: $linea")
                     viewModelScope.launch { _mensajes.emit(linea) }
                 }
             }
@@ -189,7 +189,7 @@ class UsbSerialViewModel @Inject constructor(
 
         serialDevice = serial
         _state.value = UsbSerialState(conectado = true)
-        Log.d(TAG, "Conectado y escuchando")
+        SecureLog.d(TAG, "Conectado y escuchando")
     }
 
     override fun onCleared() {
@@ -197,6 +197,6 @@ class UsbSerialViewModel @Inject constructor(
         cerrarConexion()
         receiver?.let { context.unregisterReceiver(it) }
         receiver = null
-        Log.d(TAG, "ViewModel destruido, conexión cerrada")
+        SecureLog.d(TAG, "ViewModel destruido, conexión cerrada")
     }
 }
