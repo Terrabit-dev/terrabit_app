@@ -1,25 +1,9 @@
-import java.security.SecureRandom
-import java.util.Properties
-import javax.crypto.Cipher
-import javax.crypto.SecretKeyFactory
-import javax.crypto.spec.GCMParameterSpec
-import javax.crypto.spec.PBEKeySpec
-import javax.crypto.spec.SecretKeySpec
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
-}
-
-// ── Helper: lee una propiedad de local.properties ─────────────────────────
-fun loadLocalProp(key: String, default: String = ""): String {
-    val f = rootProject.file("local.properties")
-    if (!f.exists()) return default
-    val props = Properties().apply { f.inputStream().use { load(it) } }
-    return props.getProperty(key, default)
 }
 
 android {
@@ -36,9 +20,6 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-        // Inyecta la passphrase de cifrado del local.properties como BuildConfig
-        buildConfigField("String", "DEMO_PASSPHRASE", "\"${loadLocalProp("DEMO_PASSPHRASE")}\"")
     }
 
     buildTypes {
@@ -66,72 +47,8 @@ android {
     }
     buildFeatures {
         compose = true
-        buildConfig = true
     }
 }
-
-// ── Task: cifra demo_credentials.properties → assets/demo_credentials.enc ─
-tasks.register("encryptDemoCredentials") {
-    group = "terrabit"
-    description = "Cifra las credenciales demo y las embebe en assets/demo_credentials.enc"
-
-    val plainFile = rootProject.file("demo_credentials.properties")
-    val outFile = file("src/main/assets/demo_credentials.enc")
-
-    inputs.file(plainFile).optional()
-    inputs.property("passphrase_present", loadLocalProp("DEMO_PASSPHRASE").isNotEmpty())
-    outputs.file(outFile)
-
-    doLast {
-        outFile.parentFile.mkdirs()
-
-        if (!plainFile.exists()) {
-            outFile.writeBytes(byteArrayOf())
-            println("⚠️  demo_credentials.properties no encontrado → botón demo desactivado en este build.")
-            return@doLast
-        }
-
-        val passphrase = loadLocalProp("DEMO_PASSPHRASE")
-        if (passphrase.isEmpty()) {
-            outFile.writeBytes(byteArrayOf())
-            println("⚠️  DEMO_PASSPHRASE no definido en local.properties → botón demo desactivado.")
-            return@doLast
-        }
-
-        val demoProps = Properties().apply { plainFile.inputStream().use { load(it) } }
-        val nif = demoProps.getProperty("nif").orEmpty()
-        val password = demoProps.getProperty("password").orEmpty()
-        val codiMO = demoProps.getProperty("codiMO").orEmpty()
-
-        require(nif.isNotEmpty() && password.isNotEmpty() && codiMO.isNotEmpty()) {
-            "demo_credentials.properties debe contener: nif, password, codiMO"
-        }
-
-        fun esc(s: String) = s.replace("\\", "\\\\").replace("\"", "\\\"")
-        val json = """{"nif":"${esc(nif)}","password":"${esc(password)}","codiMO":"${esc(codiMO)}"}"""
-
-        val rng = SecureRandom()
-        val salt = ByteArray(16).also { rng.nextBytes(it) }
-        val iv = ByteArray(12).also { rng.nextBytes(it) }
-
-        val keyBytes = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
-            .generateSecret(PBEKeySpec(passphrase.toCharArray(), salt, 100_000, 256))
-            .encoded
-        val secretKey = SecretKeySpec(keyBytes, "AES")
-
-        val cipher = Cipher.getInstance("AES/GCM/NoPadding")
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey, GCMParameterSpec(128, iv))
-        val ciphertext = cipher.doFinal(json.toByteArray(Charsets.UTF_8))
-
-        // Formato del blob: [salt(16)][iv(12)][ciphertext+tag(16)]
-        outFile.writeBytes(salt + iv + ciphertext)
-        println("✅ ${outFile.relativeTo(rootProject.rootDir)} generado (${outFile.length()} bytes)")
-    }
-}
-
-// Encadena el task antes del merge de assets para que se regenere en cada build
-tasks.matching { it.name.startsWith("merge") && it.name.endsWith("Assets") }
-    .configureEach { dependsOn("encryptDemoCredentials") }
 
 dependencies {
     // Core & Lifecycle
@@ -195,4 +112,6 @@ dependencies {
 
     // Seguridad y Encriptacion
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
+
+
 }

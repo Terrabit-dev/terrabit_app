@@ -16,7 +16,6 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Badge
 import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -48,8 +47,6 @@ import com.example.terrabit_app.ui.theme.MainGreen
 import com.example.terrabit_app.viewmodel.LoginState
 import com.example.terrabit_app.viewmodel.LoginViewModel
 
-private const val MASKED_VALUE = "*****"
-
 @Composable
 fun Login(
     navController: NavController,
@@ -78,21 +75,13 @@ fun Login(
 
     if (mostrarDialogoError && mensajeError.isNotEmpty()) {
         AlertDialog(
-            onDismissRequest = {
-                mostrarDialogoError = false
-                viewModel.resetState()
-                viewModel.limpiarMascara()
-            },
+            onDismissRequest = { mostrarDialogoError = false; viewModel.resetState() },
             icon = { Icon(Icons.Outlined.Lock, contentDescription = null, tint = MainGreen, modifier = Modifier.size(48.dp)) },
             title = { Text(stringResource(R.string.title_auth_error), fontWeight = FontWeight.Bold, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface) },
             text = { Text(mensajeError, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 24.sp) },
             confirmButton = {
                 Button(
-                    onClick = {
-                        mostrarDialogoError = false
-                        viewModel.resetState()
-                        viewModel.limpiarMascara()
-                    },
+                    onClick = { mostrarDialogoError = false; viewModel.resetState() },
                     colors = ButtonDefaults.buttonColors(containerColor = MainGreen),
                     shape = RoundedCornerShape(8.dp)
                 ) { Text(stringResource(R.string.error_buttom), fontWeight = FontWeight.SemiBold) }
@@ -168,8 +157,6 @@ fun LoginCard(
     val savedPassword by viewModel.savedPassword.collectAsState()
     val savedCodiMO by viewModel.savedCodiMO.collectAsState()
     val savedRememberMe by viewModel.savedRememberMe.collectAsState()
-    val demoDisponible by viewModel.demoDisponible.collectAsState()
-    val credencialesEnmascaradas by viewModel.credencialesEnmascaradas.collectAsState()
 
     var nif by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -195,10 +182,6 @@ fun LoginCard(
         }
     }
 
-    val displayedNif      = if (credencialesEnmascaradas) MASKED_VALUE else nif
-    val displayedPassword = if (credencialesEnmascaradas) MASKED_VALUE else password
-    val displayedCodiMO   = if (credencialesEnmascaradas) MASKED_VALUE else codiMO
-
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -216,12 +199,11 @@ fun LoginCard(
 
                 Text(stringResource(R.string.label_user_code), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                 CustomOutlinedTextField(
-                    value = displayedNif,
+                    value = nif,
                     onValueChange = { nif = it; viewModel.clearFieldError("nif") },
                     placeholder = stringResource(R.string.hint_user_code),
                     icon = Icons.Outlined.AccountCircle,
                     isError = nifError != null,
-                    readOnly = credencialesEnmascaradas,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next, autoCorrect = false),
                     keyboardActions = KeyboardActions(onNext = { passwordFocusRequester.requestFocus() })
                 )
@@ -231,14 +213,13 @@ fun LoginCard(
 
                 Text(stringResource(R.string.label_password_mobility), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                 CustomOutlinedTextField(
-                    value = displayedPassword,
+                    value = password,
                     onValueChange = { password = it; viewModel.clearFieldError("password") },
                     placeholder = stringResource(R.string.hint_password_mobility),
                     icon = Icons.Outlined.Lock,
                     isPassword = true,
                     isError = passwordError != null,
                     focusRequester = passwordFocusRequester,
-                    readOnly = credencialesEnmascaradas,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Next, autoCorrect = false),
                     keyboardActions = KeyboardActions(onNext = { codiMOFocusRequester.requestFocus() })
                 )
@@ -248,13 +229,12 @@ fun LoginCard(
 
                 Text(stringResource(R.string.label_codimo), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                 CustomOutlinedTextField(
-                    value = displayedCodiMO,
+                    value = codiMO,
                     onValueChange = { codiMO = it; viewModel.clearFieldError("codiMO") },
                     placeholder = stringResource(R.string.hint_codimo),
                     icon = Icons.Outlined.Badge,
                     isError = codiMOError != null,
                     focusRequester = codiMOFocusRequester,
-                    readOnly = credencialesEnmascaradas,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Done, autoCorrect = false),
                     keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus(); viewModel.login(nif, password, codiMO, rememberMe) })
                 )
@@ -288,7 +268,7 @@ fun LoginCard(
                 Button(
                     modifier = Modifier.fillMaxWidth(),
                     onClick = { viewModel.login(nif, password, codiMO, rememberMe) },
-                    enabled = loginState !is LoginState.Loading && !credencialesEnmascaradas,
+                    enabled = loginState !is LoginState.Loading,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MainGreen,
                         contentColor = Color.White,
@@ -302,7 +282,7 @@ fun LoginCard(
                 Button(
                     modifier = Modifier.fillMaxWidth(),
                     onClick = { viewModel.guardarYContinuar(nif, password, codiMO, rememberMe) },
-                    enabled = loginState !is LoginState.Loading && !credencialesEnmascaradas,
+                    enabled = loginState !is LoginState.Loading,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MainGreen,
                         contentColor = Color.White,
@@ -311,24 +291,6 @@ fun LoginCard(
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     Text(stringResource(R.string.btn_next), fontWeight = FontWeight.Bold)
-                }
-
-                if (demoDisponible) {
-                    Spacer(modifier = Modifier.height(4.dp))
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    OutlinedButton(
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = { viewModel.loginConCuentaDemo() },
-                        enabled = loginState !is LoginState.Loading,
-                        shape = RoundedCornerShape(10.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MainGreen)
-                    ) {
-                        Icon(Icons.Outlined.PlayArrow, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Probar con cuenta demo", fontWeight = FontWeight.Bold)
-                    }
                 }
             }
         }
@@ -343,7 +305,6 @@ fun CustomOutlinedTextField(
     icon: ImageVector,
     isPassword: Boolean = false,
     isError: Boolean = false,
-    readOnly: Boolean = false,
     focusRequester: FocusRequester? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default
@@ -361,7 +322,6 @@ fun CustomOutlinedTextField(
         visualTransformation = if (isPassword && !passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
-        readOnly = readOnly,
         trailingIcon = {
             if (isPassword) {
                 IconButton(onClick = { passwordVisible = !passwordVisible }) {

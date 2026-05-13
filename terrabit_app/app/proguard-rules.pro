@@ -105,7 +105,3 @@
 # ---------- Stack traces legibles en crash reports ----------
 -keepattributes SourceFile,LineNumberTable
 -renamesourcefileattribute SourceFile
-
-
-# ---------- Demo credentials (Gson) ----------
--keep class com.example.terrabit_app.data.local.DemoCredentialsLoader$DemoCredentials { <fields>; }
