@@ -129,18 +129,9 @@ tasks.register("encryptDemoCredentials") {
     }
 }
 
-// Encadena encryptDemoCredentials a TODAS las tasks que leen de src/main/assets
-// para evitar errores de "implicit dependency" en Gradle 8.13+ (lint, merge, package, etc.)
-tasks.matching { task ->
-    val n = task.name
-    (n.startsWith("merge") && n.endsWith("Assets")) ||
-            n.startsWith("lintAnalyze") ||
-            n.startsWith("lintVitalAnalyze") ||
-            n.startsWith("lintReport") ||
-            n.startsWith("lintVitalReport") ||
-            n.startsWith("generate") && n.endsWith("Assets") ||
-            n.startsWith("package") && n.endsWith("Resources")
-}.configureEach { dependsOn("encryptDemoCredentials") }
+// Encadena el task antes del merge de assets para que se regenere en cada build
+tasks.matching { it.name.startsWith("merge") && it.name.endsWith("Assets") }
+    .configureEach { dependsOn("encryptDemoCredentials") }
 
 dependencies {
     // Core & Lifecycle
