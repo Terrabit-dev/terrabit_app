@@ -261,11 +261,11 @@ fun HeaderBorradores(
                         modifier = Modifier.background(MaterialTheme.colorScheme.surface)
                     ) {
                         DropdownMenuItem(
-                            text = { Text("Castellano", color = MaterialTheme.colorScheme.onSurface) },
+                            text = { Text(stringResource(R.string.language_cas), color = MaterialTheme.colorScheme.onSurface) },
                             onClick = { expandedConfig = false; onCambiarIdioma("es") }
                         )
                         DropdownMenuItem(
-                            text = { Text("Català", color = MaterialTheme.colorScheme.onSurface) },
+                            text = { Text(stringResource(R.string.language_cat), color = MaterialTheme.colorScheme.onSurface) },
                             onClick = { expandedConfig = false; onCambiarIdioma("ca") }
                         )
                     }

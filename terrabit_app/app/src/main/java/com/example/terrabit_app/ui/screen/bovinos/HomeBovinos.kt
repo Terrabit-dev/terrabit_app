@@ -221,11 +221,11 @@ fun HeaderBienvenida(
                         onDismissRequest = { expanded = false }
                     ) {
                         DropdownMenuItem(
-                            text = { Text("Castellano") },
+                            text = { Text(stringResource(R.string.language_cas)) },
                             onClick = { expanded = false; onCambiarIdioma("es") }
                         )
                         DropdownMenuItem(
-                            text = { Text("Català") },
+                            text = { Text(stringResource(R.string.language_cat)) },
                             onClick = { expanded = false; onCambiarIdioma("ca") }
                         )
                     }

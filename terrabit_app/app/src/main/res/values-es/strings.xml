@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
+
+    <string name="language_cat">Catalán</string>
+    <string name="language_cas">Castellano</string>
+
     <string name="app_name">Terrabit</string>
 
     <string name="app_version">Versión 1.0.0</string>

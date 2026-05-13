@@ -324,7 +324,7 @@ fun ConfigurationScreen(
                                 onDismissRequest = { expandedIdioma = false }
                             ) {
                                 DropdownMenuItem(
-                                    text = { Text("Castellano") },
+                                    text = { Text(stringResource(R.string.language_cas)) },
                                     onClick = {
                                         expandedIdioma = false
                                         val localeActual = AppCompatDelegate.getApplicationLocales().toLanguageTags()
@@ -340,7 +340,7 @@ fun ConfigurationScreen(
                                     }
                                 )
                                 DropdownMenuItem(
-                                    text = { Text("Català") },
+                                    text = { Text(stringResource(R.string.language_cat)) },
                                     onClick = {
                                         expandedIdioma = false
                                         val localeActual = AppCompatDelegate.getApplicationLocales().toLanguageTags()

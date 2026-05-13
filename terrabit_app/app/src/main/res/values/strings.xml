@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <string name="language_cat">Catalan</string>
+    <string name="language_cas">Castellano</string>
+
     <string name="app_name">Terrabit</string>
     <string name="app_version">Versión 1.0.0</string>
     <string name="app_copyright">Terrabit©</string>
