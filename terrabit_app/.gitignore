@@ -13,5 +13,3 @@
 .externalNativeBuild
 .cxx
 local.properties
-demo_credentials.properties
-/app/src/main/assets/demo_credentials.enc
