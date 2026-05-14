@@ -6,12 +6,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.terrabit_app.R
 import com.example.terrabit_app.data.network.movimientos.modelos.Moviment
 import com.example.terrabit_app.ui.pantallas.BorradoresScreen
 import com.example.terrabit_app.ui.pantallas.CrearGuiasPorcinos
@@ -65,7 +67,7 @@ fun NavigationDrawer(
         // Pantalla principal Bovinos - CON header verde
         composable(Routes.HomeBovinos.route) {
             Home(
-                tipoAnimalSeleccionado = "Bovinos",
+                tipoAnimalSeleccionado = stringResource(R.string.bovinos_name),
                 onMenuClick = onMenuClick,
                 navController = navController
             )

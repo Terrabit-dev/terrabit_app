@@ -216,7 +216,7 @@ fun HeaderBienvenidaPorcinos(
                 ) {
                     Icon(Icons.Default.EmojiNature, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Porcinos", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color.White)
+                    Text(stringResource(R.string.porcionos_name), fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color.White)
                 }
             }
         }
