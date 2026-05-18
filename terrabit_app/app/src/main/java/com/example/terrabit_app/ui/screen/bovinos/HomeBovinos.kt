@@ -56,8 +56,9 @@ fun Home(
                     tipoAnimal = tipoAnimalSeleccionado,
                     onMenuClick = onMenuClick,
                     onCambiarIdioma = { idioma ->
-                        val localeActual = AppCompatDelegate.getApplicationLocales().toLanguageTags()
-                        if (!localeActual.startsWith(idioma)) {
+
+                        val idiomaActual = getIdiomaActual()
+                        if (!idiomaActual.startsWith(idioma)) {
                             scope.launch {
                                 cambiandoIdioma = true
                                 delay(300)
@@ -249,5 +250,13 @@ fun HeaderBienvenida(
                 }
             }
         }
+    }
+}
+
+fun getIdiomaActual(): String {
+    val tags = AppCompatDelegate.getApplicationLocales().toLanguageTags()
+    return when {
+        tags.isEmpty() || tags == "und" -> "ca"
+        else -> tags
     }
 }

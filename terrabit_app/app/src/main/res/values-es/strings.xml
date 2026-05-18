@@ -857,4 +857,6 @@
     <string name="message_save_codi">Guarda este código para consultar el estado de tu solicitud.</string>
     <string name="tracking_code">Código de seguimiento:</string>
     <string name="request_sent">Solicitud enviada</string>
+    <string name="guide_management">Gestión de Guías</string>
+    <string name="movement_management">Gestión de movimientos</string>
 </resources>

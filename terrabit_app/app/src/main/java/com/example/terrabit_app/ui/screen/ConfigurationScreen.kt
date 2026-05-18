@@ -334,8 +334,7 @@ fun ConfigurationScreen(
                                     text = { Text(stringResource(R.string.language_cas)) },
                                     onClick = {
                                         expandedIdioma = false
-                                        val localeActual = AppCompatDelegate.getApplicationLocales().toLanguageTags()
-                                        if (!localeActual.startsWith("es")) {
+                                        if (!getIdiomaActual().startsWith("es")) {
                                             scope.launch {
                                                 cambiandoIdioma = true
                                                 delay(300)
@@ -350,8 +349,7 @@ fun ConfigurationScreen(
                                     text = { Text(stringResource(R.string.language_cat)) },
                                     onClick = {
                                         expandedIdioma = false
-                                        val localeActual = AppCompatDelegate.getApplicationLocales().toLanguageTags()
-                                        if (!localeActual.startsWith("ca")) {
+                                        if (!getIdiomaActual().startsWith("ca")) {
                                             scope.launch {
                                                 cambiandoIdioma = true
                                                 delay(300)

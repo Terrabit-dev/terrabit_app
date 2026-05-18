@@ -30,6 +30,7 @@ import androidx.navigation.NavController
 import com.example.terrabit_app.R
 import com.example.terrabit_app.ui.navigation.Routes
 import com.example.terrabit_app.ui.screen.bovinos.cambiarIdioma
+import com.example.terrabit_app.ui.screen.bovinos.getIdiomaActual
 import com.example.terrabit_app.ui.theme.ErrorRed
 import com.example.terrabit_app.ui.theme.MainOrange
 import com.example.terrabit_app.utils.PantallaCargaIdioma
@@ -56,8 +57,8 @@ fun HomePorcinos(
                 HeaderBienvenidaPorcinos(
                     onMenuClick = onMenuClick,
                     onCambiarIdioma = { idioma ->
-                        val localeActual = AppCompatDelegate.getApplicationLocales().toLanguageTags()
-                        if (!localeActual.startsWith(idioma)) {
+                        val idiomaActual = getIdiomaActual()
+                        if (!idiomaActual.startsWith(idioma)) {
                             scope.launch {
                                 cambiandoIdioma = true
                                 delay(300)

@@ -22,6 +22,8 @@ import androidx.core.view.WindowCompat
 import com.example.terrabit_app.utils.bluetooth.BluetoothViewModel
 import com.example.terrabit_app.viewmodel.bovinos.DrawerViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -29,6 +31,13 @@ class MainActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if (AppCompatDelegate.getApplicationLocales().isEmpty) {
+            AppCompatDelegate.setApplicationLocales(
+                LocaleListCompat.forLanguageTags("ca")
+            )
+        }
+
         enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
