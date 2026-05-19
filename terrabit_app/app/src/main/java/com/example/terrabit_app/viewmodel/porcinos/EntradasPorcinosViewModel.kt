@@ -103,18 +103,18 @@ class EntradasPorcinosViewModel @Inject constructor(
 
                 if (response.isSuccessful) {
                     val lista = response.body()?.llistat ?: emptyList()
-                    SecureLog.d("GTR_ENTRADAS", "✅ Entradas recibidas: ${lista.size}")
+                    SecureLog.d("GTR_ENTRADAS",  "Entradas recibidas: ${lista.size}")
                     lista.forEachIndexed { i, e -> SecureLog.d("GTR_ENTRADAS", "  [$i] remo=${e.codiRemo}") }
                     _uiState.update { it.copy(listaEntradasPorcinos = lista, isLoading = false) }
                 } else {
                     val errorBody = response.errorBody()?.string() ?: ""
-                    SecureLog.e("GTR_ENTRADAS", "❌ Error HTTP ${response.code()}: $errorBody")
+                    SecureLog.e("GTR_ENTRADAS", "Error HTTP ${response.code()}: $errorBody")
                     _error.value = "Error ${response.code()}"
                     _uiState.update { it.copy(isLoading = false) }
                     _consultaIniciada.value = false
                 }
             } catch (e: Exception) {
-                SecureLog.e("GTR_ENTRADAS", "❌ Excepción: ${e.javaClass.simpleName}: ${e.message}", e)
+                SecureLog.e("GTR_ENTRADAS", "Excepción: ${e.javaClass.simpleName}: ${e.message}", e)
                 _error.value = "Error de connexió: ${e.localizedMessage}"
                 _uiState.update { it.copy(isLoading = false) }
                 _consultaIniciada.value = false
@@ -143,19 +143,19 @@ class EntradasPorcinosViewModel @Inject constructor(
                 SecureLog.d("GTR_ENTRADAS", "body.descripcio: ${response.body()?.descripcio}")
 
                 if (response.isSuccessful && response.body()?.codi == "OK") {
-                    SecureLog.d("GTR_ENTRADAS", "✅ Entrada confirmada: ${guia.codiRemo}")
+                    SecureLog.d("GTR_ENTRADAS", "Entrada confirmada: ${guia.codiRemo}")
                     _uiState.update { it.copy(
                         listaEntradasPorcinos = it.listaEntradasPorcinos.filter { it.codiRemo != guia.codiRemo },
                         isLoading = false
                     )}
                 } else {
                     val msg = response.body()?.descripcio ?: "Error al confirmar"
-                    SecureLog.w("GTR_ENTRADAS", "⚠️ $msg")
+                    SecureLog.w("GTR_ENTRADAS", " $msg")
                     _error.value = msg
                     _uiState.update { it.copy(isLoading = false) }
                 }
             } catch (e: Exception) {
-                SecureLog.e("GTR_ENTRADAS", "❌ Excepción: ${e.javaClass.simpleName}: ${e.message}", e)
+                SecureLog.e("GTR_ENTRADAS", " Excepción: ${e.javaClass.simpleName}: ${e.message}", e)
                 _error.value = e.localizedMessage
                 _uiState.update { it.copy(isLoading = false) }
             }

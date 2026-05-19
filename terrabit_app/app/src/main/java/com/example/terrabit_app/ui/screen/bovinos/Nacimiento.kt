@@ -75,7 +75,6 @@ fun Nacimiento(
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarDialogoError by remember { mutableStateOf(false) }
     var mostrarBluetooth    by remember { mutableStateOf(false) }
-    // true = el diálogo BT fue abierto desde el campo madre; false = desde cría
     var bluetoothParaMadre  by remember { mutableStateOf(false) }
 
     val mensajeRegistroExitoso = stringResource(R.string.successful_message_born)

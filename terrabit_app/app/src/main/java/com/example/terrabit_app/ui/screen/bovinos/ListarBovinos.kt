@@ -217,7 +217,7 @@ fun ListarBovinos(navController: NavController) {
                                             navController.navigate(Routes.DeatilBovino.route)
                                         },
                                         onLongClick = {
-                                            animalSeleccionado = animal  // el estado local que ya tienes para el dialog
+                                            animalSeleccionado = animal
                                         }
                                     )
                                 }

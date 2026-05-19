@@ -69,7 +69,6 @@ class MovimientosViewModel @Inject constructor(
     private val _explotacioDestinacio = MutableLiveData("")
     val explotacioDestinacio: LiveData<String> = _explotacioDestinacio
 
-    // Campos de validación simple (usados en codiError, no en listaAnimales)
     private val _identificadorAnimal = MutableLiveData("")
     private val _estatArribada = MutableLiveData("")
     private val _codiEstats = MutableLiveData("")

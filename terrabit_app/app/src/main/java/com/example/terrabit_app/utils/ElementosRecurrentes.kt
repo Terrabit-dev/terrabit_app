@@ -57,7 +57,7 @@ fun <T> DropdownField(
 
     // Resolvemos el texto que se mostrará en el campo principal dependiendo del tipo T
     val textoMostrar = when (selectedValue) {
-        is Int -> if (selectedValue != 0) stringResource(id = selectedValue) else "" // Evita error si mandas 0 por defecto
+        is Int -> if (selectedValue != 0) stringResource(id = selectedValue) else ""
         is String -> selectedValue
         else -> selectedValue?.toString() ?: ""
     }
@@ -76,7 +76,7 @@ fun <T> DropdownField(
             onExpandedChange = { if (enabled) onExpandedChange() }
         ) {
             OutlinedTextField(
-                value = textoMostrar, // Usamos el valor ya resuelto
+                value = textoMostrar,
                 onValueChange = {},
                 modifier = Modifier
                     .fillMaxWidth()
@@ -154,10 +154,8 @@ fun <T> LargeDropdownField(
     defectColor: Boolean,
     enabled: Boolean = true
 ) {
-    // Definimos el color según tu lógica (asegúrate de importar MainGreen/MainOrange si los tienes en otro archivo)
     val accentColor = if (defectColor) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
 
-    // Texto del campo principal
     val textoMostrar = when (selectedValue) {
         is Int -> if (selectedValue != 0) stringResource(id = selectedValue) else ""
         is String -> selectedValue
@@ -200,13 +198,12 @@ fun <T> LargeDropdownField(
         )
     }
 
-    // Diálogo con buscador y LazyColumn
+
     if (expanded && enabled) {
-        // Estado de la búsqueda (se reinicia al cerrar)
         var searchQuery by remember { mutableStateOf("") }
 
         Dialog(onDismissRequest = {
-            searchQuery = "" // Limpiamos la búsqueda al cancelar
+            searchQuery = ""
             onDismissRequest()
         }) {
             Surface(
@@ -214,7 +211,7 @@ fun <T> LargeDropdownField(
                 color = MaterialTheme.colorScheme.surface,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(max = 500.dp) // Limita la altura para que no ocupe toda la pantalla
+                    .heightIn(max = 500.dp)
             ) {
                 Column {
                     // 1. Barra de Búsqueda
@@ -224,7 +221,7 @@ fun <T> LargeDropdownField(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp),
-                        placeholder = { Text("Buscar...", fontSize = 15.sp) },
+                        placeholder = { Text(stringResource(R.string.search), fontSize = 15.sp) },
                         leadingIcon = {
                             Icon(Icons.Default.Search, contentDescription = "Buscar", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         },
@@ -241,23 +238,18 @@ fun <T> LargeDropdownField(
 
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
 
-                    // 2. Traducir y Filtrar (¡El truco está aquí!)
-                    // Usamos .map para convertir los Int a String y luego .filter para buscar
                     val opcionesProcesadas = opciones.entries.map { entry ->
                         val textoItem = when (val valorRaw = entry.value) {
                             is Int -> if (valorRaw != 0) stringResource(id = valorRaw) else ""
                             is String -> valorRaw
                             else -> valorRaw.toString()
                         }
-                        // Guardamos el Código Original, el Valor Original, y el Texto Traducido
                         Triple(entry.key, entry.value, textoItem)
                     }.filter {
-                        // Filtramos ignorando mayúsculas/minúsculas. Buscamos tanto por el texto como por el código (ej. "9999")
                         it.third.contains(searchQuery, ignoreCase = true) ||
                                 it.first.contains(searchQuery, ignoreCase = true)
                     }
 
-                    // 3. Renderizar la lista filtrada
                     LazyColumn(
                         modifier = Modifier.fillMaxWidth().weight(1f, fill = false)
                     ) {
@@ -271,7 +263,7 @@ fun <T> LargeDropdownField(
                                     )
                                 },
                                 onClick = {
-                                    searchQuery = "" // Limpiamos la búsqueda tras elegir
+                                    searchQuery = ""
                                     onSeleccionar(codigo, valorRaw)
                                     onDismissRequest()
                                 },
@@ -279,7 +271,6 @@ fun <T> LargeDropdownField(
                             )
                         }
 
-                        // Mensaje si no hay resultados
                         if (opcionesProcesadas.isEmpty()) {
                             item {
                                 Text(
@@ -451,10 +442,6 @@ fun CodiMoSelector(
 
     }
 }
-
-
-
-// Pantalla de Carga al cambiar de Idioma
 
 @Composable
 fun PantallaCargaIdioma(visible: Boolean) {

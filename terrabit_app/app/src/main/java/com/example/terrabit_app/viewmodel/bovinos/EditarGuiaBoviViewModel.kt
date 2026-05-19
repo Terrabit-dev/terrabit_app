@@ -120,9 +120,9 @@ class EditarGuiaBoviViewModel @Inject constructor(
         _dataArribada.value = partesArribada.first
         _horaArribada.value = partesArribada.second
 
-        _nomTransportista.value = guia.codiTransportista ?: ""   // ← antes sin ?: ""
-        _matricula.value        = guia.matricula         ?: ""   // ← antes sin ?: ""
-        _nifConductor.value     = guia.nifConductor      ?: ""   // ← antes sin ?: ""
+        _nomTransportista.value = guia.codiTransportista ?: ""
+        _matricula.value        = guia.matricula         ?: ""
+        _nifConductor.value     = guia.nifConductor      ?: ""
 
         // La lista de identificadores viene directamente del modelo
         _identificadors.value = if (guia.identificadors.isNotEmpty())

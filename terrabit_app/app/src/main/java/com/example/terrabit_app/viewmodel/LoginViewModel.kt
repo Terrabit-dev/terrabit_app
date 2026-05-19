@@ -52,14 +52,7 @@ class LoginViewModel @Inject constructor(
         loadSavedCredentials()
     }
 
-    /**
-     * Carga las credenciales guardadas para pre-rellenar el formulario.
-     *
-     * Antes la condición era `if (getRememberMe())`, pero eso impedía mostrar
-     * las credenciales tras un logout (porque logout borra el flag). Ahora se
-     * leen SIEMPRE que existan en SecureStorage; el checkbox solo se marca si
-     * el flag REMEMBER_ME sigue activo (sesión nunca cerrada explícitamente).
-     */
+    //Carga las credenciales guardadas para pre-rellenar el formulario.
     private fun loadSavedCredentials() {
         viewModelScope.launch {
             val nif = userPreferences.getNif()

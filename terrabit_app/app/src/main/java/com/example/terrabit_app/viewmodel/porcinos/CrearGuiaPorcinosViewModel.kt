@@ -268,22 +268,22 @@ class CrearGuiaPorcinosViewModel @Inject constructor(
 
                     if (body?.descripcio?.firstOrNull() == "OK") {
                         val codigoGuia = body.descripcio.getOrNull(1)
-                        SecureLog.d("GTR_CREAR", "✅ Guía creada: $codigoGuia")
+                        SecureLog.d("GTR_CREAR", "Guía creada: $codigoGuia")
                         guardarEnHistorial("Guía porcinos enviada")
                         guardarHistorialCampos()
                         eliminarBorradorAutomatico()
                         _uiState.update { CrearGuiasPorcinosUiState(mensajeExito = "Guía creada: $codigoGuia") }
                     } else {
-                        SecureLog.w("GTR_CREAR", "⚠️ Respuesta inesperada: ${body?.descripcio}")
+                        SecureLog.w("GTR_CREAR", "Respuesta inesperada: ${body?.descripcio}")
                         _uiState.update { it.copy(isLoading = false, mensajeError = "Respuesta inesperada del servidor") }
                     }
                 } else {
                     val errorBody = response.errorBody()?.string() ?: ""
-                    SecureLog.e("GTR_CREAR", "❌ Error HTTP ${response.code()}: $errorBody")
+                    SecureLog.e("GTR_CREAR", "Error HTTP ${response.code()}: $errorBody")
                     _uiState.update { it.copy(isLoading = false, mensajeError = "Error en la API: ${response.message()}") }
                 }
             } catch (e: Exception) {
-                SecureLog.e("GTR_CREAR", "❌ Excepción: ${e.javaClass.simpleName}: ${e.message}", e)
+                SecureLog.e("GTR_CREAR", "Excepción: ${e.javaClass.simpleName}: ${e.message}", e)
                 _uiState.update { it.copy(isLoading = false, mensajeError = "Error de red: ${e.localizedMessage}") }
             } finally {
                 _uiState.update { it.copy(isLoading = false) }

@@ -52,7 +52,6 @@ fun CorregirSexoBovi(
     val viewModel = hiltViewModel<CorrecionSexoViewModel>()
     val modoLectura = historialId.isNotEmpty()
 
-    // ── Cambio 1: nombres actualizados ────────────────────────────────────────
     val identificadorCorreccionSexo by viewModel.identificadorCorreccionSexo.observeAsState("")
     val sexoCorreccionSeleccionado  by viewModel.sexoCorreccionSeleccionado.observeAsState(-1)
     val sexoCorreccionExpandido     by viewModel.sexoCorreccionExpandido.observeAsState(false)
@@ -261,7 +260,7 @@ fun CorregirSexoBovi(
                             valor = identificadorCorreccionSexo,
                             placeholder = stringResource(R.string.form_id_animal_description),
                             enabled = !modoLectura,
-                            onValueChange = { viewModel.actualizarIdentificador(it) },  // ← nombre limpio
+                            onValueChange = { viewModel.actualizarIdentificador(it) },
                             suggestions = suggestionsBovinos,
                             onAnimalSelected = { viewModel.onBovinoSelected(it) },
                             isLoadingSuggestions = isLoadingBovinos,

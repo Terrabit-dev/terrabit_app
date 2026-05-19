@@ -35,10 +35,6 @@ import com.example.terrabit_app.utils.DropdownField
 import com.example.terrabit_app.utils.ElementosConCodigos
 import com.example.terrabit_app.viewmodel.bovinos.EditarGuiaBoviViewModel
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  Pantalla de edición / confirmación de guía bovina
-// ─────────────────────────────────────────────────────────────────────────────
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditarGuiaBovi(

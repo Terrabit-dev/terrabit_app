@@ -33,7 +33,6 @@ fun Navigation(
         haySesionActiva = navigationViewModel.haySesionActiva()
     }
 
-    // Esperamos hasta saber si hay sesión activa
     if (haySesionActiva == null) return
 
     NavHost(navController = mainNavController, startDestination = Routes.Splash.route) {

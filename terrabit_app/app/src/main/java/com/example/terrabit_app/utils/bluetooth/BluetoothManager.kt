@@ -38,8 +38,6 @@ object ArduinoBluetoothManager {
         return bm?.adapter?.isEnabled == true
     }
 
-    //Devuelve la lista de dispositivos ya emparejados.
-    //El usuario debe seleccionar el Arduino desde la UI.
     fun dispositivosEmparejados(context: Context): List<Pair<String, String>> {
         if (!tienePermisos(context)) return emptyList()
         val bm = context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
@@ -69,13 +67,11 @@ object ArduinoBluetoothManager {
                 ?: return@withContext Result.failure(IOException("Bluetooth no disponible"))
 
             try {
-                // Cancelar discovery si estuviera activo (mejora la conexión)
                 try { adapter.cancelDiscovery() } catch (_: SecurityException) {}
 
                 val device = adapter.getRemoteDevice(macAddress)
                     ?: return@withContext Result.failure(IOException("Dispositivo no encontrado: $macAddress"))
 
-                // Cerrar socket anterior si existiera
                 cerrarSocket()
 
                 socket = device.createRfcommSocketToServiceRecord(SPP_UUID)
@@ -83,7 +79,6 @@ object ArduinoBluetoothManager {
 
                 SecureLog.d(TAG, "Conectado a $macAddress")
 
-                // Leer hasta encontrar salto de línea (\n) o retorno (\r\n)
                 val inputStream = socket!!.inputStream
                 val buffer = StringBuilder()
                 val byteArray = ByteArray(1024)

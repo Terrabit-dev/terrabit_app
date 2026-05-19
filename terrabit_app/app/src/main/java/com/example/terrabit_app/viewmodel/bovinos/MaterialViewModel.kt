@@ -208,7 +208,7 @@ class MaterialViewModel @Inject constructor(
                         limpiarFormulario()
                     }
                     !response.isSuccessful -> {
-                        _mensajeError.value = parsearMensajeErrorRaw(errorRaw)  // ← ya leído arriba
+                        _mensajeError.value = parsearMensajeErrorRaw(errorRaw)
                         _operacionExitosa.value = false
                     }
                     else -> {

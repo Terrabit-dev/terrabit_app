@@ -35,7 +35,7 @@ class MaterialDuplicadoViewModel @Inject constructor(
     init {
         cargarCodisMos()
         borradorSesionId = "material_duplicado_auto_${System.currentTimeMillis()}"
-        cargarBovinosEnCache()   // ← este sí usa bovinos
+        cargarBovinosEnCache()
     }
 
     private val _activeFieldIndex = MutableLiveData(-1)

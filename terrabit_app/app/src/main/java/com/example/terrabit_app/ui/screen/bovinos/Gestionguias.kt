@@ -99,7 +99,7 @@ fun GestionGuias(
     var mostrarDialogoError by remember { mutableStateOf(false) }
     var mostrarDialogoAviso by remember { mutableStateOf(false) }
     var cantidadBorradores  by remember { mutableStateOf(0) }
-    // índice del campo que inició la lectura hardware
+
     var indiceBluetooth     by remember { mutableStateOf<Int?>(null) }
     var mostrarBluetooth    by remember { mutableStateOf(false) }
     var indiceUsb           by remember { mutableStateOf<Int?>(null) }

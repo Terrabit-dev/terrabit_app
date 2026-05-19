@@ -66,7 +66,7 @@ class ListarBovinosViewModel @Inject constructor(
     }
 
     fun cargarBovinos(esRefresh: Boolean = false) {
-        SecureLog.d("PARSEO", "✅ Datos del request: $nif, $password, $codiMo")
+        SecureLog.d("PARSEO", "Datos del request: $nif, $password, $codiMo")
         viewModelScope.launch {
             if (esRefresh) _refrescando.value = true else _cargando.value = true
             _error.value = null
@@ -81,10 +81,10 @@ class ListarBovinosViewModel @Inject constructor(
                     if (body != null && !body.identificadors.isNullOrEmpty()) {
                         _listaBovinos.value = body.identificadors
                         filtrarBovinos(_busqueda.value ?: "")
-                        SecureLog.d("PARSEO", "✅ Lista cargada: ${body.identificadors.size} bovinos")
+                        SecureLog.d("PARSEO", "Lista cargada: ${body.identificadors.size} bovinos")
                     } else {
                         _error.value = "Lista vacía"
-                        SecureLog.e("PARSEO", "❌ Lista vacía o null")
+                        SecureLog.e("PARSEO", "Lista vacía o null")
                     }
                 } else {
                     _error.value = "Error ${response.code()}"

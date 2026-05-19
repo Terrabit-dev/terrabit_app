@@ -39,12 +39,6 @@ class ConfigurationViewModel @Inject constructor(
     private val _isDarkTheme = MutableStateFlow(false)
     val isDarkTheme: StateFlow<Boolean> = _isDarkTheme
 
-    // ──────────────────────────────────────────────────────────────────
-    // NIF reactivo. Antes era `val nif: String = userPreferences.getNif()`,
-    // que se evaluaba una sola vez al construir el ViewModel (cuando las
-    // credenciales aún podían ser null tras login). Con StateFlow + refreshNif()
-    // la UI puede re-pedirlo cada vez que se monta la pantalla.
-    // ──────────────────────────────────────────────────────────────────
     private val _nif = MutableStateFlow("")
     val nif: StateFlow<String> = _nif.asStateFlow()
 
@@ -55,7 +49,7 @@ class ConfigurationViewModel @Inject constructor(
         }
     }
 
-    /** Releer el NIF desde SecureStorage. Llamar desde la UI con un LaunchedEffect. */
+    // Releer el NIF desde SecureStorage. Llamar desde la UI con un LaunchedEffect.
     fun refreshNif() {
         _nif.value = userPreferences.getNif() ?: "No disponible"
     }

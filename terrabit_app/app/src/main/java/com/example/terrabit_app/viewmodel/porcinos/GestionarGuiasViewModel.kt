@@ -90,7 +90,7 @@ class GestionarGuiasViewModel @Inject constructor(
                     SecureLog.d("GTR_GESTIONAR", "rawJson: $rawJson")
 
                     if (rawJson.isBlank()) {
-                        SecureLog.e("GTR_GESTIONAR", "❌ rawJson vacío")
+                        SecureLog.e("GTR_GESTIONAR", "rawJson vacío")
                         _uiState.update { it.copy(isLoading = false, mensajeError = "Respuesta vacía del servidor", consultaIniciada = false) }
                         return@launch
                     }
@@ -103,24 +103,24 @@ class GestionarGuiasViewModel @Inject constructor(
                     val primerElemento = jsonArray.firstOrNull()?.asJsonObject
                     if (primerElemento?.has("moOrigen") == true) {
                         val lista = gson.fromJson(rawJson, Array<GuiaGTRLista>::class.java).toList()
-                        SecureLog.d("GTR_GESTIONAR", "✅ Guías recibidas: ${lista.size}")
+                        SecureLog.d("GTR_GESTIONAR", "Guías recibidas: ${lista.size}")
                         lista.forEachIndexed { i, g -> SecureLog.d("GTR_GESTIONAR", "  [$i] remo=${g.remo} moOrigen=${g.moOrigen}") }
                         _uiState.update { it.copy(listaGuiasPorcinos = lista, isLoading = false, mensajeError = null) }
                     } else {
                         val msg = gson.fromJson(rawJson, Array<GtrErrorResponseLista>::class.java)
                             .firstOrNull()?.descripcio ?: "Error desconocido"
-                        SecureLog.w("GTR_GESTIONAR", "⚠️ API devolvió error: $msg")
+                        SecureLog.w("GTR_GESTIONAR", "API devolvió error: $msg")
                         _uiState.update { it.copy(isLoading = false, mensajeError = msg, consultaIniciada = false) }
                     }
                 } else {
                     val errorBody = response.errorBody()?.string() ?: ""
-                    SecureLog.e("GTR_GESTIONAR", "❌ Error HTTP ${response.code()}: $errorBody")
+                    SecureLog.e("GTR_GESTIONAR", "Error HTTP ${response.code()}: $errorBody")
                     _uiState.update { it.copy(isLoading = false,
                         mensajeError = extraerDescripcion(errorBody, response.code()),
                         consultaIniciada = false) }
                 }
             } catch (e: Exception) {
-                SecureLog.e("GTR_GESTIONAR", "❌ Excepción: ${e.javaClass.simpleName}: ${e.message}", e)
+                SecureLog.e("GTR_GESTIONAR", "Excepción: ${e.javaClass.simpleName}: ${e.message}", e)
                 _uiState.update { it.copy(isLoading = false,
                     mensajeError = "Error de conexión: ${e.localizedMessage}",
                     consultaIniciada = false) }

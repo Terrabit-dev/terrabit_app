@@ -858,4 +858,5 @@
     <string name="request_sent">Sol·licitud enviada</string>
     <string name="guide_management">Gestió de Guies</string>
     <string name="movement_management">Gestió de moviments</string>
+    <string name="search">Cercar</string>
 </resources>

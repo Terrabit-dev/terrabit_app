@@ -64,7 +64,6 @@ fun NavigationDrawer(
 
         // ========== PANTALLAS CON HEADER PERSONALIZADO ==========
 
-        // Pantalla principal Bovinos - CON header verde
         composable(Routes.HomeBovinos.route) {
             Home(
                 tipoAnimalSeleccionado = stringResource(R.string.bovinos_name),
@@ -73,7 +72,6 @@ fun NavigationDrawer(
             )
         }
 
-        // Pantalla principal Porcinos - CON header naranja
         composable(Routes.HomePorcinos.route) {
             HomePorcinos(
                 navController = navController,
@@ -81,7 +79,6 @@ fun NavigationDrawer(
             )
         }
 
-        // Borradores - CON botón de menú
         composable("borradores") {
             BorradoresScreen(
                 viewModel = hiltViewModel(),
@@ -90,7 +87,6 @@ fun NavigationDrawer(
             )
         }
 
-        // Historial
         composable("historial"){
             HistorialScreen(
                 viewModel = hiltViewModel(),
@@ -100,7 +96,6 @@ fun NavigationDrawer(
         }
 
 
-        // Configuracion
         composable(Routes.Configuration.route) {
             ConfigurationScreen(
                 onMenuClick = onMenuClick,
@@ -111,7 +106,6 @@ fun NavigationDrawer(
         // ========== PANTALLAS SIN HEADER PERSONALIZADO ==========
         // Estas pantallas NO necesitan onMenuClick
 
-        // Listado de Bovinos
         composable(Routes.ListarBovinos.route) {
             ListarBovinos(navController)
         }
@@ -127,22 +121,18 @@ fun NavigationDrawer(
             }
         }
 
-        // Gestión de Bovinos
         composable(Routes.GestionBovinos.route) {
             GestionBovinos(navController = navController)
         }
 
-        // Guías y Movimientos
         composable(Routes.GuiasMovimientos.route) {
             GuiasMovimientos(navController = navController)
         }
 
-        // Material Categoría
         composable(Routes.MaterialCategoria.route) {
             MaterialCategoria(navController = navController)
         }
 
-        // Pantallas de categorías porcinos
         composable(Routes.GestionPorcinos.route) {
             GestionGuiasPorcinos(navController = navController)
         }
@@ -151,9 +141,7 @@ fun NavigationDrawer(
             GuiasMovimientosPorcinos(navController = navController)
         }
 
-        // Pantallas de acciones específicas
 
-        //Nacimiento
         composable(
             route = Routes.Nacimiento.route,
             arguments = listOf(
@@ -173,8 +161,6 @@ fun NavigationDrawer(
             Nacimiento(navController = navController, bluetooth, borradorId, historialId)
         }
 
-
-        // Fallecimiento
         composable(
             route = Routes.Fallecimiento.route,
 
@@ -196,7 +182,6 @@ fun NavigationDrawer(
         }
 
 
-        // Guias
         composable(
             route = Routes.GestionGuias.route,
             arguments = listOf(
@@ -216,8 +201,6 @@ fun NavigationDrawer(
             GestionGuias(navController = navController, bluetooth, borradorId, historialId)
         }
 
-
-        // Movimientos
         composable(
             route = Routes.Movimientos.route,
             arguments = listOf(
@@ -254,8 +237,6 @@ fun NavigationDrawer(
             }
         }
 
-
-        // Material
         composable(
             route = Routes.Material.route,
             arguments = listOf(
@@ -275,8 +256,6 @@ fun NavigationDrawer(
             Material(navController = navController, borradorId = borradorId, historialId)
         }
 
-
-        // Material Duplicado
         composable(
             route = Routes.MaterialDuplicado.route,
             arguments = listOf(
@@ -297,8 +276,6 @@ fun NavigationDrawer(
             MaterialDuplicadosScreen(navController = navController, bluetoothViewModel = bluetooth, borradorId = borradorId, historialId)
         }
 
-
-        // Corregir Bovino
         composable(
             route = Routes.CorregirBovino.route,
             arguments = listOf(
@@ -319,7 +296,6 @@ fun NavigationDrawer(
         }
 
 
-        // Identificacion Aplazada
         composable(
             route = Routes.IdentificacionAplazada.route,
             arguments = listOf(
@@ -339,7 +315,6 @@ fun NavigationDrawer(
             IdentificacionApalzada(navController, bluetooth, borradorId, historialId)
         }
 
-        // Pantallas Porcinos
         composable(Routes.GestionGuiasPorcinos.route) {
             val viewModelGestionarGuias = hiltViewModel<GestionarGuiasViewModel>(it)
             val viewModelEditarGuias    = hiltViewModel<EditarGuiaPorcinosViewModel>(it)
@@ -369,20 +344,15 @@ fun NavigationDrawer(
         }
 
         composable(Routes.EditarGuiaBovi.route) { currentEntry ->
-            // Obtenemos el ViewModel del padre (GuiasBovinos), igual que en porcinos
             val parentEntry = remember(currentEntry) {
                 navController.getBackStackEntry(Routes.GuiasBovinos.route)
             }
             val viewModelLista = hiltViewModel<ListarGuiasBoviViewModel>(parentEntry)
-
-            // La guía seleccionada viene del ViewModel compartido
             val guiaSeleccionada by viewModelLista.guiaSeleccionada.observeAsState(null)
-
             guiaSeleccionada?.let { guia ->
                 EditarGuiaBovi(
                     navController     = navController,
                     guiaSeleccionada  = guia
-                    // EditarGuiaBoviViewModel lo crea hiltViewModel() internamente
                 )
             }
         }
